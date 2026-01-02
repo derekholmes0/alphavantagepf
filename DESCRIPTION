@@ -1,0 +1,28 @@
+Package: alphavantagepf
+Title: R wrapper for Alphavantage Financial Data API
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Derek", "Holmes", email = "derek@derekholmes.com", role = c("aut", "cre")),
+    person("Matt", "Dancho", email = "mdancho@business-science.io", role = c("ctb"))
+    )
+Description: Uses Alphavantage API to download financial data in reduced (melted) forms.
+License: GPL (>= 3)
+Encoding: UTF-8
+Depends: 
+    R (>= 4.1.0)
+Imports:
+    dplyr (>= 1.0.0),
+    data.table,
+    glue (>= 1.1.1),
+    httr (>= 1.2.1),
+    jsonlite (>= 1.5),
+    purrr (>= 0.2.2.2),
+    readr (>= 1.1.1),
+    stringr (>= 1.2.0),
+    tidyr (>= 0.6.3)
+Suggests:
+    testthat,
+    knitr
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+LazyData: true
