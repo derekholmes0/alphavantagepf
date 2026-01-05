@@ -1,24 +1,24 @@
 #' Get financial data from the Alpha Vantage API
 #'
 #' @name av_get_pf
+#' @description Interface to alphavantage API.
+#'
 #'
 #' @param symbol A character string of an appropriate stock, fund, or currency
 #' See parameter "symbol" in [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
 #' @param av_fun A character string matching an appropriate Alpha Vantage "function".
 #' See parameter "function" in [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
-#' @param symbolvarnm Variable name of symbol requested inn output, default "symbol"
-#'
-#' @param dfonerror Return an empty data.table when any error occurs, default TRUE
-#'
-#' @param verbose Print debug information helpful for errors
-#'
+#' @param symbolvarnm (default: `symbol`) Variable name of symbol requested inn output
+#' @param dfonerror (default: TRUE) Return an empty data.table when any error occurs
+#' @param verbose (default: FALSE) Print debug information helpful for errors
+#' @param melt  (default: TRUE) Return molten output.
 #' @param ... Additional parameters or overrides passed to the Alpha Vantage API.
 #' For a list of parameters, visit the [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
 #'
 #' @returns Returns a data.table with results dependent on the function called.
 #' Mixed data is returned as a melted data.table, possibly with nested data.frames.  Time series are returned as data.tables.
 #'
-#' @seealso [av_api_key()], [av_extract_df()], [av_extract_fx()], [av_narrowopts()],[av_funhelp()]
+#' @seealso [av_api_key()], [av_extract_df()], [av_extract_fx()], [av_grep_opts()],[av_funhelp()]
 #'
 #' @details
 #'
@@ -37,49 +37,66 @@
 #' into `from_currency` and `to_currency` API parameters. Usage example:
 #' `av_get_pf(symbol = "EUR/USD", av_fun = "FX_DAILY")`
 #'
+#'
 #' @examples
 #' \dontrun{
-#'
-#' # SETUP API KEY
 #' av_api_key("YOUR_API_KEY")
 #'
-#' # ---- 1.0 STOCK TIME SERIES ----
+#' # example code
 #'
-#' # 1.1 TIME SERIES INTRADAY
-#' av_get_pf("MSFT", av_fun = "TIME_SERIES_INTRADAY", interval = "5min", outputsize = "full")
+#' # ---- 1.0 SINGLE NAME EQUITY SUMMARY INFORMATION AND SEARCH ----
 #'
-#' # 1.2 TIME SERIES DAILY ADJUSTED
-#' av_get_pf("MSFT", av_fun = "TIME_SERIES_DAILY_ADJUSTED", outputsize = "full")
+#' av_get_pf("IBM","OVERVIEW") |> str()
 #'
-#' # 1.3 QUOTE ENDPOINTS
-#' av_get_pf("MSFT", av_fun = "GLOBAL_QUOTE")
+#' av_get_pf("EWZ","ETF_PROFILE")
+#' av_get_pf("EWZ","ETF_PROFILE") |> av_extract_df("holdings")
 #'
-#' # ---- 2.0 FOREX ----
+#' av_get_pf("","SYMBOL_SEARCH",keywords="COMMERCE")
 #'
-#' # 2.1 CURRENCY EXCHANGE RATES
-#' av_get_pf("EUR/USD", av_fun = "CURRENCY_EXCHANGE_RATE")
+#' # ---- 2.0 SINGLE NAME QUOTES  ----
 #'
-#' # 2.2 FX INTRADAY
-#' av_get_pf("EUR/USD", av_fun = "FX_INTRADAY", interval = "5min", outputsize = "full")
+#' av_get_pf("IBM","GLOBAL_QUOTE")
 #'
-#' # 2.3. FX DAILY
-#' av_get_pf("EUR/USD", av_fun = "FX_DAILY", outputsize = "full")
+#' av_get_pf("USD/BRL","CURRENCY_EXCHANGE_RATE") |> av_extract_fx()
 #'
-#' # ---- 3.0 TECHNICAL INDICATORS ----
+#' # ---- 3.0 SINGLE NAME HISTORICAL DATA  ----
 #'
-#' # 3.1 SMA
-#' av_get_pf("MSFT", av_fun = "SMA", interval = "weekly", time_period = 10, series_type = "open")
+#' av_get_pf("IBM","TIME_SERIES_DAILY")
 #'
-#' # ---- 4.0 SECTOR PERFORMANCE ----
+#' av_get_pf("IBM","TIME_SERIES_INTRADAY")
 #'
-#' # 4.1 Sector Performance
-#' av_get_pf(av_fun = "SECTOR")
+#' # ---- 4.0 MARKET PRICING DATA  ----
+#'
+#' av_get_pf("","MARKET_STATUS")  |> av_extract_df()
+#'
+#' av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
+#'
+#' av_get_pf("","TREASURY_YIELD",maturity='7year')
+#'
+#'  # ---- 4.0 SINGLE NAME NON-PRICING DATA  ----
+#'
+#' av_get_pf("IBM","DIVIDENDS")
+#'
+#' av_get_pf("IBM","EARNINGS")  |> av_extract_df("quarter",melt=TRUE)
+#'
+#' av_get_pf("IBM","NEWS_SENTIMENT") |> av_extract_df("feed")
+#'
+#' av_get_pf("IBM","EARNINGS_CALL_TRANSCRIPT",quarter="2024Q3")  |> av_extract_df("transcript")
+#'  # Note that quarter is a required parameter, not specifying will throw an error
+#'
+#'  # ---- 5.0 SINGLE NAME OPTION PRICING DATA  ----
+#'
+#' av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
+#'
+#' # ---- 6.0 TECHNICAL INDICATORS  ----
+#'
+#' av_funhelp("SMA")  # Shows parameters and defaults chosen by this package.
+#' av_get_pf("IBM","SMA",time_period=20)
+#'
 #' }
 #'
-#'
-#'
 #' @export
-av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,verbose=TRUE, ...) {
+av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melt=TRUE,verbose=FALSE, ...) {
 
     if (missing(symbol)) symbol <- NULL
     # Checks
@@ -102,9 +119,11 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,verbos
         dots$symbol <- NULL
     }
 
-
     # Generate URL
     url_params <-  av_form_param_url(av_fun,dots)
+    if(is.null(url_params)) { # Missing something required
+        stop("av_get_pf cannot create url; are you missing a required parameter?")
+    }
     url <- glue::glue("https://www.alphavantage.co/query?function={av_fun}&{url_params}")
 
     # Alpha Advantage API call
@@ -139,18 +158,17 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,verbos
             }
             else {  # Mixed results, process as best as possible
                 dt_types = data.table::data.table(ltype=c("character","list"),varnm=c("value_str","value_df"))
-                # content_list <- unlist(content_list,recursive=FALSE)  #flattens everything
                 # data.table 3.33 ms vs xibble 9.4 ms
                     if(is_forex) {
-                        content_list <- purrr:flatten(content_list)
+                        content_list <- purrr::flatten(content_list)
                     }
                     lm0 <- data.table::data.table(variable=names(content_list),value=lapply(names(content_list), \(x) content_list[[x]]))  #unlist breaks apart too much
                     lm0$ltype <- purrr::map_chr(lm0$value,typeof)
-                    lm0 <- dt_types[lm0, on="ltype"]
+                    lm0 <- dt_types[lm0, on=.(ltype)]
                     content <- data.table::dcast(lm0,variable + ltype ~ varnm,value.var=c("value"))
                     if("value_str" %in% names(content)) {
-                        content <- content[,let(value_str=as.character(value_str))][,`:=`(value_num=suppressWarnings(readr::parse_number(value_str)))]
-                        content <- content[,`:=`(ltype = data.table::fifelse(is.na(value_num), ltype,"numeric"))][]
+                        content <- content[,let('value_str'=as.character(get("value_str")))][,`:=`('value_num'=as.vector(suppressWarnings(readr::parse_number(get("value_str")))))]
+                        content <- content[,`:=`(ltype = data.table::fifelse(is.na(get("value_num")), get("ltype"),"numeric"))][]
                     }
                 if(is_forex) {
                     content <- content[,let(variable=gsub("^[0-9]. ","",variable))]  #Mutate does not work
@@ -158,66 +176,62 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,verbos
             }
         }
         else {     # Bad Call
-            params_list <- c(symbol = fifelse(is.null(symbol),"NULL",symbol), av_fun = av_fun, dots)
+            params_list <- c(symbol = data.table::fifelse(is.null(symbol),"NULL",symbol), av_fun = av_fun, dots)
             params_list <- params_list[setdiff(names(params_list),c("apikey","datatype"))]
             params <- paste(names(params_list), params_list, sep = "=", collapse = ", ")
             params <- gsub("av_fun","function",params)
             content <- content  |> paste(". API parameters used: ", params)
             message("av_get_pf Error: ", content)
-            #stop(content, call. = F)
-            return(data.table())
+            return(data.table::data.table())
         }
 
     } else { #  application/x-download
         # CSV Returned - Good Call - Time Series CSV file
         contx <- httr::content(response, as = "text", encoding = "UTF-8")
         content <- gsub("%", "",contx) |> data.table::fread(,na.strings=c(".","NA"))
-        if(nrow(content)==1) {
+        if(nrow(content)==1 & melt==TRUE) {
             content <- content |> melt_tobasetype(idvar=symbolvarnm)
             }
-
     }
     if( !av_funcmap[av_fn==av_fun][1,]$hassymbol ) {
         content$symbol = av_fun
     }
-    # Fix names
-#    names(content) <- names(content) |>
-#        stringr::str_replace_all("[0-9]+\\. ", "") |>
-#        make.names() |>
-#        stringr::str_replace_all("\\.", "_") |>
-#        tolower()
-
     # Return desc
     if ("timestamp" %in% names(content)) {
-        setorder(content,timestamp)
+        data.table::setorder(content,timestamp)
     }
     if(nchar(symbolvarnm)>0) {
-        content <- content |> dplyr::mutate(!!sym(symbolvarnm):=symbol) |> dplyr::relocate(!!sym(symbolvarnm))
+        data.table::setcolorder(content[,c(symbolvarnm):=symbol],c(symbolvarnm))
     }
-    return(content)
+    return(content[])
 }
 
 melt_tobasetype <- function(dta,idvar="symbol",varname="variable") {
     # idvar must always be in input
+    if( !(idvar %in% names(dta))) {
+        stop(paste0("melt_tobasetype> Need ",idvar," in input dta"))
+    }
     char_cols <- setdiff(names(which(sapply(dta, is.character))),idvar)
-    num_cols <- c(idvar,names(which(sapply(dta, \(x) !is.character(x)))))
+    num_cols <- c(names(which(sapply(dta, \(x) !is.character(x)))))
     mm1 <- data.table::data.table()
     if(length(char_cols)>0) {
         mm1 <- data.table::melt(dta, id.vars=idvar,measure.vars=char_cols,variable.name=varname,value.name="value_str")
     }
+    # Warning will always be given for numeric-like objects coerced into numeric
     mm2 <- suppressWarnings(data.table::melt(dta,id.vars=idvar,measure.vars=num_cols,variable.name=varname,value.name="value_num"))
     return(data.table::rbindlist(list(mm1,mm2),use.names=TRUE,fill=TRUE))
 }
 
 av_form_param_url<- function(this_av_fn,dots) {
-    pset <- av_funcmap[av_fn=="defaultparam" | av_fn==this_av_fn,]
-    pset <- data.table::data.table(paramname=names(dots),newval=unlist(dots))[pset,on=.(paramname)][,.(paramname,ro,value=data.table::fcoalesce(newval,def_value))]
-    missing_required = pset[ro=="R" & is.na(value),]
+    pset <- av_funcmap[get("av_fn")=="defaultparam" | get("av_fn")==this_av_fn,]
+    pset <- data.table::data.table(`paramname`=names(dots),`newval`=unlist(dots))[pset,on=c("paramname")]
+    pset <- pset[,.(`paramname`=get("paramname"),`ro`=get("ro"),'value'=data.table::fcoalesce(get("newval"),get("def_value")))]
+    missing_required = pset[get("ro")=="R" & is.na(value),] # get marginally faster
     if(nrow(missing_required)>0) {
-        message("av_form_param_url: ",this_av_fn," missing required parameters: ", paste0(missing_required$paramname,collapse=", "))
+        message("av_form_param_url: ERROR ",this_av_fn," missing required parameters: ", paste0(missing_required$paramname,collapse=", "))
         return(NULL)
     }
-    url_list <- pset[!is.na(value),]
+    url_list <- pset[!is.na(get("value")),]
     paste0(url_list$paramname,"=",url_list$value,collapse="&")
 }
 

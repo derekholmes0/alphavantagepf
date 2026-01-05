@@ -9,7 +9,8 @@ av_get_pf(
   av_fun,
   symbolvarnm = "symbol",
   dfonerror = TRUE,
-  verbose = TRUE,
+  melt = TRUE,
+  verbose = FALSE,
   ...
 )
 }
@@ -20,11 +21,13 @@ See parameter "symbol" in \href{https://www.alphavantage.co/documentation/}{Alph
 \item{av_fun}{A character string matching an appropriate Alpha Vantage "function".
 See parameter "function" in \href{https://www.alphavantage.co/documentation/}{Alpha Vantage API documentation}.}
 
-\item{symbolvarnm}{Variable name of symbol requested inn output, default "symbol"}
+\item{symbolvarnm}{(default: \code{symbol}) Variable name of symbol requested inn output}
 
-\item{dfonerror}{Return an empty data.table when any error occurs, default TRUE}
+\item{dfonerror}{(default: TRUE) Return an empty data.table when any error occurs}
 
-\item{verbose}{Print debug information helpful for errors}
+\item{melt}{(default: TRUE) Return molten output.}
+
+\item{verbose}{(default: FALSE) Print debug information helpful for errors}
 
 \item{...}{Additional parameters or overrides passed to the Alpha Vantage API.
 For a list of parameters, visit the \href{https://www.alphavantage.co/documentation/}{Alpha Vantage API documentation}.}
@@ -34,7 +37,7 @@ Returns a data.table with results dependent on the function called.
 Mixed data is returned as a melted data.table, possibly with nested data.frames.  Time series are returned as data.tables.
 }
 \description{
-Get financial data from the Alpha Vantage API
+Interface to alphavantage API.
 }
 \details{
 \strong{The \code{av_fun} argument replaces the API parameter “function”} because function is a reserved name in R. All other arguments match the Alpha Vantage API parameters.
@@ -54,46 +57,62 @@ into \code{from_currency} and \code{to_currency} API parameters. Usage example:
 }
 \examples{
 \dontrun{
-
-# SETUP API KEY
 av_api_key("YOUR_API_KEY")
 
-# ---- 1.0 STOCK TIME SERIES ----
+# example code
 
-# 1.1 TIME SERIES INTRADAY
-av_get_pf("MSFT", av_fun = "TIME_SERIES_INTRADAY", interval = "5min", outputsize = "full")
+# ---- 1.0 SINGLE NAME EQUITY SUMMARY INFORMATION AND SEARCH ----
 
-# 1.2 TIME SERIES DAILY ADJUSTED
-av_get_pf("MSFT", av_fun = "TIME_SERIES_DAILY_ADJUSTED", outputsize = "full")
+av_get_pf("IBM","OVERVIEW") |> str()
 
-# 1.3 QUOTE ENDPOINTS
-av_get_pf("MSFT", av_fun = "GLOBAL_QUOTE")
+av_get_pf("EWZ","ETF_PROFILE")
+av_get_pf("EWZ","ETF_PROFILE") |> av_extract_df("holdings")
 
-# ---- 2.0 FOREX ----
+av_get_pf("","SYMBOL_SEARCH",keywords="COMMERCE")
 
-# 2.1 CURRENCY EXCHANGE RATES
-av_get_pf("EUR/USD", av_fun = "CURRENCY_EXCHANGE_RATE")
+# ---- 2.0 SINGLE NAME QUOTES  ----
 
-# 2.2 FX INTRADAY
-av_get_pf("EUR/USD", av_fun = "FX_INTRADAY", interval = "5min", outputsize = "full")
+av_get_pf("IBM","GLOBAL_QUOTE")
 
-# 2.3. FX DAILY
-av_get_pf("EUR/USD", av_fun = "FX_DAILY", outputsize = "full")
+av_get_pf("USD/BRL","CURRENCY_EXCHANGE_RATE") |> av_extract_fx()
 
-# ---- 3.0 TECHNICAL INDICATORS ----
+# ---- 3.0 SINGLE NAME HISTORICAL DATA  ----
 
-# 3.1 SMA
-av_get_pf("MSFT", av_fun = "SMA", interval = "weekly", time_period = 10, series_type = "open")
+av_get_pf("IBM","TIME_SERIES_DAILY")
 
-# ---- 4.0 SECTOR PERFORMANCE ----
+av_get_pf("IBM","TIME_SERIES_INTRADAY")
 
-# 4.1 Sector Performance
-av_get_pf(av_fun = "SECTOR")
+# ---- 4.0 MARKET PRICING DATA  ----
+
+av_get_pf("","MARKET_STATUS")  |> av_extract_df()
+
+av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
+
+av_get_pf("","TREASURY_YIELD",maturity='7year')
+
+ # ---- 4.0 SINGLE NAME NON-PRICING DATA  ----
+
+av_get_pf("IBM","DIVIDENDS")
+
+av_get_pf("IBM","EARNINGS")  |> av_extract_df("quarter",melt=TRUE)
+
+av_get_pf("IBM","NEWS_SENTIMENT") |> av_extract_df("feed")
+
+av_get_pf("IBM","EARNINGS_CALL_TRANSCRIPT",quarter="2024Q3")  |> av_extract_df("transcript")
+ # Note that quarter is a required parameter, not specifying will throw an error
+
+ # ---- 5.0 SINGLE NAME OPTION PRICING DATA  ----
+
+av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
+
+# ---- 6.0 TECHNICAL INDICATORS  ----
+
+av_funhelp("SMA")  # Shows parameters and defaults chosen by this package.
+av_get_pf("IBM","SMA",time_period=20)
+
 }
-
-
 
 }
 \seealso{
-\code{\link[=av_api_key]{av_api_key()}}, \code{\link[=av_extract_df]{av_extract_df()}}, \code{\link[=av_extract_fx]{av_extract_fx()}}, \code{\link[=av_narrowopts]{av_narrowopts()}},\code{\link[=av_funhelp]{av_funhelp()}}
+\code{\link[=av_api_key]{av_api_key()}}, \code{\link[=av_extract_df]{av_extract_df()}}, \code{\link[=av_extract_fx]{av_extract_fx()}}, \code{\link[=av_grep_opts]{av_grep_opts()}},\code{\link[=av_funhelp]{av_funhelp()}}
 }

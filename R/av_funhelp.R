@@ -18,8 +18,11 @@
 #'
 #' @export
 av_funhelp <- function(av_fun) {
-    subdf <- av_funcmap[av_fn==toupper(av_fun),]
-    paramlist <- paste0(" - ",subdf$paramname,data.table::fifelse(is.na(subdf$def_value),"",paste0(" (default: ",subdf$def_value,")")),"\n",collapse="")
-    helptext <- cat(paste0("Function: ",av_fun,"\nCategory: ",unique(subdf$category),"\n\nParameters:\n",paramlist))
+    subdf <- av_funcmap[get("av_fn")==toupper(av_fun),]
+    make_plist <- function(wh) {
+      r_params <- subdf[get("ro")==wh,]
+      paste0(wh,"> ",r_params$paramname,data.table::fifelse(is.na(r_params$def_value),"",paste0(" (default: ",r_params$def_value,")")),"\n",collapse="")
+      }
+    helptext <- cat(paste0("Function: ",av_fun,"\nCategory: ",unique(subdf$category),"\n\nParameters:\n",make_plist("R"),make_plist("O")))
     return(helptext)
 }
