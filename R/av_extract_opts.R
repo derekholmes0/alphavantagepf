@@ -2,7 +2,7 @@
 #'
 #' @name av_grep_opts
 #'
-#' @param indta A data.table as returned by av_get_pf()
+#' @param indta A data.table as returned by [av_get_pf()]
 #' @param grepstring (default `F,M,call`) Three item string to select maturities and option types from `indta`.  Each item is an abbreviated code for what to select.
 #'  * How far out to go: `F` for first contract (e.g. front week), `B` for second/back contract, anything else for all contracts.
 #'  * Maturity Schedule: `M` for monthly contracts, `Q` for quarterly contract, anythign else for weekly contracts.
