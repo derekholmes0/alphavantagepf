@@ -9,7 +9,7 @@
 #' See parameter "function" in [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
 #' @param symbolvarnm (default: `symbol`) Variable name which has the `symbol` requested.  Set to a blank string if not wanted.
 #' @param dfonerror (default: TRUE) Return an empty data.table when any error occurs
-#' @param verbose (default: FALSE) Print debug information helpful for errors
+#' @param verbose (default: FALSE) Print debug information helpful for errors.  Also copies full url to clipboard.
 #' @param melt  (default: TRUE) Return molten output.
 #' @param ... Additional parameters or overrides passed to the Alpha Vantage API.
 #' For a list of parameters, visit the [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
@@ -23,7 +23,7 @@
 #'
 #' __The `av_fun` argument replaces the API parameter “function”__ because function is a reserved name in R. All other arguments match the Alpha Vantage API parameters.
 #'
-#' __There is no need to specify the `apikey`, `datatype`, or `outputsize` parameters__ as arguments to av_get_pf(). Before using, you must set the API key using av_api_key("YOUR_API_KEY"). `outputsize` defaults to "full" unless overridden with "compact in `...`."
+#' __There is no need to specify the `apikey`, `datatype`, `outputsize` or `entitlement` parameters__ as arguments to av_get_pf(). Before using, you must set the API key using av_api_key("YOUR_API_KEY"). `outputsize` defaults to "full" unless overridden with "compact in `...`."
 #'
 #' __Required parameters other than `symbol`__ must be passed as named arguments via `...`.
 #'
@@ -40,6 +40,7 @@
 #' @examples
 #' \dontrun{
 #' av_api_key("YOUR_API_KEY")
+#' av_api_key("YOUR_API_KEY","delayed") if you have such access
 #'
 #' # example code
 #'
@@ -108,7 +109,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melt=T
     # parameterss
     dots <- list(...)
     dots$symbol      <- symbol
-    dots$apikey      <- av_api_key()
+    dots$apikey      <- av_api_key()[1]
 
     # Forex
     is_forex <- !is.null(symbol) && stringr::str_detect(symbol, "\\/")
@@ -119,7 +120,8 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melt=T
     }
 
     # Generate URL
-    url_params <-  av_form_param_url(av_fun,dots)
+    url_params <-  av_form_param_url(av_fun,dots,t_entitlement=av_api_key()[2])
+
     if(is.null(url_params)) { # Missing something required
         stop("av_get_pf cannot create url; are you missing a required parameter?")
     }
@@ -223,8 +225,14 @@ melt_tobasetype <- function(dta,idvar="symbol",varname="variable") {
     return(data.table::rbindlist(list(mm1,mm2),use.names=TRUE,fill=TRUE))
 }
 
-av_form_param_url<- function(this_av_fn,dots) {
+av_form_param_url<- function(this_av_fn,dots,t_entitlement=NA_character_) {
     pset <- av_funcmap[get("av_fn")=="defaultparam" | get("av_fn")==this_av_fn,]
+    if("entitlement" %in% pset$paramname) {
+      if (!is.na(t_entitlement)) {
+        pset <- pset[get("paramname")=="entitlement",':='(def_value=t_entitlement)] }
+      else {  # Take out if not needed or not entitled
+        pset <- pset[!(get("paramname")=="entitlement"),] }
+    }
     pset <- data.table::data.table(`paramname`=names(dots),`newval`=unlist(dots))[pset,on=c("paramname")]
     pset <- pset[,.(`paramname`=get("paramname"),`ro`=get("ro"),'value'=data.table::fcoalesce(get("newval"),get("def_value")))]
     missing_required = pset[get("ro")=="R" & is.na(value),] # get marginally faster

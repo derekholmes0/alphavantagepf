@@ -37,10 +37,16 @@ Load the package.
 library(alphavantagepf)
 ```
 
-Set your API key obtained from [Alpha Vantage](https://www.alphavantage.co/).
+Set your API key obtained from [Alpha Vantage](https://www.alphavantage.co/). 
 
 ```{r}
 av_api_key("YOUR_API_KEY")
+print(av_api_key())
+```
+If you have paid access, include an additional argument with your entitlement status, e.g.
+
+```{r}
+av_api_key("YOUR_API_KEY","delayed")
 print(av_api_key())
 ```
 
@@ -155,9 +161,10 @@ av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
 
 1. Three parameters `apikey`, `datatype` and `outputsize` are filled into the API call from the package.  `outputsize` defaults to the full dataset, and can be overridden as a named parameter to the `av_get_pf()` call.
 
+2. An additional parameter `entitlement` is added to the url if specified in the `av_api_key()` call and relevant.
+
 2. `symbol` is always returned in the output dataset, and defaults to the name of the `av_fun` call if no symbol is relevant.
 
-3. There is no need to specify the `datatype` parameter as an argument to `av_get()`. The function will return a tibble data frame. 
+3. There is no need to specify the `datatype` parameter as an argument to `av_get()`. The function will return a data.table
 
 4. Multiple symbols in one API call are currently unsupported.
-

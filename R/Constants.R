@@ -55,16 +55,17 @@ av_make_funcmap <- function() {
 
 # Make datemap, very helpuful for narrowing dates.
 #
-av_make_dtmap <- function() {
+av_make_dtmap <- function(yrs_ahead=5) {
   # All Dates
-  dtmap <- data.table::data.table(DT_ENTRY=seq(from =as.Date("1970-03-20"), to = Sys.Date()+5*365, by = "day")) |> .addseasonaldates()
+  dtmap <- data.table::data.table(DT_ENTRY=seq(from =as.Date("1970-03-20"), to = Sys.Date()+yrs_ahead*365, by = "day")) |> .addseasonaldates()
   dtmap <- dtmap[,':='(isholiday=!timeDate::isBizday(timeDate::as.timeDate(DT_ENTRY), holidays =  timeDate::holidayNYSE(1970:2060), wday = 1:5))]
-  u2dts <-data.table::data.table(DT_ENTRY=seq(lubridate::ymd('1970-03-20'),lubridate::ymd(paste0(year(Sys.Date())+1,'-09-20')), by = '6 month'))[,':='('rolldt'=DT_ENTRY)]
+  cdsendpoints <-c(lubridate::ymd('1970-03-20'),lubridate::ymd(paste0(lubridate::year(Sys.Date())+yrs_ahead,'-09-20')))
+  u2dts <-data.table::data.table(DT_ENTRY=seq(cdsendpoints[1],cdsendpoints[2], by = '6 month'))[,':='('rolldt'=DT_ENTRY)]
   dtmap <- u2dts[dtmap,on=.(DT_ENTRY)]
   data.table::setnafill(dtmap,"locf",cols=c('rolldt'))
   data.table::setkeyv(dtmap,c("DT_ENTRY"))
   # Business days and end periods
-  dtmap <- dtmap[,'isday':=between(wday(DT_ENTRY),2,6)]
+  dtmap <- dtmap[,'isday':=data.table::between(lubridate::wday(DT_ENTRY),2,6)]
   dtmapc <- data.table::copy(dtmap)
   dtmapc <- dtmapc[isday==TRUE,]
   dtmapc <- dtmapc[,'isweek':=(DT_ENTRY==max(DT_ENTRY)),by="yrwk"]
@@ -78,7 +79,7 @@ av_make_dtmap <- function() {
   data.table::setnafill(dtmap,"locf",cols=c("daysfromroll"))
   dtmap <- dtmap |> tidyr::fill('rollpd') # tidyr bc of character
   # Option Expirations (Equities)
-  moexp <- dtmap[wday(DT_ENTRY)==6,][,':='('frino'=.I-min(.I)),by=.(yrmo)][frino==2,][,.(DT_ENTRY,optexp="mo")]
+  moexp <- dtmap[lubridate::wday(DT_ENTRY)==6,][,':='('frino'=.I-min(.I)),by=.(yrmo)][frino==2,][,.(DT_ENTRY,optexp="mo")]
   qexp <- dtmap[isholiday==FALSE & isday==TRUE,][,.SD[.N],by=.(yrqtr)][,.(DT_ENTRY,xoptexp="qtr")]
   dtmap <- moexp[dtmap,on=.(DT_ENTRY)][,':='(optexp=data.table::fcoalesce(optexp,""))]
   dtmap <- qexp[dtmap,on=.(DT_ENTRY)][,':='(optexp=paste0(optexp,data.table::fcoalesce(xoptexp,"")))][,':='(xoptexp=NULL)]

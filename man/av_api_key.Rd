@@ -5,18 +5,20 @@
 \alias{av_validkey}
 \title{Set the Alpha Vantage API Key}
 \usage{
-av_api_key(api_key)
+av_api_key(api_key, entitlement = NULL)
 
 av_validkey()
 }
 \arguments{
 \item{api_key}{A character string with your Alpha Vantage API Key.}
+
+\item{entitlement}{A character string with your Alpha Vantage entitlement status.  If not "delayed" or "realtime" entitlement not added to API string.}
 }
 \value{
-Invisibly returns API key once set. Use print method to view.
+Invisibly returns two item list with API key and entitlement string once set). Use print method to view.
 }
 \description{
-\code{av_api_key()} sets Alphavantage API key
+\code{av_api_key()} sets Alphavantage API key and entitlement code
 \code{av_validkey()} returns TRUE if Alphavantage API key appears valid.
 }
 \details{
@@ -25,7 +27,7 @@ an API key at the \href{https://www.alphavantage.co/}{Alpha Vantage Website}.
 }
 \examples{
 \dontrun{
-av_api_key("YOUR_API_KEY")
+av_api_key("YOUR_API_KEY",entitlement="delayed")
 av_get_pf("IBM", "TIME_SERIES_INTRADAY")
 }
 

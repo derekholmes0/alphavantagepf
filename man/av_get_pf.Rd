@@ -27,7 +27,7 @@ See parameter "function" in \href{https://www.alphavantage.co/documentation/}{Al
 
 \item{melt}{(default: TRUE) Return molten output.}
 
-\item{verbose}{(default: FALSE) Print debug information helpful for errors}
+\item{verbose}{(default: FALSE) Print debug information helpful for errors.  Also copies full url to clipboard.}
 
 \item{...}{Additional parameters or overrides passed to the Alpha Vantage API.
 For a list of parameters, visit the \href{https://www.alphavantage.co/documentation/}{Alpha Vantage API documentation}.}
@@ -42,7 +42,7 @@ Interface to alphavantage API.
 \details{
 \strong{The \code{av_fun} argument replaces the API parameter “function”} because function is a reserved name in R. All other arguments match the Alpha Vantage API parameters.
 
-\strong{There is no need to specify the \code{apikey}, \code{datatype}, or \code{outputsize} parameters} as arguments to av_get_pf(). Before using, you must set the API key using av_api_key("YOUR_API_KEY"). \code{outputsize} defaults to "full" unless overridden with "compact in \code{...}."
+\strong{There is no need to specify the \code{apikey}, \code{datatype}, \code{outputsize} or \code{entitlement} parameters} as arguments to av_get_pf(). Before using, you must set the API key using av_api_key("YOUR_API_KEY"). \code{outputsize} defaults to "full" unless overridden with "compact in \code{...}."
 
 \strong{Required parameters other than \code{symbol}} must be passed as named arguments via \code{...}.
 
@@ -58,6 +58,7 @@ into \code{from_currency} and \code{to_currency} API parameters. Usage example:
 \examples{
 \dontrun{
 av_api_key("YOUR_API_KEY")
+av_api_key("YOUR_API_KEY","delayed") if you have such access
 
 # example code
 

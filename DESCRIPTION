@@ -1,6 +1,6 @@
 Package: alphavantagepf
 Title: R wrapper for Alphavantage Financial Data API
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Derek", "Holmes", email = "derek@derekholmes.com", role = c("aut", "cre")),
     person("Matt", "Dancho", email = "mdancho@business-science.io", role = c("ctb"))

@@ -32,7 +32,16 @@ Vantage](https://www.alphavantage.co/).
 ``` r
 av_api_key("YOUR_API_KEY")
 print(av_api_key())
-#> [1] "YOUR_API_KEY"
+#> [1] "YOUR_API_KEY" NA
+```
+
+If you have paid access, include an additional argument with your
+entitlement status, e.g.
+
+``` r
+av_api_key("YOUR_API_KEY","delayed")
+print(av_api_key())
+#> [1] "YOUR_API_KEY" "delayed"
 ```
 
 ## Finding Functions and their defaults
@@ -54,6 +63,7 @@ av_funhelp("SERIES_INTRADAY")
 #> O> extended_hours
 #> O> month
 #> O> outputsize (default: compact)
+#> O> entitlement (default: {entitlement})
 #> NULL
 ```
 
@@ -179,10 +189,13 @@ av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
     full dataset, and can be overridden as a named parameter to the
     `av_get_pf()` call.
 
-2.  `symbol` is always returned in the output dataset, and defaults to
+2.  An additional parameter `entitlement` is added to the url if
+    specified in the `av_api_key()` call and relevant.
+
+3.  `symbol` is always returned in the output dataset, and defaults to
     the name of the `av_fun` call if no symbol is relevant.
 
-3.  There is no need to specify the `datatype` parameter as an argument
-    to `av_get()`. The function will return a tibble data frame.
+4.  There is no need to specify the `datatype` parameter as an argument
+    to `av_get()`. The function will return a data.table
 
-4.  Multiple symbols in one API call are currently unsupported.
+5.  Multiple symbols in one API call are currently unsupported.
