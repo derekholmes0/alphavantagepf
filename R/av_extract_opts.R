@@ -27,7 +27,7 @@ av_grep_opts<-function(indta, grepstring="F,M,call",mindays=3,startdt=Sys.Date()
   #"F(ront)|W(eek),[call|put|both]", deltarange=c(mindelta,maxdelta)
   # Narrow down options data based on expiration code and delta range
   grepopts <- strsplit(tolower(grepstring),",")[[1]]
-  optypes <- data.table::data.table('type'=c(data.table::fifelse(grepl("(call|all)",grepopts[3]),"call",NA_character_), data.table::fifelse(grepl("(put|all)",grepopts[3]),"put",NA_character_)))
+  optypes <- data.table::data.table('type'=c(data.table::fifelse(grepl("^(call|all)$",grepopts[3]),"call",NA_character_), data.table::fifelse(grepl("^(put|all)$",grepopts[3]),"put",NA_character_)))
   optypes <- optypes[!is.na('type')]
   matset <- dtmap[data.table::data.table(expiration=unique(indta$expiration)),on=.(DT_ENTRY==expiration)][,.('expiration'=DT_ENTRY,'optexp'=paste0(get("optexp"),"wk"))]
   matset <- matset[grepl(grepopts[2],get("optexp")) & expiration>=(startdt+mindays),]
