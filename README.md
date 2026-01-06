@@ -7,12 +7,9 @@
 
 <!-- badges: end -->
 
-A `data.table` centric R interface to the Alpha Vantage API, geared
-towards personal finance applications.
-
-The `alphavantagepf` package leverages the R `data.table` package to
-provide fast and organized data retrieval. Data is typically returned in
-“melted” or normalized forms
+A [data.table\`](https://github.com/Rdatatable/data.table) centric R
+interface to the Alpha Vantage API, geared towards personal finance
+applications. Data is typically returned in “melted” or normalized forms
 
 ## Installation
 
@@ -69,22 +66,21 @@ usage in pipes) and an Alphavantage “function” `av_fun`.
 
 ``` r
 av_get_pf("IBM","TIME_SERIES_INTRADAY") |> head()
-#> Key: <variable>
-#>    symbol    variable     ltype
-#>    <char>      <char>    <char>
-#> 1:    IBM Information character
-#>                                                                                                                                                                                         value_str
-#>                                                                                                                                                                                            <char>
-#> 1: Thank you for using Alpha Vantage! This is a premium endpoint. You may subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to instantly unlock all premium endpoints
-#>    value_num
-#>        <num>
-#> 1:        NA
+
+   symbol           timestamp  open  high   low close volume
+   <char>              <POSc> <num> <num> <num> <num>  <int>
+1:    IBM 2026-01-02 11:00:00   292   293   291   292 141979
+2:    IBM 2026-01-02 11:15:00   293   293   292   292 117760
+3:    IBM 2026-01-02 11:30:00   292   292   291   291  67820
+4:    IBM 2026-01-02 11:45:00   291   291   291   291  92434
+5:    IBM 2026-01-02 12:00:00   291   291   290   291 128306
+6:    IBM 2026-01-02 12:15:00   291   292   291   291 185174
 ```
 
 Note that data is returned in a `data.table`, which can be cast as
 tibbles as necessary.
 
-## More complex data and hepful data extractors.
+## More complex data and helpful data extractors.
 
 Some API calls return more complex data, i.e. data with strings,
 numbers, and nested data.frames collected together. By defauly,
@@ -95,16 +91,15 @@ category.
 
 ``` r
 av_get_pf("","TOP_GAINERS_LOSERS")
-#> Key: <variable>
-#>                symbol    variable   ltype
-#>                <char>      <char>  <char>
-#> 1: TOP_GAINERS_LOSERS Information numeric
-#>                                                                                                                                                                                                                                                                                                                                                   value_str
-#>                                                                                                                                                                                                                                                                                                                                                      <char>
-#> 1: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to any of the premium plans at https://www.alphavantage.co/premium/ to lift the free key rate limit (25 requests per day), raise the per-second burst limit, and instantly unlock all premium endpoints
-#>    value_num
-#>        <num>
-#> 1:         1
+
+Key: <variable>
+               symbol             variable     ltype           value_df                                value_str value_num
+               <char>               <char>    <char>             <list>                                   <char>     <num>
+1: TOP_GAINERS_LOSERS         last_updated   numeric             [NULL]           2026-01-05 16:15:59 US/Eastern      2026
+2: TOP_GAINERS_LOSERS             metadata character             [NULL] Top gainers, losers, and most actively t        NA
+3: TOP_GAINERS_LOSERS most_actively_traded      list <data.frame[20x5]>                                     NULL        NA
+4: TOP_GAINERS_LOSERS          top_gainers      list <data.frame[20x5]>                                     NULL        NA
+5: TOP_GAINERS_LOSERS           top_losers      list <data.frame[20x5]>                                     NULL        NA
 ```
 
 - Note that symbol for `TOP_GAINERS_LOSERS` isn’t used, but still needs
@@ -121,13 +116,13 @@ piped into the `av_extract_df()` function:
 
 ``` r
 av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
-#> Warning: `type_convert()` only converts columns of type 'character'.
-#> - `df` has no columns of type 'character'
-#> Warning: `type_convert()` only converts columns of type 'character'.
-#> - `df` has no columns of type 'character'
-#>    symbol
-#>    <char>
-#> 1:   <NA>
+
+    <char>   <num>         <num>            <char>     <num>             <char>
+ 1:    OCG  0.0378       -0.0654         -63.3721% 216078762 TOP_GAINERS_LOSERS
+ 2:   ZBIO 16.6100      -17.8900         -51.8551%   8034469 TOP_GAINERS_LOSERS
+ 3:    SGN  0.4627       -0.4873         -51.2947%   2115079 TOP_GAINERS_LOSERS
+ 4:  HYT^#  0.0186       -0.0164         -46.8571%    126059 TOP_GAINERS_LOSERS
+ 5:  LVROW  0.0122       -0.0079         -39.3035%     10967 TOP_GAINERS_LOSERS
 ```
 
 ## Other extracting helper examples
@@ -140,12 +135,12 @@ and can be simplified with
 ``` r
 # REAL-TIME QUOTE
 av_get_pf("USD/BRL","CURRENCY_EXCHANGE_RATE") |> av_extract_fx()
-```
 
-    Key: <symbol>
-        symbol   Ask   Bid      QuoteTimestamp   Mid
-        <char> <num> <num>              <POSc> <num>
-    1: USD/BRL  5.37  5.37 2026-01-06 15:47:46  5.37
+Key: <symbol>
+    symbol   Ask   Bid      QuoteTimestamp   Mid
+    <char> <num> <num>              <POSc> <num>
+1: USD/BRL  5.37  5.37 2026-01-06 15:47:46  5.37
+```
 
 ## Options
 
@@ -162,13 +157,13 @@ maturity, use
 
 ``` r
 av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
-```
 
-       symbol         contractID expiration strike   type  last  mark   bid bid_size   ask ask_size volume open_interest       date implied_volatility  delta  gamma  theta   vega     rho
-       <char>             <char>     <IDat>  <num> <char> <num> <num> <num>    <int> <num>    <int>  <int>         <int>     <IDat>              <num>  <num>  <num>  <num>  <num>   <num>
-    1:    IBM IBM260116P00277500 2026-01-16    278    put  0.00  0.80  0.67      158  0.94      254      0            33 2026-01-05              0.298 -0.110 0.0123 -0.127 0.0961 -0.0100
-    2:    IBM IBM260116P00280000 2026-01-16    280    put  0.98  0.96  0.90      180  1.02       10    111          1443 2026-01-05              0.278 -0.130 0.0149 -0.133 0.1085 -0.0119
-    3:    IBM IBM260116P00282500 2026-01-16    282    put  1.32  1.29  1.17      213  1.41      158     14           272 2026-01-05              0.269 -0.165 0.0181 -0.150 0.1272 -0.0150
+   symbol         contractID expiration strike   type  last  mark   bid bid_size   ask ask_size volume open_interest       date implied_volatility  delta  gamma  theta   vega     rho
+   <char>             <char>     <IDat>  <num> <char> <num> <num> <num>    <int> <num>    <int>  <int>         <int>     <IDat>              <num>  <num>  <num>  <num>  <num>   <num>
+1:    IBM IBM260116P00277500 2026-01-16    278    put  0.00  0.80  0.67      158  0.94      254      0            33 2026-01-05              0.298 -0.110 0.0123 -0.127 0.0961 -0.0100
+2:    IBM IBM260116P00280000 2026-01-16    280    put  0.98  0.96  0.90      180  1.02       10    111          1443 2026-01-05              0.278 -0.130 0.0149 -0.133 0.1085 -0.0119
+3:    IBM IBM260116P00282500 2026-01-16    282    put  1.32  1.29  1.17      213  1.41      158     14           272 2026-01-05              0.269 -0.165 0.0181 -0.150 0.1272 -0.0150
+```
 
 ## Important Notes: av_get_pf()
 

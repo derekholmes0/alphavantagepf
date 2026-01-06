@@ -44,11 +44,68 @@ Required parameters are listed with "R" and optional parameters (and any default
 
 ## Getting Data from Alpha Vantage
 
-Once the API key has been set, use the function `av_get_pf()` which requires at minimum two arguments, a `symbol` (put first to facilitate usage in pipes) and an Alphavantage "function" `av_fun`. 
+Once the API key has been set, use the function `av_get_pf()` which requires at minimum two arguments, a `symbol` (put first to facilitate usage in pipes) and an Alphavantage "function" `av_fun`.
+
+The resulting output will be a `data.table` that depends on the type of data requested.  (Note that data is returned in a `data.table`, which can be cast as tibbles as necessary.)
+
+The output will always include the `symbol` requested or the name of the `av_fun` used if a symbol isn't relevent.  If that variable isn't wanted (e.g. when called within a grouping function `group_by(symbol) |> do({})` then set `symbolvarnm=""`.
+
+* If the data is a time series, the columns will all have the same type, and will be passed along unchanged. 
+* Most other data will be a long-form (melted) datatable with at least the following columns:
+
+1. `symbol` will either be the symbol requested or the value of `av_fun` if a symbol isn't relevant.  
+
+2. `variable` which is the name of the data item
+
+3. `value_str`, `value_num` and/or `value_df` which will contain strings (converted to numeric if possible) or (in the case of `value_df`) a nested data.frame.
+
+4. `ltype` is the inferred data-type, helpful for selecting the correct columns.
 
 
-```{r}
+## Examples
+
+### Time series data
+
+```{r, eval=F}
 av_get_pf("IBM","TIME_SERIES_INTRADAY") |> head()
+
+   symbol  timestamp  open  high   low close   volume
+   <char>     <IDat> <num> <num> <num> <num>    <int>
+1:    IBM 1999-11-01  98.5  98.8  96.4  96.8  9551800
+2:    IBM 1999-11-02  96.8  96.8  93.7  94.8 11105400
 ```
 
-Note that data is returned in a `data.table`, which can be cast as tibbles as necessary.  
+### Mixed use data
+
+```{r, eval=F}
+av_get_pf("","TOP_GAINERS_LOSERS")
+
+Key: <variable>
+               symbol             variable     ltype           value_df                                value_str value_num
+               <char>               <char>    <char>             <list>                                   <char>     <num>
+1: TOP_GAINERS_LOSERS         last_updated   numeric             [NULL]           2026-01-05 16:15:59 US/Eastern      2026
+2: TOP_GAINERS_LOSERS             metadata character             [NULL] Top gainers, losers, and most actively t        NA
+3: TOP_GAINERS_LOSERS most_actively_traded      list <data.frame[20x5]>                                     NULL        NA
+4: TOP_GAINERS_LOSERS          top_gainers      list <data.frame[20x5]>                                     NULL        NA
+5: TOP_GAINERS_LOSERS           top_losers      list <data.frame[20x5]>                                     NULL        NA
+```
+
+
+## Helpers: `av_extract_df`
+
+Extracting the nested data.frames can be a tedious task, so the helper function `av_extract_df()` can be used to filter for the correct variable and extract the data.frame
+
+```{r, eval=F}
+av_get_pf("","TOP_GAINERS_LOSERS")  |> av_extract_df("top_losers")
+
+Key: <variable>
+               symbol             variable     ltype           value_df                                value_str value_num
+               <char>               <char>    <char>             <list>                                   <char>     <num>
+1: TOP_GAINERS_LOSERS         last_updated   numeric             [NULL]           2026-01-05 16:15:59 US/Eastern      2026
+2: TOP_GAINERS_LOSERS             metadata character             [NULL] Top gainers, losers, and most actively t        NA
+3: TOP_GAINERS_LOSERS most_actively_traded      list <data.frame[20x5]>                                     NULL        NA
+4: TOP_GAINERS_LOSERS          top_gainers      list <data.frame[20x5]>                                     NULL        NA
+5: TOP_GAINERS_LOSERS           top_losers      list <data.frame[20x5]>                                     NULL        NA
+```
+
+

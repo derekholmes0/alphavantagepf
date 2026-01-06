@@ -18,9 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-A `data.table` centric R interface to the Alpha Vantage API, geared towards personal finance applications.
-
-The `alphavantagepf` package leverages the R `data.table` package to provide fast and organized data retrieval.  Data is typically returned in "melted" or normalized forms
+A [data.table`](https://github.com/Rdatatable/data.table) centric R interface to the Alpha Vantage API, geared towards personal finance applications.  Data is typically returned in "melted" or normalized forms
 
 
 ## Installation
@@ -62,20 +60,37 @@ Required parameters are listed with "R" and optional parameters (and any default
 Once the API key has been set, use the function `av_get_pf()` which requires at minimum two arguments, a `symbol` (put first to facilitate usage in pipes) and an Alphavantage "function" `av_fun`. 
 
 
-```{r}
+```{r, eval=F}
 av_get_pf("IBM","TIME_SERIES_INTRADAY") |> head()
+
+   symbol           timestamp  open  high   low close volume
+   <char>              <POSc> <num> <num> <num> <num>  <int>
+1:    IBM 2026-01-02 11:00:00   292   293   291   292 141979
+2:    IBM 2026-01-02 11:15:00   293   293   292   292 117760
+3:    IBM 2026-01-02 11:30:00   292   292   291   291  67820
+4:    IBM 2026-01-02 11:45:00   291   291   291   291  92434
+5:    IBM 2026-01-02 12:00:00   291   291   290   291 128306
+6:    IBM 2026-01-02 12:15:00   291   292   291   291 185174
 ```
 
 Note that data is returned in a `data.table`, which can be cast as tibbles as necessary.  
 
-
-## More complex data and hepful data extractors.
+## More complex data and helpful data extractors.
 
 Some API calls return more complex data, i.e. data with strings, numbers, and nested data.frames collected together.  By defauly, `av_get_pf()` returns everything the API returns, but in 
 a long form with columns for returned variables and each data type.  For example, the `TOP_GAINERS_LOSERS` function returns separate data.frames for each category.
 
-```{r}
+```{r, eval=F}
 av_get_pf("","TOP_GAINERS_LOSERS")
+
+Key: <variable>
+               symbol             variable     ltype           value_df                                value_str value_num
+               <char>               <char>    <char>             <list>                                   <char>     <num>
+1: TOP_GAINERS_LOSERS         last_updated   numeric             [NULL]           2026-01-05 16:15:59 US/Eastern      2026
+2: TOP_GAINERS_LOSERS             metadata character             [NULL] Top gainers, losers, and most actively t        NA
+3: TOP_GAINERS_LOSERS most_actively_traded      list <data.frame[20x5]>                                     NULL        NA
+4: TOP_GAINERS_LOSERS          top_gainers      list <data.frame[20x5]>                                     NULL        NA
+5: TOP_GAINERS_LOSERS           top_losers      list <data.frame[20x5]>                                     NULL        NA
 ```
 
 * Note that symbol for `TOP_GAINERS_LOSERS` isn't used, but still needs to be specified.
@@ -84,8 +99,15 @@ The data is separated out by type so further delisting doesn't have to be done a
 
 If you want to just get, e.g. the top losers, the returned data can be piped into the `av_extract_df()` function:
 
-```{r}
+```{r, eval=F}
 av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
+
+    <char>   <num>         <num>            <char>     <num>             <char>
+ 1:    OCG  0.0378       -0.0654         -63.3721% 216078762 TOP_GAINERS_LOSERS
+ 2:   ZBIO 16.6100      -17.8900         -51.8551%   8034469 TOP_GAINERS_LOSERS
+ 3:    SGN  0.4627       -0.4873         -51.2947%   2115079 TOP_GAINERS_LOSERS
+ 4:  HYT^#  0.0186       -0.0164         -46.8571%    126059 TOP_GAINERS_LOSERS
+ 5:  LVROW  0.0122       -0.0079         -39.3035%     10967 TOP_GAINERS_LOSERS
 ```
 
 ## Other extracting helper examples
@@ -97,9 +119,7 @@ The returned data from the `CURRENCY_EXCHANGE_RATE` is a bit complex, and can be
 ```{r, eval=F}
 # REAL-TIME QUOTE
 av_get_pf("USD/BRL","CURRENCY_EXCHANGE_RATE") |> av_extract_fx()
-```
 
-```
 Key: <symbol>
     symbol   Ask   Bid      QuoteTimestamp   Mid
     <char> <num> <num>              <POSc> <num>
@@ -119,9 +139,7 @@ So, for example, to get the closest monthly puts with at least 2 days to maturit
 
 ```{r, eval=F}
 av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
-```
 
-```
    symbol         contractID expiration strike   type  last  mark   bid bid_size   ask ask_size volume open_interest       date implied_volatility  delta  gamma  theta   vega     rho
    <char>             <char>     <IDat>  <num> <char> <num> <num> <num>    <int> <num>    <int>  <int>         <int>     <IDat>              <num>  <num>  <num>  <num>  <num>   <num>
 1:    IBM IBM260116P00277500 2026-01-16    278    put  0.00  0.80  0.67      158  0.94      254      0            33 2026-01-05              0.298 -0.110 0.0123 -0.127 0.0961 -0.0100

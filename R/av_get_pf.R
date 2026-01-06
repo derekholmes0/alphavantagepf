@@ -8,7 +8,7 @@
 #' See parameter "symbol" in [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
 #' @param av_fun A character string matching an appropriate Alpha Vantage "function".
 #' See parameter "function" in [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
-#' @param symbolvarnm (default: `symbol`) Variable name of symbol requested inn output
+#' @param symbolvarnm (default: `symbol`) Variable name which has the `symbol` requested.  Set to a blank string
 #' @param dfonerror (default: TRUE) Return an empty data.table when any error occurs
 #' @param verbose (default: FALSE) Print debug information helpful for errors
 #' @param melt  (default: TRUE) Return molten output.

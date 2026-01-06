@@ -21,7 +21,7 @@ See parameter "symbol" in \href{https://www.alphavantage.co/documentation/}{Alph
 \item{av_fun}{A character string matching an appropriate Alpha Vantage "function".
 See parameter "function" in \href{https://www.alphavantage.co/documentation/}{Alpha Vantage API documentation}.}
 
-\item{symbolvarnm}{(default: \code{symbol}) Variable name of symbol requested inn output}
+\item{symbolvarnm}{(default: \code{symbol}) Variable name which has the \code{symbol} requested.  Set to a blank string}
 
 \item{dfonerror}{(default: TRUE) Return an empty data.table when any error occurs}
 
