@@ -13,7 +13,7 @@ av_grep_opts(
 )
 }
 \arguments{
-\item{indta}{A data.table as returned by av_get()}
+\item{indta}{A data.table as returned by \code{\link[=av_get_pf]{av_get_pf()}}}
 
 \item{grepstring}{(default \verb{F,M,call}) Three item string to select maturities and option types from \code{indta}.  Each item is an abbreviated code for what to select.
 \itemize{

@@ -1,0 +1,54 @@
+---
+title: "usage-alphvantagepf"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{usage-alphvantagepf}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+**Alphavantagepf** interfaces the Alphavantage API to R in a way most compatible with normalized data stores.  It returns data in `data.table` format, which is really
+the best choice for financial time series analysis.
+
+
+```{r setup}
+library(alphavantagepf)
+```
+
+There is one main function to call to access all of the API functionality provided by Alphavantage.
+
+# Start with API keys
+
+
+```{r}
+av_api_key("YOUR_API_KEY")
+print(av_api_key())
+```
+
+## Finding Functions and their defaults""
+
+To find parameters and defaults provided by the `alphavantagepf` package, use `av_funhelp()`
+
+```{r}
+av_funhelp("SERIES_INTRADAY")
+```
+
+Required parameters are listed with "R" and optional parameters (and any default provided by this package) are listed with "O"
+
+
+## Getting Data from Alpha Vantage
+
+Once the API key has been set, use the function `av_get_pf()` which requires at minimum two arguments, a `symbol` (put first to facilitate usage in pipes) and an Alphavantage "function" `av_fun`. 
+
+
+```{r}
+av_get_pf("IBM","TIME_SERIES_INTRADAY") |> head()
+```
+
+Note that data is returned in a `data.table`, which can be cast as tibbles as necessary.  

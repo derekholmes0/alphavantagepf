@@ -1,6 +1,6 @@
 Package: alphavantagepf
 Title: R wrapper for Alphavantage Financial Data API
-Version: 0.0.0.9000
+Version: 0.0.9
 Authors@R: c(
     person("Derek", "Holmes", email = "derek@derekholmes.com", role = c("aut", "cre")),
     person("Matt", "Dancho", email = "mdancho@business-science.io", role = c("ctb"))
@@ -25,7 +25,9 @@ Imports:
     tidyr (>= 0.6.3)
 Suggests:
     testthat,
-    knitr
+    knitr,
+    rmarkdown
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 LazyData: true
+VignetteBuilder: knitr
