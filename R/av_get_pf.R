@@ -132,7 +132,9 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melt=T
     if(verbose) {
         urlset = strsplit(url,"&")[[1]]
         zz=lapply(urlset, \(x) message(sprintf("%-45s",strsplit(x,"=")[[1]])))
-        message("> response: ",httr::status_code(response), " type: ",content_type)
+        message("> response: ",httr::status_code(response), " type: ",content_type, "... url copied to clipboard")
+        write.table(url, file="clipboard", row.names = F, col.names=F)
+
     }
 
     # Handle bad status codes errors
