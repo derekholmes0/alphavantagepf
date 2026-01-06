@@ -3,7 +3,6 @@
 #' @name av_get_pf
 #' @description Interface to alphavantage API.
 #'
-#'
 #' @param symbol A character string of an appropriate stock, fund, or currency
 #' See parameter "symbol" in [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
 #' @param av_fun A character string matching an appropriate Alpha Vantage "function".

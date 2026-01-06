@@ -7,7 +7,7 @@
 
 <!-- badges: end -->
 
-A [data.table\`](https://github.com/Rdatatable/data.table) centric R
+A [data.table](https://github.com/Rdatatable/data.table) centric R
 interface to the Alpha Vantage API, geared towards personal finance
 applications. Data is typically returned in “melted” or normalized forms
 
@@ -35,10 +35,12 @@ print(av_api_key())
 #> [1] "YOUR_API_KEY"
 ```
 
-## Finding Functions and their defaults””
+## Finding Functions and their defaults
 
 To find parameters and defaults provided by the `alphavantagepf`
-package, use `av_funhelp()`
+package, use `av_funhelp()` and refer to the Alphavantage API calling
+conventions in [Alphavantage API
+documentation](https://www.alphavantage.co/documentation/)
 
 ``` r
 av_funhelp("SERIES_INTRADAY")
@@ -147,13 +149,18 @@ Key: <symbol>
 The `HISTORICAL_OPTIONS` function returns a large set of options for any
 given ticker, many of which are long dated or have no opent interest.
 The `av_grep_opts()` helper can be used to narrow those down using a
-comma-separated string specifying 1. How far out maturities should be
-returned, e.g. Front Month or Back month 2. What expiration schedules
-should be used, e.g. “Q” for Quarterly or “M” for monthlies. 3. Calls or
-Puts.
+comma-separated string specifying
+
+1.  How far out maturities should be returned, e.g. Front Month (F) or
+    Back month (B) or all (A)
+
+2.  What expiration schedules should be used, e.g. (Q) for Quarterly
+    or (M) for monthlies.
+
+3.  “Call”, “Put” or “all”
 
 So, for example, to get the closest monthly puts with at least 2 days to
-maturity, use
+maturity, use the tring
 
 ``` r
 av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
