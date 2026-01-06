@@ -4,38 +4,34 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, echo = FALSE}
+```{r, include = FALSE}
 knitr::opts_chunk$set(
-    message = F,
-    warning = F,
-    collapse = TRUE,
-    comment = "#>",
-    fig.path = "README-"
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
 )
 ```
 
+# alphavantagepf
 
-# alphavantagepf 
+<!-- badges: start -->
+<!-- badges: end -->
 
-> A data.table centric R interface to the Alpha Vantage API, geared towards personal finance applications.
-
-## Alpha Vantage
-
-Alpha Vantage is a financial markets data provider which provides limited __free data__ and higher bandwidth and real-time quotes for reasonable costs.  For further details, see 
-[Alpha Vantage](https://www.alphavantage.co/) where API keys can be obtained.
-
-Data is obtained from the API by using key functions, descriptions of which can be obtained using [Alphavantage documentation](https://www.alphavantage.co/documentation/)
-
-
-## R Interface: Getting Started
+A `data.table` centric R interface to the Alpha Vantage API, geared towards personal finance applications.
 
 The `alphavantagepf` package leverages the R `data.table` package to provide fast and organized data retrieval.  Data is typically returned in "melted" or normalized forms
 
-To get started, install the package from from GitHub:
 
-```{r, eval = F}
-devtools::install_github("derekholmes0/alphavantagepf")
+## Installation
+
+You can install the development version of alphavantagepf from 
+
+``` r
+# install.packages("pak")
+pak::pak("derekholmes0/alphavantagepf")
 ```
+
 
 Load the package.
 
@@ -142,3 +138,4 @@ av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
 3. There is no need to specify the `datatype` parameter as an argument to `av_get()`. The function will return a tibble data frame. 
 
 4. Multiple symbols in one API call are currently unsupported.
+
