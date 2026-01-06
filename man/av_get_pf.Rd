@@ -21,7 +21,7 @@ See parameter "symbol" in \href{https://www.alphavantage.co/documentation/}{Alph
 \item{av_fun}{A character string matching an appropriate Alpha Vantage "function".
 See parameter "function" in \href{https://www.alphavantage.co/documentation/}{Alpha Vantage API documentation}.}
 
-\item{symbolvarnm}{(default: \code{symbol}) Variable name which has the \code{symbol} requested.  Set to a blank string}
+\item{symbolvarnm}{(default: \code{symbol}) Variable name which has the \code{symbol} requested.  Set to a blank string if not wanted.}
 
 \item{dfonerror}{(default: TRUE) Return an empty data.table when any error occurs}
 
@@ -53,7 +53,7 @@ Interface to alphavantage API.
 \strong{ForEx "FROM/TO" symbol details.} FOREX symbols in the \code{av_get_pf()} function are
 supplied in \code{"FROM/TO"} format, which are then parsed in the Alpha Vantage API
 into \code{from_currency} and \code{to_currency} API parameters. Usage example:
-\code{av_get_pf(symbol = "EUR/USD", av_fun = "FX_DAILY")}
+\code{av_get_pf("USD/BRL", "FX_DAILY")}
 }
 \examples{
 \dontrun{

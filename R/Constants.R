@@ -23,7 +23,7 @@ av_make_funcmap <- function() {
         tidyr::separate(paramname,c("paramname","def_value"),sep="=",fill="right",extra="merge") |>
         data.table::data.table(key=c("av_fn","paramname")) |> dplyr::arrange(av_fn,variable)
     # hasssymbol needed to add function name to returned data.
-    symbolsanyway <- c("CURRENCY_EXCHANGE_RATE","CRYPTO_INTRADAY","FX_INTRADAY")
+    symbolsanyway <- c("CURRENCY_EXCHANGE_RATE","CRYPTO_INTRADAY","FX_INTRADAY","FX_DAILY","FX_WEEKLY","FX_MONTHLY")
     f_w_symbols <- av_funcmap[paramname=="symbol",.(hassymbol=(.N>0)),by=.(av_fn)]
     av_funcmap <- f_w_symbols[av_funcmap,on=.(av_fn)][,':='(hassymbol=data.table::fcoalesce(hassymbol,data.table::fifelse(av_fn %in% symbolsanyway,TRUE,FALSE)))][]
     av_nofunc <- av_funclist[!av_funcmap[,.N,by=.(category,av_fn)],on=.(av_fn)][,':='(hassymbol=FALSE)]

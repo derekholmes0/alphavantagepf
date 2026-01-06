@@ -8,7 +8,7 @@
 #' See parameter "symbol" in [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
 #' @param av_fun A character string matching an appropriate Alpha Vantage "function".
 #' See parameter "function" in [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
-#' @param symbolvarnm (default: `symbol`) Variable name which has the `symbol` requested.  Set to a blank string
+#' @param symbolvarnm (default: `symbol`) Variable name which has the `symbol` requested.  Set to a blank string if not wanted.
 #' @param dfonerror (default: TRUE) Return an empty data.table when any error occurs
 #' @param verbose (default: FALSE) Print debug information helpful for errors
 #' @param melt  (default: TRUE) Return molten output.
@@ -35,7 +35,7 @@
 #' __ForEx "FROM/TO" symbol details.__ FOREX symbols in the `av_get_pf()` function are
 #' supplied in `"FROM/TO"` format, which are then parsed in the Alpha Vantage API
 #' into `from_currency` and `to_currency` API parameters. Usage example:
-#' `av_get_pf(symbol = "EUR/USD", av_fun = "FX_DAILY")`
+#' `av_get_pf("USD/BRL", "FX_DAILY")`
 #'
 #'
 #' @examples
