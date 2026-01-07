@@ -30,7 +30,6 @@ You can install the development version of alphavantagepf from
 pak::pak("derekholmes0/alphavantagepf")
 ```
 
-
 Load the package.
 
 ```{r}
@@ -60,7 +59,6 @@ av_funhelp("SERIES_INTRADAY")
 
 Required parameters are listed with "R" and optional parameters (and any default provided by this package) are listed with "O"
 
-
 ## Getting Data from Alpha Vantage
 
 Once the API key has been set, use the function `av_get_pf()` which requires at minimum two arguments, a `symbol` (put first to facilitate usage in pipes) and an Alphavantage "function" `av_fun`. 
@@ -73,18 +71,15 @@ av_get_pf("IBM","TIME_SERIES_INTRADAY") |> head()
    <char>              <POSc> <num> <num> <num> <num>  <int>
 1:    IBM 2026-01-02 11:00:00   292   293   291   292 141979
 2:    IBM 2026-01-02 11:15:00   293   293   292   292 117760
-3:    IBM 2026-01-02 11:30:00   292   292   291   291  67820
-4:    IBM 2026-01-02 11:45:00   291   291   291   291  92434
-5:    IBM 2026-01-02 12:00:00   291   291   290   291 128306
-6:    IBM 2026-01-02 12:15:00   291   292   291   291 185174
 ```
 
 Note that data is returned in a `data.table`, which can be cast as tibbles as necessary.  
 
 ## More complex data and helpful data extractors.
 
-Some API calls return more complex data, i.e. data with strings, numbers, and nested data.frames collected together.  By defauly, `av_get_pf()` returns everything the API returns, but in 
-a long form with columns for returned variables and each data type.  For example, the `TOP_GAINERS_LOSERS` function returns separate data.frames for each category.
+Some API calls return more complex data, i.e. data with strings, numbers, and nested data.frames collected together.  The `av_get_pf()` returns data in as natural a format as possible.  For example, time series are not melted, but single name quotes are.  The parameter to control this is `melted` with a default value of "melted".  `melted` can be set to TRUE (for example) to force or suppress melting into longer data.tables.
+
+As an example where the melted form makes more sense is the `TOP_GAINERS_LOSERS` function, which returns separate data.frames for each category.  The natural output is
 
 ```{r, eval=F}
 av_get_pf("","TOP_GAINERS_LOSERS")
@@ -116,6 +111,40 @@ av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
  5:  LVROW  0.0122       -0.0079         -39.3035%     10967 TOP_GAINERS_LOSERS
 ```
 
+## Using defaults and overrides
+
+The `alphavantagepf` package includes a few default overrides to the defaults chosen in [Alphavantage API documentation](https://www.alphavantage.co/documentation/).  Those defaults can be seen using the 
+`av_funhelp()` function, or can be seen by calling `av_get_pf()` with `verbose=TRUE`.  Any overrides to those parameters can be specified as additional arguments to `av_get_pf()`.  For example, to get SMA using multiple
+horizon lengths can be seen below:
+
+```{r, eval=F}
+> av_get_pf("IBM","SMA",verbose=T)
+https://www.alphavantage.co/query?function   SMA                                          
+symbol                                       IBM                                          
+interval                                     daily                                        
+time_period                                  60                                           
+series_type                                  close                                        
+datatype                                     csv                                          
+> response: 200 type: application/x-download... url copied to clipboard
+      symbol       time   SMA
+      <char>     <IDat> <num>
+   1:    IBM 2026-01-06 300.0
+   2:    IBM 2026-01-05 299.7
+
+> av_get_pf("IBM","SMA",verbose=T,time_period=30)
+https://www.alphavantage.co/query?function   SMA                                          
+symbol                                       IBM                                          
+interval                                     daily                                        
+time_period                                  30                                           
+series_type                                  close                                        
+datatype                                     csv                                          
+> response: 200 type: application/x-download... url copied to clipboard
+      symbol       time   SMA
+      <char>     <IDat> <num>
+   1:    IBM 2026-01-06 304.1
+   2:    IBM 2026-01-05 303.7
+```
+
 ## Other extracting helper examples
 
 ### Foreign exchange
@@ -143,19 +172,58 @@ The `av_grep_opts()` helper can be used to narrow those down using a comma-separ
 
   3. "Call", "Put" or "all"
 
-
-So, for example, to get the closest monthly puts with at least 2 days to maturity, use the tring 
+So, for example, to get the closest monthly puts with at least 2 days to maturity, use the string "F,M,put".  The default is "F,M,call" and (partial) results are shown below:
 
 
 ```{r, eval=F}
 av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
 
-   symbol         contractID expiration strike   type  last  mark   bid bid_size   ask ask_size volume open_interest       date implied_volatility  delta  gamma  theta   vega     rho
-   <char>             <char>     <IDat>  <num> <char> <num> <num> <num>    <int> <num>    <int>  <int>         <int>     <IDat>              <num>  <num>  <num>  <num>  <num>   <num>
-1:    IBM IBM260116P00277500 2026-01-16    278    put  0.00  0.80  0.67      158  0.94      254      0            33 2026-01-05              0.298 -0.110 0.0123 -0.127 0.0961 -0.0100
-2:    IBM IBM260116P00280000 2026-01-16    280    put  0.98  0.96  0.90      180  1.02       10    111          1443 2026-01-05              0.278 -0.130 0.0149 -0.133 0.1085 -0.0119
-3:    IBM IBM260116P00282500 2026-01-16    282    put  1.32  1.29  1.17      213  1.41      158     14           272 2026-01-05              0.269 -0.165 0.0181 -0.150 0.1272 -0.0150
+   symbol         contractID expiration strike   type  last  mark   bid bid_size   ask ask_size volume open_interest ...
+   <char>             <char>     <IDat>  <num> <char> <num> <num> <num>    <int> <num>    <int>  <int>      ...
+1:    IBM IBM260116P00277500 2026-01-16    278    put  0.00  0.80  0.67      158  0.94      254      0      ...
+2:    IBM IBM260116P00280000 2026-01-16    280    put  0.98  0.96  0.90      180  1.02       10    111      ...
+3:    IBM IBM260116P00282500 2026-01-16    282    put  1.32  1.29  1.17      213  1.41      158     14      ...
 ```
+
+## Bulk data
+
+With the right entitlements and access, functions such as `REALTIME_BULK_QUOTES` can be used with multiple symbols at once.  In this case, the first argument `symbol` is
+just a list with the symbols requested.  The data is returned unmelted with symbols attached.
+
+```{r, eval=F}
+av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
+
+> av_get_pf(c("ORCL","Q","IBM","EWZ"),"REALTIME_BULK_QUOTES")
+   symbol           timestamp  open  high   low close   volume previous_close change change_percent extended_hours_quote
+   <char>              <POSc> <num> <num> <num> <num>    <int>          <num>  <num>          <num>               <lgcl>
+1:      Q 2026-01-07 15:43:06  ...
+2:    EWZ 2026-01-07 15:43:08  ...
+3:    IBM 2026-01-07 15:43:08  ...
+4:   ORCL 2026-01-07 15:43:08  ...
+
+```
+
+
+### Analytics requests
+
+Analytics requests using the Alphavantage function `ANALYTICS_FIXED_WINDOW` are complicated enough that they are returned in *raw form*, which includes meta-data.  These can be untangled using the extracting function `av_extract_analytics`.
+
+```{r, eval=F}
+ av_get_pf(c("ORCL","IBM"),"ANALYTICS_FIXED_WINDOW") |> av_extract_analytics(separate_vars=TRUE)
+ av_get_pf: Reurning raw output; send to appropriate helper ---------------------------- 
+             variable_1              variable_2 variable_3               value
+                 <char>                  <char>     <char>              <char>
+1:              symbols                    <NA>       <NA>            ORCL,IBM
+2:               min_dt                    <NA>       <NA>          2025-12-09
+3:               max_dt                    <NA>       <NA>          2026-01-06
+4:                 ohlc                    <NA>       <NA>               Close
+5:             interval                    <NA>       <NA>               DAILY
+6: RETURNS_CALCULATIONS       CUMULATIVE_RETURN       ORCL   -0.12540062294046
+7: RETURNS_CALCULATIONS       CUMULATIVE_RETURN        IBM -0.0257987632053596
+8: RETURNS_CALCULATIONS STDDEV(ANNUALIZED=TRUE)       ORCL   0.575380551599422
+9: RETURNS_CALCULATIONS STDDEV(ANNUALIZED=TRUE)        IBM   0.171846694713282
+```
+
 
 ## Important Notes: av_get_pf()
 
@@ -165,6 +233,6 @@ av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
 
 2. `symbol` is always returned in the output dataset, and defaults to the name of the `av_fun` call if no symbol is relevant.
 
-3. There is no need to specify the `datatype` parameter as an argument to `av_get()`. The function will return a data.table
+3. There is no need to specify the `datatype` parameter as an argument to `av_get_pf()`. The function will return a data.table
 
-4. Multiple symbols in one API call are currently unsupported.
+4. Some output above has been truncated to adhere to licensing rules.

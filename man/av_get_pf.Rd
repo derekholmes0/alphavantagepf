@@ -9,7 +9,7 @@ av_get_pf(
   av_fun,
   symbolvarnm = "symbol",
   dfonerror = TRUE,
-  melt = TRUE,
+  melted = "default",
   verbose = FALSE,
   ...
 )
@@ -25,7 +25,7 @@ See parameter "function" in \href{https://www.alphavantage.co/documentation/}{Al
 
 \item{dfonerror}{(default: TRUE) Return an empty data.table when any error occurs}
 
-\item{melt}{(default: TRUE) Return molten output.}
+\item{melted}{(default: "default") String specifying when to melt, "default" is chosen by the package, "TRUE|always" always melt, "FALSE|never" never melts}
 
 \item{verbose}{(default: FALSE) Print debug information helpful for errors.  Also copies full url to clipboard.}
 
@@ -71,11 +71,14 @@ av_get_pf("EWZ","ETF_PROFILE") |> av_extract_df("holdings")
 
 av_get_pf("","SYMBOL_SEARCH",keywords="COMMERCE")
 
-# ---- 2.0 SINGLE NAME QUOTES  ----
+# ---- 2.0 MARKET QUOTES  ----
 
 av_get_pf("IBM","GLOBAL_QUOTE")
 
 av_get_pf("USD/BRL","CURRENCY_EXCHANGE_RATE") |> av_extract_fx()
+
+av_get_pf(c("ORCL","IBM","EWZ","ARGT"),"REALTIME_BULK_QUOTES",melt=FALSE)
+# Note you need advanced permissioning for REALTIME_BULK_QUOTES
 
 # ---- 3.0 SINGLE NAME HISTORICAL DATA  ----
 
@@ -111,6 +114,10 @@ av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
 av_funhelp("SMA")  # Shows parameters and defaults chosen by this package.
 av_get_pf("IBM","SMA",time_period=20)
 
+# ---- 7.0 WINDOW ANALYTICS  ----
+
+av_get_pf(c("ORCL","IBM","EWZ","ARGT"),"ANALYTICS_FIXED_WINDOW",verbose=TRUE) |>
+            av_extract_analytics(separate_vars=TRUE)
 }
 
 }

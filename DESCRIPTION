@@ -1,6 +1,6 @@
 Package: alphavantagepf
 Title: R wrapper for Alphavantage Financial Data API
-Version: 0.1.1
+Version: 0.2.1
 Authors@R: c(
     person("Derek", "Holmes", email = "derek@derekholmes.com", role = c("aut", "cre")),
     person("Matt", "Dancho", email = "mdancho@business-science.io", role = c("ctb"))
@@ -21,7 +21,8 @@ Imports:
     stringr (>= 1.2.0),
     tibble (>= 1.3.3),
     timeDate (>= 4000.0),
-    lubridate (>= 1.0),
+    lubridate (>= 1.0.0),
+    utils (>= 4.0.0),
     tidyr (>= 0.6.3)
 Suggests:
     testthat,

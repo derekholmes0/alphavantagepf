@@ -10,7 +10,7 @@
 #' @param symbolvarnm (default: `symbol`) Variable name which has the `symbol` requested.  Set to a blank string if not wanted.
 #' @param dfonerror (default: TRUE) Return an empty data.table when any error occurs
 #' @param verbose (default: FALSE) Print debug information helpful for errors.  Also copies full url to clipboard.
-#' @param melt  (default: TRUE) Return molten output.
+#' @param melted  (default: "default") String specifying when to melt, "default" is chosen by the package, "TRUE|always" always melt, "FALSE|never" never melts
 #' @param ... Additional parameters or overrides passed to the Alpha Vantage API.
 #' For a list of parameters, visit the [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
 #'
@@ -53,11 +53,14 @@
 #'
 #' av_get_pf("","SYMBOL_SEARCH",keywords="COMMERCE")
 #'
-#' # ---- 2.0 SINGLE NAME QUOTES  ----
+#' # ---- 2.0 MARKET QUOTES  ----
 #'
 #' av_get_pf("IBM","GLOBAL_QUOTE")
 #'
 #' av_get_pf("USD/BRL","CURRENCY_EXCHANGE_RATE") |> av_extract_fx()
+#'
+#' av_get_pf(c("ORCL","IBM","EWZ","ARGT"),"REALTIME_BULK_QUOTES",melt=FALSE)
+#' # Note you need advanced permissioning for REALTIME_BULK_QUOTES
 #'
 #' # ---- 3.0 SINGLE NAME HISTORICAL DATA  ----
 #'
@@ -93,10 +96,14 @@
 #' av_funhelp("SMA")  # Shows parameters and defaults chosen by this package.
 #' av_get_pf("IBM","SMA",time_period=20)
 #'
+#' # ---- 7.0 WINDOW ANALYTICS  ----
+#'
+#' av_get_pf(c("ORCL","IBM","EWZ","ARGT"),"ANALYTICS_FIXED_WINDOW",verbose=TRUE) |>
+#'             av_extract_analytics(separate_vars=TRUE)
 #' }
 #'
 #' @export
-av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melt=TRUE,verbose=FALSE, ...) {
+av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted="default",verbose=FALSE, ...) {
 
     if (missing(symbol)) symbol <- NULL
     # Checks
@@ -112,7 +119,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melt=T
     dots$apikey      <- av_api_key()[1]
 
     # Forex
-    is_forex <- !is.null(symbol) && stringr::str_detect(symbol, "\\/")
+    is_forex <- !is.null(symbol) && stringr::str_detect(symbol[1], "\\/")
     if (is_forex) {
         currencies  <- symbol |> stringr::str_split_fixed("\\/", 2) |> as.vector()
         dots[c("from_currency","to_currency","from_symbol","to_symbol")] <- currencies[c(1,2,1,2)]
@@ -120,6 +127,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melt=T
     }
 
     # Generate URL
+    pset <- av_funcmap[get("av_fn")==av_fun,]
     url_params <-  av_form_param_url(av_fun,dots,t_entitlement=av_api_key()[2])
 
     if(is.null(url_params)) { # Missing something required
@@ -135,7 +143,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melt=T
         urlset = strsplit(url,"&")[[1]]
         zz=lapply(urlset, \(x) message(sprintf("%-45s",strsplit(x,"=")[[1]])))
         message("> response: ",httr::status_code(response), " type: ",content_type, "... url copied to clipboard")
-        write.table(url, file="clipboard", row.names = F, col.names=F)
+        utils::write.table(url, file="clipboard", row.names = F, col.names=F)
 
     }
 
@@ -153,11 +161,11 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melt=T
             message("av_get_pf:", content_list[[1]])
             return(data.frame())
         }
-
         # Detect good/bad call
         if (length(content_list)>0) {
-            if(content_list[1] |> names() == "Meta Data") {  # Good call with Metadata
-                stop(" Meta Data no longer received??")
+          if(content_list[1] |> names() == "meta_data") {  # Good call with Metadata returned
+                message(" av_get_pf: Reurning raw output; send to appropriate helper ---------------------------- ")
+                return(content_list)
             }
             else {  # Mixed results, process as best as possible
                 dt_types = data.table::data.table(ltype=c("character","list"),varnm=c("value_str","value_df"))
@@ -187,16 +195,19 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melt=T
             message("av_get_pf Error: ", content)
             return(data.table::data.table())
         }
-
-    } else { #  application/x-download
+    }
+    else { #  application/x-download
         # CSV Returned - Good Call - Time Series CSV file
         contx <- httr::content(response, as = "text", encoding = "UTF-8")
         content <- gsub("%", "",contx) |> data.table::fread(,na.strings=c(".","NA"))
-        if(nrow(content)==1 & melt==TRUE) {
-            content <- content |> melt_tobasetype(idvar=symbolvarnm)
+        if((melted=="default" &  pset[1,]$outform=="melt") | (as.character(melted) %in% c("always","TRUE"))) {
+          if(!(symbolvarnm %in% colnames(content))) {
+            content <- content[,c(symbolvarnm):=symbol]  # Need to do before melt
             }
+          content <- content |> melt_tobasetype(idvar=symbolvarnm)
+        }
     }
-    if( !av_funcmap[av_fn==av_fun][1,]$hassymbol ) {
+    if( !pset[1,]$hassymbol ) {
         content$symbol = av_fun
     }
     # Return desc
@@ -204,7 +215,10 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melt=T
         data.table::setorder(content,timestamp)
     }
     if(nchar(symbolvarnm)>0) {
-        data.table::setcolorder(content[,c(symbolvarnm):=symbol],c(symbolvarnm))
+      if(!(symbolvarnm %in% colnames(content))) {
+        content <- content[,c(symbolvarnm):=symbol]
+      }
+      data.table::setcolorder(content,c(symbolvarnm))
     }
     return(content[])
 }
@@ -227,13 +241,23 @@ melt_tobasetype <- function(dta,idvar="symbol",varname="variable") {
 
 av_form_param_url<- function(this_av_fn,dots,t_entitlement=NA_character_) {
     pset <- av_funcmap[get("av_fn")=="defaultparam" | get("av_fn")==this_av_fn,]
+    dtargs <- data.table::data.table(`paramname`=names(dots),`newval`= sapply(names(dots),\(x) paste(dots[[x]],collapse=",")))
+    # Entitlements
     if("entitlement" %in% pset$paramname) {
       if (!is.na(t_entitlement)) {
-        pset <- pset[get("paramname")=="entitlement",':='(def_value=t_entitlement)] }
+        pset <- pset[get("paramname")=="entitlement",':='(def_value=t_entitlement)]
+        }
       else {  # Take out if not needed or not entitled
-        pset <- pset[!(get("paramname")=="entitlement"),] }
+        pset <- pset[!(get("paramname")=="entitlement"),]
+        }
     }
-    pset <- data.table::data.table(`paramname`=names(dots),`newval`=unlist(dots))[pset,on=c("paramname")]
+    # copies of arguments, for Analytics windows, watch out for API case sensitivity
+    dcopies <- pset[get("ro")=="C",]
+    if(nrow(dcopies)>0) {
+        toadd <- dcopies[,.(paramname,newname=def_value)][dtargs,on=c("paramname"),nomatch=NULL][,.(paramname=get("newname"),newval=get("newval"))]
+        dtargs <- data.table::rbindlist(list(dtargs,toadd),fill=TRUE)
+    }
+    pset <- dtargs[pset[!get("ro")=="C",],on=c("paramname")]
     pset <- pset[,.(`paramname`=get("paramname"),`ro`=get("ro"),'value'=data.table::fcoalesce(get("newval"),get("def_value")))]
     missing_required = pset[get("ro")=="R" & is.na(value),] # get marginally faster
     if(nrow(missing_required)>0) {
