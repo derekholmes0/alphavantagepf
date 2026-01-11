@@ -31,3 +31,5 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 LazyData: true
 VignetteBuilder: knitr
+URL: https://github.com/derekholmes0/alphavantagepf
+BugReports: https://github.com/derekholmes0/alphavantagepf/issues
