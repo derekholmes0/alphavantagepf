@@ -29,7 +29,7 @@ av_grep_opts(
 \item{deltarange}{(default \code{c(0.1,0.55)}) Two number list with minimum and maximum absolute valued deltas to pass through.}
 }
 \value{
-A reduced set of options obtained from \code{\link[=av_get_pf]{av_get_pf()}} using \code{HISTORICAL_OPTIONS} function.
+A reduced set of options obtained from \code{\link[=av_get_pf]{av_get_pf()}} using Alphavantage \code{HISTORICAL_OPTIONS} function.
 }
 \description{
 Extract data from Alpha Vantage returned data
@@ -40,7 +40,7 @@ Extract data from Alpha Vantage returned data
 \examples{
 \dontrun{
 av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
-#' }
+}
 
 }
 \seealso{

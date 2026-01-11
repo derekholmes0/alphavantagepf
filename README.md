@@ -20,6 +20,12 @@ You can install the development version of alphavantagepf from
 pak::pak("derekholmes0/alphavantagepf")
 ```
 
+and the production version from CRAN
+
+``` r
+install.packages("alphavantagepf")
+```
+
 Load the package.
 
 ``` r

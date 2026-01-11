@@ -12,9 +12,7 @@
 #' @seealso [av_get_pf()]
 #'
 #' @examples
-#' \dontrun{
 #' av_funhelp("GLOBAL_QUOTE")
-#' }
 #'
 #' @export
 av_funhelp <- function(av_fun_grep="") {

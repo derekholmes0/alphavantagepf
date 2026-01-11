@@ -11,7 +11,7 @@
 #' @param melt Return data in melted/normalized form
 #' @param separate_vars (default : FALSE)  separate out multiple levels of variable names into new keys
 #'
-#' @returns Extracted data.table for nested data returned from [av_get_pf()], If `grepstring` is not specified, first nested table is returned. [av_extract_fx()] returns a shortened data.table with FX quotes.
+#' @returns Extracted data.tables for nested data returned from [av_get_pf()], If `grepstring` is not specified, first nested table is returned. [av_extract_fx()] returns a shortened data.table with FX quotes.
 #'
 #' @details [av_get_pf()] frequently returns a nested data.table, or a structure with nested data.frames.  These are utilities functions to extract, filter and summarize returned values.
 #'
@@ -22,7 +22,8 @@
 #' av_get_pf("","MARKET_STATUS")  |> av_extract_df()
 #' av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
 #' av_get_pf("USD/BRL","CURRENCY_EXCHANGE_RATE") |> av_extract_fx()
-#'#' }
+#' av_get_pf(c("ORCL","IBM"),"ANALYTICS_FIXED_WINDOW") |> av_extract_analytics(separate_vars=TRUE)
+#' }
 #'
 #' @rdname av_extract_df
 #' @export

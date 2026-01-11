@@ -22,7 +22,7 @@ av_extract_analytics(indta, separate_vars = FALSE)
 \item{separate_vars}{(default : FALSE)  separate out multiple levels of variable names into new keys}
 }
 \value{
-Extracted data.table for nested data returned from \code{\link[=av_get_pf]{av_get_pf()}}, If \code{grepstring} is not specified, first nested table is returned. \code{\link[=av_extract_fx]{av_extract_fx()}} returns a shortened data.table with FX quotes.
+Extracted data.tables for nested data returned from \code{\link[=av_get_pf]{av_get_pf()}}, If \code{grepstring} is not specified, first nested table is returned. \code{\link[=av_extract_fx]{av_extract_fx()}} returns a shortened data.table with FX quotes.
 }
 \description{
 \code{av_extract_df()} pulls out nested data.frames from mixed data returned by  \code{\link[=av_get_pf]{av_get_pf()}}
@@ -37,7 +37,8 @@ Extracted data.table for nested data returned from \code{\link[=av_get_pf]{av_ge
 av_get_pf("","MARKET_STATUS")  |> av_extract_df()
 av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
 av_get_pf("USD/BRL","CURRENCY_EXCHANGE_RATE") |> av_extract_fx()
-#' }
+av_get_pf(c("ORCL","IBM"),"ANALYTICS_FIXED_WINDOW") |> av_extract_analytics(separate_vars=TRUE)
+}
 
 }
 \seealso{

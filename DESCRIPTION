@@ -1,11 +1,11 @@
 Package: alphavantagepf
-Title: R wrapper for Alphavantage Financial Data API
-Version: 0.2.1
+Title: Comprehensive R wrapper for Alphavantage Financial Data API 
+Version: 0.3.0
 Authors@R: c(
-    person("Derek", "Holmes", email = "derek@derekholmes.com", role = c("aut", "cre")),
+    person("Derek", "Holmes", email = "derek@derekholmes.com", role = c("aut", "cre", "cph")),
     person("Matt", "Dancho", email = "mdancho@business-science.io", role = c("ctb"))
     )
-Description: Uses Alphavantage API to download financial data in reduced (melted) data.table objects.  Includes support functions to extract and simplify complex data returned from API calls.
+Description: Download Alphavantage financial data to reduced (melted) data.table objects.  Includes support functions to extract and simplify complex data returned from API calls.
 License: GPL (>= 3)
 Encoding: UTF-8
 Depends: 

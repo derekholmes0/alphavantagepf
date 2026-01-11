@@ -20,9 +20,7 @@ Extract data from Alpha Vantage retuned data
 Returns defaults and parameter lists for Alphavantage functions
 }
 \examples{
-\dontrun{
 av_funhelp("GLOBAL_QUOTE")
-}
 
 }
 \seealso{

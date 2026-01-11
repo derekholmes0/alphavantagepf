@@ -2,12 +2,9 @@
 % Please edit documentation in R/av_api_key.R
 \name{av_api_key}
 \alias{av_api_key}
-\alias{av_validkey}
 \title{Set the Alpha Vantage API Key}
 \usage{
 av_api_key(api_key, entitlement = NULL)
-
-av_validkey()
 }
 \arguments{
 \item{api_key}{A character string with your Alpha Vantage API Key.}
@@ -19,7 +16,6 @@ Invisibly returns two item list with API key and entitlement string once set). U
 }
 \description{
 \code{av_api_key()} sets Alphavantage API key and entitlement code
-\code{av_validkey()} returns TRUE if Alphavantage API key appears valid.
 }
 \details{
 The Alpha Vantage API key must be set prior to using \code{\link[=av_get_pf]{av_get_pf()}}. You can obtain

@@ -11,7 +11,7 @@
 #' @param mindays (default 3). Minimum number of days to expiration to be passed through from `startdt`
 #' @param startdt (default `Sys.Date()`). Date from which expirations will be considered.
 #'
-#' @returns A reduced set of options obtained from [av_get_pf()] using `HISTORICAL_OPTIONS` function.
+#' @returns A reduced set of options obtained from [av_get_pf()] using Alphavantage `HISTORICAL_OPTIONS` function.
 #'
 #' @details [av_get_pf()] returns a large list of options.  This function helps to narrow down the list by maturity and moneyness.
 #'
@@ -20,7 +20,7 @@
 #' @examples
 #' \dontrun{
 #' av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
-#'#' }
+#' }
 #'
 #' @export
 av_grep_opts<-function(indta, grepstring="F,M,call",mindays=3,startdt=Sys.Date(),deltarange=c(0.1,0.55)) {

@@ -3,7 +3,6 @@
 #' @name av_api_key
 #' @description
 #' `av_api_key()` sets Alphavantage API key and entitlement code
-#' `av_validkey()` returns TRUE if Alphavantage API key appears valid.
 #'
 #' @param api_key A character string with your Alpha Vantage API Key.
 #' @param entitlement A character string with your Alpha Vantage entitlement status.  If not "delayed" or "realtime" entitlement not added to API string.
@@ -36,6 +35,3 @@ av_api_key <- function(api_key,entitlement=NULL) {
   invisible(c(getOption('av_api_key'),getOption('av_api_entitlement',default=NA_character_)))
 }
 
-#' @rdname av_api_key
-#' @export
-av_validkey <- function() { nchar(getOption('av_api_key'))>10 }
