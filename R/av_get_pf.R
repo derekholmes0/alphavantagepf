@@ -259,6 +259,7 @@ av_form_param_url<- function(this_av_fn,dots,t_entitlement=NA_character_) {
     }
     pset <- dtargs[pset[!get("ro")=="C",],on=c("paramname")]
     pset <- pset[,.(`paramname`=get("paramname"),`ro`=get("ro"),'value'=data.table::fcoalesce(get("newval"),get("def_value")))]
+    pset <- pset[nchar(value)>0,]
     missing_required = pset[get("ro")=="R" & is.na(value),] # get marginally faster
     if(nrow(missing_required)>0) {
         message("av_form_param_url: ERROR ",this_av_fn," missing required parameters: ", paste0(missing_required$paramname,collapse=", "))
