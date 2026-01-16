@@ -1,3 +1,7 @@
+# alphavantagepf 0.3.2
+
+* CRAN feedback addressed
+
 # alphavantagepf 0.3.1
 
 * Filters NULL inputs from url creation.

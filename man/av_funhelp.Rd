@@ -4,11 +4,13 @@
 \alias{av_funhelp}
 \title{Extract data from Alpha Vantage retuned data}
 \usage{
-av_funhelp(av_fun_grep = "")
+av_funhelp(av_fun_grep = "", verbose = TRUE)
 }
 \arguments{
 \item{av_fun_grep}{A Alpha Vantage function name or portions of one.
 For a list of parameters, visit the \href{https://www.alphavantage.co/documentation/}{Alpha Vantage API documentation}.}
+
+\item{verbose}{(Default: TRUE) Prints the help string}
 }
 \value{
 Help Text and default parameters.

@@ -6,7 +6,7 @@
 \alias{av_extract_analytics}
 \title{Extract data from Alpha Vantage returned data}
 \usage{
-av_extract_df(indta, grepstring = "", melt = F)
+av_extract_df(indta, grepstring = "", melt = FALSE)
 
 av_extract_fx(indta)
 

@@ -40,7 +40,7 @@
 #' @examples
 #' \dontrun{
 #' av_api_key("YOUR_API_KEY")
-#' av_api_key("YOUR_API_KEY","delayed") if you have such access
+#' av_api_key("YOUR_API_KEY","delayed") # if you have such access
 #'
 #' # example code
 #'
@@ -143,7 +143,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
         urlset = strsplit(url,"&")[[1]]
         zz=lapply(urlset, \(x) message(sprintf("%-45s",strsplit(x,"=")[[1]])))
         message("> response: ",httr::status_code(response), " type: ",content_type, "... url copied to clipboard")
-        utils::write.table(url, file="clipboard", row.names = F, col.names=F)
+        utils::write.table(url, file="clipboard", row.names = FALSE, col.names=FALSE)
 
     }
 

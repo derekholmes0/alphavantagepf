@@ -58,7 +58,7 @@ into \code{from_currency} and \code{to_currency} API parameters. Usage example:
 \examples{
 \dontrun{
 av_api_key("YOUR_API_KEY")
-av_api_key("YOUR_API_KEY","delayed") if you have such access
+av_api_key("YOUR_API_KEY","delayed") # if you have such access
 
 # example code
 

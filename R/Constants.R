@@ -41,9 +41,9 @@ av_make_funcmap <- function() {
     as.numeric(strftime(x,convstr[[to]])) }
   if(!is.data.frame(x)) {
     if(x=="vars") { return("doy|yr|qtr|doq|yrwk|week") }
-    else { print("addseasonaldates(x,toadd =(all|yr|qtr|doq|ywk|week),dtname)")} }
+    else { message("addseasonaldates(x,toadd =(all|yr|qtr|doq|ywk|week),dtname)")} }
   if (sum(grepl(dtname,colnames(x)))<=0 ) { xdt=as.Date(rownames(x)) }
-  else { xdt=as.Date(x[[dtname]],use.names=F) }
+  else { xdt=as.Date(x[[dtname]],use.names=FALSE) }
   if(grepl("doy|all",toadd)) { x$doy<-as.numeric(format(xdt,"%j")) }
   if(grepl("^(yr|all)$",toadd)) { x$yr<-as.numeric(format(xdt,"%Y")) }
   if(grepl("doq|all",toadd)) { x$doq<-as.numeric(xdt-as.Date(paste0( as.character(floor( (lubridate::month(xdt)-1)/3)*3+1),"/1/",x$yr),"%m/%d/%Y")) }

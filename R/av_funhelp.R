@@ -4,6 +4,7 @@
 #'
 #' @param av_fun_grep A Alpha Vantage function name or portions of one.
 #' For a list of parameters, visit the [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
+#' @param verbose (Default: TRUE) Prints the help string
 #'
 #' @returns Help Text and default parameters.
 #'
@@ -15,7 +16,7 @@
 #' av_funhelp("GLOBAL_QUOTE")
 #'
 #' @export
-av_funhelp <- function(av_fun_grep="") {
+av_funhelp <- function(av_fun_grep="",verbose=TRUE) {
     if(av_fun_grep=="") {
       u1<-av_funcmap[,.N,by=.(category,av_fn)][!(category=="ta" | category=="default")]
       u1<-u1[order(category,av_fn)][,`no`:=.I-min(.I),by=c("category")]
@@ -31,6 +32,7 @@ av_funhelp <- function(av_fun_grep="") {
                       tdta = subdf[get("av_fn")==tfn,];
                       paste0("Function: ",tfn,"\nCategory: ",unique(tdta$category),"\n\nParameters:\n",make_plist(tdta,"R"),make_plist(tdta,"O"))
                 })
-    helptext<-cat(paste(helptestlist,collapse="==========\n"))
+    helptext<-paste(helptestlist,collapse="==========\n")
+    message(paste(helptestlist,collapse="==========\n"))
     return(helptext)
 }

@@ -27,7 +27,7 @@
 #'
 #' @rdname av_extract_df
 #' @export
-av_extract_df <- function(indta,grepstring="",melt=F) {  # Keep symbol, variable
+av_extract_df <- function(indta,grepstring="",melt=FALSE) {  # Keep symbol, variable
     indta <- indta[which(indta$ltype=="list"),][grepl(grepstring,get("variable")),]
     outdlist <- lapply(seq(1,nrow(indta)),
         \(i) {
