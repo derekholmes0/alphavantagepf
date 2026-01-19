@@ -29,31 +29,27 @@ You can install the development version of alphavantagepf from
 # install.packages("pak")
 pak::pak("derekholmes0/alphavantagepf")
 ```
-
 and the production version from CRAN
-
 ``` r
 install.packages("alphavantagepf")
 ```
-
 Load the package.
-
 ```{r}
 library(alphavantagepf)
 ```
-
 Set your API key obtained from [Alpha Vantage](https://www.alphavantage.co/). 
 
 ```{r}
 av_api_key("YOUR_API_KEY")
 print(av_api_key())
 ```
-If you have paid access, include an additional argument with your entitlement status, e.g.
+If you have paid access, include an additional argument with your entitlement status, which is one of two strings "delayed" or "realtime". "delayed" may be needed for some historical quotes.
 
 ```{r}
 av_api_key("YOUR_API_KEY","delayed")
 print(av_api_key())
 ```
+
 
 ## Finding Functions and their defaults
 

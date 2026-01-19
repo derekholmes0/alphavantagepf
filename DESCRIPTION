@@ -5,7 +5,7 @@ Authors@R: c(
     person("Derek", "Holmes", email = "derek@derekholmes.com", role = c("aut", "cre", "cph")),
     person("Matt", "Dancho", email = "mdancho@business-science.io", role = c("ctb"))
     )
-Description: Download 'Alphavantage financial data' <https://www.alphavantage.co//documentation/> to reduced 'data.table' objects. Includes support functions to extract and simplify complex data returned from API calls.
+Description: Download 'Alphavantage financial data' <https://www.alphavantage.co/documentation/> to reduced 'data.table' objects. Includes support functions to extract and simplify complex data returned from API calls.
 License: GPL (>= 3)
 Encoding: UTF-8
 Depends: 

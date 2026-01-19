@@ -42,7 +42,8 @@ print(av_api_key())
 ```
 
 If you have paid access, include an additional argument with your
-entitlement status, e.g.
+entitlement status, which is one of two strings “delayed” or “realtime”.
+“delayed” may be needed for some historical quotes.
 
 ``` r
 av_api_key("YOUR_API_KEY","delayed")
@@ -70,7 +71,7 @@ av_funhelp("SERIES_INTRADAY")
 #> O> month
 #> O> outputsize (default: compact)
 #> O> entitlement (default: {entitlement})
-#> NULL
+#> [1] "Function: TIME_SERIES_INTRADAY\nCategory: equity\n\nParameters:\nR> symbol\nR> interval (default: 15min)\nO> adjusted\nO> extended_hours\nO> month\nO> outputsize (default: compact)\nO> entitlement (default: {entitlement})\n"
 ```
 
 Required parameters are listed with “R” and optional parameters (and any
