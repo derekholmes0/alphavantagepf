@@ -1,3 +1,7 @@
+# alphavantagepf 0.4.0
+
+* Make sure empty columns are returned as reals
+
 # alphavantagepf 0.3.2
 
 * CRAN feedback addressed

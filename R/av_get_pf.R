@@ -198,13 +198,17 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     }
     else { #  application/x-download
         # CSV Returned - Good Call - Time Series CSV file
-        contx <- httr::content(response, as = "text", encoding = "UTF-8")
-        content <- gsub("%", "",contx) |> data.table::fread(,na.strings=c(".","NA"))
-        if((melted=="default" &  pset[1,]$outform=="melt") | (as.character(melted) %in% c("always","TRUE"))) {
-          if(!(symbolvarnm %in% colnames(content))) {
-            content <- content[,c(symbolvarnm):=symbol]  # Need to do before melt
-            }
-          content <- content |> melt_tobasetype(idvar=symbolvarnm)
+      contx <- httr::content(response, as = "text", encoding = "UTF-8")
+      content <- gsub("%", "",contx) |> data.table::fread(,na.strings=c(".","NA"))
+      # COnvert all nas to doubles
+      datatypes<-data.table::data.table(colnm=names(content),allna = lapply(content,\(x) all(is.na(x))), coltypes=lapply(content,typeof))
+      toconvert<-datatypes[coltypes=="logical" & allna==TRUE,]$colnm
+      content <- content[,(toconvert):=lapply(.SD,as.numeric),.SDcols=toconvert]
+      if((melted=="default" &  pset[1,]$outform=="melt") | (as.character(melted) %in% c("always","TRUE"))) {
+        if(!(symbolvarnm %in% colnames(content))) {
+          content <- content[,c(symbolvarnm):=symbol]  # Need to do before melt
+          }
+        content <- content |> melt_tobasetype(idvar=symbolvarnm)
         }
     }
     if( !pset[1,]$hassymbol ) {
