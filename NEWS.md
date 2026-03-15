@@ -3,6 +3,7 @@
 # alphavantagepf 0.4.0
 
 * Make sure empty columns are returned as reals
+* Use default user-agent
 
 # alphavantagepf 0.3.2
 

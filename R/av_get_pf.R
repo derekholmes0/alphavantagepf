@@ -111,7 +111,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
         stop("Set API key using av_api_key(). If you do not have an API key, please claim your free API key on (https://www.alphavantage.co/support/#api-key). It should take less than 20 seconds, and is free permanently.",
              call. = FALSE)
     }
-    ua   <- httr::user_agent("https://github.com/derekholmes0")
+    ua   <- httr::user_agent("http://httpbin.org/user-agent")
 
     # parameterss
     dots <- list(...)
