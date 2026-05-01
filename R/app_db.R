@@ -12,18 +12,25 @@
 #'
 #' @seealso [av_runShiny()]
 #'
-#' @details Entire set of columns from [av_get_pf()] can be added
+#' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `date`
 #'
 #' @examples
 #' \dontrun{
 #' av_add_data(av_get_pf("IBM","TIME_SERIES_DAILY_ADJUSTED"))
 #' }
 #'
+#' @importFrom lubridate is.instant
 #' @export
 av_add_data <- function(indta) {
+  firstdate <- find_col_bytype(indta,lubridate::is.instant)
+  if (is.null(firstdate)) {
+    stop("av_add_data: Need a date column")
+  }
+  indta <- data.table(indta)
+  setnames(indta,firstdate,"date")
   colsneeded <- s("symbol;date;close;adjusted_close")
   if( length(intersect(colsneeded,names(indta))) <length(colsneeded) ) {
-    stop(paste0("Need at minimum columns ",colsneeded))
+    stop(paste0("av_add_data: Need at minimum columns ",paste0(colsneeded,collapse=" ")))
   }
   manage_epx(unique(indta$symbol),"-30y::",substitute_data=indta,force=TRUE)
   save_avs_state("all")
@@ -197,11 +204,9 @@ save_av_data <- function(indta, intype) {
     indta <- indta[,let(ts=Sys.time())]
   }
   if(the$save_cum==TRUE & exists("av_download",envir=the)) {
-    message(" sve cum...")
     the$av_download[[intype]] <- rbindlist(list(the$av_download[[intype]], indta))
   }
   else {
-    message(" sve NO CUM...")
     the$av_download[[intype]] <- indta
   }
   save(av_download,file=avdatafn,envir=the)
@@ -212,7 +217,7 @@ save_av_data <- function(indta, intype) {
 
 dump_the <- function(typegrep="*") {
   classtype=nm=NULL
-  outdump=data.table()
+  outdump<-data.table()
   for (x in ls(envir=the)) {
     toget <- get(x,envir=the)
     type <- class(toget)
@@ -232,6 +237,11 @@ dump_the <- function(typegrep="*") {
 dump_inv <- function() {
   return(the$pxinv)
 }
-
-
+dump_assetlist <- function(returngt=TRUE) {
+  outdump <- the$assetlist[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)]
+  if(returngt==TRUE) {
+    outdump <- outdump |>  gt.avtheme(themeset="assetlist")
+  }
+  return(outdump)
+}
 

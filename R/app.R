@@ -75,17 +75,17 @@ av_make_ui <- function() {
        column(11,
           fluidRow(
             column(width=2,selectInput("anopt1","",avsd$deflist[!is.na(order1)]$runcode,multiple=FALSE,width='100%')),
-            column(width=1,selectizeInput("list1","",c("List"="", c("",sort(unique(the$assetlist$listnm)))),
-                                          size="70%",options=list(create=TRUE))),
-            column(width=2,radioButtons("managelist1","",choices=c("In","save","get"),inline=TRUE)),
-            column(width=6,textInput("istr1", "", the$inpline1))
+            column(width=6,textInput("istr1", "", the$inpline1,width='100%')),
+            column(width=2,radioButtons("managelist1","",choices=c("<-","get","save"),select="<-",inline=TRUE)),
+            column(width=2,selectizeInput("list1","",c("List"="", c("",sort(unique(the$assetlist$listnm)))),
+                                          size="70%",options=list(create=TRUE)))
           ),
           fluidRow(
             column(width=2,selectInput("anopt2","",avsd$deflist[!is.na(order1)]$runcode,multiple=FALSE,width='100%')),
-            column(width=1,selectizeInput("list2","",c("List"="", c("",sort(unique(the$assetlist$listnm)))),
-                                          size="50%",options=list(create=TRUE))),
-            column(width=2,radioButtons("managelist2","",choices=c("","save","get"),inline=TRUE)),
-            column(width=6,textInput("istr2", "", the$inpline2))
+            column(width=6,textInput("istr2", "", the$inpline2,width='100%')),
+            column(width=2,radioButtons("managelist2","",choices=c("<-","get","save"),select="<-",inline=TRUE)),
+            column(width=2,selectizeInput("list2","",c("List"="", c("",sort(unique(the$assetlist$listnm)))),
+                                          size="50%",options=list(create=TRUE)))
           ),
           fluidRow(
             tabsetPanel(id="inTabset",
@@ -160,21 +160,12 @@ av_make_server <- function() {
   av_server<-function(input, output,session) {
 
     message(" TOP ----------------------- in datasetinputs aa------- ")
-    restore_avs_state()
+    #restore_avs_state()
     curr_assetlist <- sort(unique(the$assetlist$listnm))
     FinanceGraphs::fg_sync_group("avshiny")
     if(the$cleanonstart==TRUE) {
       save_av_data(data.table(),"KILL")
     }
-    update_asset_inputs <- reactive({
-      tmp1 <- paste0(input$RUN)
-      updateTextInput(session,"istr1", value= the$inpline1)
-      updateTextInput(session,"istr2", value= the$inpline2)
-      updateSelectInput(session,"anopt1",selected="SelectOption")
-      updateSelectInput(session,"anopt2",selected="SelectOption")
-      return(paste("set textInputs at ",Sys.time()))
-    })
-
     reset_opts <- reactive({
       tmp1 <- paste0(input$anopt1,",",input$anopt2,",",input$list1,",",input$list2)
       updateSelectInput(session,"anopt1",selected="SelectOption")
@@ -197,10 +188,46 @@ av_make_server <- function() {
       }
     }
 
-    observeEvent(input$managelist1, {
-      message(" in: ",input$managelist1)
+    set_list <- function(todo,tlist,instr,no) {
+      message_if_green(TRUE,"set_list(",todo,",",tlist," no ",no)
+      rtnmsg <- ""
+      if(todo=="save") {
+        if(nchar(instr)<=0) {
+          rtnmsg <- "Cannot Save blank Assetlist Name"
+        }
+        else {
+          newassets <- data.table(ticker=s(instr))[,listnm:=tlist][]
+          the$assetlist <- DTUpsert(the$assetlist,newassets,c("listnm"),replaceifbempty=the$assetlist[!(listnm==tlist),])
+          save_avs_state("asset;the")
+          updateRadioButtons(session,paste0("managelist",no),selected="<-")
+          rtnmsg <-paste0("Asset set saved as ",tlist)
+        }
       }
-    )
+      if(todo=="get") {
+        av_set_defaults(paste0("inpline",no),
+                        paste0( the$assetlist[listnm==tlist,]$ticker,collapse=";") )
+        save_avs_state("the")
+        updateTextInput(session,paste0("istr",no), value= the[[paste0("inpline",no)]])
+        updateRadioButtons(session,paste0("managelist",no),selected="<-")
+      }
+      return(rtnmsg)
+    }
+
+    observeEvent(input$managelist1, {
+      req(input$managelist1)
+      message(" list1: ",input$managelist1)
+      thismsg <- set_list(input$managelist1,input$list1,input$istr1,1)
+      quick_message("istr1",thismsg)
+      #output$t1gt <-  render_gt(expr=dump_assetlist(returngt=TRUE))
+    })
+
+    observeEvent(input$managelist2, {
+      req(input$managelist2)
+      message(" list2: ",input$managelist2)
+      thismsg <- set_list(input$managelist2,input$list2,input$istr2,2)
+      quick_message("istr2",thismsg)
+      #output$t1gt <-render_gt(expr=dump_assetlist(returngt=TRUE))
+    })
 
     observeEvent(input$anopt1, {
       req(input$anopt1)
@@ -241,7 +268,8 @@ av_make_server <- function() {
       rv <- isolate(reactiveValuesToList(input))
       #lineAssign(rv) just does not work, not sure why
       #toplot<-lapply(names(rv),\(x) { assign(x,rv[[x]],pos=1)})
-      toplot<-lapply(names(rv),\(x) { assign(x,rv[[x]])})
+      cAssign("rv")
+      toplot<-lapply(names(rv),\(x) { assign(x,rv[[x]],pos=1)})
       out<-hash::copy(emptyhash)
       message("H1 >>>>>>>>>>   AA input(",anopt1,"/",anopt2,") sid1(", istr1, ") sid2(", istr2, ") sz:",length(out))
       lapply(s("istr1;istr2"),\(x) quick_message(x,""))
@@ -250,35 +278,14 @@ av_make_server <- function() {
       #cAssign("rv;istr1;istr2;eqlist1;eqlist2;rv",silent=TRUE)
       seriesnm <- fifelse(rv$totrtn,"adjusted_close","close")
       restore_avs_state(nrow(the$pxinv)>1 || substr(anopt1,1,2)=="TS" || substr(anopt2,1,2)=="TS")
-      if((anopt1=="Port:SaveList" && {tlist<-list1; isr<-istr1; TRUE}) ||
-         (anopt2=="Port:SaveList" && {tlist<-list2; isr<-istr2; TRUE})) {
-        if(nchar(tlist)<=0) {
-          out[["MSG"]] <- "Cannot Save blank Assetlist Name"
-        }
-        else {
-          newassets <- data.table(ticker=s(isr))[,listnm:=tlist][]
-          the$assetlist <- DTUpsert(the$assetlist,newassets,c("listnm"),replaceifbempty=the$assetlist[!(listnm==tlist),])
-          save_avs_state("asset;the")
-        }
-        out[["TABLE1GT"]]<- the$assetlist[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)] |> gt.avtheme(themeset="assetlist")
-        out[["TABLE2GT"]]<- dump_inv() |> gt() |> gt.basetheme()
-        out[["MSG"]] <- dump_the()
-      }
-      if((anopt1=="Port:GetList" && {tlist<-list1; tline<-"inpline1"; TRUE}) ||
-         (anopt2=="Port:GetList" && {tlist<-list2; tline<-"inpline2"; TRUE})) {
-        av_set_defaults(tline,paste0( the$assetlist[listnm==tlist,]$ticker,collapse=";") )
-        save_avs_state("the")
-        out[["MSG"]] <- update_asset_inputs()
-      }
       if(anopt1=="Gen:Inventory") {
-        allgps <- the$assetlist[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)]
-        out[["TABLE3GT"]]<- allgps |> gt.avtheme(themeset="assetlist")
+        out[["TABLE3GT"]]<- dump_assetlist(returngt=TRUE)
         out[["TABLE4GT"]]<- the$pxinv |> gt.avtheme(themeset="pxinv")
         out[["TABLE2GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
       }
       if(anopt1=="Gen:LivePx") {
         allgps <- the$assetlist[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)]
-        out[["TABLE3GT"]]<- allgps |> gt.avtheme(themeset="assetlist")
+        out[["TABLE3GT"]]<- dump_assetlist(returngt=TRUE)
         out[["TABLE4GT"]]<- the$pxinv |> gt.avtheme(themeset="pxinv")
         out[["TABLE2GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
       }
@@ -433,7 +440,7 @@ av_make_server <- function() {
           out[["OPT1GT"]] <- filteredopts |> gt.avtheme(themeset="filteredopts", istr1, otodisplay)
         }
       }
-      if(anopt1=="Gen:News") {
+      if(anopt1=="EQ:News") {
         allnews <- rbindlist(lapply(eqlist1,getNews))
         if(newssort=="sentiment") { allnews<- allnews[order(symbol,-sntmt)] }
         if(newssort=="time,symbol") { allnews<- allnews[order(-time_published,symbol)] }

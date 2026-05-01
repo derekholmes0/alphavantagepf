@@ -1,17 +1,16 @@
 cat,order1,order2,category,runcode,focus,datestring,help,inpstring,window
 runset,0,0,Gen,SelectOption,,,,,1
-runset,1,1,Gen,Port:SaveList,MAIN,,Save tickers in named list,QQQ,1
-runset,2,2,Gen,Port:GetList,MAIN,,Load tickers from named list,QQQ,1
-runset,3,,Gen,Port:Inventory,MAIN,,Data and List inventory,,1
-runset,4,3,TS,TS:PriceTS,MAIN,-5y::,Price/Total Return Time Series,QQQ,1
-runset,5,,TS,TS:ActiveTS,MAIN,-5y::,TotRtn(top assets)-TotRtn(bottom),QQQ,1
-runset,5,,TS,TS:HistVolTS,MAIN,-5y::,Historical realized vol,QQQ,1
-runset,6,4,TS,TS:Intraday,MAIN,-3d::,Not Implemented,QQQ,1
-runset,7,,EQ,EQ:DES,MAIN,,Ticker Data/Description,QQQ,1
-runset,7,,EQ,EQ:DivEarn,MAIN,-1y::,Divs/Earnings (1st ticker),QQQ,1
-runset,8,,EQ,EQ:OptSearch,OPTIONS,-1y::,Option Search,QQQ,1
-runset,9,,EQ,EQ:Opt:HistIV,OPTIONS,-1y::,Historical IV Series,QQQ,1
-runset,10,,Misc,Gen:Movers,MAIN,-3d::,US Index movers,QQQ,1
-runset,11,,Misc,Gen:NameSearch,MAIN,-3d::,Ticker search,QQQ,1
-runset,12,,Misc,Gen:News,NEWS,-3d::,News by ticker,QQQ,1
+runset,1,,Gen,Gen:Inventory,MAIN,,Data and List inventory,,1
+runset,2,,Gen,Gen:LivePx,MAIN,,Summarize Live Prices,,1
+runset,3,,Misc,Gen:NameSearch,MAIN,-3d::,Ticker search,,1
+runset,4,1,TS,TS:PriceTS,MAIN,-5y::,Price/Total Return Time Series,,1
+runset,5,,TS,TS:ActiveTS,MAIN,-5y::,TotRtn(top assets)-TotRtn(bottom),,1
+runset,6,,TS,TS:HistVolTS,MAIN,-5y::,Historical realized vol,,1
+runset,7,2,TS,TS:Intraday,MAIN,-3d::,Not Implemented,,1
+runset,8,,EQ,EQ:DES,MAIN,,Ticker Data/Description,,1
+runset,9,,EQ,EQ:News,NEWS,-3d::,News by ticker,,1
+runset,10,,EQ,EQ:DivEarn,MAIN,-1y::,Divs/Earnings (1st ticker),,1
+runset,11,,EQ,EQ:OptSearch,OPTIONS,-1y::,Option Search,,1
+runset,12,,EQ,EQ:Opt:HistIV,OPTIONS,-1y::,Not Implemented,,1
+runset,13,,Gen,Gen:Movers,MAIN,-3d::,US Index movers,,1
 helpstr,,,istr1,TS:ActiveTS,,,ScatPlots in Detail,,
