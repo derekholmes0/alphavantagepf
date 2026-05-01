@@ -1,9 +1,8 @@
 Package: alphavantagepf
 Title: Comprehensive R Wrapper for 'Alphavantage Financial Data' API 
-Version: 0.4.0.9000
+Version: 0.7.2
 Authors@R: c(
-    person("Derek", "Holmes", email = "derek@derekholmes.com", role = c("aut", "cre", "cph")),
-    person("Matt", "Dancho", email = "mdancho@business-science.io", role = c("ctb"))
+    person("Derek", "Holmes", email = "derek@derekholmes.com", role = c("aut", "cre", "cph"))
     )
 Description: Download 'Alphavantage financial data' <https://www.alphavantage.co/documentation/> to reduced 'data.table' objects. Includes support functions to extract and simplify complex data returned from API calls.
 License: GPL (>= 3)
@@ -12,6 +11,7 @@ Depends:
     R (>= 4.1.0)
 Imports:
     dplyr (>= 1.0.0),
+    tidyr (>= 0.6.3),
     data.table,
     glue (>= 1.1.1),
     httr (>= 1.2.1),
@@ -22,8 +22,17 @@ Imports:
     timeDate (>= 4000.0),
     lubridate (>= 1.0.0),
     utils (>= 4.0.0),
-    tidyr (>= 0.6.3)
+    fst (>= 0.9.8),
+    shiny (>= 1.0.0),
+    shinyFeedback (>= 0.4.0),
+    dygraphs (>= 1.1.0),
+    gt (>= 1.3.0),
+    gtExtras (>= 0.6.0),
+    hash (>= 2.2.0),
+    TTR (>= 0.24.0),
+    FinanceGraphs (>= 0.8.0)
 Suggests:
+    bslib,
     testthat,
     knitr,
     rmarkdown

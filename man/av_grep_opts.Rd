@@ -6,27 +6,39 @@
 \usage{
 av_grep_opts(
   indta,
-  grepstring = "F,M,call",
+  grepstring = "F,M,C,otm",
+  spot = NULL,
   mindays = 3,
   startdt = Sys.Date(),
-  deltarange = c(0.1, 0.55)
+  mindelta = 0.05,
+  dropsymbol = FALSE
 )
 }
 \arguments{
 \item{indta}{A data.table as returned by \code{\link[=av_get_pf]{av_get_pf()}}}
 
-\item{grepstring}{(default \verb{F,M,call}) Three item string to select maturities and option types from \code{indta}.  Each item is an abbreviated code for what to select.
-\itemize{
-\item How far out to go: \code{F} for first contract (e.g. front week), \code{B} for second/back contract, anything else for all contracts.
-\item Maturity Schedule: \code{M} for monthly contracts, \code{Q} for quarterly contract, anythign else for weekly contracts.
-\item Option Type: \code{call}, \code{put}, or \code{all}
+\item{grepstring}{(default \verb{F,M,call,otm,act}) Three to five item string to select specific maturities, option types,  strike ranges, and
+open interest categories from option sets returned by \code{av_get_pf(.,"HISTORICAL_OPTIONS")}. Each item in the list is an
+abbreviated code for what to select. The items are not case sensitive and in order are\tabular{lll}{
+   Item \tab Values \tab description \cr
+   Expiration Limit \tab `[F \tab B \cr
+   Maturity Type \tab `[M \tab Q \cr
+   Option Type \tab `[C \tab P \cr
+   Moneyness \tab `[otm \tab itm \cr
+   Activity \tab `[act \tab A]` \cr
 }}
+
+\item{spot}{(default \code{NULL}) Spot to be used to determine itm/otm, If null then it is inferred from most out of the money call or put
+Note: This parameter only applies if there is one symbol in \code{indta}.  If there is more than one ticker in \code{indta} a column \code{spot}
+must be in \code{indta} to get correct results.}
 
 \item{mindays}{(default 3). Minimum number of days to expiration to be passed through from \code{startdt}}
 
 \item{startdt}{(default \code{Sys.Date()}). Date from which expirations will be considered.}
 
-\item{deltarange}{(default \code{c(0.1,0.55)}) Two number list with minimum and maximum absolute valued deltas to pass through.}
+\item{mindelta}{(default \code{0.05}) delta limit on both moneyness sides, i.e. pass only options with deltas in range c(\code{mindelta},1-\code{mindelta})}
+
+\item{dropsymbol}{(default \code{FALSE}). Drop symbol from returned data table.}
 }
 \value{
 A reduced set of options obtained from \code{\link[=av_get_pf]{av_get_pf()}} using Alphavantage \code{HISTORICAL_OPTIONS} function.

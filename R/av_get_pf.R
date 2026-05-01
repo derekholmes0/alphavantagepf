@@ -47,41 +47,32 @@
 #' # ---- 1.0 SINGLE NAME EQUITY SUMMARY INFORMATION AND SEARCH ----
 #'
 #' av_get_pf("IBM","OVERVIEW") |> str()
-#'
 #' av_get_pf("EWZ","ETF_PROFILE")
 #' av_get_pf("EWZ","ETF_PROFILE") |> av_extract_df("holdings")
-#'
 #' av_get_pf("","SYMBOL_SEARCH",keywords="COMMERCE")
 #'
 #' # ---- 2.0 MARKET QUOTES  ----
 #'
 #' av_get_pf("IBM","GLOBAL_QUOTE")
-#'
 #' av_get_pf("USD/BRL","CURRENCY_EXCHANGE_RATE") |> av_extract_fx()
-#'
 #' av_get_pf(c("ORCL","IBM","EWZ","ARGT"),"REALTIME_BULK_QUOTES",melt=FALSE)
 #' # Note you need advanced permissioning for REALTIME_BULK_QUOTES
 #'
 #' # ---- 3.0 SINGLE NAME HISTORICAL DATA  ----
 #'
 #' av_get_pf("IBM","TIME_SERIES_DAILY")
-#'
 #' av_get_pf("IBM","TIME_SERIES_INTRADAY")
 #'
 #' # ---- 4.0 MARKET PRICING DATA  ----
 #'
 #' av_get_pf("","MARKET_STATUS")  |> av_extract_df()
-#'
 #' av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
-#'
 #' av_get_pf("","TREASURY_YIELD",maturity='7year')
 #'
-#'  # ---- 4.0 SINGLE NAME NON-PRICING DATA  ----
+#' # ---- 4.0 SINGLE NAME NON-PRICING DATA  ----
 #'
 #' av_get_pf("IBM","DIVIDENDS")
-#'
 #' av_get_pf("IBM","EARNINGS")  |> av_extract_df("quarter",melt=TRUE)
-#'
 #' av_get_pf("IBM","NEWS_SENTIMENT") |> av_extract_df("feed")
 #'
 #' av_get_pf("IBM","EARNINGS_CALL_TRANSCRIPT",quarter="2024Q3")  |> av_extract_df("transcript")
@@ -114,9 +105,9 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     ua   <- httr::user_agent("http://httpbin.org/user-agent")
 
     # parameterss
-    dots <- list(...)
-    dots$symbol      <- symbol
-    dots$apikey      <- av_api_key()[1]
+    dots          <- list(...)
+    dots$symbol   <- symbol
+    dots$apikey   <- av_api_key()[1]
 
     # Forex
     is_forex <- !is.null(symbol) && stringr::str_detect(symbol[1], "\\/")
@@ -199,9 +190,9 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     else { #  application/x-download
         # CSV Returned - Good Call - Time Series CSV file
       contx <- httr::content(response, as = "text", encoding = "UTF-8")
-      content <- gsub("%", "",contx) |> data.table::fread(,na.strings=c(".","NA"))
+      content <- gsub("%", "",contx) |> data.table::fread(na.strings=c(".","NA","None"))
       # COnvert all nas to doubles
-      datatypes<-data.table::data.table(colnm=names(content),allna = lapply(content,\(x) all(is.na(x))), coltypes=lapply(content,typeof))
+      datatypes<-data.table(colnm=names(content),allna = lapply(content,\(x) all(is.na(x))), coltypes=lapply(content,typeof))
       toconvert<-datatypes[coltypes=="logical" & allna==TRUE,]$colnm
       content <- content[,(toconvert):=lapply(.SD,as.numeric),.SDcols=toconvert]
       if((melted=="default" &  pset[1,]$outform=="melt") | (as.character(melted) %in% c("always","TRUE"))) {
@@ -212,7 +203,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
         }
     }
     if( !pset[1,]$hassymbol ) {
-        content$symbol = av_fun
+      content$symbol = av_fun
     }
     # Return desc
     if ("timestamp" %in% names(content)) {

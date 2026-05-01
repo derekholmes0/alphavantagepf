@@ -1,0 +1,3 @@
+﻿cat_analysis,cat_table,variable,after,format,formula
+EQ:DES,earn,Fwd_EP,Beta,yellow,100/ForwardPE
+EQ:DES,earn,Trail EP,Beta,yellow,100/TrailingPE

@@ -65,41 +65,32 @@ av_api_key("YOUR_API_KEY","delayed") # if you have such access
 # ---- 1.0 SINGLE NAME EQUITY SUMMARY INFORMATION AND SEARCH ----
 
 av_get_pf("IBM","OVERVIEW") |> str()
-
 av_get_pf("EWZ","ETF_PROFILE")
 av_get_pf("EWZ","ETF_PROFILE") |> av_extract_df("holdings")
-
 av_get_pf("","SYMBOL_SEARCH",keywords="COMMERCE")
 
 # ---- 2.0 MARKET QUOTES  ----
 
 av_get_pf("IBM","GLOBAL_QUOTE")
-
 av_get_pf("USD/BRL","CURRENCY_EXCHANGE_RATE") |> av_extract_fx()
-
 av_get_pf(c("ORCL","IBM","EWZ","ARGT"),"REALTIME_BULK_QUOTES",melt=FALSE)
 # Note you need advanced permissioning for REALTIME_BULK_QUOTES
 
 # ---- 3.0 SINGLE NAME HISTORICAL DATA  ----
 
 av_get_pf("IBM","TIME_SERIES_DAILY")
-
 av_get_pf("IBM","TIME_SERIES_INTRADAY")
 
 # ---- 4.0 MARKET PRICING DATA  ----
 
 av_get_pf("","MARKET_STATUS")  |> av_extract_df()
-
 av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
-
 av_get_pf("","TREASURY_YIELD",maturity='7year')
 
- # ---- 4.0 SINGLE NAME NON-PRICING DATA  ----
+# ---- 4.0 SINGLE NAME NON-PRICING DATA  ----
 
 av_get_pf("IBM","DIVIDENDS")
-
 av_get_pf("IBM","EARNINGS")  |> av_extract_df("quarter",melt=TRUE)
-
 av_get_pf("IBM","NEWS_SENTIMENT") |> av_extract_df("feed")
 
 av_get_pf("IBM","EARNINGS_CALL_TRANSCRIPT",quarter="2024Q3")  |> av_extract_df("transcript")

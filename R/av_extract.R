@@ -5,6 +5,7 @@
 #' `av_extract_df()` pulls out nested data.frames from mixed data returned by  [av_get_pf()]
 #' `av_extract_fx()` returns a simplified FX quote in data.table formfrom [av_get_pf()] calls.
 #' `av_extract_analytics()` returns melted data.table from calls to `av_get_pf("ANALYTICS_FIXED_WINDOW")` or `av_get_pf("ANALYTICS_SLIDING_WINDOW")`
+#' `av_extract_divs_or_splits()` returns melted data.table from calls to `av_get_pf("DIVIDENDS")` or `av_get_pf("SPLITS")`
 #'
 #' @param indta A data.table as returned by av_get()
 #' @param grepstring select which variable (data item) to unnest in data.table returned from av_get_pf
@@ -67,4 +68,15 @@ av_extract_analytics <- function(indta,separate_vars=FALSE) {
   }
   return(dt_2)
 }
+
+#' @rdname av_extract_df
+#' @export
+av_extract_divs_or_splits <- function(indta) {
+  i=value_num=NULL
+  indta<- indta[,let(i=.I-min(.I),value_date=as.Date(value_num)),by=.(variable)]
+  dt_1 <- dcast(indta[grepl("date$",variable),], i ~ variable, value.var="value_date")[,i:=NULL]
+  dt_2 <- dcast(indta[!grepl("date$",variable),], i ~ variable, value.var="value_num")[,i:=NULL]
+  return(cbindlist(list(dt_1,dt_2)))
+}
+
 

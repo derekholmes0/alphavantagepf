@@ -4,6 +4,7 @@
 \alias{av_extract_df}
 \alias{av_extract_fx}
 \alias{av_extract_analytics}
+\alias{av_extract_divs_or_splits}
 \title{Extract data from Alpha Vantage returned data}
 \usage{
 av_extract_df(indta, grepstring = "", melt = FALSE)
@@ -11,6 +12,8 @@ av_extract_df(indta, grepstring = "", melt = FALSE)
 av_extract_fx(indta)
 
 av_extract_analytics(indta, separate_vars = FALSE)
+
+av_extract_divs_or_splits(indta)
 }
 \arguments{
 \item{indta}{A data.table as returned by av_get()}
@@ -28,6 +31,7 @@ Extracted data.tables for nested data returned from \code{\link[=av_get_pf]{av_g
 \code{av_extract_df()} pulls out nested data.frames from mixed data returned by  \code{\link[=av_get_pf]{av_get_pf()}}
 \code{av_extract_fx()} returns a simplified FX quote in data.table formfrom \code{\link[=av_get_pf]{av_get_pf()}} calls.
 \code{av_extract_analytics()} returns melted data.table from calls to \code{av_get_pf("ANALYTICS_FIXED_WINDOW")} or \code{av_get_pf("ANALYTICS_SLIDING_WINDOW")}
+\code{av_extract_divs_or_splits()} returns melted data.table from calls to \code{av_get_pf("DIVIDENDS")} or \code{av_get_pf("SPLITS")}
 }
 \details{
 \code{\link[=av_get_pf]{av_get_pf()}} frequently returns a nested data.table, or a structure with nested data.frames.  These are utilities functions to extract, filter and summarize returned values.
