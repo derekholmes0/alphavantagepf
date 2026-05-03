@@ -132,7 +132,7 @@ av_set_defaults <- function(optnm=NULL,optval=NULL,savetoconstants=FALSE) {
     message("Creating ",the$constants_fn)
   }
   if(!is.null(optnm) & !is.null(optval)) {
-    message_if_green(the$verbose,"av_set_defaults",optnm,"<-",optval)
+    #message_if_green(the$verbose,"av_set_defaults> ",optnm,"<-",optval) # tooo verbose
     assign(optnm,optval,envir=the)
   }
   if(savetoconstants==TRUE) {
@@ -149,6 +149,7 @@ av_shiny_data <- function() {
   avsd <- list(
     "deflist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"],
     "helplist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"],
+    "defaults"=data.table::fread("./inst/extdata/av_defaults.csv"),
     "overviewlist"=data.table::fread("./inst/extdata/overview_map.csv"),
     "edit_tableoptions"=list('editable1'='row','editable2'='row','pagelen1'=80,'pagelen2'=80,'digits'=3),
     "selectizeoptions" =I("selectize-input: 10px; background-color:red"),

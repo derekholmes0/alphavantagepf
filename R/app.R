@@ -19,7 +19,8 @@
 #require(FinanceGraphs)
 source("./R/utilities.R")
 
-tversion <-paste("1.45",Sys.getpid())
+tversion <-paste("1.6",Sys.getpid())
+# 1.6: Bug checks and check()
 # 1.45: APpearance changes: Plumbed list management out of options, but still need to code
 # 1.4: Passed Check, add new data
 # 1.3: Most of list done; check opts for invalid tickers
@@ -38,6 +39,7 @@ tabstyle=HTML("
     ")
 
 #source("c:\\d\\src\\R\\ut_package.R")
+#av_set_defaults("ochains","F,M,C,otm"); save_avs_state("the")
 
 av_make_ui <- function() {
   order1=order2=NULL
@@ -54,7 +56,9 @@ av_make_ui <- function() {
         tags$style(HTML(".radio-inline {  font-size: 10px;  }")),
         tags$style(HTML(".shiny-input-select { font-size: 10px; background-color: #f0f0f0 }")),
         tags$style(HTML(".shiny-bound-input { font-size: 10px}")),
-        tags$style(HTML(".item { font-size: 10px; }"))
+        tags$style(HTML(".item { font-size: 10px; }")),
+        tags$style(HTML(".no-gap-row { display: flex; gap: 0;align-items: flex-start; }")),
+        tags$style(HTML(".no-gap-row .table-pane { overflow-x: auto; flex: 0 0 auto;}"))
      ),
      fluidRow(
        column(1,
@@ -64,7 +68,7 @@ av_make_ui <- function() {
                            selected=c("last"),
                            multiple=TRUE,options(list(maxOptions=5,maxItems=1,selectizeoptions))),
             textInput(inputId="events", label="Events", value = "tp,5"),
-            textInput(inputId="datestring", label="dts", value="-1y::"),
+            textInput(inputId="datestring", label="dts", value=the$datestring),
             textInput(inputId="volparams", label="Histvolparams", value="gk.yz;20;252"),
             sliderInput(inputId="dtstartfrac","FocusPct",min=0,max=100,value=0),
             radioButtons(inputId="rebase","Rebase",choices=c("none","start","focus"),selected="none"),
@@ -91,8 +95,10 @@ av_make_ui <- function() {
             tabsetPanel(id="inTabset",
                 tabPanel("MAIN",
                         gt_output(outputId = "t1gt"),
-                        splitLayout(cellWidths = c("35%", "65%"),
-                                    gt_output(outputId = "t3l_gt"), gt_output(outputId = "t3r_gt")),
+                        #splitLayout(gt_output(outputId = "t3l_gt"), gt_output(outputId = "t3r_gt"),cellWidths=c("60%","40%")),
+                        fillPage(div(class = "no-gap-row",
+                                     div(class = "table-pane", gt_output("t3l_gt")),
+                                     div(class = "table-pane", gt_output("t3r_gt")) )),
                         gt_output(outputId = "t2gt"),
                         dygraphOutput("view"),
                         dygraphOutput("view2")
@@ -101,10 +107,12 @@ av_make_ui <- function() {
                                   imageOutput("plot1"), imageOutput("plot2"),),
                 tabPanel("OPTIONS",
                     fluidRow(
-                      column(width=2,span(textInput(inputId="ochains", label="optChains", value="F,M,C,otm"),style=avsd$labelcss)),
+                      column(width=2,span(textInput(inputId="ochains", label="optChains", value=the$ochains),style=avsd$labelcss)),
                       column(width=2,numericInput(inputId="mindelta", label="mindelta", value=5,min=0,max=100)),
-                      column(width=2,selectInput(inputId="otodisplay", label="Output", c("reduced","trading","all"),selected="reduced",multiple=FALSE)),
-                      column(width=2,selectInput(inputId="oscaling", label="Scaling", c("None","10contracts","10kMV"),selected="None",multiple=FALSE))
+                      column(width=2,selectInput(inputId="otodisplay", label="Output",
+                                                 c("reduced","trading","all"),selected=the$otodisplay,multiple=FALSE)),
+                      column(width=2,selectInput(inputId="oscaling", label="Scaling",
+                                                 c("None","10contracts","10kMV"),selected=the$oscaling,multiple=FALSE))
                     ),
                     fluidRow(
                       gt_output(outputId="opt1gt"),
@@ -130,7 +138,7 @@ av_make_ui <- function() {
                     span(textInput(inputId="avapikey", label="av api key", value=the$avapikey),style=avsd$labelcss),
                     span(textInput(inputId="avapientitlement", label="av entitlement", value=the$avapientitlement),style=avsd$labelcss),
                     span(textInput(inputId="cachedir", label="Cache Data Directory", value=the$cachedir),style=avsd$labelcss),
-                    span(textInput(inputId="save_dir", label="AV dump Directory", value=the$save_dir),style=avsd$labelcss),
+                    span(textInput(inputId="av_dump_dir", label="AV dump Directory", value=the$av_dump_dir),style=avsd$labelcss),
                     span(textInput(inputId="extracalc_file", label="extracalc csv", value=the$extracalc_file),style=avsd$labelcss),
                     span(textInput(inputId="ts_colorset", label="fgts colorset", value=the$ts_colorset),style=avsd$labelcss),
                     selectInput(inputId="sigpct","Regr Significance", c("0.05","0.025","0.1"),selected=c("0.025"),multiple=FALSE),
@@ -189,10 +197,9 @@ av_make_server <- function() {
     }
 
     set_list <- function(todo,tlist,instr,no) {
-      message_if_green(TRUE,"set_list(",todo,",",tlist," no ",no)
       rtnmsg <- ""
       if(todo=="save") {
-        if(nchar(instr)<=0) {
+        if(nchar(instr)<=0 | nchar(tlist)<=0) {
           rtnmsg <- "Cannot Save blank Assetlist Name"
         }
         else {
@@ -200,6 +207,8 @@ av_make_server <- function() {
           the$assetlist <- DTUpsert(the$assetlist,newassets,c("listnm"),replaceifbempty=the$assetlist[!(listnm==tlist),])
           save_avs_state("asset;the")
           updateRadioButtons(session,paste0("managelist",no),selected="<-")
+          updateSelectizeInput(session,"list1", choices=sort(unique(the$assetlist$listnm)))
+          updateSelectizeInput(session,"list2", choices=sort(unique(the$assetlist$listnm)))
           rtnmsg <-paste0("Asset set saved as ",tlist)
         }
       }
@@ -215,7 +224,6 @@ av_make_server <- function() {
 
     observeEvent(input$managelist1, {
       req(input$managelist1)
-      message(" list1: ",input$managelist1)
       thismsg <- set_list(input$managelist1,input$list1,input$istr1,1)
       quick_message("istr1",thismsg)
       #output$t1gt <-  render_gt(expr=dump_assetlist(returngt=TRUE))
@@ -223,7 +231,6 @@ av_make_server <- function() {
 
     observeEvent(input$managelist2, {
       req(input$managelist2)
-      message(" list2: ",input$managelist2)
       thismsg <- set_list(input$managelist2,input$list2,input$istr2,2)
       quick_message("istr2",thismsg)
       #output$t1gt <-render_gt(expr=dump_assetlist(returngt=TRUE))
@@ -249,23 +256,23 @@ av_make_server <- function() {
       rv <- isolate(reactiveValuesToList(input))
       th1<- dump_the()
       av_api_key(rv$avapikey,rv$avapientitlement)
-      u1<-lapply(s("cachedir;save_dir;save_data;save_prices;save_cum;save_ts;cleanonstart;ts_colorset"),
+      u1<-lapply(s("cachedir;av_dump_dir;save_data;save_prices;save_cum;save_ts;cleanonstart;ts_colorset"),
                     \(x) av_set_defaults(x,rv[[x]]))
       av_set_defaults("assetlist_fn",paste0(rv$cachedir,"/avpf_assetlist.RD"))
       av_set_defaults("pxd_fn",paste0(rv$cachedir,"/avpf_px.fst"))
       av_set_defaults("inv_fn",paste0(rv$cachedir,"/avpf_inv.RD"))
       save_avs_state("the")
       th1 <- th1[,.(nm,old=toget)][dump_the(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
-      setcolorder(th1,s("classtype;nm;toget;format"))
+      th1 <- th1[,.SD,.SDcols=s("classtype;nm;toget;format")]
       output$dumpthe <- render_gt(expr=th1 |> gt() |> gt.basetheme() |> decorate_table())
     })
 
     observeEvent(input$save_data, {
       req(input$save_data)
       feedtxt<- fifelse(input$save_data,
-                    paste0("AV data will be captured to ",input$save_dir,"/av_download.RD"),
+                    paste0("AV data will be captured to ",input$av_dump_dir,"/av_download.RD"),
                     "No Data Capture")
-      shinyFeedback::showFeedback(inputId="save_dir", text=feedtxt,color="#2ca35f")
+      shinyFeedback::showFeedback(inputId="av_dump_dir", text=feedtxt,color="#2ca35f")
     })
 
     observeEvent(input$RUN, {
@@ -451,6 +458,7 @@ av_make_server <- function() {
         if(newssort=="symbol,time") { allnews<- allnews[order(symbol, -time_published)] }
         out[["NEWSGT"]] <-allnews |> gt.avtheme(themeset="news",istr1)
       }
+
     if(length(out)<=1) {
       if(anopt1=="SelectOption" || anopt2=="SelectOption") {
         quick_message("anopt1","Select an Action")

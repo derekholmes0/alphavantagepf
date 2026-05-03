@@ -15,7 +15,7 @@
 #' @import gt
 #' @import data.table
 
-gt.basetheme<-function(x,gtopts="all",sizepct=70,style=4,digits=2,seps=FALSE,na_format="-",interactive=FALSE) {
+gt.basetheme<-function(x,gtopts="all",sizepct=100,style=4,digits=2,seps=FALSE,na_format="-",interactive=FALSE) {
   style <- fifelse(interactive==TRUE,1,style)
   if(gtopts=="all" | gtopts=="fmtnumber") {
     x = x |> tab_style_body(style=cell_text(color="red"),columns=where(is.numeric),fn=function(x) x<0) |> fmt_number(accounting=TRUE,decimals = digits,use_seps=seps)

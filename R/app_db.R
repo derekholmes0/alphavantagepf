@@ -71,7 +71,7 @@ save_avs_state <- function(todo="all") {
     message_if_green(the$verbose,"Wrote price data to ",the$pxd_fn)
   }
   if(grepl("all|the",todo)) {
-    unames=setdiff(ls(envir=the),s("pxd;pxinv;assetlist"))
+    unames=names(the)[sapply(the, class) %in% c("logical","character","numeric")]
     save(list=unames,envir=the,file= the$constants_fn)
     message_if_green(the$verbose,"Wrote constants state to ",the$constants_fn)
   }
@@ -168,11 +168,11 @@ redownload_all <- function() {
 # May need ot use fst if this gets too big
 save_av_data <- function(indta, intype) {
   av_download=NULL
-  if(is.null(the$save_dir) || the$save_dir=="") {
+  if(is.null(the$av_dump_dir) || the$av_dump_dir=="") {
     message_if_green(the$verbose,"Skipping save data")
     return(indta)
   }
-  avdatafn <- paste0(the$save_dir,"/av_download.RD")
+  avdatafn <- paste0(the$av_dump_dir,"/av_download.RD")
   if(intype=="KILL") {
     if(file.exists(avdatafn)) {
       if(exists("av_download",envir=the)) { the$av_download<-list() }

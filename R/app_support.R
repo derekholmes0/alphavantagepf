@@ -33,7 +33,6 @@ oneticker_earns <- function(thisticker,fwddts,datestring) {
   earnb <- av_get_pf(thisticker,"EARNINGS") |> av_extract_df("quarterlyEarnings") |> narrowbydtstr(datestring)
   earnf <- data.table()
   if(fwddts[2]>Sys.Date()) {
-    message("heer")
     earnf <- av_get_pf(thisticker,"EARNINGS_ESTIMATES") |> av_extract_df("estimates") |> narrowbydtstr(paste0(fwddts,collapse="::"))
     earnf <- earnf[,.(symbol,fiscalDateEnding=date,reportTime=horizon,
                       estimatedEPS= eps_estimate_average, est_high=eps_estimate_high, est_low=eps_estimate_low,
@@ -57,11 +56,11 @@ oneticker_divs <- function(thisticker,datestring) {
   alldivs<- list()
   if(nrow(divs_1)>0) {
     divs_1 <- divs_1[order(payment_date)][,divdays:=as.numeric(c(NA_integer_,diff(payment_date,1)))]
-    alldivs<- list(alldivs, divs_1[,annDiv:=amount*365/divdays])
+    alldivs<- append(alldivs, list(divs_1[,annDiv:=amount*365/divdays][]))
   }
   if(nrow(divs_2)>0) {
     divs_2 <- divs_2 |> av_extract_divs_or_splits() |> setnames("effective_date","ex_dividend_date")
-    alldivs<- list(alldivs, divs_2)
+    alldivs<- append(alldivs, list(divs_2))
   }
   divs <- rbindlist(alldivs,fill=TRUE,use.names=TRUE)
   if(nrow(divs)>0) {
