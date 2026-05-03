@@ -141,7 +141,7 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, force=FALSE) {
     if(the$save_data & the$save_prices & is.null(substitute_data)) {
       dta <- dta |> save_av_data(avfun)
     }
-    the$pxd <- DTUpsert(the$pxd,dta,c("symbol","date"),fill=TRUE,verbose=TRUE)
+    the$pxd <- DTUpsert(the$pxd,dta,c("symbol","date"),fill=TRUE)
     # Get asset type and update inventory
     symset <- form_symset(tickers,force=force)[,let(loadts=Sys.time())]
     thisinv <- the$pxd[symset[,.(symbol)],on=.(symbol)]

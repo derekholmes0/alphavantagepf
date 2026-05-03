@@ -7,9 +7,6 @@ the$pxd <- data.table()
 the$pxinv <- data.table()
 
 if(file.exists(the$constants_fn)) {
-  if(file.exists(the$constants_fn)) {
-    load(the$constants_fn, envir=the)
-  }
   restore_avs_state()
   options(av_api_key = the$avapikey)
   options(av_api_entitlement = the$avapientitlement)

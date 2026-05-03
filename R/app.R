@@ -1,7 +1,7 @@
 #' @importFrom TTR volatility
 #' @import gt
 #' @import gtExtras
-#' @importFrom hash hash .set copy
+#' @importFrom hash hash .set
 #' @import data.table
 #' @importFrom dygraphs dygraphOutput renderDygraph
 #' @import shiny
@@ -76,14 +76,14 @@ av_make_ui <- function() {
           fluidRow(
             column(width=2,selectInput("anopt1","",avsd$deflist[!is.na(order1)]$runcode,multiple=FALSE,width='100%')),
             column(width=6,textInput("istr1", "", the$inpline1,width='100%')),
-            column(width=2,radioButtons("managelist1","",choices=c("<-","get","save"),select="<-",inline=TRUE)),
+            column(width=2,radioButtons("managelist1","",choices=c("<-","get","save"),selected ="<-",inline=TRUE)),
             column(width=2,selectizeInput("list1","",c("List"="", c("",sort(unique(the$assetlist$listnm)))),
                                           size="70%",options=list(create=TRUE)))
           ),
           fluidRow(
-            column(width=2,selectInput("anopt2","",avsd$deflist[!is.na(order1)]$runcode,multiple=FALSE,width='100%')),
+            column(width=2,selectInput("anopt2","",avsd$deflist[!is.na(order2)]$runcode,multiple=FALSE,width='100%')),
             column(width=6,textInput("istr2", "", the$inpline2,width='100%')),
-            column(width=2,radioButtons("managelist2","",choices=c("<-","get","save"),select="<-",inline=TRUE)),
+            column(width=2,radioButtons("managelist2","",choices=c("<-","get","save"),selected ="<-",inline=TRUE)),
             column(width=2,selectizeInput("list2","",c("List"="", c("",sort(unique(the$assetlist$listnm)))),
                                           size="50%",options=list(create=TRUE)))
           ),
@@ -245,7 +245,9 @@ av_make_server <- function() {
     })
 
     observeEvent(input$SetOpts, {
+      old=toget=NULL
       rv <- isolate(reactiveValuesToList(input))
+      th1<- dump_the()
       av_api_key(rv$avapikey,rv$avapientitlement)
       u1<-lapply(s("cachedir;save_dir;save_data;save_prices;save_cum;save_ts;cleanonstart;ts_colorset"),
                     \(x) av_set_defaults(x,rv[[x]]))
@@ -253,7 +255,9 @@ av_make_server <- function() {
       av_set_defaults("pxd_fn",paste0(rv$cachedir,"/avpf_px.fst"))
       av_set_defaults("inv_fn",paste0(rv$cachedir,"/avpf_inv.RD"))
       save_avs_state("the")
-      output$dumpthe <- render_gt(expr=dump_the() |> gt() |> gt.basetheme())
+      th1 <- th1[,.(nm,old=toget)][dump_the(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
+      setcolorder(th1,s("classtype;nm;toget;format"))
+      output$dumpthe <- render_gt(expr=th1 |> gt() |> gt.basetheme() |> decorate_table())
     })
 
     observeEvent(input$save_data, {
@@ -268,7 +272,7 @@ av_make_server <- function() {
       rv <- isolate(reactiveValuesToList(input))
       #lineAssign(rv) just does not work, not sure why
       #toplot<-lapply(names(rv),\(x) { assign(x,rv[[x]],pos=1)})
-      cAssign("rv")
+      #cAssign("rv")
       toplot<-lapply(names(rv),\(x) { assign(x,rv[[x]],pos=1)})
       out<-hash::copy(emptyhash)
       message("H1 >>>>>>>>>>   AA input(",anopt1,"/",anopt2,") sid1(", istr1, ") sid2(", istr2, ") sz:",length(out))
@@ -279,8 +283,8 @@ av_make_server <- function() {
       seriesnm <- fifelse(rv$totrtn,"adjusted_close","close")
       restore_avs_state(nrow(the$pxinv)>1 || substr(anopt1,1,2)=="TS" || substr(anopt2,1,2)=="TS")
       if(anopt1=="Gen:Inventory") {
-        out[["TABLE3GT"]]<- dump_assetlist(returngt=TRUE)
-        out[["TABLE4GT"]]<- the$pxinv |> gt.avtheme(themeset="pxinv")
+        out[["TABLE4GT"]]<- dump_assetlist(returngt=TRUE)
+        out[["TABLE3GT"]]<- the$pxinv |> gt.avtheme(themeset="pxinv")
         out[["TABLE2GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
       }
       if(anopt1=="Gen:LivePx") {

@@ -16,7 +16,7 @@ Nothing
 Add price data to \code{\link[=av_runShiny]{av_runShiny()}} internal data
 }
 \details{
-Entire set of columns from \code{\link[=av_get_pf]{av_get_pf()}} can be added
+Entire set of columns from \code{\link[=av_get_pf]{av_get_pf()}} can be added. First date column renamed to \code{date}
 }
 \examples{
 \dontrun{

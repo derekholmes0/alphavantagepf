@@ -22,7 +22,7 @@ gt.basetheme(
 
 \item{sizepct}{(default: 70) How big to make tables}
 
-\item{style}{(default: 4) Style number (see \code{\link[gt:gt]{gt::gt()}})}
+\item{style}{(default: 4) Style number (see \code{\link[gt:gt]{gt()}})}
 
 \item{digits}{(default: 2) Number formatting}
 
@@ -33,5 +33,5 @@ gt.basetheme(
 \item{interactive}{(default: \code{FALSE}) Add interactive elements}
 }
 \description{
-Adds default elements to \code{\link[gt:gt]{gt::gt()}} table
+Adds default elements to \code{\link[gt:gt]{gt()}} table
 }
