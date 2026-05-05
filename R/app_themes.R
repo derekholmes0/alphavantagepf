@@ -64,6 +64,31 @@ gt.avtheme<- function(x,themeset="",...) {
       tab_footnote(paste("Estimated highlighted at p=",100*as.numeric(ldots[[2]]), "pct as of",Sys.time()))
     return(x)
   }
+  if(themeset=="live") {
+    # x = av_get_pf(c("ORCL","IBM","EWZ","ARGT"),"REALTIME_BULK_QUOTES",melt=FALSE)
+    setnames(x, s("change_percent;extended_hours_quote;extended_hours_change;extended_hours_change_percent"),
+              s("chgpct;EH_mid;EH_chg;EH_chgpct"))
+    x = x[,let(age=Sys.time()-timestamp, volume=volume/10^6)]
+    x = x[,let(lastbp=10000*(close/open-1), lowbp=10000*(low/open-1), hibp=10000*(high/open-1))]
+    x = x[,let(isah=is.na(chgpct), chgpct = fcoalesce(chgpct,EH_chgpct))]
+    thisgt = x |> gt() |> gt.basetheme() |>
+      tab_spanner_delim(delim="_") |> fmt_duration(columns=age,output_units=c("days", "hours", "minutes")) |>
+      cols_move_to_start(s("symbol;chgpct;close;age")) |>
+      tab_style(style=cell_text(color="red",weight="bold"), locations=cells_body(columns=c(close,EH_mid), rows=chgpct<0)) |>
+      tab_style(style=cell_text(color="blue",weight="bold"), locations=cells_body(columns=c(close,EH_mid), rows=chgpct>=0)) |>
+      tab_style(style=cell_text(weight="bold"), locations=cells_body(columns=c(chgpct))) |>
+      tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,chgpct), rows=(isah==TRUE))) |>
+      cols_hide(s("timestamp;previous_close;lowbp;hibp;isah")) |>
+      tab_footnote("Extended hours in pink, bars are bps from previous close")
+    if("inlist" %in% names(x)) {
+      thisgt = thisgt |> tab_style(style=cell_fill(color="lightgreen"), locations=cells_body(columns=everything(),  rows=(inlist==TRUE)))
+    }
+    return(thisgt)
+  }
+
+
+
+
   if (!"gt_tbl" %in% class(x)) {
     if(nrow(x)<=0) {
       return(x)

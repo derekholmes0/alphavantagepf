@@ -7,7 +7,7 @@
 gt.basetheme(
   x,
   gtopts = "all",
-  sizepct = 70,
+  sizepct = 100,
   style = 4,
   digits = 2,
   seps = FALSE,

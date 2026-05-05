@@ -1,12 +1,12 @@
 cat,order1,order2,category,runcode,focus,datestring,help,inpstring,window
 runset,0,0,Gen,SelectOption,,,,,1
 runset,1,,Gen,Gen:Inventory,MAIN,,Data and List inventory,,1
-runset,2,,Gen,Gen:LivePx,MAIN,,Summarize Live Prices,,1
+runset,2,1,Gen,Gen:LivePx,MAIN,,Summarize Live Prices,,1
 runset,3,,Misc,Gen:NameSearch,MAIN,-3d::,Ticker search,,1
-runset,4,1,TS,TS:PriceTS,MAIN,-5y::,Price/Total Return Time Series,,1
+runset,4,2,TS,TS:PriceTS,MAIN,-5y::,Price/Total Return Time Series,,1
 runset,5,,TS,TS:ActiveTS,MAIN,-5y::,TotRtn(top assets)-TotRtn(bottom),,1
 runset,6,,TS,TS:HistVolTS,MAIN,-5y::,Historical realized vol,,1
-runset,7,2,TS,TS:Intraday,MAIN,-3d::,Not Implemented,,1
+runset,7,3,TS,TS:Intraday,MAIN,-3d::,Not Implemented,,1
 runset,8,,EQ,EQ:DES,MAIN,,Ticker Data/Description,,1
 runset,9,,EQ,EQ:News,NEWS,-3d::,News by ticker,,1
 runset,10,,EQ,EQ:DivEarn,MAIN,-1y::,Divs/Earnings (1st ticker),,1

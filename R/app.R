@@ -295,10 +295,10 @@ av_make_server <- function() {
         out[["TABLE2GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
       }
       if(anopt1=="Gen:LivePx") {
-        allgps <- the$assetlist[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)]
-        out[["TABLE3GT"]]<- dump_assetlist(returngt=TRUE)
-        out[["TABLE4GT"]]<- the$pxinv |> gt.avtheme(themeset="pxinv")
-        out[["TABLE2GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
+        toplot <- av_get_pf(the$pxinv$symbol,"REALTIME_BULK_QUOTES",melt=FALSE)
+        toplot <- data.table(symbol=eqlist1)[,inlist:=TRUE][toplot,on=.(symbol)]
+        out[["TABLE1GT"]]<- toplot |>  gt.avtheme(themeset="live")
+        # Save latest to history, but how to ensure no gaps?
       }
       if(anopt1=="TS:PriceTS") {
         toplot <- lapply(eqlist1, \(x) manage_epx(x,datestring))
@@ -471,8 +471,6 @@ av_make_server <- function() {
     the$dyg1h <- fifelse( "dygraphs" %in% class(out[["TS1"]]), "600px","auto")
     the$dyg2h <- fifelse( "dygraphs" %in% class(out[["TS2"]]), "600px","auto")
 
-    #u1=lapply(hash::keys(out), \(x) { message("x>",x,">",class(out[[x]]))})
-    # Always render if you want to replace old items from RUn to RUn
     output$t1gt <- render_gt(expr=out[["TABLE1GT"]])
     output$t2gt <- render_gt(expr=out[["TABLE2GT"]])
     output$t3l_gt <- render_gt(expr=out[["TABLE3GT"]])
