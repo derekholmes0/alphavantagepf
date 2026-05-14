@@ -50,7 +50,7 @@ decorate_table <- function(gtx) {
 #' @import data.table
 gt.avtheme<- function(x,themeset="",...) {
   term=`i.to`=estimate_Beta=p.value_Beta=loadts=n=catprio=prio=matchScore=daysExp=nlink=sntmt=time_published=estiamtedEPS=NULL
-  est_low=est_high=est_n=est_30dpchg=est_90dpchg=divdays=estimatedEPS=NULL
+  est_low=est_high=est_n=est_30dpchg=est_90dpchg=divdays=estimatedEPS=volume=low=high=chgpct=EH_chgpct=age=EH_mid=isah=inlist=NULL
   ldots = list(...)
   # -- Tables that require further processing
   if(themeset=="activeregression") {

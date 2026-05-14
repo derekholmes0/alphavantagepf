@@ -142,11 +142,11 @@ av_make_ui <- function() {
                     span(textInput(inputId="extracalc_file", label="extracalc csv", value=the$extracalc_file),style=avsd$labelcss),
                     span(textInput(inputId="ts_colorset", label="fgts colorset", value=the$ts_colorset),style=avsd$labelcss),
                     selectInput(inputId="sigpct","Regr Significance", c("0.05","0.025","0.1"),selected=c("0.025"),multiple=FALSE),
-                    checkboxInput(inputId="save_data","SaveData",value=the$save_data),
-                    checkboxInput(inputId="save_prices","Saveprices",value=the$save_data),
-                    checkboxInput(inputId="save_cum","Save cumulatively",value=the$save_data),
-                    checkboxInput(inputId="save_ts","Add Timestamp to data",value=the$save_ts),
-                    checkboxInput(inputId="cleanonstart","Clean files on startup",value=the$cleanonstart)
+                    checkboxInput(inputId="save_data","Capture AVdata",value=the$save_data),
+                    checkboxInput(inputId="save_prices","Capture AVprices",value=the$save_data),
+                    checkboxInput(inputId="save_cum","Cumulative Capture",value=the$save_data),
+                    checkboxInput(inputId="save_ts","Capture All (vs Update)",value=the$save_ts),
+                    checkboxInput(inputId="cleanonstart","Clean Capture files on startup",value=the$cleanonstart)
                   ),
                   column(width=5,gt_output(outputId = "dumpthe"))
                   )
@@ -166,7 +166,7 @@ av_make_server <- function() {
 #  time_published=value_num=value_str=volparams=weight=n=nm=NULL
 
   av_server<-function(input, output,session) {
-
+    inlist=NULL
     message(" TOP ----------------------- in datasetinputs aa------- ")
     #restore_avs_state()
     curr_assetlist <- sort(unique(the$assetlist$listnm))
@@ -277,10 +277,8 @@ av_make_server <- function() {
 
     observeEvent(input$RUN, {
       rv <- isolate(reactiveValuesToList(input))
-      #lineAssign(rv) just does not work, not sure why
-      #toplot<-lapply(names(rv),\(x) { assign(x,rv[[x]],pos=1)})
-      #cAssign("rv")
-      toplot<-lapply(names(rv),\(x) { assign(x,rv[[x]],pos=1)})
+      thisenv <- environment()
+      toplot<-lapply(names(rv),\(x) { assign(x,rv[[x]],envir=thisenv)})
       out<-hash::copy(emptyhash)
       message("H1 >>>>>>>>>>   AA input(",anopt1,"/",anopt2,") sid1(", istr1, ") sid2(", istr2, ") sz:",length(out))
       lapply(s("istr1;istr2"),\(x) quick_message(x,""))
@@ -295,7 +293,7 @@ av_make_server <- function() {
         out[["TABLE2GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
       }
       if(anopt1=="Gen:LivePx") {
-        toplot <- av_get_pf(the$pxinv$symbol,"REALTIME_BULK_QUOTES",melt=FALSE)
+        toplot <- av_get_pf(the$pxinv$symbol,"REALTIME_BULK_QUOTES",melted=FALSE)
         toplot <- data.table(symbol=eqlist1)[,inlist:=TRUE][toplot,on=.(symbol)]
         out[["TABLE1GT"]]<- toplot |>  gt.avtheme(themeset="live")
         # Save latest to history, but how to ensure no gaps?

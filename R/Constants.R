@@ -156,11 +156,11 @@ av_shiny_data <- function() {
     "inputcss_side" = paste(lapply(yellowed_inputs,(\(x) paste(x,tinputformstyle))),collapse=" "),
     "inputformstyle" =tinputformstyle,
     "inputcss_top" =paste(lapply(s("#istr1;#istr2"),\(x) paste(x,tinputformstyle)),collapse=" "),
-    "labelcss" =I("font-size:9pt color:red font-weight:bold")
+    "labelcss" =I("font-size:10pt color:red font-weight:bold")
   )
   av_funcmap <- av_make_funcmap()
   dtmap  <- av_make_dtmap()
- # usethis::use_data(av_funcmap, dtmap, avsd, internal = TRUE,overwrite=TRUE)
+  #usethis::use_data(av_funcmap, dtmap, avsd, internal = TRUE,overwrite=TRUE)
   return(avsd)
 }
 

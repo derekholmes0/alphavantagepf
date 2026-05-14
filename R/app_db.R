@@ -204,7 +204,7 @@ save_av_data <- function(indta, intype) {
     indta <- indta[,let(ts=Sys.time())]
   }
   if(the$save_cum==TRUE & exists("av_download",envir=the)) {
-    the$av_download[[intype]] <- rbindlist(list(the$av_download[[intype]], indta))
+    the$av_download[[intype]] <- rbindlist(list(the$av_download[[intype]], indta),fill=TRUE)
   }
   else {
     the$av_download[[intype]] <- indta
