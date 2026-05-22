@@ -18,9 +18,9 @@ get_one_ts <- function(assetlist,rebase,datestring,dtstartfrac) {
   symbol=NULL
   toplot <- the$pxd[data.table(symbol=assetlist),on=.(symbol)] |> narrowbydtstr(datestring)
   rebasedt <- fcase(rebase=="none","",
-                    rebase=="start",paste0(format(toplot[1,]$date,"%Y-%m-%d"),",100"),
-                    rebase=="focus",paste0(format(toplot[,.N,by=.(date)][,.SD[floor(.N*dtstartfrac/100)]]$date,"%Y-%m-%d"),",100"))
-  message_if_green(the$verbose,"get_one_ts(",paste0(assetlist,collapse=" "),") gets ",nrow(toplot), " rows to  ",as.Date(max(toplot$date)))
+                    rebase=="start",paste0(format(toplot[1,]$timestamp,"%Y-%m-%d"),",100"),
+                    rebase=="focus",paste0(format(toplot[,.N,by=.(timestamp)][,.SD[floor(.N*dtstartfrac/100)]]$timestamp,"%Y-%m-%d"),",100"))
+  message_if_green(the$verbose,"get_one_ts(",paste0(assetlist,collapse=" "),") gets ",nrow(toplot), " rows to  ",as.Date(max(toplot$timestamp)))
   return(list(toplot,rebasedt))
 }
 
@@ -79,11 +79,11 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dtstart
   seriesnm <- fifelse(rv$totrtn,"adjusted_close","close")
   if(is.data.table(toplot[[1]])) {
     trebase <- toplot[[2]]
-    fgdt <- toplot[[1]][,.(date,variable=symbol,value=get(seriesnm))]
+    fgdt <- toplot[[1]][,.(timestamp,variable=symbol,value=get(seriesnm))]
     if("hilow" %in% rv$gropts) {
       fgdt <- rbindlist(list(fgdt,
-                             toplot[[1]][,.(date,variable=paste0(symbol,".lo"),value=get(seriesnm) + (low-close))],
-                             toplot[[1]][,.(date,variable=paste0(symbol,".hi"),value=get(seriesnm) + (high-close))]
+                             toplot[[1]][,.(timestamp,variable=paste0(symbol,".lo"),value=get(seriesnm) + (low-close))],
+                             toplot[[1]][,.(timestamp,variable=paste0(symbol,".hi"),value=get(seriesnm) + (high-close))]
       )) }
   }
   else {

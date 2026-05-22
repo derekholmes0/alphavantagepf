@@ -15,7 +15,6 @@
 av_reset_defaults <- function() {
   file.remove(the$constants_fn)
   the$cachedir <- the$defaultcachedir
-  the$assetlist_fn <- paste0( the$cachedir, "/avpf_assetlist.RD")
   the$pxd_fn <- paste0( the$cachedir, "/avpf_px.fst")
   the$inv_fn <- paste0( the$cachedir, "/avpf_inv.RD")
   the$avapikey <- "NOT_SET"

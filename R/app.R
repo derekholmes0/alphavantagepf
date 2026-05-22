@@ -180,8 +180,6 @@ av_make_server <- function() {
     FinanceGraphs::fg_sync_group("avshiny")
     if("CleanOnStart" %in% the$capture_av_save) {  save_av_data(data.table(),"KILL") }
     # ----
-
-
     reset_opts <- reactive({
       tmp1 <- paste0(input$anopt1,",",input$anopt2,",",input$list1,",",input$list2)
       updateSelectInput(session,"anopt1",selected="SelectOption")
@@ -266,7 +264,7 @@ av_make_server <- function() {
       av_api_key(rv$avapikey,rv$avapientitlement)
       u1<-lapply(s("cachedir;av_dump_dir;capture_av_what;capture_av_update;capture_av_save;ts_colorset"),
                     \(x) av_set_defaults(x,rv[[x]]))
-      av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
+      # always has to be in tmp directory: av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
       av_set_defaults("assetlist_fn",paste0(rv$cachedir,"/avpf_assetlist.RD"))
       av_set_defaults("pxd_fn",paste0(rv$cachedir,"/avpf_px.fst"))
       av_set_defaults("inv_fn",paste0(rv$cachedir,"/avpf_inv.RD"))
@@ -316,7 +314,13 @@ av_make_server <- function() {
       }
       if(anopt1=="Gen:LivePx") {
         #message(" get live:  entitlement: ",  options("av_api_entitlement")$av_api_entitlement, " > ")
-        toplot <- av_get_pf(the$pxinv$symbol,"REALTIME_BULK_QUOTES",melted=FALSE)
+        # Adding FX:  At this point, I'm almost done with this..
+        # Non FX
+        toplot <- av_get_pf(the$pxinv[data.table(type=s("Equity;ETF")),on=.(type)]$symbol,"REALTIME_BULK_QUOTES",melted=FALSE)
+        if( length( fxsymbols <-the$pxinv[data.table(type=s("FX")),on=.(type)]$symbol )>0 ) {
+            toplot_fx <- av_get_pf(fxsymbols,"CURRENCY_EXCHANGE_RATE",melted=FALSE) |> av_extract_fx()
+            toplot <- rbindlist(list(toplot,toplot_fx[,.(symbol,timestamp,close)]),use.names=TRUE,fill=TRUE)
+        }
         toplot <- data.table(symbol=eqlist1)[,inlist:=TRUE][toplot,on=.(symbol)][order(change_percent)]
         out[["TABLE1GT"]]<- toplot |>  gt.avtheme(themeset="live")
         # Save latest to history, but how to ensure no gaps?
@@ -345,17 +349,17 @@ av_make_server <- function() {
 
         t_toget <- data.table(symbol=c(eqlist2[1],eqlist1),catg=c("idx",rep("act",length(eqlist1))))
         toplot <- the$pxd[t_toget,on=.(symbol)]  |> narrowbydtstr(datestring)
-        toplot <- toplot[,.(date,adjusted_close,cumrtn=log(adjusted_close)-log(first(adjusted_close))),by=.(catg,symbol)]
+        toplot <- toplot[,.(timestamp,adjusted_close,cumrtn=log(adjusted_close)-log(first(adjusted_close))),by=.(catg,symbol)]
         toplot <- toplot[,let(rtn=c(NA_real_,diff(cumrtn,1))), by=.(catg,symbol)]
-        toplot_idx <- toplot[catg=="idx",.(date,idxpx=adjusted_close,mktrtn=rtn,cummktrtn=cumrtn)]
-        toplot_idx <- toplot_idx[toplot[catg=="act",],on=.(date)]
-        toplot_tridx <- toplot_idx[,.(date,variable=symbol,value=100*exp(cumrtn-cummktrtn))]
+        toplot_idx <- toplot[catg=="idx",.(timestamp,idxpx=adjusted_close,mktrtn=rtn,cummktrtn=cumrtn)]
+        toplot_idx <- toplot_idx[toplot[catg=="act",],on=.(timestamp)]
+        toplot_tridx <- toplot_idx[,.(timestamp,variable=symbol,value=100*exp(cumrtn-cummktrtn))]
         out[["TS1"]] <-  one_px_ts(toplot_tridx,rv,title=paste0("Excess Returns over ",eqlist2[1]),extra_anno="hline,100",
                                    events=events,dtstartfrac=dtstartfrac)
         toplot_idx <- toplot_idx[,let(rtn=100*rtn,mktrtn=100*mktrtn)]
         volp_n <- as.integer(s(volparams)[[2]])
         toplot_corr <- toplot_idx[,rcor:=frollapply(.SD,volp_n,\(x) 100*cor(x$mktrtn,x$rtn,method="kendall"),by.column=FALSE), by=.(symbol)]
-        out[["TS2"]] <- one_px_ts(toplot_corr[,.(date,variable=symbol,value=rcor)],rv,
+        out[["TS2"]] <- one_px_ts(toplot_corr[,.(timestamp,variable=symbol,value=rcor)],rv,
                   title=paste0("Rolling ",volp_n," day kendall correlation"),extra_anno="hline,100",
                   events=events,dtstartfrac=dtstartfrac)
         rtnscatall <- fg_scatplot(toplot_idx,"rtn ~ mktrtn + color:symbol +  point:label", "lm",datecuts=c(7),
@@ -377,7 +381,7 @@ av_make_server <- function() {
         onevol <- function(x) {
           tdta <- toplot[[1]][symbol==x,]
           xdta <- tdta[,lapply(.SD,\(x) x+(get(seriesnm)-close)), .SDcols=s("open;high;low;close")]
-          data.table(date=tdta$date,variable=x,
+          data.table(timestamp=tdta$timestamp,variable=x,
                       value=100*TTR::volatility(xdta, calc=volp[[1]],n=as.integer(volp[[2]]), N=as.integer(volp[[3]]))) }
         toplot2 <- rbindlist(lapply(eqlist1, onevol))
         out[["TS1"]] <- one_px_ts(toplot2,rv,title=paste("Volatility (pct) using ",volparams),events=events,dtstartfrac=dtstartfrac)

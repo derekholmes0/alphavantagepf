@@ -7,12 +7,12 @@
 #' @name av_add_data
 #' @description Add price data to [av_runShiny()] internal data
 #'
-#' @param indta A data.frame with the following minimal columns: `c(symbol,date,close,adjusted_close)`
+#' @param indta A data.frame with the following minimal columns: `c(symbol,timestamp,close,adjusted_close)`
 #' @returns Nothing
 #'
 #' @seealso [av_runShiny()]
 #'
-#' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `date`
+#' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`
 #'
 #' @examples
 #' \dontrun{
@@ -24,11 +24,11 @@
 av_add_data <- function(indta) {
   firstdate <- find_col_bytype(indta,lubridate::is.instant)
   if (is.null(firstdate)) {
-    stop("av_add_data: Need a date column")
+    stop("av_add_data: Need a timestamp column")
   }
   indta <- data.table(indta)
-  setnames(indta,firstdate,"date")
-  colsneeded <- s("symbol;date;close;adjusted_close")
+  setnames(indta,firstdate,"timestamp")
+  colsneeded <- s("symbol;timestamp;close;adjusted_close")
   if( length(intersect(colsneeded,names(indta))) <length(colsneeded) ) {
     stop(paste0("av_add_data: Need at minimum columns ",paste0(colsneeded,collapse=" ")))
   }
@@ -38,21 +38,17 @@ av_add_data <- function(indta) {
 
 #' @noRd
 restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
-  assetlist=pxinv=NULL
+  pxinv=NULL
   if(skip) { return() }
   if(grepl("all|constants",todo) & file.exists(the$constants_fn)) {
     load(the$constants_fn, envir=the)
   }
-  if(grepl("all|asset",todo) & file.exists(the$assetlist_fn)) {
-    load(the$assetlist_fn)
-    the$assetlist <- assetlist
+  if(grepl("all|inv",todo) & file.exists(the$inv_fn)) {
+    load(the$inv_fn)
+    lapply(names(pxinv),\(x) assign(x,pxinv[[x]],envir=the))
   }
   if(grepl("all|px",todo) & file.exists(the$pxd_fn)) {
-    the$pxd <- fst::read_fst(the$pxd_fn, as.data.table=TRUE)
-  }
-  if(grepl("all|px",todo) & file.exists(the$inv_fn)) {
-    load(the$inv_fn)
-    the$pxinv <- pxinv
+      the$pxd <- fst::read_fst(the$pxd_fn, as.data.table=TRUE)
   }
   if(nchar(the$av_dump_dir)>0) {
     avdatafn <- paste0(the$av_dump_dir,"/av_download.RD")
@@ -65,20 +61,15 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
 }
 
 save_avs_state <- function(todo="all") {
-  if(grepl("all|asset",todo)) {
-    assetlist <- the$assetlist
-    save(assetlist,file=the$assetlist_fn)
-    message_if_green(the$verbose,"Wrote asset lists to ",the$cachedir)
-  }
-  if(grepl("all|px",todo)) {
-    pxinv <- the$pxinv
+  if(grepl("all|asset|px",todo)) {
+    nonpx_names <-  dump_the()[classtype=="data.table"& !(nm %in% c("pxd")),]$nm
+    pxinv <- setNames(lapply(nonpx_names,\(x) get(x,envir=the)), nonpx_names)
     save(pxinv,file=the$inv_fn)
-    message_if_green(the$verbose,"Wrote inventory to ",the$inv_fn)
     fst::write_fst(the$pxd,the$pxd_fn,compress=20)
-    message_if_green(the$verbose,"Wrote price data to ",the$pxd_fn)
+    message_if_green(the$verbose,"Wrote inventories to ",the$inv_fn, "price data to ",the$pxd_fn)
   }
   if(grepl("all|the",todo)) {
-    unames=names(the)[sapply(the, class) %in% c("logical","character","numeric")]
+    unames=names(the)[sapply(the, class) %in% c("logical","character","numeric","difftime")]
     save(list=unames,envir=the,file= the$constants_fn)
     message_if_green(the$verbose,"Wrote constants state to ",the$constants_fn)
   }
@@ -94,21 +85,34 @@ epx_get_avfn <- function(intype,live=FALSE) {
 
 }
 
-# eps_live_to_hist : Convert live quote to same schema as hitorical data
+# epx_fmt_to_hist : Convert quotes to same schema as historical data
 # --------------------------------------------------
-eps_live_to_hist <- function(inquote,intype) {
+epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
   latestDay=high=low=volume=NULL
-  if(intype=="Equity" | intype=="ETF") {
-    return(inquote[,.(symbol,timestamp=latestDay,open,high,low,close,adjusted_close=close,volume,dividend_amount=0,split_coefficient=1)])
+  if(live==FALSE & (intype=="Equity" | intype=="ETF")) {
+    tortn <- inquote
   }
-  if(intype=="Index") {
-    return(data.table())  # No live indices yet
+  else if(live==FALSE & intype=="Index") {
+    tortn <- inquote[,.(symbol,timestamp=date,open,high,low,close,adjusted_close=close,volume=0,dividend_amount=0,split_coefficient=1)]
   }
-  if(intype=="FX") {
-    return(inquote[,.(symbol,timestamp,open,high,low,close,adjusted_close=close)])
+  else if(live==FALSE & intype=="FX") {
+    tortn <- inquote[,.(symbol,timestamp,open,high,low,close,adjusted_close=close,volume=0,dividend_amount=0,split_coefficient=1)]
   }
-
+  else if(live==TRUE & (intype=="Equity" | intype=="ETF")) {
+    tortn <- inquote[,.(symbol,timestamp=latestDay,open,high,low,close,adjusted_close=close,volume,dividend_amount=0,split_coefficient=1)]
+  }
+  else if(live==TRUE & (intype=="Index")) {
+    tortn <- data.table()
+  }
+  else if(live==TRUE & (intype=="FX")) {
+    tortn <- inquote[,.SD[.N]][,.(symbol,timestamp=as.Date(timestamp),open,high,low,close,adjusted_close=close)]
+  }
+  else {
+    message_if_red(TRUE,"epx_fmt_to_hist invalid input combinations (",live,intype)
+  }
+  return(tortn)
 }
+
 
 # form_symset Finds or downloads the asset type for a given ticker.  Sucks that Alphavantage can't unify these
 # form_symset(c("JBL","EEMA","NDX","USD/BRL"))
@@ -176,36 +180,33 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, addlive=FALSE, for
       tickertype <- symset[1,]$type
       avfun <- epx_get_avfn(tickertype,live=FALSE)
       dta <- av_get_pf(inticker,avfun,outputsize=datasize,verbose=FALSE)
-      if(avfun=="INDEX_DATA") {
-        dta[,let(adjusted_close=close,dividend_amount=0,split_coefficient=0)]
-      }
       if(nrow(dta)<=0) {
         tortn <-paste0("ERROR: ",inticker," returns no price data")
         message_if_red(TRUE,tortn)
         return(tortn)
       }
-      src <- "downloaded"
-
       dta <- dta |> save_av_data(avfun)
+      dta <- epx_fmt_to_hist(dta,tickertype,live=FALSE)
+      src <- "downloaded"
       if(addlive==TRUE) {
-        livedta <- av_get_pf(inticker,epx_get_avfn(tickertype,live=TRUE),outputsize="compact",verbose=FALSE)
-        livedta <- eps_live_to_hist(livedta,tickertype)
+        avfun_live <- epx_get_avfn(tickertype,live=TRUE)
+        livedta <- av_get_pf(inticker,avfun_live,outputsize="compact",verbose=FALSE)
+        livedta <- epx_fmt_to_hist(livedta,tickertype,live=TRUE)
         message_if_green(the$verbose,"manage_epx: Adding Live price to ",inticker," at ",Sys.time())
         dta <- rbindlist(list(dta,livedta),use.names=TRUE,fill=TRUE)
         src <- "downloaded+live"
       }
       tickers <- c(inticker)
     }
-    setnames(dta,"timestamp","date",skip_absent=TRUE)
     dta <- dta[,let(ts=Sys.time())]
-    the$pxd <- DTUpsert(the$pxd,dta,c("symbol","date"),fill=TRUE)
+    the$pxd <- DTUpsert(the$pxd,dta,c("symbol","timestamp"),fill=TRUE)
     # Get asset type and update inventory
     thisinv <- the$pxd[symset[,.(symbol)],on=.(symbol)]
-    thisinv <- thisinv[,.(beg_dt=min(date),end_dt=max(date)),by=.(symbol)]
+    thisinv <- thisinv[,.(beg_dt=min(timestamp),end_dt=max(timestamp)),by=.(symbol)]
     thisinv <- symset[thisinv,on=.(symbol)][,':='(age=Sys.Date()-end_dt)]
     setcolorder(thisinv,"loadts",after="end_dt")
     the$pxinv  <- DTUpsert(the$pxinv, thisinv, c("symbol"),fill=TRUE)
-    dtrg <- lapply(range(dta$date),\(x) format(x,"%Y-%m-%d"))
+    dtrg <- lapply(range(dta$timestamp),\(x) format(x,"%Y-%m-%d"))
     message_if_green(the$verbose,"av_one_px(",tickers[1],"): ",src," ",nrow(dta)," rows with range ",dtrg,
             " filling gap of ",nbdays," days from ",dtstoget[1], " to ",dtstoget[2])
   }
@@ -230,7 +231,18 @@ redownload_all <- function() {
 
 save_av_data <- function(indta, in_av_fun) {
   av_download=skipreason=NULL
+  avdatafn <- paste0(the$av_dump_dir,"/av_download.RD")
   dtakeys <- s(av_funcmap[av_fn==in_av_fun,.SD[1]]$savekey)
+  # REDRUM capture files no matter what
+  if(in_av_fun=="KILL") {
+    if(file.exists(avdatafn)) {
+      if(exists("av_download",envir=the)) { the$av_download<-list() }
+      suppressWarnings(file.remove(avdatafn))
+      message_if_red(TRUE,"save_av_data: Removing  capture file", avdatafn)
+    }
+    return()
+  }
+  # Do we need to do this?
   skipreason <- fcase(is.null(the$av_dump_dir) || the$av_dump_dir=="", "no Dump Directory",
                       the$capture_av_what=="none", "captured turned off",
                       nrow(indta)<=0, "no data to save",
@@ -241,16 +253,7 @@ save_av_data <- function(indta, in_av_fun) {
     message_if(the$verbose,"save_av_data(",in_av_fun,") : Skipping save data (",skipreason,")")
     return(indta)
   }
-  avdatafn <- paste0(the$av_dump_dir,"/av_download.RD")
   # Special events
-  if(in_av_fun=="KILL") {
-    if(file.exists(avdatafn)) {
-      if(exists("av_download",envir=the)) { the$av_download<-list() }
-      suppressWarnings(file.remove(avdatafn))
-      message_if_red(TRUE,"save_av_data: Removing  capture file", avdatafn)
-    }
-    return()
-  }
   # Is Valid FUnciton
   if(!(in_av_fun %in% av_funcmap$av_fn || in_av_fun=="savenow")) {
     message_if_red(TRUE,"save_av_data: Invalid function name: ",in_av_fun, " must be valid AV call")
@@ -298,7 +301,14 @@ save_av_data <- function(indta, in_av_fun) {
   return(indta)
 }
 
-# Force update on all
+# Database helpers
+
+kill_symbol <- function(inticker) {
+  the$pxd <- the$pxd[!(symbol==inticker),]
+  the$pxinv <- the$pxinv[!(symbol==inticker),]
+  message_if_red(TRUE,"Removed ",inticker," from price database")
+  save_avs_state()
+}
 
 
 # Checks on internal data structures
@@ -306,7 +316,6 @@ save_av_data <- function(indta, in_av_fun) {
 # dump_inv : REturns prie inventory
 # dump_assetlist : Returns current set of assets
 # dump_captured : Returns summary of captured data
-
 
 dump_the <- function(typegrep="*") {
   classtype=nm=NULL
@@ -344,7 +353,7 @@ dump_captured <- function(todo="byfunction") {
               .(lastpx=last(close), lastts=max(load_ts), mindate=min(timestamp), maxdate=max(timestamp)), by=.(symbol)]
   }
   if(todo %in% names(the$av_download)) {
-    tkeys <- setdiff(key(the$av_download[[todo]]),s("contractID;timestamp;date"))
+    tkeys <- setdiff(key(the$av_download[[todo]]),s("contractID;timestamp;timestamp"))
     rtn <- the$av_download[[todo]][,.(n=.N,lastts=max(load_ts)),by=tkeys]
   }
   return( rtn )
