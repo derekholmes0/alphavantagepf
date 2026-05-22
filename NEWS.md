@@ -1,5 +1,10 @@
 # alphavantagepf (development version)
 
+# alphavantagepf 0.7.3
+
+* Added support for INDEX_DATA
+* Refactored AV capture
+
 # alphavantagepf 0.7.2
 
 * Fixed parameter mapping for NEWS_SENTIMENT given ticker
@@ -8,7 +13,7 @@
 
 # alphavantagepf 0.7.0
 
-* Updated function maps
+* Updated function maps, including INDEX
 * Added new options to av_grep_opts
 * Fixed Juneteenth option expiration calculation
 

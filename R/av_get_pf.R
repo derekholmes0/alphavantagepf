@@ -190,14 +190,18 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     else { #  application/x-download
         # CSV Returned - Good Call - Time Series CSV file
       contx <- httr::content(response, as = "text", encoding = "UTF-8")
-      content <- gsub("%", "",contx) |> data.table::fread(na.strings=c(".","NA","None"))
+      content <- gsub("%", "",contx) |> data.table::fread(na.strings=c(".","NA","None"), tz="UTC")
+      datatypes<-data.table(colnm=names(content),allna = lapply(content,\(x) all(is.na(x))),
+                        coltypes=lapply(content,typeof), colclass=lapply(content,\(x) class(x)[[1]]))
       # COnvert all nas to doubles
-      datatypes<-data.table(colnm=names(content),allna = lapply(content,\(x) all(is.na(x))), coltypes=lapply(content,typeof))
       toconvert<-datatypes[coltypes=="logical" & allna==TRUE,]$colnm
-      content <- content[,(toconvert):=lapply(.SD,as.numeric),.SDcols=toconvert]
+      content[,(toconvert):=lapply(.SD,as.numeric),.SDcols=toconvert]
+      # Adjust timestamps to correct timezone
+      toconvert <- datatypes[colclass=="POSIXct",]$colnm
+      content[,(toconvert):=lapply(.SD,\(x) as.POSIXct(x-the$NY_local_hrs,tz=Sys.timezone())),.SDcols=toconvert]
       if((melted=="default" &  pset[1,]$outform=="melt") | (as.character(melted) %in% c("always","TRUE"))) {
         if(!(symbolvarnm %in% colnames(content))) {
-          content <- content[,c(symbolvarnm):=symbol]  # Need to do before melt
+          content[,c(symbolvarnm):=symbol]  # Need to do before melt
           }
         content <- content |> melt_tobasetype(idvar=symbolvarnm)
         }

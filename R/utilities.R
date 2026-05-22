@@ -56,10 +56,9 @@ find_col_bytype <- function(indt,typeoffn,firstonly=TRUE,takeout=NA_character_) 
 #' @noRd
 DTappend <- function(indta,newdta) { data.table::rbindlist(list(indta,newdta),use.names=TRUE,fill=TRUE) }
 DTUpsert<-function(a,b,keys, fill=FALSE,verbose="",replaceifbempty=NULL) { # DT kind of tough to use this replaces old data
-  if(!data.table::is.data.table(b)) {
-    b<- data.table::data.table(b) }
+  if(!data.table::is.data.table(b)) {   b<- data.table::data.table(b) }
   if (is.character(a)) { aandb <- b }
-  else if(nrow(a)<=0) { aandb <-b }
+  else if(nrow(a)<=0) { aandb <- b }
   else if(nrow(b)<=0 | length(setdiff(keys,colnames(b)))>0) {
     if( is.data.table(replaceifbempty) ) { aandb <- replaceifbempty }
     else { aandb <-a }

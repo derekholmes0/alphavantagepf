@@ -12,6 +12,7 @@ gt.basetheme(
   digits = 2,
   seps = FALSE,
   na_format = "-",
+  size = "",
   interactive = FALSE
 )
 }
@@ -29,6 +30,8 @@ gt.basetheme(
 \item{seps}{(default: FALSE) Number formatting thousands separators}
 
 \item{na_format}{(default: "-") WHat to show for NAs}
+
+\item{size}{(default: "") Size of text, either \code{""} or \code{"small"}}
 
 \item{interactive}{(default: \code{FALSE}) Add interactive elements}
 }

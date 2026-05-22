@@ -43,7 +43,7 @@ tabstyle=HTML("
 
 av_make_ui <- function() {
   order1=order2=NULL
-  restore_avs_state()
+  restore_avs_state(msg="OnStartup")
   selectizeoptions <- avsd$selectizeoptions
   curr_assetlist <- sort(unique(the$assetlist$listnm))
   av_ui<- fluidPage(
@@ -63,7 +63,7 @@ av_make_ui <- function() {
      fluidRow(
        column(1,
             actionButton("RUN",paste0(tversion),width='100%',class = "btn btn-primary"),
-            selectizeInput("gropts","ts_opts",
+            selectizeInput("gropts","TSGraphopts",
                            c("last","lastlabel","hilightfirst","splitts","hilow"),
                            selected=c("last"),
                            multiple=TRUE,options(list(maxOptions=5,maxItems=1,selectizeoptions))),
@@ -76,7 +76,7 @@ av_make_ui <- function() {
             checkboxInput(inputId="useLive","useLive",value=FALSE)
        ),
 
-       column(11,
+       column(10,  # Was 11
           fluidRow(
             column(width=2,selectInput("anopt1","",avsd$deflist[!is.na(order1)]$runcode,multiple=FALSE,width='100%')),
             column(width=6,textInput("istr1", "", the$inpline1,width='100%')),
@@ -104,10 +104,11 @@ av_make_ui <- function() {
                         dygraphOutput("view2")
                 ),
                 tabPanel("DETAIL", gt_output(outputId = "det1gt"), gt_output(outputId = "det2gt"),
-                                  imageOutput("plot1"), imageOutput("plot2"),),
+                                  imageOutput("plot1"), imageOutput("plot2")),
                 tabPanel("OPTIONS",
                     fluidRow(
-                      column(width=2,span(textInput(inputId="ochains", label="optChains", value=the$ochains),style=avsd$labelcss)),
+                      column(width=2,span(textInput(inputId="ochains", label="Chains [F(ront)|B(ack)],[M(onth)|Q(tr)],[C(all)|P(ut)],[itm|otm|all]",
+                                                    value=the$ochains),style=avsd$labelcss)),
                       column(width=2,numericInput(inputId="mindelta", label="mindelta", value=5,min=0,max=100)),
                       column(width=2,selectInput(inputId="otodisplay", label="Output",
                                                  c("reduced","trading","all"),selected=the$otodisplay,multiple=FALSE)),
@@ -123,10 +124,12 @@ av_make_ui <- function() {
                     fluidRow(
                     column(width=2,
                        numericInput(inputId="nArticles", label="nArticles", value=50,min=20,max=300),
-                       numericInput(inputId="minabssent", label="minabssent", value=0.1,min=0,max=1),
                        selectInput(inputId="newssort",label="SortOn",c("time","sentiment","time,symbol","symbol,time"),multiple=FALSE),
-                       selectInput(inputId="newsfilter",label="Filter",c("none","tickerOnly","opinion"),multiple=FALSE)
-                     ),
+                       selectInput(inputId="newsfilter",label="Filter on:",c("none","tickerOnly","useMinSentiment","maxDays"),multiple=TRUE),
+                       numericInput(inputId="minabssent", label="MinSentiment", value=0.1,min=0,max=1),
+                       numericInput(inputId="maxagedays", label="Maximum Age (Days)", value=60,min=0),
+
+                    ),
                     column(width=8,
                        gt_output(outputId = "newsgt")
                      )
@@ -139,14 +142,15 @@ av_make_ui <- function() {
                     span(textInput(inputId="avapientitlement", label="av entitlement", value=the$avapientitlement),style=avsd$labelcss),
                     span(textInput(inputId="cachedir", label="Cache Data Directory", value=the$cachedir),style=avsd$labelcss),
                     span(textInput(inputId="av_dump_dir", label="AV dump Directory", value=the$av_dump_dir),style=avsd$labelcss),
-                    span(textInput(inputId="extracalc_file", label="extracalc csv", value=the$extracalc_file),style=avsd$labelcss),
+                    #span(textInput(inputId="extracalc_file", label="extracalc csv", value=the$extracalc_file),style=avsd$labelcss), ## <<--- TODO
                     span(textInput(inputId="ts_colorset", label="fgts colorset", value=the$ts_colorset),style=avsd$labelcss),
                     selectInput(inputId="sigpct","Regr Significance", c("0.05","0.025","0.1"),selected=c("0.025"),multiple=FALSE),
-                    checkboxInput(inputId="save_data","Capture AVdata",value=the$save_data),
-                    checkboxInput(inputId="save_prices","Capture AVprices",value=the$save_data),
-                    checkboxInput(inputId="save_cum","Cumulative Capture",value=the$save_data),
-                    checkboxInput(inputId="save_ts","Capture All (vs Update)",value=the$save_ts),
-                    checkboxInput(inputId="cleanonstart","Clean Capture files on startup",value=the$cleanonstart)
+                    selectInput(inputId="capture_av_what",label="Capture AV Data",c("none","pricesonly","noprices","all"),
+                                selected=the$capture_av_what, multiple=FALSE),
+                    selectInput(inputId="capture_av_update",label="Update or Cumulative",c("update","cum"),
+                                selected=the$capture_av_update, multiple=FALSE),
+                    selectInput(inputId="capture_av_save",label="Data Saving Options",c("CleanOnStart","SaveEveryAVCall","SaveNowOnOptUpdate"),
+                                selected=the$capture_av_save, multiple=TRUE)
                   ),
                   column(width=5,gt_output(outputId = "dumpthe"))
                   )
@@ -166,14 +170,18 @@ av_make_server <- function() {
 #  time_published=value_num=value_str=volparams=weight=n=nm=NULL
 
   av_server<-function(input, output,session) {
-    inlist=NULL
-    message(" TOP ----------------------- in datasetinputs aa------- ")
-    #restore_avs_state()
+    inlist=list_ts=NULL
     curr_assetlist <- sort(unique(the$assetlist$listnm))
-    FinanceGraphs::fg_sync_group("avshiny")
-    if(the$cleanonstart==TRUE) {
-      save_av_data(data.table(),"KILL")
+    # On Startup :Ownload current index list if not there
+    if(is.null(the$indexlist) | nrow(the$indexlist)<=0 | (min(the$indexlist$list_ts)<=Sys.Date()-7)) {
+      message_if_red(the$verbose,"Downloading Index Catalog at ",Sys.time())
+      the$indexlist <- av_get_pf("","INDEX_CATALOG")[,list_ts:=Sys.Date()][]
     }
+    FinanceGraphs::fg_sync_group("avshiny")
+    if("CleanOnStart" %in% the$capture_av_save) {  save_av_data(data.table(),"KILL") }
+    # ----
+
+
     reset_opts <- reactive({
       tmp1 <- paste0(input$anopt1,",",input$anopt2,",",input$list1,",",input$list2)
       updateSelectInput(session,"anopt1",selected="SelectOption")
@@ -256,8 +264,9 @@ av_make_server <- function() {
       rv <- isolate(reactiveValuesToList(input))
       th1<- dump_the()
       av_api_key(rv$avapikey,rv$avapientitlement)
-      u1<-lapply(s("cachedir;av_dump_dir;save_data;save_prices;save_cum;save_ts;cleanonstart;ts_colorset"),
+      u1<-lapply(s("cachedir;av_dump_dir;capture_av_what;capture_av_update;capture_av_save;ts_colorset"),
                     \(x) av_set_defaults(x,rv[[x]]))
+      av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
       av_set_defaults("assetlist_fn",paste0(rv$cachedir,"/avpf_assetlist.RD"))
       av_set_defaults("pxd_fn",paste0(rv$cachedir,"/avpf_px.fst"))
       av_set_defaults("inv_fn",paste0(rv$cachedir,"/avpf_inv.RD"))
@@ -267,12 +276,25 @@ av_make_server <- function() {
       output$dumpthe <- render_gt(expr=th1 |> gt() |> gt.basetheme() |> decorate_table())
     })
 
-    observeEvent(input$save_data, {
-      req(input$save_data)
-      feedtxt<- fifelse(input$save_data,
-                    paste0("AV data will be captured to ",input$av_dump_dir,"/av_download.RD"),
-                    "No Data Capture")
+    observeEvent(input$capture_av_what, {
+      req(input$capture_av_what)
+      feedtxt<- fcase(input$capture_av_what=="none","No Data Capture",
+                      input$capture_av_what=="pricesonly","Only prices captured",
+                      input$capture_av_what=="noprices","Only non price data captured",
+                      input$capture_av_what=="all","All Data captured",
+                      default="Denmark call home")
+      if("capture" %chin% feedtxt) {
+        feedtxt <- paste0(feedtxt," to ",input$av_dump_dir,"/av_download.RD")
+      }
       shinyFeedback::showFeedback(inputId="av_dump_dir", text=feedtxt,color="#2ca35f")
+    })
+
+    observeEvent(input$capture_av_save, {
+      req(input$capture_av_save)
+      if("SaveNowOnOptUpdate" %in% input$capture_av_save) {
+        save_av_data(data.table(),"SaveNowOnOptUpdate")
+        updateSelectInput(session,"capture_av_save",selected=the$capture_av_save)
+      }
     })
 
     observeEvent(input$RUN, {
@@ -286,27 +308,28 @@ av_make_server <- function() {
       eqlist2 <- s(istr2)
       #cAssign("rv;istr1;istr2;eqlist1;eqlist2;rv",silent=TRUE)
       seriesnm <- fifelse(rv$totrtn,"adjusted_close","close")
-      restore_avs_state(nrow(the$pxinv)>1 || substr(anopt1,1,2)=="TS" || substr(anopt2,1,2)=="TS")
+      #restore_avs_state(nrow(the$pxinv)>1 || substr(anopt1,1,2)=="TS" || substr(anopt2,1,2)=="TS",msg="always")
       if(anopt1=="Gen:Inventory") {
-        out[["TABLE4GT"]]<- dump_assetlist(returngt=TRUE)
-        out[["TABLE3GT"]]<- the$pxinv |> gt.avtheme(themeset="pxinv")
-        out[["TABLE2GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
+        out[["TABLE4GT"]]<- dump_assetlist(returngt=TRUE) |>  gt.avtheme(themeset="assetlist")
+        out[["TABLE3GT"]]<- the$pxinv[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv")
+        out[["DET1GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
       }
       if(anopt1=="Gen:LivePx") {
+        #message(" get live:  entitlement: ",  options("av_api_entitlement")$av_api_entitlement, " > ")
         toplot <- av_get_pf(the$pxinv$symbol,"REALTIME_BULK_QUOTES",melted=FALSE)
-        toplot <- data.table(symbol=eqlist1)[,inlist:=TRUE][toplot,on=.(symbol)]
+        toplot <- data.table(symbol=eqlist1)[,inlist:=TRUE][toplot,on=.(symbol)][order(change_percent)]
         out[["TABLE1GT"]]<- toplot |>  gt.avtheme(themeset="live")
         # Save latest to history, but how to ensure no gaps?
       }
       if(anopt1=="TS:PriceTS") {
-        toplot <- lapply(eqlist1, \(x) manage_epx(x,datestring))
+        toplot <- lapply(eqlist1, \(x) manage_epx(x,datestring,addlive=input$useLive))
         quick_message("istr1",paste(toplot,collapse=""))
         toplot <- get_one_ts(eqlist1,rebase,datestring,dtstartfrac)
         out[["TS1"]] <- one_px_ts(toplot,rv,events=events,dtstartfrac=dtstartfrac)
         save_avs_state("px")
       }
       if(anopt2=="TS:PriceTS") {
-        toplot <- lapply(eqlist2, \(x) manage_epx(x,datestring))
+        toplot <- lapply(eqlist2, \(x) manage_epx(x,datestring,addlive=input$useLive))
         quick_message("istr2",paste(toplot,collapse=""))
         toplot <- get_one_ts(eqlist2,rebase,datestring,dtstartfrac)
         out[["TS2"]] <- one_px_ts(toplot,rv,events=events,dtstartfrac=dtstartfrac)
@@ -317,7 +340,7 @@ av_make_server <- function() {
         shinyFeedback::feedbackDanger("istr2", !is_in_list, "2. Need a hedge/index")
         req(is_in_list, cancelOutput = TRUE)
 
-        toplot <- lapply(c(eqlist1,eqlist2), \(x) manage_epx(x,datestring))
+        toplot <- lapply(c(eqlist1,eqlist2), \(x) manage_epx(x,datestring,addlive=input$useLive))
         quick_message("istr1",paste(toplot,collapse=""))
 
         t_toget <- data.table(symbol=c(eqlist2[1],eqlist1),catg=c("idx",rep("act",length(eqlist1))))
@@ -335,7 +358,7 @@ av_make_server <- function() {
         out[["TS2"]] <- one_px_ts(toplot_corr[,.(date,variable=symbol,value=rcor)],rv,
                   title=paste0("Rolling ",volp_n," day kendall correlation"),extra_anno="hline,100",
                   events=events,dtstartfrac=dtstartfrac)
-        rtnscatall <- fg_scatplot(toplot_idx,"rtn ~ mktrtn + color:symbol + doi:recent", "lm",datecuts=c(7),
+        rtnscatall <- fg_scatplot(toplot_idx,"rtn ~ mktrtn + color:symbol +  point:label", "lm",datecuts=c(7),
                                       title=paste0("Asset Daily returns vs ",eqlist2[1], "Daily rtn"),
                                       axislabels=paste0("Asset TR;",eqlist2[1]," TR"),returnregresults=TRUE)
         out[["SCAT1"]] <- rtnscatall[[1]]
@@ -346,7 +369,7 @@ av_make_server <- function() {
         # TO do, other statistics (PCA?)
       }
       if(anopt1=="TS:HistVolTS") {
-        toplot <- lapply(eqlist1, \(x) manage_epx(x,datestring))
+        toplot <- lapply(eqlist1, \(x) manage_epx(x,datestring,addlive=input$useLive))
         quick_message("istr1",paste(toplot,collapse=""))
 
         toplot <- get_one_ts(eqlist1,rebase,datestring,dtstartfrac)
@@ -379,28 +402,41 @@ av_make_server <- function() {
           olist <- avsd$overviewlist[,variable:=ETFName][]
           eqdta <- olist[eqdt,on=.(variable)][source=="av",]
           toplot <- dcast(eqdta[order(catprio,prio)], catprio+prio+category + variable+format ~ symbol, value.var="value_str")
-
           sectorset <- eqdt |> av_extract_df("sectors")
-          sectorset <- dcast(sectorset[!is.na(sector),][,let(weight=100*weight)], sector ~ symbol,value.var="weight")
-          sectorset <- sectorset[,let(category="sects",catprio=max(toplot$catprio)+1,prio=.I,format="")]
-          setnames(sectorset,"sector","variable")
-          toplot <- rbindlist(list(toplot, sectorset),use.names=TRUE,fill=TRUE)
+          if("weight" %in% sectorset) {
+            sectorset <- dcast(sectorset[!is.na(sector),][,let(weight=100*weight)], sector ~ symbol,value.var="weight")
+            sectorset <- sectorset[,let(category="sects",catprio=max(toplot$catprio)+1,prio=.I,format="")]
+            setnames(sectorset,"sector","variable")
+            toplot <- rbindlist(list(toplot, sectorset),use.names=TRUE,fill=TRUE)
+          }
           tbl_loc <- fifelse(length(eqset)>3, "TABLE2GT","TABLE3GT")
           out[[tbl_loc]] <-  toplot |> gt(groupname_col="category",row_group_as_column=TRUE) |> gt.avtheme(themeset="eqdescsec")
 
           holdset <- eqdt |> av_extract_df("holdings")
-          holdset <- holdset[,.SD[order(-weight)][,let(n=.I-min(.I)+1, weight=100*weight)], by=.(symbol)]
-          holdset <- dcast(holdset[n<=50,],n ~ symbol,value.var=c("description","weight"))
-          holdsetcn <- data.table(nm=colnames(holdset)[-1])[,let(i=.I+1,symbol=s(nm,"_")[2]),by=.I][order(symbol,nm)]
-          setcolorder(holdset, c(1,holdsetcn$i))
-          out[["DET1GT"]] <- holdset |> gt.avtheme(themeset="etfholdings")
-          quick_message("istr1","ETF holdings in DETAILS tab")
+          if("weight" %in% holdset) {
+            holdset <- holdset[,.SD[order(-weight)][,let(n=.I-min(.I)+1, weight=100*weight)], by=.(symbol)]
+            holdset <- dcast(holdset[n<=50,],n ~ symbol,value.var=c("description","weight"))
+            holdsetcn <- data.table(nm=colnames(holdset)[-1])[,let(i=.I+1,symbol=s(nm,"_")[2]),by=.I][order(symbol,nm)]
+            setcolorder(holdset, c(1,holdsetcn$i))
+            out[["DET1GT"]] <- holdset |> gt.avtheme(themeset="etfholdings")
+            quick_message("istr1","ETF holdings in DETAILS tab")
+          }
         }
       }
       if(anopt1=="EQ:DivEarn") {
         fwddts <- extenddtstr(datestring,rtn="list",endchg=2*360)
-        allearn <- rbindlist(lapply(symbol_grep_by_type(eqlist1,"Equity"),\(x) oneticker_earns(x,fwddts,datestring)))
-        out[["TABLE1GT"]]<- allearn |> gt.avtheme(themeset="earnings")
+        alleqs <- symbol_grep_by_type(eqlist1,"Equity")
+        if(length(alleqs)>0) {
+          allearn <- rbindlist(lapply(alleqs,\(x) oneticker_earns(x,fwddts,datestring)))
+          lastqtr <- max(allearn[symbol==alleqs[[1]] & !is.na(reportedDate)]$fiscalDateEnding)
+          lastqtr <- paste0(lubridate::year(lastqtr),"Q",lubridate::quarter(lastqtr))
+          out[["TABLE1GT"]]<- allearn |> gt.avtheme(themeset="earnings")
+          xout <- av_get_pf(alleqs[[1]],"EARNINGS_CALL_TRANSCRIPT",quarter=lastqtr) |>
+                                av_extract_df("transcript")
+          xout <- xout[,title:=fcase(grepl("Chief Executive|CEO",title),"CEO",grepl("Chief Financial|CFO",title),"CFO",grepl("Investor Relations",title),"InvRel",default=title)]
+          xout <- xout |> gt.avtheme(themeset="earningstranscript",paste0(alleqs[[1]]," ",lastqtr))
+          out[["DET1GT"]]<- xout
+        }
         alldivs <- rbindlist(lapply(eqlist1, \(x) oneticker_divs(x,datestring)),fill=TRUE,use.names=TRUE)
         out[["TABLE2GT"]]<- alldivs |> gt.avtheme(themeset="dividends")
       }
@@ -418,7 +454,9 @@ av_make_server <- function() {
         eqdta <- av_get_pf("","SYMBOL_SEARCH",keywords=istr1) |> save_av_data("SYMBOL_SEARCH")
         eqdta[,let(format=fcase(type=="Equity" & region=="United States","bold",default=""))]
         setcolorder(eqdta,neworder="matchScore")
-        out[["TABLE1GT"]] <- eqdta |> gt.avtheme(themeset="etfholdings",istr1)
+        idxsearch <- the$indexlist[grepl(istr1,name,ignore.case=TRUE) | grepl(istr1,symbol,ignore.case=TRUE),][,.(symbol,name,type="Index")]
+        eqdta <- rbindlist(list(idxsearch[,format:="green"],eqdta),fill=TRUE,use.names=TRUE)
+        out[["TABLE1GT"]] <- eqdta |> gt.avtheme(themeset="namesearch",istr1)
       }
       if(anopt1=="EQ:OptSearch") {
         allmsg <- ""
@@ -434,23 +472,27 @@ av_make_server <- function() {
         indta <- indta |> save_av_data("HISTORICAL_OPTIONS")
         quick_message("istr1",paste(nrow(indta),"rows ", fifelse(nchar(allmsg)>0, paste0(allmsg, " missing"),"")))
         if(nrow(indta)>0) {
-          inspots <- rbindlist(lapply(eqlist1,\(x) av_get_pf(x,"GLOBAL_QUOTE")))
+          inspots <- rbindlist(lapply(eqlist1,\(x) av_get_pf(x,"GLOBAL_QUOTE",melted=TRUE)))
           inspots <- inspots[variable=="price",.(symbol,spot=value_num)]
           indta <- inspots[indta,on=.(symbol)][,ncak:=1]
           filteredopts <- indta |> av_grep_opts(grepstring=ochains,mindelta=as.numeric(mindelta)/100)
           filteredopts <- filteredopts |> av_opt_helper_cols(scaling=oscaling)
           colstoshow <- data.table(showset=c("reduced","trading","all"),
-                                   colstring=c("symbol;ncak;strike;type;daysExp;moneyn;IV;mark;last;bo_pct;delta;vega;theta;contractID",
+                                   colstring=c("symbol;ncak;strike;type;daysExp;moneyn;mat_be;mat_be_pct;IV;mark;last;bo_pct;delta;vega;theta;contractID",
                                                "symbol;ncak;strike;daysExp;volume;open_interest;IV;delta;last;mark;bo_pct;bid;ask;bid_size_poi;ask_size_poi;contractID",
                                                paste0(names(filteredopts),collapse=";")))
-          out[["SCAT1"]] <- fg_scatplot(filteredopts,"IV ~ strikepctspot + color:symbol + symbol:type + xline:0")
-          #cAssign("filteredopts;colstoshow;otodisplay")
+          atmopts = indta[type=="call" & expiration<=Sys.Date()+60,][,.SD[which.min(abs(delta-0.5))],by=.(symbol,expiration)] |>
+                  av_opt_helper_cols(scaling="none")
+
+          out[["SCAT1"]] <- fg_scatplot(atmopts,"IV ~ daysExp + color:symbol",type="loessnofill",psize=3,title="ATM Term Structure")
+          filteredopts[,type:=fifelse(type=="call","C","P")]
           filteredopts<- filteredopts[,.SD,.SDcols=s(colstoshow[showset==otodisplay,]$colstring)]
           out[["OPT1GT"]] <- filteredopts |> gt.avtheme(themeset="filteredopts", istr1, otodisplay)
         }
       }
       if(anopt1=="EQ:News") {
-        allnews <- rbindlist(lapply(eqlist1,getNews))
+        allnews <- rbindlist(lapply(eqlist1,\(x) getNews(x,nArticles=input$nArticles,
+                                                    minabssent=input$minabssent,newsfilter=input$newsfilter,maxage=input$maxagedays)))
         if(newssort=="sentiment") { allnews<- allnews[order(symbol,-sntmt)] }
         if(newssort=="time,symbol") { allnews<- allnews[order(-time_published,symbol)] }
         if(newssort=="symbol,time") { allnews<- allnews[order(symbol, -time_published)] }
@@ -468,7 +510,6 @@ av_make_server <- function() {
     # =============================================================================================================================================
     the$dyg1h <- fifelse( "dygraphs" %in% class(out[["TS1"]]), "600px","auto")
     the$dyg2h <- fifelse( "dygraphs" %in% class(out[["TS2"]]), "600px","auto")
-
     output$t1gt <- render_gt(expr=out[["TABLE1GT"]])
     output$t2gt <- render_gt(expr=out[["TABLE2GT"]])
     output$t3l_gt <- render_gt(expr=out[["TABLE3GT"]])

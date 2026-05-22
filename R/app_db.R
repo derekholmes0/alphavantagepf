@@ -37,7 +37,7 @@ av_add_data <- function(indta) {
 }
 
 #' @noRd
-restore_avs_state <- function(todo="all",skip=FALSE) {
+restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
   assetlist=pxinv=NULL
   if(skip) { return() }
   if(grepl("all|constants",todo) & file.exists(the$constants_fn)) {
@@ -54,7 +54,14 @@ restore_avs_state <- function(todo="all",skip=FALSE) {
     load(the$inv_fn)
     the$pxinv <- pxinv
   }
-  message_if_green(the$verbose,"Restored state (",todo,") from ",the$cachedir)
+  if(nchar(the$av_dump_dir)>0) {
+    avdatafn <- paste0(the$av_dump_dir,"/av_download.RD")
+    if(grepl("all|capture",todo) & file.exists(avdatafn)) {
+      message_if_green(the$verbose,"Loading cumulative capture data from ",avdatafn)
+      load(avdatafn,envir=the)
+    }
+  }
+  message_if_green(the$verbose,"Restored state (",todo,") from ",the$cachedir, " ",msg)
 }
 
 save_avs_state <- function(todo="all") {
@@ -77,7 +84,34 @@ save_avs_state <- function(todo="all") {
   }
 }
 
+# epx_get_avfn : Whichg function to call given type
+# --------------------------------------------------
+epx_get_avfn <- function(intype,live=FALSE) {
+  av_live=av_hist=NULL
+  return(data.table(type=s("Equity;ETF;Index;FX"),
+                       av_hist=s("TIME_SERIES_DAILY_ADJUSTED;TIME_SERIES_DAILY_ADJUSTED;INDEX_DATA;FX_DAILY"),
+                       av_live=s("GLOBAL_QUOTE;GLOBAL_QUOTE;NOTAVAIL;FX_INTRADAY"))[type==intype,.(avf=fifelse(live,av_live,av_hist))]$avf)
 
+}
+
+# eps_live_to_hist : Convert live quote to same schema as hitorical data
+# --------------------------------------------------
+eps_live_to_hist <- function(inquote,intype) {
+  latestDay=high=low=volume=NULL
+  if(intype=="Equity" | intype=="ETF") {
+    return(inquote[,.(symbol,timestamp=latestDay,open,high,low,close,adjusted_close=close,volume,dividend_amount=0,split_coefficient=1)])
+  }
+  if(intype=="Index") {
+    return(data.table())  # No live indices yet
+  }
+  if(intype=="FX") {
+    return(inquote[,.(symbol,timestamp,open,high,low,close,adjusted_close=close)])
+  }
+
+}
+
+# form_symset Finds or downloads the asset type for a given ticker.  Sucks that Alphavantage can't unify these
+# form_symset(c("JBL","EEMA","NDX","USD/BRL"))
 form_symset <- function(tickers, force=FALSE) {
   symbol=name=matchScore=NULL
   if(force==TRUE || nrow(the$pxinv)<=0) {
@@ -85,19 +119,30 @@ form_symset <- function(tickers, force=FALSE) {
     symset <- data.table()
   }
   else {
+    # Symbols we already  have
     symset<- data.table(symbol=s(tickers))[the$pxinv,on=.(symbol),nomatch=NULL][,.(symbol,type,currency,name,matchScore)]
     newtickers <- setdiff(s(tickers),symset$symbol)
   }
-  symnew <- rbindlist(lapply(newtickers, \(x)
-    av_get_pf("","SYMBOL_SEARCH",keywords=x)[matchScore>=0.999,][1,.(symbol=x,type,currency,name,matchScore)]
+  # New equities/ETS
+  symnew_eq <- rbindlist(lapply(newtickers, \(x)
+    av_get_pf("","SYMBOL_SEARCH",keywords=x)[matchScore>=0.999,.(symbol=x,type,currency,name,matchScore)]
   ))
-  symset = rbindlist(list(symset,symnew),fill=TRUE,use.names=TRUE)
+  # New Indices
+  symnew_ix <- data.table(symbol=newtickers)
+  symnew_ix <- the$indexlist[symnew_ix,on=.(symbol),nomatch=NULL]
+  if(nrow(symnew_ix)>0) {
+    symnew_ix <- symnew_ix[,.(symbol,type="Index",currency="USD",name,matchScore=1)]
+  }
+  # New currency Pairs
+  symnew_fx <- data.table(symbol=grepv("([A-Z]{3})/([A-Z]{3})",newtickers,ignore.case=TRUE))[,
+                                      .(symbol,type="FX",currency=substr(symbol,1,3),name=symbol,matchScore=1)]
+  symset <- rbindlist(list(symset,symnew_eq,symnew_ix,symnew_fx),fill=TRUE,use.names=TRUE)
   return(symset[])
 }
 
 # manage_epx only accepts more than one ticker if called with substitute_data
 
-manage_epx <- function(inticker, dtstr, substitute_data=NULL, force=FALSE) {
+manage_epx <- function(inticker, dtstr, substitute_data=NULL, addlive=FALSE, force=FALSE) {
   symbol=beg_dt=NULL
   dtstoget <- gendtstr(dtstr,rtn="list") # Dates to get
   if(nrow(the$pxinv)>0) {
@@ -123,30 +168,41 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, force=FALSE) {
       dta <- data.table::copy(substitute_data)
       src <- "Added"
       tickers <- unique(substitute_data$symbol)
+      symset <- form_symset(tickers,force=force)[,let(loadts=Sys.time())]
     }
     else {
       datasize <- fifelse(nbdays<=20 & !force,"compact","full")
-      avfun <- fifelse( stringr::str_detect(inticker,"[A-Z]/[A-Z]"),"FX_DAILY","TIME_SERIES_DAILY_ADJUSTED")
+      symset <- form_symset(inticker,force=force)[,let(loadts=Sys.time())]
+      tickertype <- symset[1,]$type
+      avfun <- epx_get_avfn(tickertype,live=FALSE)
       dta <- av_get_pf(inticker,avfun,outputsize=datasize,verbose=FALSE)
+      if(avfun=="INDEX_DATA") {
+        dta[,let(adjusted_close=close,dividend_amount=0,split_coefficient=0)]
+      }
       if(nrow(dta)<=0) {
         tortn <-paste0("ERROR: ",inticker," returns no price data")
         message_if_red(TRUE,tortn)
         return(tortn)
       }
-      setnames(dta,"timestamp","date")
       src <- "downloaded"
+
+      dta <- dta |> save_av_data(avfun)
+      if(addlive==TRUE) {
+        livedta <- av_get_pf(inticker,epx_get_avfn(tickertype,live=TRUE),outputsize="compact",verbose=FALSE)
+        livedta <- eps_live_to_hist(livedta,tickertype)
+        message_if_green(the$verbose,"manage_epx: Adding Live price to ",inticker," at ",Sys.time())
+        dta <- rbindlist(list(dta,livedta),use.names=TRUE,fill=TRUE)
+        src <- "downloaded+live"
+      }
       tickers <- c(inticker)
     }
-    setkeyv(dta,c("symbol","date"))
-    if(the$save_data & the$save_prices & is.null(substitute_data)) {
-      dta <- dta |> save_av_data(avfun)
-    }
+    setnames(dta,"timestamp","date",skip_absent=TRUE)
+    dta <- dta[,let(ts=Sys.time())]
     the$pxd <- DTUpsert(the$pxd,dta,c("symbol","date"),fill=TRUE)
     # Get asset type and update inventory
-    symset <- form_symset(tickers,force=force)[,let(loadts=Sys.time())]
     thisinv <- the$pxd[symset[,.(symbol)],on=.(symbol)]
     thisinv <- thisinv[,.(beg_dt=min(date),end_dt=max(date)),by=.(symbol)]
-    thisinv <- symset[thisinv,on=.(symbol)]
+    thisinv <- symset[thisinv,on=.(symbol)][,':='(age=Sys.Date()-end_dt)]
     setcolorder(thisinv,"loadts",after="end_dt")
     the$pxinv  <- DTUpsert(the$pxinv, thisinv, c("symbol"),fill=TRUE)
     dtrg <- lapply(range(dta$date),\(x) format(x,"%Y-%m-%d"))
@@ -162,18 +218,32 @@ redownload_all <- function() {
   save_avs_state("asset")
 }
 
-# Just pass data if filenm is null
-# Additional option to save price data as well
+# save_av_data:  Capture all outputs from alphavantage calls, possibly keyed appropriately
+# capture_av_what
 # cumulative: Add to data
 # May need ot use fst if this gets too big
-save_av_data <- function(indta, intype) {
-  av_download=NULL
-  if(is.null(the$av_dump_dir) || the$av_dump_dir=="") {
-    message_if_green(the$verbose,"Skipping save data")
+
+#   selectInput(inputId="capture_av_what",label="CaptureAVData",c("none","pricesonly","noprices","all"),multiple=FALSE),
+#   selectInput(inputId="capture_av_update",label="Update or Cumulative",c("update","cum"),multiple=FALSE),
+#   checkboxInput(inputId="cleanonstart","Clean Capture files on startup",value=the$cleanonstart)
+
+
+save_av_data <- function(indta, in_av_fun) {
+  av_download=skipreason=NULL
+  dtakeys <- s(av_funcmap[av_fn==in_av_fun,.SD[1]]$savekey)
+  skipreason <- fcase(is.null(the$av_dump_dir) || the$av_dump_dir=="", "no Dump Directory",
+                      the$capture_av_what=="none", "captured turned off",
+                      nrow(indta)<=0, "no data to save",
+                      length(dtakeys)<=0, "No save keys specified",
+                      default=""
+                      )
+  if(nchar(skipreason)>0) {
+    message_if(the$verbose,"save_av_data(",in_av_fun,") : Skipping save data (",skipreason,")")
     return(indta)
   }
   avdatafn <- paste0(the$av_dump_dir,"/av_download.RD")
-  if(intype=="KILL") {
+  # Special events
+  if(in_av_fun=="KILL") {
     if(file.exists(avdatafn)) {
       if(exists("av_download",envir=the)) { the$av_download<-list() }
       suppressWarnings(file.remove(avdatafn))
@@ -182,38 +252,61 @@ save_av_data <- function(indta, intype) {
     return()
   }
   # Is Valid FUnciton
-  if(!intype %in% av_funcmap$av_fn) {
-    message_if_red(TRUE,"save_av_data: Invalid function name: ",intype, " must be valid AV call")
+  if(!(in_av_fun %in% av_funcmap$av_fn || in_av_fun=="savenow")) {
+    message_if_red(TRUE,"save_av_data: Invalid function name: ",in_av_fun, " must be valid AV call")
     return(indta)
   }
+  is_price_data <-  grepl("TIME_SERIES|FX_DAILY|DIGITAL_CURRENCY",in_av_fun)
   # No technical analysis
-  if(av_funcmap[av_fn==intype,.SD[1]]$category=="ta") {
-    message_if_red(TRUE,"save_av_data: Technical analysis data",intype, " not saved")
+  if(av_funcmap[av_fn==in_av_fun,.SD[1]]$category=="ta") {
+    message_if_red(the$verbose,"save_av_data: Technical analysis data",in_av_fun, " not saved")
     return(indta)
   }
-  # Skip if price
-  if(the$save_prices==FALSE & grepl("TIME_SERIES|FX_DAILY",intype)) {
-    message_if_red(TRUE,"save_av_data: Not saving price series by choice")
-    return(indta)
+  cpy_indta <- copy(indta)[,let(load_ts=Sys.time())]  # Need to copy in case colnames are changed susequent to call
+  # Determine if we're saving
+  savingcode <-
+    fcase(the$capture_av_what %chin% c("pricesonly") & is_price_data==TRUE, "timeseries",
+          the$capture_av_what %chin% c("noprices") & is_price_data==FALSE, "other",
+          the$capture_av_what %chin% c("all"), "all",
+          default=""
+    )
+
+  if(nchar(savingcode)>0 & nrow(cpy_indta)>0) {
+    if(!exists("av_download",envir=the) & file.exists(avdatafn)) {
+      message_if_green(the$verbose,"Loading cumulative capture data from ",avdatafn)
+      load(avdatafn,envir=the)
+    }
+    the$av_download[[in_av_fun]] <- the$av_download[[in_av_fun]] %||% data.table()
+    if(the$capture_av_update=="cum") {
+      the$av_download[[in_av_fun]] <- rbindlist(list(the$av_download[[in_av_fun]], cpy_indta),fill=TRUE)
+      message_if_green(the$verbose,"ADD ",nrow(cpy_indta), " ", savingcode, " rows to ",avdatafn)
+    }
+    else {  # Update
+      the$av_download[[in_av_fun]] <- DTUpsert(the$av_download[[in_av_fun]], cpy_indta, dtakeys)
+      message_if_green(the$verbose,"UPSERT ",nrow(cpy_indta), " rows ", savingcode, " to ",avdatafn)
+    }
   }
-  if(the$save_cum & !exists("av_download",envir=the) & file.exists(avdatafn)) {
-    message_if_green(TRUE,"Loading cumulative data from ",avdatafn)
-    load(avdatafn,envir=the)
+
+  if ("SaveEveryAVCall" %in% the$capture_av_save || "SaveNowOnOptUpdate" %in% the$capture_av_save) {
+    save(av_download,file=avdatafn,envir=the)
+    message_if_green(the$verbose,"Saving results of ",in_av_fun," call  to ",avdatafn, " now at ",
+                     file.info(avdatafn)$size/1000, "kB")
+    if("SaveNowOnOptUpdate" %in% the$capture_av_save) {
+      the$capture_av_save <- setdiff(the$capture_av_save,"SaveNowOnOptUpdate")
+    }
   }
-  if(the$save_ts) {
-    indta <- indta[,let(ts=Sys.time())]
-  }
-  if(the$save_cum==TRUE & exists("av_download",envir=the)) {
-    the$av_download[[intype]] <- rbindlist(list(the$av_download[[intype]], indta),fill=TRUE)
-  }
-  else {
-    the$av_download[[intype]] <- indta
-  }
-  save(av_download,file=avdatafn,envir=the)
-  message_if_green(the$verbose,"Saving results of ",intype," call  to ",avdatafn, "now at ",
-                   file.info(avdatafn)$size/1000, "kB")
   return(indta)
 }
+
+# Force update on all
+
+
+# Checks on internal data structures
+# dump_the : Returns internal state
+# dump_inv : REturns prie inventory
+# dump_assetlist : Returns current set of assets
+# dump_captured : Returns summary of captured data
+
 
 dump_the <- function(typegrep="*") {
   classtype=nm=NULL
@@ -228,7 +321,7 @@ dump_the <- function(typegrep="*") {
       if("list" %in% type) {
         toget<-paste0("<<list>> with ",length(toget), " items")
       }
-      outdump<-rbindlist(list(outdump,data.table(nm=x,classtype=type[1], toget=toget)))
+      outdump<-rbindlist(list(outdump,data.table(nm=x,classtype=type[1], toget=toget)),ignore.attr=TRUE)
     }
   }
   return(outdump[order(classtype,nm)])
@@ -238,10 +331,21 @@ dump_inv <- function() {
   return(the$pxinv)
 }
 dump_assetlist <- function(returngt=TRUE) {
-  outdump <- the$assetlist[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)]
-  if(returngt==TRUE) {
-    outdump <- outdump |>  gt.avtheme(themeset="assetlist")
-  }
-  return(outdump)
+  return(the$assetlist[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)])
 }
-
+dump_captured <- function(todo="byfunction") {
+  nr=fn=load_ts=NULL
+  if(is.null(the$av_download)) { return("No Data downloaded")}
+  if(todo=="byfunction") {
+    rtn <- data.table(fn=names(the$av_download))[,nr:=nrow(the$av_download[[fn]]), by=.I][]
+  }
+  if(todo=="pxhist" & "TIME_SERIES_DAILY_ADJUSTED" %in% names(the$av_download)) {
+    rtn <- the$av_download[["TIME_SERIES_DAILY_ADJUSTED"]][,
+              .(lastpx=last(close), lastts=max(load_ts), mindate=min(timestamp), maxdate=max(timestamp)), by=.(symbol)]
+  }
+  if(todo %in% names(the$av_download)) {
+    tkeys <- setdiff(key(the$av_download[[todo]]),s("contractID;timestamp;date"))
+    rtn <- the$av_download[[todo]][,.(n=.N,lastts=max(load_ts)),by=tkeys]
+  }
+  return( rtn )
+}

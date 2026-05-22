@@ -25,6 +25,7 @@ av_reset_defaults <- function() {
   the$extracalc_file <- ""
   the$pxd <- data.table()
   the$pxinv <- data.table()
+  the$indexlist <- data.table()
   the$inpline1 <-"a"
   the$inpline2 <-"b"
   unlink(the$defaultcachedir, force=TRUE,recursive=TRUE)
@@ -46,24 +47,31 @@ av_reset_defaults <- function() {
 #' av_make_funcmap()
 #' }
 #'
+#' @import data.table
 #' @export
 av_make_funcmap <- function() {
+  # Notes:
+  # Addinging symbol t dataset ma be neeed even in functions without parameters; using symbolooverrde
+    symboloverride=savekey=NULL
     av_funcmap_all <- data.table::fread("./inst/extdata/av_funcmap.csv") |>
-        data.table::melt(id.vars=c("av_fn","category","outform"))
-    av_funclist <- av_funcmap_all[,.(paramname="placeholder"),by=.(category,av_fn,outform)]
+        data.table::melt(id.vars=c("av_fn","category","outform","symboloverride","savekey"))
+    av_funclist <- av_funcmap_all[,.(paramname="placeholder"),by=.(category,av_fn,outform,symboloverride,savekey)]
     av_funcmap <- av_funcmap_all[nchar(value)>0,] |>
         tidyr::separate(value,c("ro","paramname"),sep=":",fill="left") |>
         tidyr::separate(paramname,c("paramname","def_value"),sep="=",fill="right",extra="merge") |>
         data.table::data.table(key=c("av_fn","paramname")) |> dplyr::arrange(av_fn,variable)
     # hasssymbol needed to add function name to returned data.
     symbolsanyway <- c("CURRENCY_EXCHANGE_RATE","CRYPTO_INTRADAY","FX_INTRADAY","FX_DAILY","FX_WEEKLY","FX_MONTHLY",
-                        "NEWS_SENTIMENT","SYMBOL_SEARCH")
+                        "NEWS_SENTIMENT","SYMBOL_SEARCH","INDEX_CATALOG")
+    # w/ params
     f_w_symbols <- av_funcmap[paramname=="symbol",.(hassymbol=(.N>0)),by=.(av_fn)]
     av_funcmap <- f_w_symbols[av_funcmap,on=.(av_fn)]
-    av_funcmap <- av_funcmap[,':='(hassymbol=data.table::fcoalesce(hassymbol,data.table::fifelse(av_fn %in% symbolsanyway,TRUE,FALSE)),
-                                   outform=data.table::fcoalesce(outform,""))][]
-    av_nofunc <- av_funclist[!av_funcmap[,.N,by=.(category,av_fn,outform)],on=.(av_fn,outform)][,':='(hassymbol=FALSE)]
+    # w/o params
+    av_nofunc <- av_funclist[!av_funcmap[,.N,by=.(category,av_fn,outform)],on=.(av_fn,outform)]
     av_funcmap <- data.table::rbindlist(list(av_funcmap,av_nofunc),use.names=TRUE,fill=TRUE)
+    # Combine and set hassymbol
+    av_funcmap <- av_funcmap[,':='(hassymbol=fcoalesce(symboloverride,hassymbol,FALSE),outform=fcoalesce(outform,""))][,
+                                    ':='(symboloverride=NULL)]
     #save(av_funcmap,file="../data/av_funcmap.rda",compress="xz")
     return(av_funcmap)
 }

@@ -98,6 +98,7 @@ av_opt_helper_cols<-function(indta, scaling=NULL, spot=NULL) {
   indta <- indta[,let(daysExp=as.integer(expiration-date),bo_pct=200*(ask-bid)/(ask+bid),IV=100*implied_volatility,
                       bid_size_poi=100*bid_size/fcoalesce(open_interest,1L), ask_size_poi=100*bid_size/fcoalesce(open_interest,1L),
                       strikepctspot=100*(strike/spot-1),moneyn=fifelse(type=="call",1,-1)*(spot-strike),
+                      mat_be=fifelse(type=="call",1,-1)*last+strike, mat_be_pct=100*((fifelse(type=="call",1,-1)*last+strike)/spot-1),
                       ncak=1)]
   if (is.null(scaling) || tolower(scaling)=="none") {
     message_if(the$verbose,"av_opt_helper_cols using Spot ",spot,", and date ",max(indta$date))
