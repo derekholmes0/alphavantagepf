@@ -12,6 +12,7 @@
 #' @param melt Return data in melted/normalized form
 #' @param separate_vars (default : FALSE)  separate out multiple levels of variable names into new keys
 #' @param outputform (default : `common`, `av_extract_fx()` only):  Use common names from `REALTIME_BULK_QUOTES`
+#' @param cols (default : all columns:  `av_extract_fx()` only):  String or List of columns to return
 #'`
 #' @returns Extracted data.tables for nested data returned from [av_get_pf()], If `grepstring` is not specified, first nested table is returned. [av_extract_fx()] returns a shortened data.table with FX quotes.
 #'
@@ -49,13 +50,16 @@ av_extract_df <- function(indta,grepstring="",melt=FALSE) {  # Keep symbol, vari
 
 #' @rdname av_extract_df
 #' @export
-av_extract_fx <- function(indta,outputform="common") {
+av_extract_fx <- function(indta,outputform="common",cols="") {
     thissymbol <- indta[1,]$symbol
     fxquote <- data.table::dcast(indta[get("ltype")=="numeric"],symbol ~ variable,value.var="value_str")
     fxquote <- fxquote[,.(`symbol`=thissymbol,`Ask`=as.numeric(get("Ask Price")),`Bid`=as.numeric(get("Bid Price")),`QuoteTimestamp`=as.POSIXct(get("Last Refreshed")))]
     fxquote <- fxquote[,':='(`Mid`=(get("Ask")+ get("Bid"))/2)]
     if(outputform=="common") {
       setnames(fxquote,c("QuoteTimestamp","Mid"),c("timestamp","close"))
+    }
+    if(length(s(cols))>0) {
+      fxquote <- fxquote[,.SD,.SDcols=s(cols)]
     }
     return(fxquote[])
 }

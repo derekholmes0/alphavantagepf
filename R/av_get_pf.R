@@ -97,7 +97,7 @@
 av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted="default",verbose=FALSE, ...) {
 
     if (missing(symbol)) symbol <- NULL
-    if (is.na(symbol)) {
+    if (any(is.na(symbol))) {
       message_if_red(TRUE,"av_get_pf: Symbol is NA, returning empty data.table")
       return(data.table())
     }

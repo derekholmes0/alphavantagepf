@@ -60,7 +60,9 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
   message_if_green(the$verbose,"Restored state (",todo,") from ",the$cachedir, " ",msg)
 }
 
+#' @importFrom stats setNames
 save_avs_state <- function(todo="all") {
+  classtype=NULL
   if(grepl("all|asset|px",todo)) {
     nonpx_names <-  dump_the()[classtype=="data.table"& !(nm %in% c("pxd")),]$nm
     pxinv <- setNames(lapply(nonpx_names,\(x) get(x,envir=the)), nonpx_names)

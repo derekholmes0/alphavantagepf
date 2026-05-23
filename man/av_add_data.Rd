@@ -7,7 +7,7 @@
 av_add_data(indta)
 }
 \arguments{
-\item{indta}{A data.frame with the following minimal columns: \code{c(symbol,date,close,adjusted_close)}}
+\item{indta}{A data.frame with the following minimal columns: \code{c(symbol,timestamp,close,adjusted_close)}}
 }
 \value{
 Nothing
@@ -16,7 +16,7 @@ Nothing
 Add price data to \code{\link[=av_runShiny]{av_runShiny()}} internal data
 }
 \details{
-Entire set of columns from \code{\link[=av_get_pf]{av_get_pf()}} can be added. First date column renamed to \code{date}
+Entire set of columns from \code{\link[=av_get_pf]{av_get_pf()}} can be added. First date column renamed to \code{timestamp}
 }
 \examples{
 \dontrun{

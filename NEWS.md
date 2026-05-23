@@ -2,7 +2,7 @@
 
 # alphavantagepf 0.7.3
 
-* Added support for INDEX_DATA
+* Added support for INDEX_DATA and FX
 * Refactored AV capture
 
 # alphavantagepf 0.7.2

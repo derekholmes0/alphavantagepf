@@ -116,3 +116,35 @@ getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),maxage=+Inf) {
   news1<-news1[age<=fifelse("maxDays" %in% newsfilter, maxage,+Inf),]
   return(news1[,.(symbol=x,age,time_published,sntmt=overall_sentiment_score,nlink=paste0("[",title,"](",url,")"),source)])
 }
+
+fillin_defaults <- function() {
+  if(!exists("avapikey",envir=the)) {
+    for(i in seq(1,nrow(avsd$defaults))) {
+      ivartype <- avsd$defaults[i,]$vartype
+      ivarnm <- avsd$defaults[i,]$var
+      if( ivartype=="cache" ) { assign(ivarnm, paste0(the$cachedir,"/", avsd$defaults[i,]$value_str), envir=the) }
+      if( ivartype=="str" ) { assign(ivarnm,  avsd$defaults[i,]$value_str, envir=the) }
+      if( ivartype=="log" ) { assign(ivarnm,  avsd$defaults[i,]$value_log, envir=the) }
+      if( ivartype=="num" ) { assign(ivarnm,  avsd$defaults[i,]$value_num, envir=the) }
+    }
+    message_if_red(TRUE,"Filling in app defaults")
+  }
+}
+
+fillin_defaults <- function() {
+  if(!exists("avapikey",envir=the)) {
+    for(i in seq(1,nrow(avsd$defaults))) {
+      ivartype <- avsd$defaults[i,]$vartype
+      ivarnm <- avsd$defaults[i,]$var
+      if( ivartype=="cache" ) {
+        ivarval <- paste0(the$cachedir,"/", avsd$defaults[i,get("value_str")])
+      }
+      else {
+        ivarval <- avsd$defaults[i,get(paste0("value_",ivartype))]
+      }
+      assign(ivarnm, ivarval, envir=the)
+    }
+    message_if_red(TRUE,"Filling in app defaults")
+  }
+}
+

@@ -44,7 +44,7 @@ tabstyle=HTML("
 av_make_ui <- function() {
   order1=order2=NULL
   restore_avs_state(msg="OnStartup")
-  selectizeoptions <- avsd$selectizeoptions
+  fillin_defaults()
   curr_assetlist <- sort(unique(the$assetlist$listnm))
   av_ui<- fluidPage(
     shinyFeedback::useShinyFeedback(),
@@ -66,7 +66,7 @@ av_make_ui <- function() {
             selectizeInput("gropts","TSGraphopts",
                            c("last","lastlabel","hilightfirst","splitts","hilow"),
                            selected=c("last"),
-                           multiple=TRUE,options(list(maxOptions=5,maxItems=1,selectizeoptions))),
+                           multiple=TRUE,options(list(maxOptions=5,maxItems=1,avsd$selectizeoptions))),
             textInput(inputId="events", label="Events", value = "tp,5"),
             textInput(inputId="datestring", label="dts", value=the$datestring),
             textInput(inputId="volparams", label="Histvolparams", value="gk.yz;20;252"),
@@ -123,7 +123,7 @@ av_make_ui <- function() {
                 tabPanel("NEWS",
                     fluidRow(
                     column(width=2,
-                       numericInput(inputId="nArticles", label="nArticles", value=50,min=20,max=300),
+                       numericInput(inputId="nArticles", label="nArticles", value=40,min=20,max=300),
                        selectInput(inputId="newssort",label="SortOn",c("time","sentiment","time,symbol","symbol,time"),multiple=FALSE),
                        selectInput(inputId="newsfilter",label="Filter on:",c("none","tickerOnly","useMinSentiment","maxDays"),multiple=TRUE),
                        numericInput(inputId="minabssent", label="MinSentiment", value=0.1,min=0,max=1),
@@ -146,10 +146,10 @@ av_make_ui <- function() {
                     span(textInput(inputId="ts_colorset", label="fgts colorset", value=the$ts_colorset),style=avsd$labelcss),
                     selectInput(inputId="sigpct","Regr Significance", c("0.05","0.025","0.1"),selected=c("0.025"),multiple=FALSE),
                     selectInput(inputId="capture_av_what",label="Capture AV Data",c("none","pricesonly","noprices","all"),
-                                selected=the$capture_av_what, multiple=FALSE),
+                                selected=s(the$capture_av_what), multiple=FALSE),
                     selectInput(inputId="capture_av_update",label="Update or Cumulative",c("update","cum"),
-                                selected=the$capture_av_update, multiple=FALSE),
-                    selectInput(inputId="capture_av_save",label="Data Saving Options",c("CleanOnStart","SaveEveryAVCall","SaveNowOnOptUpdate"),
+                                selected=s(the$capture_av_update), multiple=FALSE),
+                    selectInput(inputId="capture_av_save",label="Data Saving Options",c("none","CleanOnStart","SaveEveryAVCall","SaveNowOnOptUpdate"),
                                 selected=the$capture_av_save, multiple=TRUE)
                   ),
                   column(width=5,gt_output(outputId = "dumpthe"))
@@ -265,7 +265,6 @@ av_make_server <- function() {
       u1<-lapply(s("cachedir;av_dump_dir;capture_av_what;capture_av_update;capture_av_save;ts_colorset"),
                     \(x) av_set_defaults(x,rv[[x]]))
       # always has to be in tmp directory: av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
-      av_set_defaults("assetlist_fn",paste0(rv$cachedir,"/avpf_assetlist.RD"))
       av_set_defaults("pxd_fn",paste0(rv$cachedir,"/avpf_px.fst"))
       av_set_defaults("inv_fn",paste0(rv$cachedir,"/avpf_inv.RD"))
       save_avs_state("the")
@@ -318,8 +317,8 @@ av_make_server <- function() {
         # Non FX
         toplot <- av_get_pf(the$pxinv[data.table(type=s("Equity;ETF")),on=.(type)]$symbol,"REALTIME_BULK_QUOTES",melted=FALSE)
         if( length( fxsymbols <-the$pxinv[data.table(type=s("FX")),on=.(type)]$symbol )>0 ) {
-            toplot_fx <- av_get_pf(fxsymbols,"CURRENCY_EXCHANGE_RATE",melted=FALSE) |> av_extract_fx()
-            toplot <- rbindlist(list(toplot,toplot_fx[,.(symbol,timestamp,close)]),use.names=TRUE,fill=TRUE)
+          toplot_fx <- lapply(fxsymbols, \(x) av_get_pf(x,"CURRENCY_EXCHANGE_RATE",melted=FALSE) |> av_extract_fx(cols="symbol;timestamp;close") )
+          toplot <- rbindlist(list(toplot,rbindlist(toplot_fx)),use.names=TRUE,fill=TRUE)
         }
         toplot <- data.table(symbol=eqlist1)[,inlist:=TRUE][toplot,on=.(symbol)][order(change_percent)]
         out[["TABLE1GT"]]<- toplot |>  gt.avtheme(themeset="live")
