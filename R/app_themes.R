@@ -96,7 +96,6 @@ gt.avtheme<- function(x,themeset="",...) {
     return(thisgt)
   }
   # If a gt =============================================================
-  # If a gt =============================================================
   if (!"gt_tbl" %in% class(x)) {
     if(nrow(x)<=0) {
       return(x)
@@ -165,21 +164,7 @@ gt.avtheme<- function(x,themeset="",...) {
         tab_footnote(paste("retrieved as of",Sys.time())) |>
         fmt_integer(columns=c(daysExp)) |>
         cols_merge(columns=c(symbol,type,daysExp), pattern = "{1} {3}d {2}") |>
-        cols_width(symbol ~ px(90), contractID ~ px(135), everything() ~ px(70))
-  }
-  # Gen:News============================================================= Gen:News
-  if(themeset=="news") {
-    x <- x |>
-      fmt_markdown(columns=nlink) |>
-      tab_style(locations=cells_body(columns=nlink),style=(size="x-small")) |>
-      tab_header(title=paste0("News for ",ldots[[1]])) |> tab_footnote(paste("retrieved as of",Sys.time())) |>
-      data_color(columns=sntmt,method = "numeric",palette = c("red","white", "green")) |>
-      # data_color(columns=age,method="bin",bins=c(0,3,7,90),palette="Blues",reverse=TRUE) |>
-      cols_move_to_start(s("symbol;age;sntmt;nlink")) |>
-      fmt_datetime(columns=time_published,date_style="y.mn.day",time_style="iso-short") |>
-      fmt_duration(columns=age,output_units=c("days", "hours", "minutes")) |>
-      cols_width(time_published ~ px(100), source ~ px(120), age ~ px(90), nlink ~ px(400), everything() ~ px(40)) |>
-      gt.basetheme()
+        cols_width(symbol ~ px(90), contractID ~ px(150), everything() ~ px(70))
   }
   if(themeset=="earnings") {
     x<- x |> gt.basetheme(digits=2,interactive=TRUE) |>
@@ -203,5 +188,23 @@ gt.avtheme<- function(x,themeset="",...) {
     x<- x |> gt.basetheme(digits=2,interactive=TRUE) |>  fmt_number(columns=divdays,decimals=0) |>
       tab_header(title=paste0("Dividends"))
   }
+  # Gen:News============================================================= Gen:News
+  if(themeset=="news") {
+    ff1 <- function(x) { paste0('<a href="',x,'" target="_blank">LK</a>') }
+    ff2 <- function(x) { paste0('<a href="#" onclick="window.open(\'', x, '\', \'_blank\'); return false;">','LK','</a>')   }
+    thisgt <- x |>
+      fmt_url(columns=url,label=icon("link"),color="blue") |>
+      tab_style(locations=cells_body(columns=title),style=(size="x-small")) |>
+      tab_header(title=paste0("News for ",ldots[[1]])) |> tab_footnote(paste("retrieved as of",Sys.time())) |>
+      data_color(columns=sntmt,method = "numeric",palette = c("red","white", "green")) |>
+      # data_color(columns=age,method="bin",bins=c(0,3,7,90),palette="Blues",reverse=TRUE) |>
+      cols_move_to_start(s("symbol;age;sntmt;url;title")) |>
+      fmt_datetime(columns=time_published,date_style="y.mn.day",time_style="iso-short") |>
+      fmt_duration(columns=age,output_units=c("days", "hours", "minutes")) |>
+      cols_width(time_published ~ px(100), source ~ px(120), url ~ px(35), age ~ px(90), title ~ px(400), everything() ~ px(40)) |>
+      gt.basetheme()
+    return(thisgt)
+  }
+
   return(x)
 }

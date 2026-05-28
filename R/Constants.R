@@ -151,7 +151,7 @@ av_set_defaults <- function(optnm=NULL,optval=NULL,savetoconstants=FALSE) {
 
 #' @importFrom usethis use_data
 av_shiny_data <- function() {
-  tinputformstyle <- I("{font-size:11px; font-weight:bold; background-color: #ffff99}")
+  tinputformstyle <- I("{font-size:12px; font-weight:bold; background-color: #ffff99}")
   yellowed_inputs <- s("#datestring;#events;#volparams;#forecast;#pointers;#window;#ochains")
   avsd <- list(
     "deflist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"],
@@ -159,11 +159,11 @@ av_shiny_data <- function() {
     "defaults"=data.table::fread("./inst/extdata/av_defaults.csv"),
     "overviewlist"=data.table::fread("./inst/extdata/overview_map.csv"),
     "edit_tableoptions"=list('editable1'='row','editable2'='row','pagelen1'=80,'pagelen2'=80,'digits'=3),
-    "selectizeoptions" =I("selectize-input: 10px; background-color:red"),
+    "selectizeoptions" =I("selectize-input: 12px; background-color:red"),
     "inputcss_side" = paste(lapply(yellowed_inputs,(\(x) paste(x,tinputformstyle))),collapse=" "),
     "inputformstyle" =tinputformstyle,
     "inputcss_top" =paste(lapply(s("#istr1;#istr2"),\(x) paste(x,tinputformstyle)),collapse=" "),
-    "labelcss" =I("font-size:10pt color:red font-weight:bold")
+    "labelcss" =I("font-size:11pt color:red font-weight:bold")
   )
   av_funcmap <- av_make_funcmap()
   dtmap  <- av_make_dtmap()

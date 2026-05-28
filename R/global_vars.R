@@ -5,5 +5,5 @@ globalVariables(c('.','value','ltype','variable','av_fn','timestamp','expiration
                   'events','istr1','istr2','list1','list2','listnm','mindelta','mktrtn','ncak','newssort','ochains','oscaling','otodisplay',
                   'pctchg','price','prio','rcor','rebase','region','rtn','runcode','sector','showset','sigpct','sntmt','symbol','ticker',
                   'time_published','value_num','value_str','volparams','weight','n','nm','colclass','age','end_dt','change_percent','reportTime','title','content',
-                  'hibpopen','lowbpopen','prevclose','reportedDate','name'
+                  'hibpopen','lowbpopen','prevclose','reportedDate','name','classtype'
                   ))

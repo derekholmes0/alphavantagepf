@@ -4,7 +4,10 @@
 #' @noRd
 symbol_grep_by_type <- function(eqlist,grepstr="Equity", rtn="list") {
   symbol=NULL
-  tickerset <- the$pxinv[data.table(symbol=eqlist),on=.(symbol)][,.(symbol,type,currency)]
+  if(is.null(eqlist)) { tickerset <- the$pxinv[,.(symbol,type,currency)] }
+  else {
+    tickerset <- the$pxinv[data.table(symbol=eqlist),on=.(symbol)][,.(symbol,type,currency)]
+  }
   tickerset <- tickerset[grepl(grepstr,type,ignore.case=TRUE),]
   if(rtn=="list") {
     return(tickerset$symbol)
@@ -102,10 +105,15 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dtstart
   return(outdyg)
 }
 
-getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),maxage=+Inf) {
+getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),newsagrep="",maxage=+Inf) {
   news0=news1=artno=ticker=overall_sentiment_score=time_published=title=NULL
   news0 <- av_get_pf(x,"NEWS_SENTIMENT",limit=floor(nArticles)) |>  save_av_data("NEWS_SENTIMENT")
   news1 <- news0 |> av_extract_df("feed")
+  if(nchar(newsagrep)>0) {
+      keepitems <-!grepl(newsagrep,news1$title,ignore.case = TRUE) & !grepl(newsagrep,news1$source,ignore.case = TRUE)
+      message_if_red(the$verbose,"News filtered out ",nrow(news1)-sum(keepitems), " Stories")
+      news1 <- news1[keepitems]
+  }
   news1[,age:=difftime(Sys.time(),time_published)]
   if("tickerOnly"%in% newsfilter) {
     tickermentions<-lapply(1:nrow(news1), \(i) data.table(news1[i,]$ticker_sentiment[[1]])[,artno:=i])
@@ -114,37 +122,7 @@ getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),maxage=+Inf) {
   }
   news1<-news1[abs(overall_sentiment_score)>=fifelse("useMinSentiment" %in% newsfilter,minabssent,0),]
   news1<-news1[age<=fifelse("maxDays" %in% newsfilter, maxage,+Inf),]
-  return(news1[,.(symbol=x,age,time_published,sntmt=overall_sentiment_score,nlink=paste0("[",title,"](",url,")"),source)])
-}
-
-fillin_defaults <- function() {
-  if(!exists("avapikey",envir=the)) {
-    for(i in seq(1,nrow(avsd$defaults))) {
-      ivartype <- avsd$defaults[i,]$vartype
-      ivarnm <- avsd$defaults[i,]$var
-      if( ivartype=="cache" ) { assign(ivarnm, paste0(the$cachedir,"/", avsd$defaults[i,]$value_str), envir=the) }
-      if( ivartype=="str" ) { assign(ivarnm,  avsd$defaults[i,]$value_str, envir=the) }
-      if( ivartype=="log" ) { assign(ivarnm,  avsd$defaults[i,]$value_log, envir=the) }
-      if( ivartype=="num" ) { assign(ivarnm,  avsd$defaults[i,]$value_num, envir=the) }
-    }
-    message_if_red(TRUE,"Filling in app defaults")
-  }
-}
-
-fillin_defaults <- function() {
-  if(!exists("avapikey",envir=the)) {
-    for(i in seq(1,nrow(avsd$defaults))) {
-      ivartype <- avsd$defaults[i,]$vartype
-      ivarnm <- avsd$defaults[i,]$var
-      if( ivartype=="cache" ) {
-        ivarval <- paste0(the$cachedir,"/", avsd$defaults[i,get("value_str")])
-      }
-      else {
-        ivarval <- avsd$defaults[i,get(paste0("value_",ivartype))]
-      }
-      assign(ivarnm, ivarval, envir=the)
-    }
-    message_if_red(TRUE,"Filling in app defaults")
-  }
+  #news1<-news1[,url:=paste0('<a href="', url, '" target="_blank">', "<<", '</a>')]
+  return(news1[,.(symbol=x,age,time_published,sntmt=overall_sentiment_score,source,title,url)])
 }
 

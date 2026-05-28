@@ -1,7 +1,6 @@
 #' @importFrom TTR volatility
 #' @import gt
 #' @import gtExtras
-#' @importFrom hash hash .set
 #' @import data.table
 #' @importFrom dygraphs dygraphOutput renderDygraph
 #' @import shiny
@@ -19,50 +18,35 @@
 #require(FinanceGraphs)
 source("./R/utilities.R")
 
-tversion <-paste("1.6",Sys.getpid())
+# 1.8: News, ability to keep output from one run to the next
 # 1.6: Bug checks and check()
 # 1.45: APpearance changes: Plumbed list management out of options, but still need to code
 # 1.4: Passed Check, add new data
 # 1.3: Most of list done; check opts for invalid tickers
 # Save temp data, many parameters added to "the"
-
-emptyhash<-hash::hash(key=s("TS1;TS2;TS3;TABLE1GT;TABLE2GT;TABLE3GT;TABLE4GT;DET1GT;DET2GT;SCAT1;SCAT2;HTML;OPT1GT;OPT2GT;OPTSCAT1"))
-.set(emptyhash,keys=s("TABLE1GT;TABLE2GT;TABLE3GT;TABLE4GT;DET1GT;DET2GT;OPT1GT;OPT2GT;NEWSGT"),values=rep(data.frame(),9))
-
-tabstyle=HTML("
-      #output_text {
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 1;
-      }
-    ")
-
-#source("c:\\d\\src\\R\\ut_package.R")
 #av_set_defaults("ochains","F,M,C,otm"); save_avs_state("the")
 
 av_make_ui <- function() {
   order1=order2=NULL
   restore_avs_state(msg="OnStartup")
-  fillin_defaults()
   curr_assetlist <- sort(unique(the$assetlist$listnm))
   av_ui<- fluidPage(
     shinyFeedback::useShinyFeedback(),
      tags$head(
         tags$style(type='text/css',avsd$inputcss_side),
         tags$style(type='text/css',avsd$inputcss_top),
-        tags$style(type='text/css',"#msg {font-size:9px; background-color: #ddfcd9; width:330px}"),
-        tags$style(type='text/css',"#gropts {font-size:9px; background-color: #ddfcd9}"),
-        tags$style(HTML(".radio-inline {  font-size: 10px;  }")),
-        tags$style(HTML(".shiny-input-select { font-size: 10px; background-color: #f0f0f0 }")),
-        tags$style(HTML(".shiny-bound-input { font-size: 10px}")),
-        tags$style(HTML(".item { font-size: 10px; }")),
+        tags$style(type='text/css',"#msg {font-size:10px; background-color: #ddfcd9; width:330px}"),
+        tags$style(type='text/css',"#gropts {font-size:10px; background-color: #ddfcd9}"),
+        tags$style(HTML(".radio-inline {  font-size: 11px;  }")),
+        tags$style(HTML(".shiny-input-select { font-size: 11px; background-color: #f0f0f0 }")),
+        tags$style(HTML(".shiny-bound-input { font-size: 11px}")),
+        tags$style(HTML(".item { font-size: 11px; }")),
         tags$style(HTML(".no-gap-row { display: flex; gap: 0;align-items: flex-start; }")),
-        tags$style(HTML(".no-gap-row .table-pane { overflow-x: auto; flex: 0 0 auto;}"))
+        tags$style(HTML(".no-gap-row .table-pane { overflow-x: auto; flex: 0 0 auto;}")),
      ),
      fluidRow(
        column(1,
-            actionButton("RUN",paste0(tversion),width='100%',class = "btn btn-primary"),
+            actionButton("RUN","RUN",width='100%',class = "btn btn-primary"),
             selectizeInput("gropts","TSGraphopts",
                            c("last","lastlabel","hilightfirst","splitts","hilow"),
                            selected=c("last"),
@@ -73,7 +57,8 @@ av_make_ui <- function() {
             sliderInput(inputId="dtstartfrac","FocusPct",min=0,max=100,value=0),
             radioButtons(inputId="rebase","Rebase",choices=c("none","start","focus"),selected="none"),
             checkboxInput(inputId="totrtn","TotalRtn",value=TRUE),
-            checkboxInput(inputId="useLive","useLive",value=FALSE)
+            checkboxInput(inputId="useLive","useLive",value=FALSE),
+            checkboxInput(inputId="verbose","Status Msgs",value=the$verbose)
        ),
 
        column(10,  # Was 11
@@ -123,12 +108,14 @@ av_make_ui <- function() {
                 tabPanel("NEWS",
                     fluidRow(
                     column(width=2,
-                       numericInput(inputId="nArticles", label="nArticles", value=40,min=20,max=300),
-                       selectInput(inputId="newssort",label="SortOn",c("time","sentiment","time,symbol","symbol,time"),multiple=FALSE),
-                       selectInput(inputId="newsfilter",label="Filter on:",c("none","tickerOnly","useMinSentiment","maxDays"),multiple=TRUE),
-                       numericInput(inputId="minabssent", label="MinSentiment", value=0.1,min=0,max=1),
-                       numericInput(inputId="maxagedays", label="Maximum Age (Days)", value=60,min=0),
-
+                       numericInput(inputId="nArticles", label="nArticles", value=the$nArticles,min=20,max=300),
+                       selectInput(inputId="newssort",label="SortOn",c("time","sentiment","time,symbol","symbol,time"),selected="time",
+                                   multiple=FALSE),
+                       selectInput(inputId="newsfilter",label="Filter on:",c("none","tickerOnly","useMinSentiment","maxDays"),
+                                   selected="none",multiple=TRUE),
+                       span(textInput(inputId="newsgrep", label="Terms to filter out", value=the$newsgrep),style=avsd$labelcss),
+                       numericInput(inputId="minabssent", label="MinSentiment", value=the$minabssent,min=0,max=1),
+                       numericInput(inputId="maxagedays", label="Maximum Age (Days)", value=the$maxagedays,min=0),
                     ),
                     column(width=8,
                        gt_output(outputId = "newsgt")
@@ -138,7 +125,7 @@ av_make_ui <- function() {
                 tabPanel("AVOPTS",
                   column(width=3,
                     actionButton("SetOpts","Set Opts",width='50%',class = "btn btn-primary"),
-                    span(textInput(inputId="avapikey", label="av api key", value=the$avapikey),style=avsd$labelcss),
+                    span(passwordInput(inputId="avapikey", label="av api key", value=the$avapikey),style=avsd$labelcss),
                     span(textInput(inputId="avapientitlement", label="av entitlement", value=the$avapientitlement),style=avsd$labelcss),
                     span(textInput(inputId="cachedir", label="Cache Data Directory", value=the$cachedir),style=avsd$labelcss),
                     span(textInput(inputId="av_dump_dir", label="AV dump Directory", value=the$av_dump_dir),style=avsd$labelcss),
@@ -168,7 +155,7 @@ av_make_server <- function() {
 #  events=istr1=istr2=list1=list2=listnm=mindelta=mktrtn=ncak=newssort=ochains=oscaling=otodisplay=NULL
 #  pctchg=price=prio=rcor=rebase=region=rtn=runcode=sector=showset=sigpct=sntmt=symbol=ticker=NULL
 #  time_published=value_num=value_str=volparams=weight=n=nm=NULL
-
+  out <- list()
   av_server<-function(input, output,session) {
     inlist=list_ts=NULL
     curr_assetlist <- sort(unique(the$assetlist$listnm))
@@ -194,9 +181,9 @@ av_make_server <- function() {
       shinyFeedback::feedbackWarning("is_in_list", !is_in_list, "(1) Need an asset in inventory to compare against")
     })
 
-    quick_message <- function(wh,this_message) {
+    quick_message <- function(wh,this_message,eval=TRUE) {
       shinyFeedback::hideFeedback(inputId=wh)
-      if(nchar(this_message)>0) {
+      if(nchar(this_message)>0& eval==TRUE) {
         this_message <- paste0("<small>",this_message,"</small>")
         shinyFeedback::showFeedback(inputId=wh, text=this_message,color="#1f78b4")
       }
@@ -221,7 +208,7 @@ av_make_server <- function() {
       if(todo=="get") {
         av_set_defaults(paste0("inpline",no),
                         paste0( the$assetlist[listnm==tlist,]$ticker,collapse=";") )
-        save_avs_state("the")
+        save_avs_state("all")
         updateTextInput(session,paste0("istr",no), value= the[[paste0("inpline",no)]])
         updateRadioButtons(session,paste0("managelist",no),selected="<-")
       }
@@ -267,7 +254,7 @@ av_make_server <- function() {
       # always has to be in tmp directory: av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
       av_set_defaults("pxd_fn",paste0(rv$cachedir,"/avpf_px.fst"))
       av_set_defaults("inv_fn",paste0(rv$cachedir,"/avpf_inv.RD"))
-      save_avs_state("the")
+      save_avs_state("all")
       th1 <- th1[,.(nm,old=toget)][dump_the(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
       th1 <- th1[,.SD,.SDcols=s("classtype;nm;toget;format")]
       output$dumpthe <- render_gt(expr=th1 |> gt() |> gt.basetheme() |> decorate_table())
@@ -294,12 +281,22 @@ av_make_server <- function() {
       }
     })
 
+    observeEvent(input$verbose, {
+      av_set_defaults("verbose",input$verbose)
+      save_avs_state("all")
+      })
+
     observeEvent(input$RUN, {
       rv <- isolate(reactiveValuesToList(input))
       thisenv <- environment()
+      # Two different ways to do it
       toplot<-lapply(names(rv),\(x) { assign(x,rv[[x]],envir=thisenv)})
-      out<-hash::copy(emptyhash)
+      # Out gets destroyed on end of routine.  Need to keep it in the
       message("H1 >>>>>>>>>>   AA input(",anopt1,"/",anopt2,") sid1(", istr1, ") sid2(", istr2, ") sz:",length(out))
+      if( nrow(savedgtnames <- dump_the()[classtype=="gt_tbl",])>0) {
+        for(x in savedgtnames$nm) out[[x]]<- get(x,envir=the)
+        message_if_green(the$verbose,"Restoring previous items ",savedgtnames$nm)
+      }
       lapply(s("istr1;istr2"),\(x) quick_message(x,""))
       eqlist1 <- s(istr1)
       eqlist2 <- s(istr2)
@@ -307,16 +304,19 @@ av_make_server <- function() {
       seriesnm <- fifelse(rv$totrtn,"adjusted_close","close")
       #restore_avs_state(nrow(the$pxinv)>1 || substr(anopt1,1,2)=="TS" || substr(anopt2,1,2)=="TS",msg="always")
       if(anopt1=="Gen:Inventory") {
-        out[["TABLE4GT"]]<- dump_assetlist(returngt=TRUE) |>  gt.avtheme(themeset="assetlist")
-        out[["TABLE3GT"]]<- the$pxinv[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv")
-        out[["DET1GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
+        if(nrow(the$pxinv)<=0) {  quick_message("istr1","Create Data by running a Time Series Graph") }
+        else {
+          out[["TABLE4GT"]]<- dump_assetlist(returngt=TRUE) |>  gt.avtheme(themeset="assetlist")
+          out[["TABLE3GT"]]<- the$pxinv[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv")
+          out[["DET1GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
+        }
       }
       if(anopt1=="Gen:LivePx") {
         #message(" get live:  entitlement: ",  options("av_api_entitlement")$av_api_entitlement, " > ")
         # Adding FX:  At this point, I'm almost done with this..
         # Non FX
-        toplot <- av_get_pf(the$pxinv[data.table(type=s("Equity;ETF")),on=.(type)]$symbol,"REALTIME_BULK_QUOTES",melted=FALSE)
-        if( length( fxsymbols <-the$pxinv[data.table(type=s("FX")),on=.(type)]$symbol )>0 ) {
+        toplot <- av_get_pf(symbol_grep_by_type(NULL,"Equity|ETF"),"REALTIME_BULK_QUOTES",melted=FALSE)
+        if( length( fxsymbols <-symbol_grep_by_type(NULL,"FX") )>0 ) {
           toplot_fx <- lapply(fxsymbols, \(x) av_get_pf(x,"CURRENCY_EXCHANGE_RATE",melted=FALSE) |> av_extract_fx(cols="symbol;timestamp;close") )
           toplot <- rbindlist(list(toplot,rbindlist(toplot_fx)),use.names=TRUE,fill=TRUE)
         }
@@ -347,6 +347,7 @@ av_make_server <- function() {
         quick_message("istr1",paste(toplot,collapse=""))
 
         t_toget <- data.table(symbol=c(eqlist2[1],eqlist1),catg=c("idx",rep("act",length(eqlist1))))
+        t_toget <- t_toget[,.SD[1],by=.(symbol)] # Weed out duplicates
         toplot <- the$pxd[t_toget,on=.(symbol)]  |> narrowbydtstr(datestring)
         toplot <- toplot[,.(timestamp,adjusted_close,cumrtn=log(adjusted_close)-log(first(adjusted_close))),by=.(catg,symbol)]
         toplot <- toplot[,let(rtn=c(NA_real_,diff(cumrtn,1))), by=.(catg,symbol)]
@@ -494,21 +495,20 @@ av_make_server <- function() {
         }
       }
       if(anopt1=="EQ:News") {
-        allnews <- rbindlist(lapply(eqlist1,\(x) getNews(x,nArticles=input$nArticles,
-                                                    minabssent=input$minabssent,newsfilter=input$newsfilter,maxage=input$maxagedays)))
+        u1<-lapply(s("newsgrep;minabssent;maxagedays;nArticles"),\(x) av_set_defaults(x,rv[[x]]))
+        save_avs_state("all")
+        allnews <- rbindlist(lapply(eqlist1,\(x)
+                    getNews(x,nArticles=input$nArticles,minabssent=input$minabssent,newsfilter=input$newsfilter,
+                              newsagrep=input$newsgrep,maxage=input$maxagedays)))
         if(newssort=="sentiment") { allnews<- allnews[order(symbol,-sntmt)] }
         if(newssort=="time,symbol") { allnews<- allnews[order(-time_published,symbol)] }
         if(newssort=="symbol,time") { allnews<- allnews[order(symbol, -time_published)] }
-        out[["NEWSGT"]] <-allnews |> gt.avtheme(themeset="news",istr1)
+        out[["NEWSGT"]] <- allnews |> gt.avtheme(themeset="news",istr1)
+        av_set_defaults("NEWSGT",out[["NEWSGT"]])
       }
-
     if(length(out)<=1) {
-      if(anopt1=="SelectOption" || anopt2=="SelectOption") {
-        quick_message("anopt1","Select an Action")
-      }
-      else {
-        quick_message("anopt1",paste0("NOT IMPLEMENTED YET:", anopt1, " or ",anopt2))
-      }
+      quick_message("anopt1","Select an Action",eval=(anopt1=="SelectOption" || anopt2=="SelectOption"))
+      quick_message("anopt1",paste0("NOT IMPLEMENTED YET:", anopt1, " or ",anopt2),eval=!(anopt1=="SelectOption" || anopt2=="SelectOption"))
     }
     # =============================================================================================================================================
     the$dyg1h <- fifelse( "dygraphs" %in% class(out[["TS1"]]), "600px","auto")
@@ -527,9 +527,7 @@ av_make_server <- function() {
     output$plot2 <- renderPlot({ out[["SCAT2"]] })
     output$optplot1<- renderPlot({ out[["SCAT1"]] })
     output$msg <- renderPrint({  print(out[["MSG"]]) })
-
-    tabfocus = avsd$deflist[runcode==anopt1,]$focus
-    updateTabsetPanel(session,"inTabset",selected=tabfocus)
+    updateTabsetPanel(session,"inTabset",selected=avsd$deflist[runcode==anopt1,]$focus)
 
    }) # obsARUnn
   } # Server

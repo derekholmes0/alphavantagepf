@@ -15,9 +15,8 @@ if(file.exists(the$constants_fn)) {
   options(av_api_entitlement = the$avapientitlement)
 } else {
   # What is not in constatns
-  the$assetlist <- data.table(listnm=c(rep("defaultIdx",2),rep("ix2",2)),ticker=c("SPY","QQQ","EWZ","EEM"))
+  the$assetlist <- data.table(listnm=c(rep("defaultIdx",3)),ticker=c("SPY","QQQ","DIA"))
   the$cachedir <- the$defaultcachedir
 }
 
 .datatable.aware = TRUE
-

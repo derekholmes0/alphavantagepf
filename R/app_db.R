@@ -40,6 +40,16 @@ av_add_data <- function(indta) {
 restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
   pxinv=NULL
   if(skip) { return() }
+  if( !exists("inv_fn",envir=the) ) {   # FIll In defaults
+    for(i in seq(1,nrow(avsd$defaults))) {
+      ivartype <- avsd$defaults[i,]$vartype
+      ivarnm <- avsd$defaults[i,]$var
+      if( ivartype=="cache" ) { ivarval <- paste0(the$cachedir,"/", avsd$defaults[i,get("value_str")]) }
+      else { ivarval <- avsd$defaults[i,get(paste0("value_",ivartype))] }
+      assign(ivarnm, ivarval, envir=the)
+    }
+    message_if_red(TRUE,"Filling in app defaults")
+  }
   if(grepl("all|constants",todo) & file.exists(the$constants_fn)) {
     load(the$constants_fn, envir=the)
   }
@@ -57,18 +67,19 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
       load(avdatafn,envir=the)
     }
   }
-  message_if_green(the$verbose,"Restored state (",todo,") from ",the$cachedir, " ",msg)
+  message_if_green(TRUE,"Restored state (",todo,") from ",the$cachedir, " ",msg)
 }
 
 #' @importFrom stats setNames
 save_avs_state <- function(todo="all") {
   classtype=NULL
-  if(grepl("all|asset|px",todo)) {
+  if(grepl("all|px",todo)) {
     nonpx_names <-  dump_the()[classtype=="data.table"& !(nm %in% c("pxd")),]$nm
     pxinv <- setNames(lapply(nonpx_names,\(x) get(x,envir=the)), nonpx_names)
     save(pxinv,file=the$inv_fn)
+    # pxd to fst
     fst::write_fst(the$pxd,the$pxd_fn,compress=20)
-    message_if_green(the$verbose,"Wrote inventories to ",the$inv_fn, "price data to ",the$pxd_fn)
+    message_if_green(the$verbose,"Wrote inventories to ",the$inv_fn, ",price data to ",the$pxd_fn)
   }
   if(grepl("all|the",todo)) {
     unames=names(the)[sapply(the, class) %in% c("logical","character","numeric","difftime")]
@@ -147,6 +158,8 @@ form_symset <- function(tickers, force=FALSE) {
 }
 
 # manage_epx only accepts more than one ticker if called with substitute_data
+# mange_eps will download repeatedly before market opens, no real way to avoid it without time of day logic
+
 
 manage_epx <- function(inticker, dtstr, substitute_data=NULL, addlive=FALSE, force=FALSE) {
   symbol=beg_dt=NULL
@@ -209,7 +222,7 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, addlive=FALSE, for
     setcolorder(thisinv,"loadts",after="end_dt")
     the$pxinv  <- DTUpsert(the$pxinv, thisinv, c("symbol"),fill=TRUE)
     dtrg <- lapply(range(dta$timestamp),\(x) format(x,"%Y-%m-%d"))
-    message_if_green(the$verbose,"av_one_px(",tickers[1],"): ",src," ",nrow(dta)," rows with range ",dtrg,
+    message_if_green(the$verbose,"av_one_px(",tickers[1],"): ",src," ",nrow(dta)," rows with range ",dtrg[1],"::",dtrg[2],
             " filling gap of ",nbdays," days from ",dtstoget[1], " to ",dtstoget[2])
   }
   return("")
@@ -251,7 +264,7 @@ save_av_data <- function(indta, in_av_fun) {
                       length(dtakeys)<=0, "No save keys specified",
                       default=""
                       )
-  if(nchar(skipreason)>0) {
+  if(nchar(skipreason)>0 & !(skipreason=="none")) {
     message_if(the$verbose,"save_av_data(",in_av_fun,") : Skipping save data (",skipreason,")")
     return(indta)
   }
