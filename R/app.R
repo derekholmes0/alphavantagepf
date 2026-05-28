@@ -7,15 +7,6 @@
 #' @import shinyFeedback
 #' @import FinanceGraphs
 
-#require(shiny)
-#require(shinyFeedback)
-#require(dygraphs)
-#require(gt)
-#require(gtExtras)
-#require(hash)
-#require(TTR)
-#require(data.table)
-#require(FinanceGraphs)
 source("./R/utilities.R")
 
 # 1.8: News, ability to keep output from one run to the next
@@ -30,6 +21,8 @@ av_make_ui <- function() {
   order1=order2=NULL
   restore_avs_state(msg="OnStartup")
   curr_assetlist <- sort(unique(the$assetlist$listnm))
+  runlist1 <- avsd$deflist[!is.na(order1)]$runcode
+  runlist2 <- avsd$deflist[!is.na(order2)]$runcode
   av_ui<- fluidPage(
     shinyFeedback::useShinyFeedback(),
      tags$head(
@@ -63,14 +56,14 @@ av_make_ui <- function() {
 
        column(10,  # Was 11
           fluidRow(
-            column(width=2,selectInput("anopt1","",avsd$deflist[!is.na(order1)]$runcode,multiple=FALSE,width='100%')),
+            column(width=2,selectInput("anopt1","",runlist1,multiple=FALSE,width='100%')),
             column(width=6,textInput("istr1", "", the$inpline1,width='100%')),
             column(width=2,radioButtons("managelist1","",choices=c("<-","get","save"),selected ="<-",inline=TRUE)),
             column(width=2,selectizeInput("list1","",c("List"="", c("",sort(unique(the$assetlist$listnm)))),
                                           size="70%",options=list(create=TRUE)))
           ),
           fluidRow(
-            column(width=2,selectInput("anopt2","",avsd$deflist[!is.na(order2)]$runcode,multiple=FALSE,width='100%')),
+            column(width=2,selectInput("anopt2","",runlist2,multiple=FALSE,width='100%')),
             column(width=6,textInput("istr2", "", the$inpline2,width='100%')),
             column(width=2,radioButtons("managelist2","",choices=c("<-","get","save"),selected ="<-",inline=TRUE)),
             column(width=2,selectizeInput("list2","",c("List"="", c("",sort(unique(the$assetlist$listnm)))),
@@ -128,10 +121,10 @@ av_make_ui <- function() {
                     span(passwordInput(inputId="avapikey", label="av api key", value=the$avapikey),style=avsd$labelcss),
                     span(textInput(inputId="avapientitlement", label="av entitlement", value=the$avapientitlement),style=avsd$labelcss),
                     span(textInput(inputId="cachedir", label="Cache Data Directory", value=the$cachedir),style=avsd$labelcss),
-                    span(textInput(inputId="av_dump_dir", label="AV dump Directory", value=the$av_dump_dir),style=avsd$labelcss),
                     #span(textInput(inputId="extracalc_file", label="extracalc csv", value=the$extracalc_file),style=avsd$labelcss), ## <<--- TODO
                     span(textInput(inputId="ts_colorset", label="fgts colorset", value=the$ts_colorset),style=avsd$labelcss),
                     selectInput(inputId="sigpct","Regr Significance", c("0.05","0.025","0.1"),selected=c("0.025"),multiple=FALSE),
+                    span(textInput(inputId="av_dump_dir", label="AV dump Directory", value=the$av_dump_dir),style=avsd$labelcss),
                     selectInput(inputId="capture_av_what",label="Capture AV Data",c("none","pricesonly","noprices","all"),
                                 selected=s(the$capture_av_what), multiple=FALSE),
                     selectInput(inputId="capture_av_update",label="Update or Cumulative",c("update","cum"),
@@ -289,9 +282,14 @@ av_make_server <- function() {
     observeEvent(input$RUN, {
       rv <- isolate(reactiveValuesToList(input))
       thisenv <- environment()
+      if(the$avapikey=="NOT_SET") {
+        quick_message("anopt1","SET Alphavantage API key")
+        quick_message("anopt2","SET Alphavantage API key")
+        return()
+      }
       # Two different ways to do it
       toplot<-lapply(names(rv),\(x) { assign(x,rv[[x]],envir=thisenv)})
-      # Out gets destroyed on end of routine.  Need to keep it in the
+      # Out gets destroyed on end of routine.  Need to keep it in the the environment.
       message("H1 >>>>>>>>>>   AA input(",anopt1,"/",anopt2,") sid1(", istr1, ") sid2(", istr2, ") sz:",length(out))
       if( nrow(savedgtnames <- dump_the()[classtype=="gt_tbl",])>0) {
         for(x in savedgtnames$nm) out[[x]]<- get(x,envir=the)

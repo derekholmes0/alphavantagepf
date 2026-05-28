@@ -2,7 +2,7 @@
 % Please edit documentation in R/av_runapp.R
 \name{av_runShiny}
 \alias{av_runShiny}
-\title{Set the Alpha Vantage API Key}
+\title{RShiny App}
 \usage{
 av_runShiny()
 }
@@ -10,10 +10,57 @@ av_runShiny()
 Nothing
 }
 \description{
-\code{av_runShiny()} sets Alphavantage API key and entitlement code
+\code{av_runShiny()} runs an interactive RShiny app to download, manage, and visualize data from the \href{https://www.alphavantage.co/documentation/}{Alpha Vantage} data service.
+The app treats equities, ETFs, indices, and FX equally, so users do not need to know specific API calls to integrate data.  Downloaded data is cached to reduce
+API calls, all data can be saved for external use, and external data can be added to the app.  Sets of securities can be easily added and managed.
 }
 \details{
-Starts Shiny APp
+Invocation starts Shiny application.  See vignette for full details.
+\strong{On first use}, click on \code{AVOPTS} tab, fill in the following fields, and  hit the "Set Opts" button.
+\itemize{
+\item ++AV API Key++: API key obtained from  \href{https://www.alphavantage.co/documentation/}{Alpha Vantage}
+\item ++Entitlement++ Entitlement status (either \code{delayed} or \code{realtime})
+Other options that can be set are given below.
+}
+
+\strong{To run analysis}, Enter a semicolon delimited set of securities (e.g. \verb{SPY;QQQ;DIA}), select a runtime option from
+the adjacent dropdown, and press the `RUN button.  Options include:\tabular{cl}{
+   Option \tab Description \cr
+   \code{Inventory} \tab Table of what asset lists and price data is available \cr
+   \code{LivePx} \tab Live prices of all tickers \cr
+   \code{NameSearch} \tab Search for tickers \cr
+   \code{PriceTS} \tab Time Series of prices or Total Return indices \cr
+   \code{ActiveTS} \tab Active returns of tickers in top row relative to first ticker in bottom row \cr
+   \code{HistVolTS} \tab Historic vol and rolling correlations of tickers in top row. \cr
+   \code{DES},\code{News} \tab Descriptions and News for tickers in top row. \cr
+   \code{DivEarn} \tab Dividends, earnings, and earnings estimates for tickers in top row. \cr
+   \code{OptSearch} \tab Search for options for tickers in top row. (\code{OPTS} tab) \cr
+}
+
+
+** Options that can be set**. click on \code{AVOPTS} tab, fill in the following fields, and  hit the "Set Opts" button.
+\itemize{
+\item \strong{fgts colorset}: A named list of colors which can be set using the  \code{\link[FinanceGraphs:fg_update_aes]{FinanceGraphs::fg_update_aes()}} function.
+\item \strong{Regr Significance}: p-level to highlight significant regressions. (Used in the \code{HistVolTS} function above.)
+\item \strong{Cache Directory}: A directory where internal App data can be stored (and added to). If not filled in, a temporary
+directory is created and used.
+}
+
+The app allows all downloaded data to be saved.  If used, data is saved in one file, and is stored as a named (by API call function)
+list of \code{data.table}s.  Options to control this behavior are
+\itemize{
+\item \strong{AV dump Directory}: A directory where individual API requests can be cached.  Data is saved in one file as a named
+(by API call function) list of \code{data.table}s.
+\item \strong{Capture AV Data}: Save Price data, non-price data, all or none.
+\item \strong{Update or Cumulative}: If \code{update} is selected, data is keyed relevantly, so for example there will only be one set of dividend data stored.
+If \code{cumulative} then all API data (including a timestamp) is saved sequentially.  The latter will lead to much larger files.
+\item \strong{Other options}:
+}
+\itemize{
+\item \code{CleanOnStart} : cleans out the cache file every time the app is started.
+\item \code{SaveEveryAVCall} : Saves cache file after every call.
+\item \code{SaveNow} : Save cache file when this is selected.
+}
 }
 \examples{
 \dontrun{

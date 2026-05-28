@@ -4,6 +4,8 @@
 
 * Added support for INDEX_DATA and FX
 * Refactored AV capture
+* Redesigned NEWS page
+* ELiminated hash package dependencies
 
 # alphavantagepf 0.7.2
 
