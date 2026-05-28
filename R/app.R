@@ -19,7 +19,7 @@ source("./R/utilities.R")
 
 av_make_ui <- function() {
   order1=order2=NULL
-  restore_avs_state(msg="OnStartup")
+  #restore_avs_state(msg="OnStartup")
   curr_assetlist <- sort(unique(the$assetlist$listnm))
   runlist1 <- avsd$deflist[!is.na(order1)]$runcode
   runlist2 <- avsd$deflist[!is.na(order2)]$runcode
@@ -36,6 +36,7 @@ av_make_ui <- function() {
         tags$style(HTML(".item { font-size: 11px; }")),
         tags$style(HTML(".no-gap-row { display: flex; gap: 0;align-items: flex-start; }")),
         tags$style(HTML(".no-gap-row .table-pane { overflow-x: auto; flex: 0 0 auto;}")),
+        tags$style(HTML(".selectize-dropdown-content {  max-height: 500px;  }"))
      ),
      fluidRow(
        column(1,

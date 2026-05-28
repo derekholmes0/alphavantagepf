@@ -57,5 +57,10 @@
 #' @rdname av_runShiny
 #' @export
 av_runShiny <- function() {
+  if(file.exists(the$constants_fn)) {
+    restore_avs_state(msg="Startup")
+    options(av_api_key = the$avapikey)
+    options(av_api_entitlement = the$avapientitlement)
+  }
   shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1200,height=800,"launch.browser"))
 }
