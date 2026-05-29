@@ -11,6 +11,7 @@
 #' @param dfonerror (default: TRUE) Return an empty data.table when any error occurs
 #' @param verbose (default: FALSE) Print debug information helpful for errors.  Also copies full url to clipboard.
 #' @param melted  (default: "default") String specifying when to melt, "default" is chosen by the package, "TRUE|always" always melt, "FALSE|never" never melts
+#' @param delay  (default: 0) Delay in seconds after API call, used to embed within large single-symbol calls.
 #' @param ... Additional parameters or overrides passed to the Alpha Vantage API.
 #' For a list of parameters, visit the [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
 #'
@@ -94,7 +95,7 @@
 #' }
 #'
 #' @export
-av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted="default",verbose=FALSE, ...) {
+av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted="default",delay=0,verbose=FALSE, ...) {
 
     if (missing(symbol)) symbol <- NULL
     if (any(is.na(symbol))) {
@@ -222,6 +223,9 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
         content <- content[,c(symbolvarnm):=symbol]
       }
       data.table::setcolorder(content,c(symbolvarnm))
+    }
+    if(delay>0) {
+      Sys.sleep(delay)
     }
     return(content[])
 }

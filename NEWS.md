@@ -1,5 +1,9 @@
 # alphavantagepf (development version)
 
+# alphavantagepf 0.7.4
+
+* Added delay to av_get_pf
+
 # alphavantagepf 0.7.3
 
 * Added support for INDEX_DATA and FX
