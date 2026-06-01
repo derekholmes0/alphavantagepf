@@ -62,5 +62,5 @@ av_runShiny <- function() {
     options(av_api_key = the$avapikey)
     options(av_api_entitlement = the$avapientitlement)
   }
-  shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1200,height=800,"launch.browser"))
+  shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1400,height=800,"launch.browser"))
 }

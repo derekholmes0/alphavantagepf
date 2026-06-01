@@ -30,7 +30,7 @@ Imports:
     gtExtras (>= 0.6.0),
     TTR (>= 0.24.0),
     usethis,
-    FinanceGraphs (>= 0.8.2)
+    FinanceGraphs (>= 0.8.0)
 Suggests:
     bslib,
     testthat,

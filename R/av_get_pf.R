@@ -218,14 +218,22 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     if ("timestamp" %in% names(content)) {
         data.table::setorder(content,timestamp)
     }
+    # Delay if needed.
+    if(delay>0) {
+      Sys.sleep(delay)
+    }
+    # Deal with permissionings messages
+    if("variable" %in% names(content)) {
+      if(nrow(msgset <- content[variable=="message",]) >0 ) {
+        message_if(TRUE,msgset[1,"value_str"])
+        return(content[])
+      }
+    }
     if(nchar(symbolvarnm)>0) {
       if(!(symbolvarnm %in% colnames(content))) {
         content <- content[,c(symbolvarnm):=symbol]
       }
       data.table::setcolorder(content,c(symbolvarnm))
-    }
-    if(delay>0) {
-      Sys.sleep(delay)
     }
     return(content[])
 }

@@ -2,38 +2,63 @@
 #' App database functions
 #'
 #' @importFrom fst read_fst write_fst
+#' @importFrom lubridate is.instant
 #' @import data.table
 #'
 #' @name av_add_data
-#' @description Add price data to [av_runShiny()] internal data
-#'
-#' @param indta A data.frame with the following minimal columns: `c(symbol,timestamp,close,adjusted_close)`
+#' @description Adds price data to [av_runShiny()] internal data.
+#' @param indta A data.frame with the following minimal columns: `c(symbol,timestamp,close,adjusted_close)`.
+#' Other variables added could be `c(open,high,low,volume,dividend_amount,split_coefficient)`
+#' @param assettypes (default NULL)  An optional data.frame with minimal columns `c(symbol,type,currency,name)` with
+#' descriptive data for the assets given in `indta`.  If not specified, a call to `av_get_pf(.,"SYMBOL_SEARCH")`
+#' is necessary to determine the asset type (one of `c("Equity","ETF","FX","Index")`) for subsequent
+#' calls to [av_get_pf()]
+#' @param delay (default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
+#' unused if `assettypes` is given.
 #' @returns Nothing
-#'
 #' @seealso [av_runShiny()]
-#'
 #' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`
-#'
 #' @examples
 #' \dontrun{
 #' av_add_data(av_get_pf("IBM","TIME_SERIES_DAILY_ADJUSTED"))
 #' }
 #'
-#' @importFrom lubridate is.instant
 #' @export
-av_add_data <- function(indta) {
+av_add_data <- function(indta,assettypes=NULL,delay=0) {
+  restore_avs_state("all")
   firstdate <- find_col_bytype(indta,lubridate::is.instant)
   if (is.null(firstdate)) {
     stop("av_add_data: Need a timestamp column")
   }
   indta <- data.table(indta)
   setnames(indta,firstdate,"timestamp")
-  colsneeded <- s("symbol;timestamp;close;adjusted_close")
-  if( length(intersect(colsneeded,names(indta))) <length(colsneeded) ) {
-    stop(paste0("av_add_data: Need at minimum columns ",paste0(colsneeded,collapse=" ")))
-  }
-  manage_epx(unique(indta$symbol),"-30y::",substitute_data=indta,force=TRUE)
+  check_min_colset(indta,s("symbol;timestamp;close;adjusted_close"))
+  manage_epx(unique(indta$symbol),"-30y::",substitute_data=indta,substitute_symset=assettypes,force=TRUE,delay=delay)
   save_avs_state("all")
+}
+
+#' @name av_add_assetlist
+#' @description Adds asset lists to [av_runShiny()] internal data.
+#' @param indta A data.frame with two columns `c("listnm","ticker")` with one or more lines for each `"listnm"`
+#' @returns Nothing
+#' @seealso [av_runShiny()]
+#' @details Lists are specified in normalized form.  Duplicate list names with those currently in use are replaced.
+#' @examples
+#' \dontrun{
+#' newtickers <- c("QQQ","QQQE","NDX")
+#' av_add_assetlist(data.table(listnm=rep("nasdaq",length(newtickers)),ticker=newtickers))
+#' # To remove an asset list, just use an empty string for the ticker
+#' av_add_assetlist(data.table(listnm=c("new"),ticker=c("")))
+#' }
+#' @rdname av_add_data
+#' @export
+av_add_assetlist <- function(indta) {
+  indta <- as.data.table(indta)
+  check_min_colset(indta,s("listnm;ticker"))
+  restore_avs_state("constants")
+  the$assetlist <- DTUpsert(the$assetlist,indta,c("listnm"))
+  the$assetlist <- the$assetlist[nchar(ticker)>0,]
+  save_avs_state("the")
 }
 
 #' @noRd
@@ -129,7 +154,7 @@ epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
 
 # form_symset Finds or downloads the asset type for a given ticker.  Sucks that Alphavantage can't unify these
 # form_symset(c("JBL","EEMA","NDX","USD/BRL"))
-form_symset <- function(tickers, force=FALSE) {
+form_symset <- function(tickers, force=FALSE, delay=0) {
   symbol=name=matchScore=NULL
   if(force==TRUE || nrow(the$pxinv)<=0) {
     newtickers <- s(tickers)
@@ -141,8 +166,16 @@ form_symset <- function(tickers, force=FALSE) {
     newtickers <- setdiff(s(tickers),symset$symbol)
   }
   # New equities/ETS
-  symnew_eq <- rbindlist(lapply(newtickers, \(x)
-    av_get_pf("","SYMBOL_SEARCH",keywords=x)[matchScore>=0.999,.(symbol=x,type,currency,name,matchScore)]
+  symnew_eq <- rbindlist(lapply(newtickers, \(x) {
+    z1=av_get_pf("","SYMBOL_SEARCH",keywords=x,delay=delay)
+    if(nrow(z1)<=0) {
+      message_if_red(TRUE,"Cannot add ",x,": Invalid ticker")
+      return(data.table())
+    }
+    else {
+      return(z1[matchScore>=0.99,.(symbol=x,type,currency,name,matchScore)])
+    }
+  }
   ))
   # New Indices
   symnew_ix <- data.table(symbol=newtickers)
@@ -160,8 +193,7 @@ form_symset <- function(tickers, force=FALSE) {
 # manage_epx only accepts more than one ticker if called with substitute_data
 # mange_eps will download repeatedly before market opens, no real way to avoid it without time of day logic
 
-
-manage_epx <- function(inticker, dtstr, substitute_data=NULL, addlive=FALSE, force=FALSE) {
+manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=NULL, addlive=FALSE, force=FALSE, delay=0) {
   symbol=beg_dt=NULL
   dtstoget <- gendtstr(dtstr,rtn="list") # Dates to get
   if(nrow(the$pxinv)>0) {
@@ -179,15 +211,21 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, addlive=FALSE, for
   #   if it doesn't exist or is too old, use full download
   # Note that downloads will occur anyway if narket has not opened yet
   nbdays = nrow(dtmap[between(DT_ENTRY,dtstoget[1],dtstoget[2])])
-  if(nbdays<=1 & !force) {
-    message_if(the$verbose,"av_one_px(",inticker,"): No need to download, last date in DB: ",format(dtstoget[2]))
+  if(nbdays<=1 & !force & !addlive) {
+    src <- "Cached"
   }
   else {
     if(is.data.table(substitute_data)) {
       dta <- data.table::copy(substitute_data)
       src <- "Added"
       tickers <- unique(substitute_data$symbol)
-      symset <- form_symset(tickers,force=force)[,let(loadts=Sys.time())]
+      if(is.data.table(substitute_symset)) {
+        check_min_colset(substitute_symset,s("symbol;type;currency;name"))
+        symset <- copy(substitute_symset)[,let(loadts=Sys.time())]
+      }
+      else {
+        symset <- form_symset(tickers,force=force,delay=delay)[,let(loadts=Sys.time())]
+      }
     }
     else {
       datasize <- fifelse(nbdays<=20 & !force,"compact","full")
@@ -207,7 +245,8 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, addlive=FALSE, for
         avfun_live <- epx_get_avfn(tickertype,live=TRUE)
         livedta <- av_get_pf(inticker,avfun_live,outputsize="compact",verbose=FALSE)
         livedta <- epx_fmt_to_hist(livedta,tickertype,live=TRUE)
-        message_if_green(the$verbose,"manage_epx: Adding Live price to ",inticker," at ",Sys.time())
+        message_if_green(the$verbose,"manage_epx: Adding ",nrow(livedta)," live prices (",livedta[,1]$close,
+                         ") to ",inticker," at ",Sys.time())
         dta <- rbindlist(list(dta,livedta),use.names=TRUE,fill=TRUE)
         src <- "downloaded+live"
       }
@@ -222,7 +261,7 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, addlive=FALSE, for
     setcolorder(thisinv,"loadts",after="end_dt")
     the$pxinv  <- DTUpsert(the$pxinv, thisinv, c("symbol"),fill=TRUE)
     dtrg <- lapply(range(dta$timestamp),\(x) format(x,"%Y-%m-%d"))
-    message_if_green(the$verbose,"av_one_px(",tickers[1],"): ",src," ",nrow(dta)," rows with range ",dtrg[1],"::",dtrg[2],
+    message_if(the$verbose,"av_one_px(",tickers[1],"): ",src," ",nrow(dta)," rows with range ",dtrg[1],"::",dtrg[2],
             " filling gap of ",nbdays," days from ",dtstoget[1], " to ",dtstoget[2])
   }
   return("")
@@ -318,6 +357,12 @@ save_av_data <- function(indta, in_av_fun) {
 
 # Database helpers
 
+check_min_colset <- function(indta,colsneeded) {
+  if( length(intersect(colsneeded,names(indta))) <length(colsneeded) ) {
+    stop(paste0("ERROR: Need at minimum columns ",paste0(colsneeded,collapse=" "), " to continue"))
+  }
+}
+
 kill_symbol <- function(inticker) {
   the$pxd <- the$pxd[!(symbol==inticker),]
   the$pxinv <- the$pxinv[!(symbol==inticker),]
@@ -332,6 +377,23 @@ kill_symbol <- function(inticker) {
 # dump_assetlist : Returns current set of assets
 # dump_captured : Returns summary of captured data
 
+#' @name dump_the
+#' @description Prints internal data state of [av_runShiny()]
+#' `dump_the()`
+#' `dump_inv()`
+#' `dump_assetlist()`
+#' `dump_captured()`
+#' @returns data.table with desired data.
+#' @seealso [av_runShiny()]
+#' @examples
+#' \dontrun{
+#' `dump_the()`
+#' `dump_inv()`
+#' `dump_assetlist()`
+#' `dump_captured()`
+#' }
+#' @rdname dump_the
+#' @export
 dump_the <- function(typegrep="*") {
   classtype=nm=NULL
   outdump<-data.table()
@@ -351,12 +413,20 @@ dump_the <- function(typegrep="*") {
   return(outdump[order(classtype,nm)])
 }
 
+#' @rdname dump_the
+#' @export
 dump_inv <- function() {
   return(the$pxinv)
 }
+
+#' @rdname dump_the
+#' @export
 dump_assetlist <- function(returngt=TRUE) {
   return(the$assetlist[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)])
 }
+
+#' @rdname dump_the
+#' @export
 dump_captured <- function(todo="byfunction") {
   nr=fn=load_ts=NULL
   if(is.null(the$av_download)) { return("No Data downloaded")}

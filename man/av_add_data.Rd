@@ -2,27 +2,50 @@
 % Please edit documentation in R/app_db.R
 \name{av_add_data}
 \alias{av_add_data}
+\alias{av_add_assetlist}
 \title{App database functions}
 \usage{
-av_add_data(indta)
+av_add_data(indta, assettypes = NULL, delay = 0)
+
+av_add_assetlist(indta)
 }
 \arguments{
-\item{indta}{A data.frame with the following minimal columns: \code{c(symbol,timestamp,close,adjusted_close)}}
+\item{indta}{A data.frame with two columns \code{c("listnm","ticker")} with one or more lines for each \code{"listnm"}}
+
+\item{assettypes}{(default NULL)  An optional data.frame with minimal columns \code{c(symbol,type,currency,name)} with
+descriptive data for the assets given in \code{indta}.  If not specified, a call to \code{av_get_pf(.,"SYMBOL_SEARCH")}
+is necessary to determine the asset type (one of \code{c("Equity","ETF","FX","Index")}) for subsequent
+calls to \code{\link[=av_get_pf]{av_get_pf()}}}
+
+\item{delay}{(default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
+unused if \code{assettypes} is given.}
 }
 \value{
 Nothing
+
+Nothing
 }
 \description{
-Add price data to \code{\link[=av_runShiny]{av_runShiny()}} internal data
+Adds price data to \code{\link[=av_runShiny]{av_runShiny()}} internal data.
+
+Adds asset lists to \code{\link[=av_runShiny]{av_runShiny()}} internal data.
 }
 \details{
 Entire set of columns from \code{\link[=av_get_pf]{av_get_pf()}} can be added. First date column renamed to \code{timestamp}
+
+Lists are specified in normalized form.  Duplicate list names with those currently in use are replaced.
 }
 \examples{
 \dontrun{
 av_add_data(av_get_pf("IBM","TIME_SERIES_DAILY_ADJUSTED"))
 }
 
+\dontrun{
+newtickers <- c("QQQ","QQQE","NDX")
+av_add_assetlist(data.table(listnm=rep("nasdaq",length(newtickers)),ticker=newtickers))
+# To remove an asset list, just use an empty string for the ticker
+av_add_assetlist(data.table(listnm=c("new"),ticker=c("")))
+}
 }
 \seealso{
 \code{\link[=av_runShiny]{av_runShiny()}}

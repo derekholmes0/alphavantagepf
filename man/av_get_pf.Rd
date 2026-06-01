@@ -10,6 +10,7 @@ av_get_pf(
   symbolvarnm = "symbol",
   dfonerror = TRUE,
   melted = "default",
+  delay = 0,
   verbose = FALSE,
   ...
 )
@@ -26,6 +27,8 @@ See parameter "function" in \href{https://www.alphavantage.co/documentation/}{Al
 \item{dfonerror}{(default: TRUE) Return an empty data.table when any error occurs}
 
 \item{melted}{(default: "default") String specifying when to melt, "default" is chosen by the package, "TRUE|always" always melt, "FALSE|never" never melts}
+
+\item{delay}{(default: 0) Delay in seconds after API call, used to embed within large single-symbol calls.}
 
 \item{verbose}{(default: FALSE) Print debug information helpful for errors.  Also copies full url to clipboard.}
 

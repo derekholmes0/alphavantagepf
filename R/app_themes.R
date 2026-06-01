@@ -35,7 +35,7 @@ gt.basetheme<-function(x,gtopts="all",sizepct=100,style=4,digits=2,seps=FALSE,na
     x = x |> tab_options(table.width=pct(95),table.align="left",table.margin.left=px(0))
   }
   if(!grepl("smalltext",size)) {
-    x = x |> opt_table_font(stack = "rounded-sans")
+    x = x |> opt_table_font(stack = "rounded-sans",size="80%")
   }
   return(x)
 }
@@ -115,7 +115,7 @@ gt.avtheme<- function(x,themeset="",...) {
       fmt_datetime(columns=loadts,date_style="y.mn.day",time_style="iso-short") |>
       tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,type,currency,age), rows=(as.numeric(age)>=3))) |>
       tab_footnote(paste("Data older than 3 days highlighted")) |>
-      gt.basetheme()
+      gt.basetheme(interactive=TRUE)
       # todo: color rows that are out of date
   }
   if(themeset=="mktstatus") {

@@ -58,17 +58,17 @@ av_make_ui <- function() {
        column(10,  # Was 11
           fluidRow(
             column(width=2,selectInput("anopt1","",runlist1,multiple=FALSE,width='100%')),
-            column(width=6,textInput("istr1", "", the$inpline1,width='100%')),
-            column(width=2,radioButtons("managelist1","",choices=c("<-","get","save"),selected ="<-",inline=TRUE)),
+            column(width=6.5,textInput("istr1", "", the$inpline1,width='100%')),
+            column(width=1.5,radioButtons("managelist1","",choices=c("<-","get","save"),selected ="<-",inline=TRUE)),
             column(width=2,selectizeInput("list1","",c("List"="", c("",sort(unique(the$assetlist$listnm)))),
-                                          size="70%",options=list(create=TRUE)))
+                                          size="80%",options=list(create=TRUE)))
           ),
           fluidRow(
             column(width=2,selectInput("anopt2","",runlist2,multiple=FALSE,width='100%')),
             column(width=6,textInput("istr2", "", the$inpline2,width='100%')),
-            column(width=2,radioButtons("managelist2","",choices=c("<-","get","save"),selected ="<-",inline=TRUE)),
+            column(width=2,radioButtons("managelist2","",choices=c("<-","get","save"),selected ="<-",width="50%",inline=TRUE)),
             column(width=2,selectizeInput("list2","",c("List"="", c("",sort(unique(the$assetlist$listnm)))),
-                                          size="50%",options=list(create=TRUE)))
+                                          size="80%",options=list(create=TRUE)))
           ),
           fluidRow(
             tabsetPanel(id="inTabset",
@@ -192,7 +192,7 @@ av_make_server <- function() {
         else {
           newassets <- data.table(ticker=s(instr))[,listnm:=tlist][]
           the$assetlist <- DTUpsert(the$assetlist,newassets,c("listnm"),replaceifbempty=the$assetlist[!(listnm==tlist),])
-          save_avs_state("asset;the")
+          save_avs_state("all")
           updateRadioButtons(session,paste0("managelist",no),selected="<-")
           updateSelectizeInput(session,"list1", choices=sort(unique(the$assetlist$listnm)))
           updateSelectizeInput(session,"list2", choices=sort(unique(the$assetlist$listnm)))
