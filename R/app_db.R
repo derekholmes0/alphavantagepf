@@ -371,27 +371,27 @@ kill_symbol <- function(inticker) {
 }
 
 
-# Checks on internal data structures
-# dump_the : Returns internal state
-# dump_inv : REturns prie inventory
-# dump_assetlist : Returns current set of assets
-# dump_captured : Returns summary of captured data
-
+#' Extract internal state
+#'
 #' @name dump_the
 #' @description Prints internal data state of [av_runShiny()]
-#' `dump_the()`
+#' `dump_the(typegrep="*")`
 #' `dump_inv()`
 #' `dump_assetlist()`
 #' `dump_captured()`
+#' @param typegrep : Grep string for internal state parameters
+#' @param returngt : Return GT table
+#' @param todo : One of c("byfunction","pxhist",any av function name)
 #' @returns data.table with desired data.
 #' @seealso [av_runShiny()]
 #' @examples
 #' \dontrun{
 #' `dump_the()`
 #' `dump_inv()`
-#' `dump_assetlist()`
-#' `dump_captured()`
+#' `dump_assetlist(returngt=TRUE)`
+#' `dump_captured(todo="byfunction")`
 #' }
+#'
 #' @rdname dump_the
 #' @export
 dump_the <- function(typegrep="*") {
