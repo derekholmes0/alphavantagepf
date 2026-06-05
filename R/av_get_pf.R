@@ -203,7 +203,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
       content[,(toconvert):=lapply(.SD,as.numeric),.SDcols=toconvert]
       # Adjust timestamps to correct timezone
       toconvert <- datatypes[colclass=="POSIXct",]$colnm
-      content[,(toconvert):=lapply(.SD,\(x) as.POSIXct(x-the$NY_local_hrs,tz=Sys.timezone())),.SDcols=toconvert]
+      content[,(toconvert):=lapply(.SD,\(x) as.POSIXct(x-the_av$NY_local_hrs,tz=Sys.timezone())),.SDcols=toconvert]
       if((melted=="default" &  pset[1,]$outform=="melt") | (as.character(melted) %in% c("always","TRUE"))) {
         if(!(symbolvarnm %in% colnames(content))) {
           content[,c(symbolvarnm):=symbol]  # Need to do before melt

@@ -13,22 +13,22 @@
 #'
 #' @export
 av_reset_defaults <- function() {
-  file.remove(the$constants_fn)
-  the$cachedir <- the$defaultcachedir
-  the$pxd_fn <- paste0( the$cachedir, "/avpf_px.fst")
-  the$inv_fn <- paste0( the$cachedir, "/avpf_inv.RD")
-  the$avapikey <- "NOT_SET"
-  the$avapientitlement <- "delayed"
-  the$verbose <- TRUE
-  the$assetlist <- data.table(listnm=rep("defaultIdx",2),ticker=c("SPY","QQQ"))
-  the$extracalc_file <- ""
-  the$pxd <- data.table()
-  the$pxinv <- data.table()
-  the$indexlist <- data.table()
-  the$inpline1 <-"a"
-  the$inpline2 <-"b"
-  unlink(the$defaultcachedir, force=TRUE,recursive=TRUE)
-  unlink(the$cachedir, force=TRUE,recursive=TRUE)
+  file.remove(the_av$constants_fn)
+  the_av$cachedir <- the_av$defaultcachedir
+  the_av$pxd_fn <- paste0( the_av$cachedir, "/avpf_px.fst")
+  the_av$inv_fn <- paste0( the_av$cachedir, "/avpf_inv.RD")
+  the_av$avapikey <- "NOT_SET"
+  the_av$avapientitlement <- "delayed"
+  the_av$verbose <- TRUE
+  the_av$assetlist <- data.table(listnm=rep("defaultIdx",2),ticker=c("SPY","QQQ"))
+  the_av$extracalc_file <- ""
+  the_av$pxd <- data.table()
+  the_av$pxinv <- data.table()
+  the_av$indexlist <- data.table()
+  the_av$inpline1 <-"a"
+  the_av$inpline2 <-"b"
+  unlink(the_av$defaultcachedir, force=TRUE,recursive=TRUE)
+  unlink(the_av$cachedir, force=TRUE,recursive=TRUE)
 }
 
 #' Extract data from Alpha Vantage retuned data
@@ -134,18 +134,18 @@ av_make_dtmap <- function(yrs_ahead=5) {
 }
 
 av_set_defaults <- function(optnm=NULL,optval=NULL,savetoconstants=FALSE) {
-  if(!dir.exists(the$defaultcachedir)) {
-    newd <- dir.create(the$defaultcachedir)
-    message("Creating ",the$constants_fn)
+  if(!dir.exists(the_av$defaultcachedir)) {
+    newd <- dir.create(the_av$defaultcachedir)
+    message("Creating ",the_av$constants_fn)
   }
   if(!is.null(optnm) & !is.null(optval)) {
-    #message_if_green(the$verbose,"av_set_defaults> ",optnm,"<-",optval) # tooo verbose
-    assign(optnm,optval,envir=the)
+    #message_if_green(the_av$verbose,"av_set_defaults> ",optnm,"<-",optval) # tooo verbose
+    assign(optnm,optval,envir=the_av)
   }
   if(savetoconstants==TRUE) {
-    unames=ls(envir=the)
-    save(list=unames,envir=the,file= the$constants_fn)
-    message("Saving to ",the$constants_fn)
+    unames=ls(envir=the_av)
+    save(list=unames,envir=the_av,file= the_av$constants_fn)
+    message("Saving to ",the_av$constants_fn)
   }
 }
 

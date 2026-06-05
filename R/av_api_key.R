@@ -26,13 +26,13 @@
 av_api_key <- function(api_key,entitlement=NULL) {
     if (!missing(api_key)) {
         options(av_api_key = api_key)
-        the$avapikey = api_key
+        the_av$avapikey = api_key
         av_set_defaults()
     }
   if (!is.null(entitlement)) {
     if( tolower(entitlement) %in% c("delayed","realtime")) {
         options(av_api_entitlement = entitlement)
-        the$avapientitlement = entitlement
+        the_av$avapientitlement = entitlement
       av_set_defaults()
     }
   }

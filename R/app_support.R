@@ -4,9 +4,9 @@
 #' @noRd
 symbol_grep_by_type <- function(eqlist,grepstr="Equity", rtn="list") {
   symbol=NULL
-  if(is.null(eqlist)) { tickerset <- the$pxinv[,.(symbol,type,currency)] }
+  if(is.null(eqlist)) { tickerset <- the_av$pxinv[,.(symbol,type,currency)] }
   else {
-    tickerset <- the$pxinv[data.table(symbol=eqlist),on=.(symbol)][,.(symbol,type,currency)]
+    tickerset <- the_av$pxinv[data.table(symbol=eqlist),on=.(symbol)][,.(symbol,type,currency)]
   }
   tickerset <- tickerset[grepl(grepstr,type,ignore.case=TRUE),]
   if(rtn=="list") {
@@ -19,11 +19,11 @@ symbol_grep_by_type <- function(eqlist,grepstr="Equity", rtn="list") {
 
 get_one_ts <- function(assetlist,rebase,datestring,dtstartfrac) {
   symbol=NULL
-  toplot <- the$pxd[data.table(symbol=assetlist),on=.(symbol)] |> narrowbydtstr(datestring)
+  toplot <- the_av$pxd[data.table(symbol=assetlist),on=.(symbol)] |> narrowbydtstr(datestring)
   rebasedt <- fcase(rebase=="none","",
                     rebase=="start",paste0(format(toplot[1,]$timestamp,"%Y-%m-%d"),",100"),
                     rebase=="focus",paste0(format(toplot[,.N,by=.(timestamp)][,.SD[floor(.N*dtstartfrac/100)]]$timestamp,"%Y-%m-%d"),",100"))
-  message_if_green(the$verbose,"get_one_ts(",paste0(assetlist,collapse=" "),") gets ",nrow(toplot), " rows to  ",as.Date(max(toplot$timestamp)))
+  message_if_green(the_av$verbose,"get_one_ts(",paste0(assetlist,collapse=" "),") gets ",nrow(toplot), " rows to  ",as.Date(max(toplot$timestamp)))
   return(list(toplot,rebasedt))
 }
 
@@ -98,7 +98,7 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dtstart
     "last" %in% rv$gropts, "last,linevalue",
     default = "")
   outdyg <- fgts_dygraph(fgdt,title=title,events=events, dtstartfrac=dtstartfrac/100,
-                         annotations=paste0(c(tanno,extra_anno),collapse=";"), colorset=the$ts_colorset,
+                         annotations=paste0(c(tanno,extra_anno),collapse=";"), colorset=the_av$ts_colorset,
                          splitcols=("splitts" %in% rv$gropts),roller=1,
                          hilightcols=fifelse("hilightfirst" %in% rv$gropts,fgdt[,.SD[1]]$variable,""),
                          rebase=trebase)
@@ -111,7 +111,7 @@ getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),newsagrep="",max
   news1 <- news0 |> av_extract_df("feed")
   if(nchar(newsagrep)>0) {
       keepitems <-!grepl(newsagrep,news1$title,ignore.case = TRUE) & !grepl(newsagrep,news1$source,ignore.case = TRUE)
-      message_if_red(the$verbose,"News filtered out ",nrow(news1)-sum(keepitems), " Stories")
+      message_if_red(the_av$verbose,"News filtered out ",nrow(news1)-sum(keepitems), " Stories")
       news1 <- news1[keepitems]
   }
   news1[,age:=difftime(Sys.time(),time_published)]

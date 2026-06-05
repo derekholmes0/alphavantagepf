@@ -59,7 +59,7 @@ av_grep_opts<-function(indta, grepstring="F,M,C,otm",spot=NULL,mindays=3,startdt
   if( gopts[5]=="a" ) { toget=toget[open_interest>0,] }
   toget <- toget[between(abs(delta),mindelta,1-mindelta),]
   toget <- toget[,.SD,.SDcols=!patterns(fifelse(dropsymbol==TRUE,"optexp|symbol","optexp"))]
-  message_if(the$verbose,"av_grep_opts(",grepstring,") narrows ",nrow(indta)," options to ",nrow(toget)," using spot: ",spot)
+  message_if(the_av$verbose,"av_grep_opts(",grepstring,") narrows ",nrow(indta)," options to ",nrow(toget)," using spot: ",spot)
   return(toget)
 }
 
@@ -103,7 +103,7 @@ av_opt_helper_cols<-function(indta, scaling=NULL, spot=NULL) {
                       mat_be=fifelse(type=="call",1,-1)*last+strike, mat_be_pct=100*((fifelse(type=="call",1,-1)*last+strike)/spot-1),
                       ncak=1)]
   if (is.null(scaling) || tolower(scaling)=="none") {
-    message_if(the$verbose,"av_opt_helper_cols using Spot ",spot,", and date ",max(indta$date))
+    message_if(the_av$verbose,"av_opt_helper_cols using Spot ",spot,", and date ",max(indta$date))
     return(indta)
   }
   qcols <- s("mark;last;delta;gamma;theta;vega;rho")
@@ -114,7 +114,7 @@ av_opt_helper_cols<-function(indta, scaling=NULL, spot=NULL) {
     default = 1)
   ), by=.I]
   indta <- indta[,(qcols):=lapply(.SD,\(x) ncak*100*x), .SDcols=qcols][]
-  message_if(the$verbose,"av_opt_helper_cols using Spot ",spot,", scaling ",scaling, " and date ",max(indta$date))
+  message_if(the_av$verbose,"av_opt_helper_cols using Spot ",spot,", scaling ",scaling, " and date ",max(indta$date))
   return(indta)
 }
 
