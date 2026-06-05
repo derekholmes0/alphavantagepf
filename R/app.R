@@ -203,7 +203,7 @@ av_make_server <- function() {
         av_set_defaults(paste0("inpline",no),
                         paste0( the_av$assetlist[listnm==tlist,]$ticker,collapse=";") )
         save_avs_state("all")
-        updateTextInput(session,paste0("istr",no), value= the[[paste0("inpline",no)]])
+        updateTextInput(session,paste0("istr",no), value= the_av[[paste0("inpline",no)]])
         updateRadioButtons(session,paste0("managelist",no),selected="<-")
       }
       return(rtnmsg)
