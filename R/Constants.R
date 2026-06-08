@@ -25,6 +25,7 @@ av_reset_defaults <- function() {
   the_av$pxd <- data.table()
   the_av$pxinv <- data.table()
   the_av$indexlist <- data.table()
+  the_av$table_aes <- data.table()
   the_av$inpline1 <-"a"
   the_av$inpline2 <-"b"
   unlink(the_av$defaultcachedir, force=TRUE,recursive=TRUE)
@@ -157,6 +158,7 @@ av_shiny_data <- function() {
     "deflist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"],
     "helplist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"],
     "defaults"=data.table::fread("./inst/extdata/av_defaults.csv"),
+    "table_aes"= data.table::fread("./inst/extdata/table_aes.csv"),
     "overviewlist"=data.table::fread("./inst/extdata/overview_map.csv"),
     "edit_tableoptions"=list('editable1'='row','editable2'='row','pagelen1'=80,'pagelen2'=80,'digits'=3),
     "selectizeoptions" =I("selectize-input: 12px; background-color:red"),

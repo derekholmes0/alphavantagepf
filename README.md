@@ -275,19 +275,20 @@ chart for 3 common ETS, select “start” to rebase at the start of the
 requested period (`"-2y::"`in datestring) select `TS:PriceTS` to get a
 time series graph, and press `RUN`. The result will be as below.
 
-<img src="img/av_shiny_1.png" alt="" width="70%" /> When `TS:PriceTS` is
-run, `av_runShiny()` will
+<img src="img/av_shiny_1.png" alt="" width="100%" />
+
+When `TS:PriceTS` is run, `av_runShiny()` will
 
 1.  Call `av_get_pf()` with parameters appropriate to the asset
     (e.g. `TIME_SERIES_DAILY` for stocks, `FX_DAILY` for FX),
 2.  **Save** the data in an internal data store, or update existing data
     as necessary, and
-3.  Plot an interactive graph using \[FinanceGraphs::fgts_dygraph()\].
+3.  Plot an interactive graph using
+    [FinanceGraphs](https://github.com/derekholmes0/FinanceGraphs)
+    `fgts_dygraph()` function.
 
 A few key features of the app include:
 
-- Each individual call to `av_get_pf()` can be cached to a directory of
-  the users’ choice. See Vignette.
 - The app will download any data needed that is not already cached. The
   function `av_add_data()` can be used to add price data from other
   sources.
@@ -297,18 +298,27 @@ A few key features of the app include:
   name. To do so, type in your list name in the box to the right of the
   yellow asset line, and click `save`. To recall, select the name from
   the dropdown and click `get`.
+- Each individual call to `av_get_pf()` can be cached to a directory of
+  the users’ choice. Data is saved in a named (by Alphavantage function)
+  list of data.tables, and can be keyed (and upserted) or appended to a
+  saved `.Rd` file. See Vignette.
 
 Other Analyses that are currently implemented include:
-\|Analysis\|Description\| \|:———:\|:————-\| \|Inventory\|Shows the
-current inventory of price data and current asset lists\|
-\|NameSearch\|Search for asset names matching a string\| \|LivePx\|Get
-live prices for all assets\| \|PriceTS\|Plot asset prices (actual or
-normalized relative to a referernce date)\| \|\|Note that two
-independent plots are possible\| \|ActiveTS\|Plot asset prices relative
-to first asset in lower yellow bar\| \|HistVolTS\|Plot historical
-volatility and correlation of asset prices\| \|DES\|Descriptive data\|
-\|News\|News headlines and links for the assets specified\|
-\|DivEarn\|Dividends and earnings data for the assets specified\|
-\|OptSearch\|Search for options matching a string, e.g. “F,M,put” for
-front month monthly puts\| \|Movers\|US Movers taken from
-`TOP_GAINERS_LOSERS`\|
+
+| Analysis | Description |
+|:--:|:---|
+| Inventory | Shows the current inventory of price data and current asset lists |
+| NameSearch | Search for asset names matching a string |
+| LivePx | Get live prices for all assets |
+| PriceTS | Plot asset prices (actual or normalized relative to a referernce date) |
+|  | Note that two stacked independent plots are possible |
+| ActiveTS | Plot asset prices relative to first asset in lower yellow bar |
+| HistVolTS | Plot historical volatility and correlation of asset prices |
+| DES | Descriptive data |
+| News | News headlines and links for the assets specified |
+| DivEarn | Dividends and earnings data for the assets specified |
+| OptSearch | Search for options matching a string, e.g. “F,M,put” for front month monthly puts |
+| Movers | US Movers taken from `TOP_GAINERS_LOSERS` |
+
+Future plans include the ability to plug in bespoke analyses and tick
+data manipulation.

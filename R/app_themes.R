@@ -32,7 +32,8 @@ gt.basetheme<-function(x,gtopts="all",sizepct=100,style=4,digits=2,seps=FALSE,na
     x = x |> opt_interactive(use_filters=TRUE,use_resizers=TRUE, page_size_default=70,use_compact_mode=TRUE)
   }
   if(grepl("wide",size) | interactive==TRUE) {
-    x = x |> tab_options(table.width=pct(95),table.align="left",table.margin.left=px(0))
+#    x = x |> tab_options(table.width=pct(90),table.align="left",table.margin.left=px(0))
+    x = x |> tab_options(table.align="left",table.margin.left=px(0))
   }
   if(!grepl("smalltext",size)) {
     x = x |> opt_table_font(stack = "rounded-sans",size="80%")
@@ -51,6 +52,22 @@ decorate_table <- function(gtx) {
            fmt_url(rows=(format=="fmt_url")) |>
            cols_hide(columns=c(format))
   )
+}
+
+#' @noRd
+add_colwidths <- function(gtx,xtablenm) {
+  colset <- avsd$table_aes[tablenm==xtablenm & aesnm=="width",]
+  if(nrow(colset)<=0) {
+    return(gtx)
+  }
+  colnodef <- colset[!colname=="default",]
+  width_list <- map2( colnodef$colname, colnodef$val_num, ~rlang::expr(!!rlang::sym(.x) ~ px(!!.y)) )
+  if(nrow(coldef <- colset[colname=="default",])>0) {
+    default_width <- coldef[,.SD[1]]$val_num
+    width_list <- c(width_list, list(rlang::expr(everything() ~ px(!!default_width))))
+  }
+  gtx = gtx |> cols_width(.list = width_list)
+  return(gtx)
 }
 
 #' @import gt
@@ -86,7 +103,7 @@ gt.avtheme<- function(x,themeset="",...) {
       tab_style(style=cell_text(weight="bold"), locations=cells_body(columns=c(chgpct))) |>
       tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,chgpct), rows=(isah==TRUE))) |>
       cols_hide(columns=c(timestamp,prevclose,lowbpopen,hibpopen,isah)) |>
-      cols_width(age ~ px(90), everything() ~ px(60)) |>
+      add_colwidths("live") |>
       tab_footnote("Extended hours in pink, prices are colored by direction from previous close")
     if("inlist" %in% names(x)) {
       thisgt = thisgt |>
@@ -115,6 +132,7 @@ gt.avtheme<- function(x,themeset="",...) {
       fmt_datetime(columns=loadts,date_style="y.mn.day",time_style="iso-short") |>
       tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,type,currency,age), rows=(as.numeric(age)>=3))) |>
       tab_footnote(paste("Data older than 3 days highlighted")) |>
+      add_colwidths("pxinv") |>
       gt.basetheme(interactive=TRUE)
       # todo: color rows that are out of date
   }
@@ -137,12 +155,12 @@ gt.avtheme<- function(x,themeset="",...) {
       row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
       tab_header(title="Equities") |> tab_footnote(paste("As Of",Sys.time())) |>
       fmt_number(suffixing=TRUE) |>
-      cols_width(category ~ px(50), variable ~ px(150), everything() ~ px(120)) |>
+      add_colwidths("eqdisc1") |>
       gt.basetheme()
   }
   if(themeset=="eqdescsec") {
     x <- x |> row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
-      cols_width(category ~ px(50), variable ~ px(150), everything() ~ px(100)) |>
+      add_colwidths("eqdescsec") |>
       fmt_number(suffixing=TRUE) |>
       gt.basetheme()
   }
@@ -164,14 +182,14 @@ gt.avtheme<- function(x,themeset="",...) {
         tab_footnote(paste("retrieved as of",Sys.time())) |>
         fmt_integer(columns=c(daysExp)) |>
         cols_merge(columns=c(symbol,type,daysExp), pattern = "{1} {3}d {2}") |>
-        cols_width(symbol ~ px(90), contractID ~ px(150), everything() ~ px(70))
+        add_colwidths("filteredopts")
   }
   if(themeset=="earnings") {
     x<- x |> gt.basetheme(digits=2,interactive=TRUE) |>
     cols_merge(columns=c(estimatedEPS,est_low,est_high), pattern = "<<{2}: >>{1}<<: {3}>>") |>
     tab_style(style=cell_text(align="center"),locations=cells_body(columns=estimatedEPS)) |>
     fmt_number(columns=est_n,decimals=0) |> fmt_percent(columns=c(est_30dpchg,est_90dpchg),decimals=1) |>
-    cols_width(reportTime ~ px(100),estimatedEPS ~ px(100), everything() ~ px(80)) |>
+    add_colwidths("earnings") |>
     tab_header(title=paste0("Earnings")) |>
     fmt_number(suffixing=TRUE) |>
     gt.basetheme()
@@ -201,7 +219,7 @@ gt.avtheme<- function(x,themeset="",...) {
       cols_move_to_start(s("symbol;age;sntmt;url;title")) |>
       fmt_datetime(columns=time_published,date_style="y.mn.day",time_style="iso-short") |>
       fmt_duration(columns=age,output_units=c("days", "hours", "minutes")) |>
-      cols_width(time_published ~ px(100), source ~ px(120), url ~ px(35), age ~ px(90), title ~ px(400), everything() ~ px(40)) |>
+      add_colwidths("news") |>
       gt.basetheme()
     return(thisgt)
   }

@@ -58,17 +58,17 @@ av_make_ui <- function() {
        column(10,  # Was 11
           fluidRow(
             column(width=2,selectInput("anopt1","",runlist1,multiple=FALSE,width='100%')),
-            column(width=6.5,textInput("istr1", "", the_av$inpline1,width='100%')),
-            column(width=1.5,radioButtons("managelist1","",choices=c("<-","get","save"),selected ="<-",inline=TRUE)),
+            column(width=6,textInput("istr1", "", the_av$inpline1,width='100%')),
             column(width=2,selectizeInput("list1","",c("List"="", c("",sort(unique(the_av$assetlist$listnm)))),
-                                          size="80%",options=list(create=TRUE)))
+                                          size="80%",options=list(create=TRUE))),
+            column(width=2,radioButtons("managelist1","",choices=c("<-","get","save"),selected ="<-",,width="70%",inline=TRUE))
           ),
           fluidRow(
             column(width=2,selectInput("anopt2","",runlist2,multiple=FALSE,width='100%')),
             column(width=6,textInput("istr2", "", the_av$inpline2,width='100%')),
-            column(width=2,radioButtons("managelist2","",choices=c("<-","get","save"),selected ="<-",width="50%",inline=TRUE)),
             column(width=2,selectizeInput("list2","",c("List"="", c("",sort(unique(the_av$assetlist$listnm)))),
-                                          size="80%",options=list(create=TRUE)))
+                                          size="80%",options=list(create=TRUE))),
+            column(width=2,radioButtons("managelist2","",choices=c("<-","get","save"),selected ="<-",width="70%",inline=TRUE))
           ),
           fluidRow(
             tabsetPanel(id="inTabset",
@@ -133,7 +133,7 @@ av_make_ui <- function() {
                     selectInput(inputId="capture_av_save",label="Data Saving Options",c("none","CleanOnStart","SaveEveryAVCall","SaveNowOnOptUpdate"),
                                 selected=the_av$capture_av_save, multiple=TRUE)
                   ),
-                  column(width=5,gt_output(outputId = "dumpthe"))
+                  column(width=7,gt_output(outputId = "dumpthe"))
                   )
             )
           )
@@ -245,7 +245,13 @@ av_make_server <- function() {
       av_api_key(rv$avapikey,rv$avapientitlement)
       u1<-lapply(s("cachedir;av_dump_dir;capture_av_what;capture_av_update;capture_av_save;ts_colorset"),
                     \(x) av_set_defaults(x,rv[[x]]))
-      # always has to be in tmp directory: av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
+      oldcache <- th1[nm=="cachedir",]$toget
+      if(!(rv$cachedir==oldcache)) {
+        message_if_red(TRUE,"Cache directoty moved; cleaning up old price/inventory data")
+        file.remove(paste0(oldcache,"/avpf_px.fst"))
+        file.remove(paste0(oldcache,"/avpf_inv.RD"))
+      }
+      # constants_fn always has to be in tmp directory: av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
       av_set_defaults("pxd_fn",paste0(rv$cachedir,"/avpf_px.fst"))
       av_set_defaults("inv_fn",paste0(rv$cachedir,"/avpf_inv.RD"))
       save_avs_state("all")
