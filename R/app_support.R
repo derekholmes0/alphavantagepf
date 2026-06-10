@@ -17,13 +17,13 @@ symbol_grep_by_type <- function(eqlist,grepstr="Equity", rtn="list") {
   }
 }
 
-get_one_ts <- function(assetlist,rebase,datestring,dtstartfrac) {
+get_one_ts <- function(assets,rebase,datestring,dtstartfrac) {
   symbol=NULL
-  toplot <- the_av$pxd[data.table(symbol=assetlist),on=.(symbol)] |> narrowbydtstr(datestring)
+  toplot <- the_av$pxd[data.table(symbol=assets),on=.(symbol)] |> narrowbydtstr(datestring)
   rebasedt <- fcase(rebase=="none","",
                     rebase=="start",paste0(format(toplot[1,]$timestamp,"%Y-%m-%d"),",100"),
                     rebase=="focus",paste0(format(toplot[,.N,by=.(timestamp)][,.SD[floor(.N*dtstartfrac/100)]]$timestamp,"%Y-%m-%d"),",100"))
-  message_if_green(the_av$verbose,"get_one_ts(",paste0(assetlist,collapse=" "),") gets ",nrow(toplot), " rows to  ",as.Date(max(toplot$timestamp)))
+  message_if_green(the_av$verbose,"get_one_ts(",paste0(assets,collapse=" "),") gets ",nrow(toplot), " rows to  ",as.Date(max(toplot$timestamp)))
   return(list(toplot,rebasedt))
 }
 
@@ -78,7 +78,7 @@ oneticker_divs <- function(thisticker,datestring) {
 }
 
 one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dtstartfrac=NULL) {
-  symbol=low=high=NULL
+  symbol=low=high=medgap=NULL
   seriesnm <- fifelse(rv$totrtn,"adjusted_close","close")
   if(is.data.table(toplot[[1]])) {
     trebase <- toplot[[2]]
@@ -97,6 +97,10 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dtstart
     "lastlabel" %in% rv$gropts, "last,line",
     "last" %in% rv$gropts, "last,linevalue",
     default = "")
+  #avsh_clipboard(fgdt,title)
+  xstepcols = data.table(symbol=unique(fgdt$variable))[the_av$pxinv,on=.(symbol)][fcoalesce(as.numeric(medgap),1)>4,]
+  stepcols <- FALSE
+  if(nrow(xstepcols)>0) { stepcols=xstepcols$symbol }
   outdyg <- fgts_dygraph(fgdt,title=title,events=events, dtstartfrac=dtstartfrac/100,
                          annotations=paste0(c(tanno,extra_anno),collapse=";"), colorset=the_av$ts_colorset,
                          splitcols=("splitts" %in% rv$gropts),roller=1,
@@ -108,7 +112,11 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dtstart
 getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),newsagrep="",maxage=+Inf) {
   news0=news1=artno=ticker=overall_sentiment_score=time_published=title=NULL
   news0 <- av_get_pf(x,"NEWS_SENTIMENT",limit=floor(nArticles)) |>  save_av_data("NEWS_SENTIMENT")
-  news1 <- news0 |> av_extract_df("feed")
+  news1 <- news0 |> av_extract_df("feed",empty_dt_onerror=TRUE)
+  if(nrow(news1)<=1) {
+    message_if_red(the_av$verbose,"getNews: No News for ",x)
+    return(data.table())
+  }
   if(nchar(newsagrep)>0) {
       keepitems <-!grepl(newsagrep,news1$title,ignore.case = TRUE) & !grepl(newsagrep,news1$source,ignore.case = TRUE)
       message_if_red(the_av$verbose,"News filtered out ",nrow(news1)-sum(keepitems), " Stories")
@@ -124,5 +132,14 @@ getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),newsagrep="",max
   news1<-news1[age<=fifelse("maxDays" %in% newsfilter, maxage,+Inf),]
   #news1<-news1[,url:=paste0('<a href="', url, '" target="_blank">', "<<", '</a>')]
   return(news1[,.(symbol=x,age,time_published,sntmt=overall_sentiment_score,source,title,url)])
+}
+
+#' @noRd
+#' @import clipr
+avsh_clipboard <- function(x,title="") {
+  if(the_av$autocopy) {
+    write_clip(as.data.frame(x))
+    message_if_green(the_av$verbose,"to Clipboard: ",title," w/ ",nrow(x)," rows")
+  }
 }
 

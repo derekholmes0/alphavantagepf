@@ -1,5 +1,10 @@
 # alphavantagepf (development version)
 
+# alphavantagepf 0.7.5
+
+* Fixed cryptocurrency download conventions
+* Enhanced Shiny data capture to external data and crypto.
+
 # alphavantagepf 0.7.4
 
 * Added delay to av_get_pf

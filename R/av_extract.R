@@ -12,6 +12,7 @@
 #' @param melt Return data in melted/normalized form
 #' @param separate_vars (default : FALSE)  separate out multiple levels of variable names into new keys
 #' @param outputform (default : `common`, `av_extract_fx()` only):  Use common names from `REALTIME_BULK_QUOTES`
+#' @param empty_dt_onerror (default : FALSE): Return gracefully an empty data.table if requested item is not present.
 #' @param cols (default : all columns:  `av_extract_fx()` only):  String or List of columns to return
 #'`
 #' @returns Extracted data.tables for nested data returned from [av_get_pf()], If `grepstring` is not specified, first nested table is returned. [av_extract_fx()] returns a shortened data.table with FX quotes.
@@ -30,8 +31,11 @@
 #'
 #' @rdname av_extract_df
 #' @export
-av_extract_df <- function(indta,grepstring="",melt=FALSE) {  # Keep symbol, variable
+av_extract_df <- function(indta,grepstring="",melt=FALSE,empty_dt_onerror=FALSE) {  # Keep symbol, variable
     indta <- indta[which(indta$ltype=="list"),][grepl(grepstring,get("variable")),]
+    if(empty_dt_onerror==TRUE && nrow(indta)<=0) {
+      return(data.table())
+    }
     outdlist <- lapply(seq(1,nrow(indta)),
         \(i) {
             dtax <- data.table::data.table(indta[i,]$value_df[[1]])

@@ -11,9 +11,12 @@ A [data.table](https://github.com/Rdatatable/data.table) centric R and
 Shiny interface to the Alpha Vantage API, geared towards personal
 finance applications. Data is typically returned in “melted” or
 normalized forms and several helper functions are included to extract
-data from more complex API calls. A Shiny interface is also provided to
-download, visualize and manage data for sets of assets, including ETFs
-and FX.
+data from more complex API calls.
+
+A Shiny interface is also provided to download, visualize and manage
+data for sets of assets, including ETFs and FX. While this is a rusty
+abacus relative to Bloomberg, it allows users to plot, summarize and
+compare sets of assets easily.
 
 ## Installation
 
@@ -275,7 +278,7 @@ chart for 3 common ETS, select “start” to rebase at the start of the
 requested period (`"-2y::"`in datestring) select `TS:PriceTS` to get a
 time series graph, and press `RUN`. The result will be as below.
 
-<img src="img/av_shiny_1.png" alt="" width="100%" />
+<img src="vignettes/img/av_shiny_1.jpg" alt="" width="100%" />
 
 When `TS:PriceTS` is run, `av_runShiny()` will
 
@@ -297,7 +300,8 @@ A few key features of the app include:
 - Groups of assets can be saved as “asset lists” and save or recalled by
   name. To do so, type in your list name in the box to the right of the
   yellow asset line, and click `save`. To recall, select the name from
-  the dropdown and click `get`.
+  the dropdown and click `get`. The assets in that list will then be
+  pasted into the relevant line.
 - Each individual call to `av_get_pf()` can be cached to a directory of
   the users’ choice. Data is saved in a named (by Alphavantage function)
   list of data.tables, and can be keyed (and upserted) or appended to a

@@ -62,5 +62,10 @@ av_runShiny <- function() {
     options(av_api_key = the_av$avapikey)
     options(av_api_entitlement = the_av$avapientitlement)
   }
+  else {
+    av_reset_defaults(fileopts=FALSE)
+    restore_avs_state("init") # Fills in avsd defaults
+    save_avs_state("all")
+  }
   shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1400,height=800,"launch.browser"))
 }

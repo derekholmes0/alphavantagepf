@@ -20,7 +20,7 @@ source("./R/utilities.R")
 av_make_ui <- function() {
   order1=order2=NULL
   #restore_avs_state(msg="OnStartup")
-  curr_assetlist <- sort(unique(the_av$assetlist$listnm))
+  curr_assetgroups <- sort(unique(the_av$assetgroups$listnm))
   runlist1 <- avsd$deflist[!is.na(order1)]$runcode
   runlist2 <- avsd$deflist[!is.na(order2)]$runcode
   av_ui<- fluidPage(
@@ -52,23 +52,24 @@ av_make_ui <- function() {
             radioButtons(inputId="rebase","Rebase",choices=c("none","start","focus"),selected="none"),
             checkboxInput(inputId="totrtn","TotalRtn",value=TRUE),
             checkboxInput(inputId="useLive","useLive",value=FALSE),
-            checkboxInput(inputId="verbose","Status Msgs",value=the_av$verbose)
+            checkboxInput(inputId="verbose","Status Msgs",value=the_av$verbose),
+            checkboxInput(inputId="autocopy","copyTable",value=the_av$autocopy)
        ),
 
        column(10,  # Was 11
           fluidRow(
             column(width=2,selectInput("anopt1","",runlist1,multiple=FALSE,width='100%')),
             column(width=6,textInput("istr1", "", the_av$inpline1,width='100%')),
-            column(width=2,selectizeInput("list1","",c("List"="", c("",sort(unique(the_av$assetlist$listnm)))),
+            column(width=2,selectizeInput("list1","",c("List"="", c("",sort(unique(the_av$assetgroups$listnm)))),
                                           size="80%",options=list(create=TRUE))),
-            column(width=2,radioButtons("managelist1","",choices=c("<-","get","save"),selected ="<-",,width="70%",inline=TRUE))
+            column(width=2,radioButtons("managelist1","",choices=c("get","save","delete"),selected =character(0),width="60%",inline=TRUE))
           ),
           fluidRow(
             column(width=2,selectInput("anopt2","",runlist2,multiple=FALSE,width='100%')),
             column(width=6,textInput("istr2", "", the_av$inpline2,width='100%')),
-            column(width=2,selectizeInput("list2","",c("List"="", c("",sort(unique(the_av$assetlist$listnm)))),
+            column(width=2,selectizeInput("list2","",c("List"="", c("",sort(unique(the_av$assetgroups$listnm)))),
                                           size="80%",options=list(create=TRUE))),
-            column(width=2,radioButtons("managelist2","",choices=c("<-","get","save"),selected ="<-",width="70%",inline=TRUE))
+            column(width=2,radioButtons("managelist2","",choices=c("get","save","delete"),selected =character(0),width="60%",inline=TRUE))
           ),
           fluidRow(
             tabsetPanel(id="inTabset",
@@ -86,8 +87,7 @@ av_make_ui <- function() {
                                   imageOutput("plot1"), imageOutput("plot2")),
                 tabPanel("OPTIONS",
                     fluidRow(
-                      column(width=2,span(textInput(inputId="ochains", label="Chains [F(ront)|B(ack)],[M(onth)|Q(tr)],[C(all)|P(ut)],[itm|otm|all]",
-                                                    value=the_av$ochains),style=avsd$labelcss)),
+                      column(width=2,span(textInput(inputId="ochains", label="Chains",value=the_av$ochains),style=avsd$labelcss)),
                       column(width=2,numericInput(inputId="mindelta", label="mindelta", value=5,min=0,max=100)),
                       column(width=2,selectInput(inputId="otodisplay", label="Output",
                                                  c("reduced","trading","all"),selected=the_av$otodisplay,multiple=FALSE)),
@@ -152,12 +152,17 @@ av_make_server <- function() {
   out <- list()
   av_server<-function(input, output,session) {
     inlist=list_ts=NULL
-    curr_assetlist <- sort(unique(the_av$assetlist$listnm))
-    # On Startup :Ownload current index list if not there
-    if(is.null(the_av$indexlist) | nrow(the_av$indexlist)<=0 | (min(the_av$indexlist$list_ts)<=Sys.Date()-7)) {
-      message_if_red(the_av$verbose,"Downloading Index Catalog at ",Sys.time())
-      the_av$indexlist <- av_get_pf("","INDEX_CATALOG")[,list_ts:=Sys.Date()][]
+    quick_message <- function(wh,this_message,eval=TRUE) {
+      shinyFeedback::hideFeedback(inputId=wh)
+      if(nchar(this_message)>0& eval==TRUE) {
+        this_message <- paste0("<small>",this_message,"</small>")
+        shinyFeedback::showFeedback(inputId=wh, text=this_message,color="#1f78b4")
+      }
     }
+    curr_assetgroups <- sort(unique(the_av$assetgroups$listnm))
+    quick_message("ochains","[F(ront)|B(ack)],[M(onth)|Q(tr)],[C(all)|P(ut)],[itm|otm|all]")
+    # On Startup download current index list if not there
+    update_tickerlists( is.null(the_av$tickerlist) | nrow(the_av$tickerlist)<=0 | (min(the_av$tickerlist$list_ts)<=Sys.Date()-7) )
     FinanceGraphs::fg_sync_group("avshiny")
     if("CleanOnStart" %in% the_av$capture_av_save) {  save_av_data(data.table(),"KILL") }
     # ----
@@ -169,58 +174,50 @@ av_make_server <- function() {
     })
 
    # height_from_obs <- reactive({ the_av$out1h })
-
     need_index_asset <- reactive({
       is_in_list <- s(input$istr2)[1] %in% the_av$pxinv$symbol
       shinyFeedback::feedbackWarning("is_in_list", !is_in_list, "(1) Need an asset in inventory to compare against")
     })
-
-    quick_message <- function(wh,this_message,eval=TRUE) {
-      shinyFeedback::hideFeedback(inputId=wh)
-      if(nchar(this_message)>0& eval==TRUE) {
-        this_message <- paste0("<small>",this_message,"</small>")
-        shinyFeedback::showFeedback(inputId=wh, text=this_message,color="#1f78b4")
-      }
-    }
-
     set_list <- function(todo,tlist,instr,no) {
       rtnmsg <- ""
       if(todo=="save") {
         if(nchar(instr)<=0 | nchar(tlist)<=0) {
-          rtnmsg <- "Cannot Save blank Assetlist Name"
+          rtnmsg <- "Cannot Save blank assetgroups Name"
         }
         else {
           newassets <- data.table(ticker=s(instr))[,listnm:=tlist][]
-          the_av$assetlist <- DTUpsert(the_av$assetlist,newassets,c("listnm"),replaceifbempty=the_av$assetlist[!(listnm==tlist),])
+          the_av$assetgroups <- DTUpsert(the_av$assetgroups,newassets,c("listnm"),replaceifbempty=the_av$assetgroups[!(listnm==tlist),])
           save_avs_state("all")
-          updateRadioButtons(session,paste0("managelist",no),selected="<-")
-          updateSelectizeInput(session,"list1", choices=sort(unique(the_av$assetlist$listnm)))
-          updateSelectizeInput(session,"list2", choices=sort(unique(the_av$assetlist$listnm)))
+          updateSelectizeInput(session,"list1", choices=sort(unique(the_av$assetgroups$listnm)))
+          updateSelectizeInput(session,"list2", choices=sort(unique(the_av$assetgroups$listnm)))
           rtnmsg <-paste0("Asset set saved as ",tlist)
         }
       }
       if(todo=="get") {
-        av_set_defaults(paste0("inpline",no),
-                        paste0( the_av$assetlist[listnm==tlist,]$ticker,collapse=";") )
+        av_set_defaults(paste0("inpline",no),paste0( the_av$assetgroups[listnm==tlist,]$ticker,collapse=";") )
         save_avs_state("all")
         updateTextInput(session,paste0("istr",no), value= the_av[[paste0("inpline",no)]])
-        updateRadioButtons(session,paste0("managelist",no),selected="<-")
       }
+      if(todo=="delete") {
+        the_av$assetgroups <- the_av$assetgroups[!listnm==tlist,]
+        updateSelectizeInput(session,"list1", choices=sort(unique(the_av$assetgroups$listnm)))
+        updateSelectizeInput(session,"list2", choices=sort(unique(the_av$assetgroups$listnm)))
+        rtnmsg <-paste0("Deleted Asset List: ",tlist)
+        save_avs_state("all")
+      }
+      Sys.sleep(0.3)
+      updateRadioButtons(session,paste0("managelist",no),selected=character(0))
       return(rtnmsg)
     }
 
     observeEvent(input$managelist1, {
       req(input$managelist1)
-      thismsg <- set_list(input$managelist1,input$list1,input$istr1,1)
-      quick_message("istr1",thismsg)
-      #output$t1gt <-  render_gt(expr=dump_assetlist(returngt=TRUE))
+      quick_message("istr1",set_list(input$managelist1,input$list1,input$istr1,1))
     })
 
     observeEvent(input$managelist2, {
       req(input$managelist2)
-      thismsg <- set_list(input$managelist2,input$list2,input$istr2,2)
-      quick_message("istr2",thismsg)
-      #output$t1gt <-render_gt(expr=dump_assetlist(returngt=TRUE))
+      quick_message("istr2",set_list(input$managelist2,input$list2,input$istr2,2))
     })
 
     observeEvent(input$anopt1, {
@@ -235,6 +232,7 @@ av_make_server <- function() {
       req(input$anopt2)
       shinyFeedback::hideFeedback(inputId="anopt2")
       if(nchar(thishelp <- avsd$deflist[runcode==input$anopt2,]$help)>0) {
+        thishelp <- paste0("<small>",thishelp,"</small>")
         shinyFeedback::showFeedback(inputId="anopt2", text=thishelp,color="#2ca35f") }
     })
 
@@ -242,21 +240,21 @@ av_make_server <- function() {
       old=toget=NULL
       rv <- isolate(reactiveValuesToList(input))
       th1<- dump_the()
-      av_api_key(rv$avapikey,rv$avapientitlement)
-      u1<-lapply(s("cachedir;av_dump_dir;capture_av_what;capture_av_update;capture_av_save;ts_colorset"),
-                    \(x) av_set_defaults(x,rv[[x]]))
       oldcache <- th1[nm=="cachedir",]$toget
+      av_api_key(rv$avapikey,rv$avapientitlement)
+      u1<-lapply(s("cachedir;av_dump_dir;capture_av_what;capture_av_update;capture_av_save;ts_colorset;avapikey;avapientitlement"),
+                    \(x) av_set_defaults(x,rv[[x]]) )
       if(!(rv$cachedir==oldcache)) {
-        message_if_red(TRUE,"Cache directoty moved; cleaning up old price/inventory data")
+        message_if_red(TRUE,"Cache directory moved; cleaning up old price/inventory data")
         file.remove(paste0(oldcache,"/avpf_px.fst"))
         file.remove(paste0(oldcache,"/avpf_inv.RD"))
       }
       # constants_fn always has to be in tmp directory: av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
-      av_set_defaults("pxd_fn",paste0(rv$cachedir,"/avpf_px.fst"))
-      av_set_defaults("inv_fn",paste0(rv$cachedir,"/avpf_inv.RD"))
-      save_avs_state("all")
+      av_set_caching_directories()
+      av_set_defaults("starttab","usedefault")
       th1 <- th1[,.(nm,old=toget)][dump_the(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
       th1 <- th1[,.SD,.SDcols=s("classtype;nm;toget;format")]
+      save_avs_state("all")
       output$dumpthe <- render_gt(expr=th1 |> gt() |> gt.basetheme() |> decorate_table())
     })
 
@@ -286,6 +284,12 @@ av_make_server <- function() {
       save_avs_state("all")
       })
 
+    observeEvent(input$autocopy, {
+      av_set_defaults("autocopy",input$autocopy)
+      save_avs_state("all")
+    })
+
+
     observeEvent(input$RUN, {
       rv <- isolate(reactiveValuesToList(input))
       thisenv <- environment()
@@ -305,13 +309,12 @@ av_make_server <- function() {
       lapply(s("istr1;istr2"),\(x) quick_message(x,""))
       eqlist1 <- s(istr1)
       eqlist2 <- s(istr2)
-      #cAssign("rv;istr1;istr2;eqlist1;eqlist2;rv",silent=TRUE)
       seriesnm <- fifelse(rv$totrtn,"adjusted_close","close")
       #restore_avs_state(nrow(the_av$pxinv)>1 || substr(anopt1,1,2)=="TS" || substr(anopt2,1,2)=="TS",msg="always")
       if(anopt1=="Gen:Inventory") {
         if(nrow(the_av$pxinv)<=0) {  quick_message("istr1","Create Data by running a Time Series Graph") }
         else {
-          out[["TABLE4GT"]]<- dump_assetlist(returngt=TRUE) |>  gt.avtheme(themeset="assetlist")
+          out[["TABLE4GT"]]<- dump_assetgroups(returngt=TRUE) |>  gt.avtheme(themeset="assetgroups")
           out[["TABLE3GT"]]<- the_av$pxinv[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv")
           out[["DET1GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
         }
@@ -326,6 +329,7 @@ av_make_server <- function() {
           toplot <- rbindlist(list(toplot,rbindlist(toplot_fx)),use.names=TRUE,fill=TRUE)
         }
         toplot <- data.table(symbol=eqlist1)[,inlist:=TRUE][toplot,on=.(symbol)][order(change_percent)]
+        avsh_clipboard(toplot,"liveprice")
         out[["TABLE1GT"]]<- toplot |>  gt.avtheme(themeset="live")
         # Save latest to history, but how to ensure no gaps?
       }
@@ -333,6 +337,7 @@ av_make_server <- function() {
         toplot <- lapply(eqlist1, \(x) manage_epx(x,datestring,addlive=input$useLive))
         quick_message("istr1",paste(toplot,collapse=""))
         toplot <- get_one_ts(eqlist1,rebase,datestring,dtstartfrac)
+        avsh_clipboard(toplot,anopt1)
         out[["TS1"]] <- one_px_ts(toplot,rv,events=events,dtstartfrac=dtstartfrac)
         save_avs_state("px")
       }
@@ -359,11 +364,13 @@ av_make_server <- function() {
         toplot_idx <- toplot[catg=="idx",.(timestamp,idxpx=adjusted_close,mktrtn=rtn,cummktrtn=cumrtn)]
         toplot_idx <- toplot_idx[toplot[catg=="act",],on=.(timestamp)]
         toplot_tridx <- toplot_idx[,.(timestamp,variable=symbol,value=100*exp(cumrtn-cummktrtn))]
+        avsh_clipboard(toplot_tridx,anopt1)
         out[["TS1"]] <-  one_px_ts(toplot_tridx,rv,title=paste0("Excess Returns over ",eqlist2[1]),extra_anno="hline,100",
                                    events=events,dtstartfrac=dtstartfrac)
         toplot_idx <- toplot_idx[,let(rtn=100*rtn,mktrtn=100*mktrtn)]
         volp_n <- as.integer(s(volparams)[[2]])
-        toplot_corr <- toplot_idx[,rcor:=frollapply(.SD,volp_n,\(x) 100*cor(x$mktrtn,x$rtn,method="kendall"),by.column=FALSE), by=.(symbol)]
+        toplot_corr <- toplot_idx[,rcor:=frollapply(.SD,volp_n,\(x) 100*cor(x$mktrtn,x$rtn,method="kendall",
+                                                        use="complete.obs"),by.column=FALSE), by=.(symbol)]
         out[["TS2"]] <- one_px_ts(toplot_corr[,.(timestamp,variable=symbol,value=rcor)],rv,
                   title=paste0("Rolling ",volp_n," day kendall correlation"),extra_anno="hline,100",
                   events=events,dtstartfrac=dtstartfrac)
@@ -380,7 +387,6 @@ av_make_server <- function() {
       if(anopt1=="TS:HistVolTS") {
         toplot <- lapply(eqlist1, \(x) manage_epx(x,datestring,addlive=input$useLive))
         quick_message("istr1",paste(toplot,collapse=""))
-
         toplot <- get_one_ts(eqlist1,rebase,datestring,dtstartfrac)
         volp <- s(volparams)
         onevol <- function(x) {
@@ -389,6 +395,7 @@ av_make_server <- function() {
           data.table(timestamp=tdta$timestamp,variable=x,
                       value=100*TTR::volatility(xdta, calc=volp[[1]],n=as.integer(volp[[2]]), N=as.integer(volp[[3]]))) }
         toplot2 <- rbindlist(lapply(eqlist1, onevol))
+        avsh_clipboard(toplot2,"HistVol")
         out[["TS1"]] <- one_px_ts(toplot2,rv,title=paste("Volatility (pct) using ",volparams),events=events,dtstartfrac=dtstartfrac)
         out[["TS2"]] <- one_px_ts(toplot,rv,events=events,dtstartfrac=dtstartfrac)
       }
@@ -463,7 +470,7 @@ av_make_server <- function() {
         eqdta <- av_get_pf("","SYMBOL_SEARCH",keywords=istr1) |> save_av_data("SYMBOL_SEARCH")
         eqdta[,let(format=fcase(type=="Equity" & region=="United States","bold",default=""))]
         setcolorder(eqdta,neworder="matchScore")
-        idxsearch <- the_av$indexlist[grepl(istr1,name,ignore.case=TRUE) | grepl(istr1,symbol,ignore.case=TRUE),][,.(symbol,name,type="Index")]
+        idxsearch <- the_av$tickerlist[grepl(istr1,name,ignore.case=TRUE) | grepl(istr1,symbol,ignore.case=TRUE),][,.(symbol,name,type="Index")]
         eqdta <- rbindlist(list(idxsearch[,format:="green"],eqdta),fill=TRUE,use.names=TRUE)
         out[["TABLE1GT"]] <- eqdta |> gt.avtheme(themeset="namesearch",istr1)
       }
@@ -532,8 +539,8 @@ av_make_server <- function() {
     output$plot2 <- renderPlot({ out[["SCAT2"]] })
     output$optplot1<- renderPlot({ out[["SCAT1"]] })
     output$msg <- renderPrint({  print(out[["MSG"]]) })
-    updateTabsetPanel(session,"inTabset",selected=avsd$deflist[runcode==anopt1,]$focus)
-
+    starttab <- fifelse(the_av$starttab %in% unique(avsd$deflist$focus), the_av$starttab, avsd$deflist[runcode==anopt1,]$focus )
+    updateTabsetPanel(session,"inTabset",selected=starttab)
    }) # obsARUnn
   } # Server
   return(av_server)

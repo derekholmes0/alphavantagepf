@@ -1,6 +1,7 @@
 #' Extract data from Alpha Vantage retuned data
 #'
 #' @name av_reset_defaults
+#' @param fileopts (default: TRUE)  If TRUE, then remove all files and subdirectories
 #' @returns No return
 #'
 #' @details Resets [av_runShiny()] defaults to original (newly installed) state
@@ -12,25 +13,55 @@
 #' }
 #'
 #' @export
-av_reset_defaults <- function() {
-  file.remove(the_av$constants_fn)
+av_reset_defaults <- function(fileopts=TRUE) {
   the_av$cachedir <- the_av$defaultcachedir
+  if(!dir.exists(the_av$defaultcachedir)) {
+    newd <- dir.create(the_av$defaultcachedir)
+    message("Creating ",the_av$constants_fn)
+  }
+  # Must be decorated
   the_av$pxd_fn <- paste0( the_av$cachedir, "/avpf_px.fst")
   the_av$inv_fn <- paste0( the_av$cachedir, "/avpf_inv.RD")
-  the_av$avapikey <- "NOT_SET"
-  the_av$avapientitlement <- "delayed"
-  the_av$verbose <- TRUE
-  the_av$assetlist <- data.table(listnm=rep("defaultIdx",2),ticker=c("SPY","QQQ"))
-  the_av$extracalc_file <- ""
-  the_av$pxd <- data.table()
-  the_av$pxinv <- data.table()
-  the_av$indexlist <- data.table()
-  the_av$table_aes <- data.table()
-  the_av$inpline1 <-"a"
-  the_av$inpline2 <-"b"
-  unlink(the_av$defaultcachedir, force=TRUE,recursive=TRUE)
-  unlink(the_av$cachedir, force=TRUE,recursive=TRUE)
+  # Data Tables
+  the_av$assetgroups <- data.table(listnm=rep("defaultIdx",2),ticker=c("SPY","QQQ"))
+  lapply(s("pxd;pxinv;tickerlist;table_aes"), \(x) assign(x, data.table(), envir=the_av))
+  # all else from defaults
+  for(i in seq(1,nrow(avsd$defaults))) {
+    ivartype <- avsd$defaults[i,]$vartype
+    ivarnm <- avsd$defaults[i,]$var
+    if( ivartype=="cache" ) { ivarval <- paste0(the_av$cachedir,"/", avsd$defaults[i,get("value_str")]) }
+    else { ivarval <- avsd$defaults[i,get(paste0("value_",ivartype))] }
+    assign(ivarnm, ivarval, envir=the_av)
+  }
+  message_if_red(TRUE,"Filling in app defaults")
+  if(fileopts==TRUE) {
+    file.remove(the_av$constants_fn)
+    unlink(the_av$defaultcachedir, force=TRUE,recursive=TRUE)
+    unlink(the_av$cachedir, force=TRUE,recursive=TRUE)
+  }
 }
+
+# One time or many
+av_set_defaults <- function(optnm=NULL,optval=NULL,savetoconstants=FALSE) {
+  if(!is.null(optnm) & !is.null(optval)) {
+    #message_if(the_av$verbose,"av_set_defaults> ",optnm,"<-",optval) # tooo verbose
+    assign(optnm,optval,envir=the_av) # For some reason, pasing NA into optval destroys any previous changes to the_av
+  }
+  if(savetoconstants==TRUE) {
+    unames=ls(envir=the_av)
+    save(list=unames,envir=the_av,file= the_av$constants_fn)
+    message("Saving to ",the_av$constants_fn)
+  }
+}
+
+av_set_caching_directories <- function() {
+  vartype=NULL
+  toset <- avsd$defaults[vartype=="cache",]
+  for(i in seq(1,nrow(toset))) {
+    assign(toset[i,]$var, paste0(the_av$cachedir,"/", toset[i,get("value_str")]), envir=the_av)
+  }
+}
+
 
 #' Extract data from Alpha Vantage retuned data
 #'
@@ -134,22 +165,6 @@ av_make_dtmap <- function(yrs_ahead=5) {
   return(dtmap)
 }
 
-av_set_defaults <- function(optnm=NULL,optval=NULL,savetoconstants=FALSE) {
-  if(!dir.exists(the_av$defaultcachedir)) {
-    newd <- dir.create(the_av$defaultcachedir)
-    message("Creating ",the_av$constants_fn)
-  }
-  if(!is.null(optnm) & !is.null(optval)) {
-    #message_if_green(the_av$verbose,"av_set_defaults> ",optnm,"<-",optval) # tooo verbose
-    assign(optnm,optval,envir=the_av)
-  }
-  if(savetoconstants==TRUE) {
-    unames=ls(envir=the_av)
-    save(list=unames,envir=the_av,file= the_av$constants_fn)
-    message("Saving to ",the_av$constants_fn)
-  }
-}
-
 #' @importFrom usethis use_data
 av_shiny_data <- function() {
   tinputformstyle <- I("{font-size:12px; font-weight:bold; background-color: #ffff99}")
@@ -159,6 +174,7 @@ av_shiny_data <- function() {
     "helplist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"],
     "defaults"=data.table::fread("./inst/extdata/av_defaults.csv"),
     "table_aes"= data.table::fread("./inst/extdata/table_aes.csv"),
+    "crypto_list"=data.table::fread("./inst/extdata/cryptocurrency_list.csv"),
     "overviewlist"=data.table::fread("./inst/extdata/overview_map.csv"),
     "edit_tableoptions"=list('editable1'='row','editable2'='row','pagelen1'=80,'pagelen2'=80,'digits'=3),
     "selectizeoptions" =I("selectize-input: 12px; background-color:red"),

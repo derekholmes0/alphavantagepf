@@ -114,12 +114,20 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     dots$symbol   <- symbol
     dots$apikey   <- av_api_key()[1]
 
+    # New: DIstinction betweebn FX and Crypto
     # Forex
-    is_forex <- !is.null(symbol) && stringr::str_detect(symbol[1], "\\/")
+    is_forex <- !is.null(symbol) && stringr::str_detect(symbol[1], "\\/") && grepl("FX",av_fun)
     if (is_forex) {
         currencies  <- symbol |> stringr::str_split_fixed("\\/", 2) |> as.vector()
         dots[c("from_currency","to_currency","from_symbol","to_symbol")] <- currencies[c(1,2,1,2)]
         dots$symbol <- NULL
+    }
+
+    # Forex
+    is_crypto <- !is.null(symbol) && stringr::str_detect(symbol[1], "\\/") && grepl("DIGITAL_CURRENCY|CRYPTO",av_fun)
+    if (is_crypto) {
+      currencies  <- symbol |> stringr::str_split_fixed("\\/", 2) |> as.vector()
+      dots[c("symbol","market","from_symbol","to_symbol")] <- currencies[c(1,2,1,2)]
     }
 
     # Generate URL

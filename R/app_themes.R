@@ -15,7 +15,6 @@
 
 #' @import gt
 #' @import data.table
-
 gt.basetheme<-function(x,gtopts="all",sizepct=100,style=4,digits=2,seps=FALSE,na_format="-",size="",interactive=FALSE) {
   style <- fifelse(interactive==TRUE,1,style)
   if(gtopts=="all" | gtopts=="fmtnumber") {
@@ -29,7 +28,7 @@ gt.basetheme<-function(x,gtopts="all",sizepct=100,style=4,digits=2,seps=FALSE,na
     x = x |> opt_vertical_padding(scale=0.6)
   }
   if(interactive==TRUE) {
-    x = x |> opt_interactive(use_filters=TRUE,use_resizers=TRUE, page_size_default=70,use_compact_mode=TRUE)
+    x = x |> opt_interactive(use_filters=TRUE,use_resizers=TRUE, page_size_default=40,use_compact_mode=TRUE)
   }
   if(grepl("wide",size) | interactive==TRUE) {
 #    x = x |> tab_options(table.width=pct(90),table.align="left",table.margin.left=px(0))
@@ -55,7 +54,10 @@ decorate_table <- function(gtx) {
 }
 
 #' @noRd
+#' @importFrom rlang expr sym
+#' @importFrom purrr map2
 add_colwidths <- function(gtx,xtablenm) {
+  tablenm=aesnm=colname=NULL
   colset <- avsd$table_aes[tablenm==xtablenm & aesnm=="width",]
   if(nrow(colset)<=0) {
     return(gtx)
@@ -74,19 +76,20 @@ add_colwidths <- function(gtx,xtablenm) {
 #' @import data.table
 gt.avtheme<- function(x,themeset="",...) {
   term=`i.to`=estimate_Beta=p.value_Beta=loadts=n=catprio=prio=matchScore=daysExp=nlink=sntmt=time_published=estiamtedEPS=NULL
-  est_low=est_high=est_n=est_30dpchg=est_90dpchg=divdays=estimatedEPS=volume=low=high=chgpct=EH_chgpct=age=EH_mid=isah=inlist=NULL
+  est_low=est_high=est_n=est_30dpchg=est_90dpchg=divdays=estimatedEPS=volume=low=high=chgpct=EH_chgpct=age=EH_mid=isah=inlist=thisgt=NULL
+  tablenm=aesnm=NULL
+  ntable_len<-0
   ldots = list(...)
   # -- Tables that require further processing
   if(themeset=="activeregression") {
     x <- x[.(term=c("(Intercept)","x"), to=c("a","Beta")),on="term",term:=i.to]
     x <- x |> dcast(regfactor ~ term,value.var=setdiff(colnames(x),s("regfactor;term")))
     setnames(x,"regfactor","ticker")
-    x <- x |> gt() |> tab_spanner_delim(delim="_") |> gt.basetheme(gtopts="theme") |>
+    thisgt <- x |> gt() |> tab_spanner_delim(delim="_") |> gt.basetheme(gtopts="theme") |>
       tab_style(style=cell_text(color="red",weight="bold"),
                 locations=cells_body(columns=estimate_Beta, rows=p.value_Beta<=as.numeric(ldots[[2]]))) |>
       tab_header(title=paste0("Return regression vs ",ldots[[1]])) |>
       tab_footnote(paste("Estimated highlighted at p=",100*as.numeric(ldots[[2]]), "pct as of",Sys.time()))
-    return(x)
   }
   if(themeset=="live") {
     # x = av_get_pf(c("ORCL","IBM","EWZ","ARGT"),"REALTIME_BULK_QUOTES",melt=FALSE)
@@ -110,25 +113,21 @@ gt.avtheme<- function(x,themeset="",...) {
         tab_style(style=cell_fill(color="lightgreen"), locations=cells_body(columns=everything(),  rows=(inlist==TRUE))) |>
         cols_hide(s("inlist"))
     }
-    return(thisgt)
   }
   # If a gt =============================================================
-  if (!"gt_tbl" %in% class(x)) {
-    if(nrow(x)<=0) {
-      return(x)
-    }
-    x <- x |> gt()
+  if (is.null(thisgt)) {
+    thisgt <- x |> gt()
   }
   # savelist ============================================================= savelist
   if(themeset=="savelist") {
-    x <- x |> gt.basetheme() |> tab_header(title="Asset lists")
+    thisgt <- thisgt |> gt.basetheme() |> tab_header(title="Asset lists")
   }
   # Inventory ============================================================= Inventory
-  if(themeset=="assetlist") {
-    x <- x |> gt.basetheme() |> tab_header(title="Asset lists")
+  if(themeset=="assetgroups") {
+    thisgt <- thisgt |> gt.basetheme() |> tab_header(title="Asset lists")
   }
   if(themeset=="pxinv") {
-    x <- x |> tab_header(title="Data Inventory") |>
+    thisgt <- thisgt |> tab_header(title="Data Inventory") |>
       fmt_datetime(columns=loadts,date_style="y.mn.day",time_style="iso-short") |>
       tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,type,currency,age), rows=(as.numeric(age)>=3))) |>
       tab_footnote(paste("Data older than 3 days highlighted")) |>
@@ -137,21 +136,21 @@ gt.avtheme<- function(x,themeset="",...) {
       # todo: color rows that are out of date
   }
   if(themeset=="mktstatus") {
-    x <- x |> gt.basetheme() |> tab_header(title="Market Status") |> tab_footnote(paste("Retrieved as of ",Sys.time()))
+    thisgt <- thisgt |> gt.basetheme() |> tab_header(title="Market Status") |> tab_footnote(paste("Retrieved as of ",Sys.time()))
   }
   # TS:ActiveTS ============================================================= TS:ActiveTS
   if(themeset=="tr_regression") {
-    x <- x |> gt.basetheme() |> tab_header(title="Daily Total Return regression results", subtitle=html(paste0("Asset vs ",ldots[[1]])))
+    thisgt <- thisgt |> gt.basetheme() |> tab_header(title="Daily Total Return regression results", subtitle=html(paste0("Asset vs ",ldots[[1]])))
   }
   # Gen:Movers ============================================================= Gen:Movers
   if(themeset=="Gen:Movers") {
-    x <- x |> gt.basetheme() |> tab_spanner_delim(delim = "_",reverse=TRUE) |>
+    thisgt <- thisgt |> gt.basetheme() |> tab_spanner_delim(delim = "_",reverse=TRUE) |>
           tab_header(title="US Movers") |> tab_footnote(paste("As Of",ldots[[1]])) |>
           fmt_integer(columns=n)
   }
   # EQ:DES ============================================================= EQ:DES
   if(themeset=="eqdesc1") {
-    x <- x |> gt.basetheme() |>
+    thisgt <- thisgt |> gt.basetheme() |>
       row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
       tab_header(title="Equities") |> tab_footnote(paste("As Of",Sys.time())) |>
       fmt_number(suffixing=TRUE) |>
@@ -159,24 +158,27 @@ gt.avtheme<- function(x,themeset="",...) {
       gt.basetheme()
   }
   if(themeset=="eqdescsec") {
-    x <- x |> row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
+    thisgt <- thisgt  |> row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
       add_colwidths("eqdescsec") |>
       fmt_number(suffixing=TRUE) |>
       gt.basetheme()
   }
   if(themeset=="etfholdings") {
-    x <- x |> gt.basetheme() |> tab_spanner_delim(delim = "_",reverse=TRUE) |>
+    thisgt <- thisgt  |> gt.basetheme() |> tab_spanner_delim(delim = "_",reverse=TRUE) |>
               fmt_number(suffixing=TRUE) |>
               tab_header(title="ETF Holdings") |> tab_footnote(paste("retrieved as of",Sys.time()))
   }
   # Gen:NameSearch ============================================================= Gen:NameSearch
   if(themeset=="namesearch") {
-    x <- x |> gt.basetheme() |> fmt_percent(columns=matchScore,decimals=1)  |>
+    thisgt <- x |> gt.basetheme() |> fmt_percent(columns=matchScore,decimals=1)  |>
               decorate_table() |> tab_header(title=paste0("Search for ",ldots[[1]]))
+    if(ntable_len>40) {
+      thisgt <- thisgt |> opt_interactive(use_search=TRUE,use_resizers=TRUE, page_size_default=70,use_compact_mode=TRUE)
+    }
   }
   # EQ:OptSearch=============================================================EQ:OptSearch
   if(themeset=="filteredopts") {
-    x <- x |>
+    thisgt <- thisgt  |>
         gt.basetheme(interactive=TRUE,size="wide") |>
         tab_header(title=paste0("Opts for ",ldots[[1]]), subtitle=paste0("Columns shown: ",ldots[[2]]," set")) |>
         tab_footnote(paste("retrieved as of",Sys.time())) |>
@@ -185,7 +187,7 @@ gt.avtheme<- function(x,themeset="",...) {
         add_colwidths("filteredopts")
   }
   if(themeset=="earnings") {
-    x<- x |> gt.basetheme(digits=2,interactive=TRUE) |>
+    thisgt <- thisgt  |> gt.basetheme(digits=2,interactive=TRUE) |>
     cols_merge(columns=c(estimatedEPS,est_low,est_high), pattern = "<<{2}: >>{1}<<: {3}>>") |>
     tab_style(style=cell_text(align="center"),locations=cells_body(columns=estimatedEPS)) |>
     fmt_number(columns=est_n,decimals=0) |> fmt_percent(columns=c(est_30dpchg,est_90dpchg),decimals=1) |>
@@ -195,7 +197,7 @@ gt.avtheme<- function(x,themeset="",...) {
     gt.basetheme()
   }
   if(themeset=="earningstranscript") {
-    x<- x |> gt.basetheme(size="widesmalltext") |>
+    thisgt <- thisgt  |> gt.basetheme(size="widesmalltext") |>
       tab_style(style=cell_text(color="blue"), locations=cells_body(columns=c(title,content), rows=(title=="Analyst"))) |>
       tab_style(style=cell_text(color="black",weight="bold"), locations=cells_body(columns=c(title,content), rows=(title=="CEO"))) |>
       tab_style(style=cell_text(color="gray"), locations=cells_body(columns=c(title,content), rows=(title=="Operator"))) |>
@@ -203,7 +205,7 @@ gt.avtheme<- function(x,themeset="",...) {
       tab_header(title=paste0("Earnings transcript for ",ldots[[1]]))
   }
   if(themeset=="dividends") {
-    x<- x |> gt.basetheme(digits=2,interactive=TRUE) |>  fmt_number(columns=divdays,decimals=0) |>
+    thisgt <- thisgt  |> gt.basetheme(digits=2,interactive=TRUE) |>  fmt_number(columns=divdays,decimals=0) |>
       tab_header(title=paste0("Dividends"))
   }
   # Gen:News============================================================= Gen:News
@@ -221,8 +223,9 @@ gt.avtheme<- function(x,themeset="",...) {
       fmt_duration(columns=age,output_units=c("days", "hours", "minutes")) |>
       add_colwidths("news") |>
       gt.basetheme()
-    return(thisgt)
   }
-
-  return(x)
+  if(nrow(avsd$table_aes[tablenm==themeset & aesnm=="autocopy",])>0) {
+    avsh_clipboard(x,themeset)
+  }
+  return(thisgt)
 }

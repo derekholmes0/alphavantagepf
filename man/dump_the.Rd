@@ -3,7 +3,7 @@
 \name{dump_the}
 \alias{dump_the}
 \alias{dump_inv}
-\alias{dump_assetlist}
+\alias{dump_assetgroups}
 \alias{dump_captured}
 \title{Extract internal state}
 \usage{
@@ -11,7 +11,7 @@ dump_the(typegrep = "*")
 
 dump_inv()
 
-dump_assetlist(returngt = TRUE)
+dump_assetgroups(returngt = TRUE)
 
 dump_captured(todo = "byfunction")
 }
@@ -29,14 +29,14 @@ data.table with desired data.
 Prints internal data state of \code{\link[=av_runShiny]{av_runShiny()}}
 \code{dump_the(typegrep="*")}
 \code{dump_inv()}
-\code{dump_assetlist()}
+\code{dump_assetgroups()}
 \code{dump_captured()}
 }
 \examples{
 \dontrun{
 `dump_the()`
 `dump_inv()`
-`dump_assetlist(returngt=TRUE)`
+`dump_assetgroups(returngt=TRUE)`
 `dump_captured(todo="byfunction")`
 }
 

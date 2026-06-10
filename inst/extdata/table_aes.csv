@@ -29,3 +29,12 @@ news,url,width,35
 news,age,width,90
 news,title,width,400
 news,default,width,40
+activeregression,x,autocopy,1
+live,x,autocopy,1
+pxinv,x,autocopy,1
+Gen:Movers,x,autocopy,1
+eqdesc1,x,autocopy,1
+namesearch,x,autocopy,1
+filteredopts,x,autocopy,1
+earnings,x,autocopy,1
+news,x,autocopy,1

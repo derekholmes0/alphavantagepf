@@ -11,7 +11,7 @@
 #' Other variables added could be `c(open,high,low,volume,dividend_amount,split_coefficient)`
 #' @param assettypes (default NULL)  An optional data.frame with minimal columns `c(symbol,type,currency,name)` with
 #' descriptive data for the assets given in `indta`.  If not specified, a call to `av_get_pf(.,"SYMBOL_SEARCH")`
-#' is necessary to determine the asset type (one of `c("Equity","ETF","FX","Index")`) for subsequent
+#' is necessary to determine the asset type (one of `c("Equity","ETF","FX","Index","Crypto")`) for subsequent
 #' calls to [av_get_pf()]
 #' @param delay (default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
 #' unused if `assettypes` is given.
@@ -21,6 +21,10 @@
 #' @examples
 #' \dontrun{
 #' av_add_data(av_get_pf("IBM","TIME_SERIES_DAILY_ADJUSTED"))
+#' suppressMessages(require(quantmod))
+#' ffdta <- as.data.table(quantmod::getSymbols("FEDFUNDS",src="FRED",auto.assign=FALSE))
+#' ffdta <- ffdta[,.(DT_ENTRY=index,close=FEDFUNDS,adjusted_close=FEDFUNDS,symbol="FEDFUNDS")]
+#' av_add_data(ffdta)
 #' }
 #'
 #' @export
@@ -37,7 +41,7 @@ av_add_data <- function(indta,assettypes=NULL,delay=0) {
   save_avs_state("all")
 }
 
-#' @name av_add_assetlist
+#' @name av_add_assetgroups
 #' @description Adds asset lists to [av_runShiny()] internal data.
 #' @param indta A data.frame with two columns `c("listnm","ticker")` with one or more lines for each `"listnm"`
 #' @returns Nothing
@@ -46,35 +50,46 @@ av_add_data <- function(indta,assettypes=NULL,delay=0) {
 #' @examples
 #' \dontrun{
 #' newtickers <- c("QQQ","QQQE","NDX")
-#' av_add_assetlist(data.table(listnm=rep("nasdaq",length(newtickers)),ticker=newtickers))
+#' av_add_assetgroups(data.table(listnm=rep("nasdaq",length(newtickers)),ticker=newtickers))
 #' # To remove an asset list, just use an empty string for the ticker
-#' av_add_assetlist(data.table(listnm=c("new"),ticker=c("")))
+#' av_add_assetgroups(data.table(listnm=c("new"),ticker=c("")))
 #' }
 #' @rdname av_add_data
 #' @export
-av_add_assetlist <- function(indta) {
+av_add_assetgroups <- function(indta) {
   indta <- as.data.table(indta)
   check_min_colset(indta,s("listnm;ticker"))
   restore_avs_state("constants")
-  the_av$assetlist <- DTUpsert(the_av$assetlist,indta,c("listnm"))
-  the_av$assetlist <- the_av$assetlist[nchar(ticker)>0,]
-  save_avs_state("the")
+  the_av$assetgroups <- DTUpsert(the_av$assetgroups,indta,c("listnm"))
+  the_av$assetgroups <- the_av$assetgroups[nchar(ticker)>0,]
+  save_avs_state("all")
 }
+
+#' @noRd
+update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
+  from_currency=to_currency=list_ts=NULL
+  if(reallydoingthis==FALSE) { return() }
+  if(reset==TRUE) {
+    the_av$tickerlist <- data.table()
+    message_if_red(the_av$verbose,"Resetting ticker lists  at ",Sys.time())
+    }
+  indexlist <- av_get_pf("","INDEX_CATALOG")[,type:="Index"][]
+  cryptolist <- avsd$crypto_list[,.(symbol=paste0(from_currency,"/",to_currency),type="Crypto")][,name:=symbol]
+  indexlist <- rbindlist(list(indexlist,cryptolist),use.names=TRUE,fill=TRUE)[,list_ts:=Sys.Date()][]
+  the_av$tickerlist <- DTUpsert(the_av$tickerlist,indexlist,c("symbol"))
+  message_if_red(the_av$verbose,"Reconstructed index and crypto lists at ",Sys.time())
+  save_avs_state("all") # must use all with any inventory data
+}
+
+# inv_fn/pxinv is a list of all user-level data.
+# Currently contains: assetgroups (ex assetlist), tickerlist (ex indexlist), pxinv
+# ---------------------------------------------
 
 #' @noRd
 restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
   pxinv=NULL
   if(skip) { return() }
-  if( !exists("inv_fn",envir=the_av) ) {   # FIll In defaults
-    for(i in seq(1,nrow(avsd$defaults))) {
-      ivartype <- avsd$defaults[i,]$vartype
-      ivarnm <- avsd$defaults[i,]$var
-      if( ivartype=="cache" ) { ivarval <- paste0(the_av$cachedir,"/", avsd$defaults[i,get("value_str")]) }
-      else { ivarval <- avsd$defaults[i,get(paste0("value_",ivartype))] }
-      assign(ivarnm, ivarval, envir=the_av)
-    }
-    message_if_red(TRUE,"Filling in app defaults")
-  }
+  # Filledin dfaults before
   if(grepl("all|constants",todo) & file.exists(the_av$constants_fn)) {
     load(the_av$constants_fn, envir=the_av)
   }
@@ -98,6 +113,7 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
 #' @importFrom stats setNames
 save_avs_state <- function(todo="all") {
   classtype=NULL
+  exception_names <- s("pxd;pxinv")
   if(grepl("all|px",todo)) {
     nonpx_names <-  dump_the()[classtype=="data.table"& !(nm %in% c("pxd")),]$nm
     pxinv <- setNames(lapply(nonpx_names,\(x) get(x,envir=the_av)), nonpx_names)
@@ -107,19 +123,20 @@ save_avs_state <- function(todo="all") {
     message_if_green(the_av$verbose,"Wrote inventories to ",the_av$inv_fn, ",price data to ",the_av$pxd_fn)
   }
   if(grepl("all|the",todo)) {
-    unames=names(the_av)[sapply(the_av, class) %in% c("logical","character","numeric","difftime")]
+    #unames=names(the_av)[sapply(the_av, class) %in% c("logical","character","numeric","difftime")]
+    unames <- setdiff(names(the_av),exception_names)
     save(list=unames,envir=the_av,file=the_av$constants_fn)
     message_if_green(the_av$verbose,"Wrote constants state to ",the_av$constants_fn)
   }
 }
 
-# epx_get_avfn : Whichg function to call given type
+# epx_get_avfn : Which function to call given type
 # --------------------------------------------------
 epx_get_avfn <- function(intype,live=FALSE) {
   av_live=av_hist=NULL
-  return(data.table(type=s("Equity;ETF;Index;FX"),
-                       av_hist=s("TIME_SERIES_DAILY_ADJUSTED;TIME_SERIES_DAILY_ADJUSTED;INDEX_DATA;FX_DAILY"),
-                       av_live=s("GLOBAL_QUOTE;GLOBAL_QUOTE;NOTAVAIL;FX_INTRADAY"))[type==intype,.(avf=fifelse(live,av_live,av_hist))]$avf)
+  return(data.table(type=s("Equity;ETF;Index;FX;Crypto"),
+                       av_hist=s("TIME_SERIES_DAILY_ADJUSTED;TIME_SERIES_DAILY_ADJUSTED;INDEX_DATA;FX_DAILY;DIGITAL_CURRENCY_DAILY"),
+                       av_live=s("GLOBAL_QUOTE;GLOBAL_QUOTE;NOTAVAIL;FX_INTRADAY;CRYPTO_INTRADAY"))[type==intype,.(avf=fifelse(live,av_live,av_hist))]$avf)
 
 }
 
@@ -133,7 +150,7 @@ epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
   else if(live==FALSE & intype=="Index") {
     tortn <- inquote[,.(symbol,timestamp=date,open,high,low,close,adjusted_close=close,volume=0,dividend_amount=0,split_coefficient=1)]
   }
-  else if(live==FALSE & intype=="FX") {
+  else if(live==FALSE & (intype=="FX" | intype=="Crypto")) {
     tortn <- inquote[,.(symbol,timestamp,open,high,low,close,adjusted_close=close,volume=0,dividend_amount=0,split_coefficient=1)]
   }
   else if(live==TRUE & (intype=="Equity" | intype=="ETF")) {
@@ -153,48 +170,70 @@ epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
 
 
 # form_symset Finds or downloads the asset type for a given ticker.  Sucks that Alphavantage can't unify these
-# form_symset(c("JBL","EEMA","NDX","USD/BRL"))
+# form_symset(c("JBL","EEMA","NDX","USD/BRL","BTC/USD","FEDFUNDS"))
+
+#' @importFrom stringr str_extract
 form_symset <- function(tickers, force=FALSE, delay=0) {
   symbol=name=matchScore=NULL
+  alltickers=s(toupper(tickers))
   if(force==TRUE || nrow(the_av$pxinv)<=0) {
-    newtickers <- s(tickers)
+    newtickers <- alltickers
     symset <- data.table()
   }
   else {
     # Symbols we already  have
-    symset<- data.table(symbol=s(tickers))[the_av$pxinv,on=.(symbol),nomatch=NULL][,.(symbol,type,currency,name,matchScore)]
-    newtickers <- setdiff(s(tickers),symset$symbol)
+    symset<- data.table(symbol=s(tickers))[the_av$pxinv,on=.(symbol),nomatch=NULL]
+    symset<- symset[,.(symbol,type,currency,name,matchScore)]
+    newtickers <- setdiff(alltickers,symset$symbol)
   }
+  # -----------------------------------------Downloadable assets: KNown from ticker
+  # Known Indices
+  symnew_ix <- the_av$tickerlist[type=="Index",][data.table(symbol=newtickers),on=.(symbol),nomatch=NULL]
+  if(nrow(symnew_ix)>0) {
+    symnew_ix <- symnew_ix[,.(symbol,type,currency="USD",name,matchScore=1)]
+  }
+  # New Crypto
+  possible_fxcr <- grepv("[A-Z]/[A-Z]",newtickers)
+  symnew_cryp <- the_av$tickerlist[type=="Crypto",][data.table(symbol=possible_fxcr),on=.(symbol),nomatch=NULL]
+  if(nrow(symnew_cryp)>0) {
+    symnew_cryp <- symnew_cryp[,.(symbol,type,currency=stringr::str_extract(symbol,"([A-Z]*)/",group=1),name,matchScore=1)]
+    possible_fxcr <- setdiff(possible_fxcr,symnew_cryp$symbol)
+  }
+  # New currency Pairs
+  possible_fxcr <- grepv("([A-Z]{3})/([A-Z]{3})",possible_fxcr,ignore.case=TRUE)
+  symnew_fx <- data.table(symbol=possible_fxcr)[,.(symbol,type="FX",currency=substr(symbol,1,3),name=symbol,matchScore=1)]
+  symnew_inferable <-  rbindlist(list(symnew_ix,symnew_fx,symnew_cryp),fill=TRUE,use.names=TRUE)
+  newtickers=setdiff(newtickers,symnew_inferable$symbol)
+  # -----------------------------------------Downloadable assets: Need a search
   # New equities/ETS
   symnew_eq <- rbindlist(lapply(newtickers, \(x) {
     z1=av_get_pf("","SYMBOL_SEARCH",keywords=x,delay=delay)
     if(nrow(z1)<=0) {
-      message_if_red(TRUE,"Cannot add ",x,": Invalid ticker")
+      message_if_red(TRUE,"Alphavantage cannot find  ",x,": May be a user data series")
       return(data.table())
     }
     else {
       return(z1[matchScore>=0.99,.(symbol=x,type,currency,name,matchScore)])
     }
+  }))
+  newtickers=setdiff(newtickers,symnew_eq$symbol)
+  # -----------------------------------------Un Downloadable assets/ User Data
+  symnew_user <- data.table()
+  if( length(newtickers)>0 ) {
+    symnew_user <- data.table(symbol=newtickers,type="user",currency="USD",matchScore=1)
   }
-  ))
-  # New Indices
-  symnew_ix <- data.table(symbol=newtickers)
-  symnew_ix <- the_av$indexlist[symnew_ix,on=.(symbol),nomatch=NULL]
-  if(nrow(symnew_ix)>0) {
-    symnew_ix <- symnew_ix[,.(symbol,type="Index",currency="USD",name,matchScore=1)]
-  }
-  # New currency Pairs
-  symnew_fx <- data.table(symbol=grepv("([A-Z]{3})/([A-Z]{3})",newtickers,ignore.case=TRUE))[,
-                                      .(symbol,type="FX",currency=substr(symbol,1,3),name=symbol,matchScore=1)]
-  symset <- rbindlist(list(symset,symnew_eq,symnew_ix,symnew_fx),fill=TRUE,use.names=TRUE)
+  # Collect all together
+  symset <- rbindlist(list(symset,symnew_inferable,symnew_eq,symnew_user),fill=TRUE,use.names=TRUE)
   return(symset[])
 }
 
 # manage_epx only accepts more than one ticker if called with substitute_data
 # mange_eps will download repeatedly before market opens, no real way to avoid it without time of day logic
 
-manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=NULL, addlive=FALSE, force=FALSE, delay=0) {
-  symbol=beg_dt=NULL
+#' @importFrom stats median
+
+manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=NULL, addlive=FALSE, force=FALSE, delay=0.1) {
+  symbol=beg_dt=medgap=NULL
   dtstoget <- gendtstr(dtstr,rtn="list") # Dates to get
   if(nrow(the_av$pxinv)>0) {
     edates <- the_av$pxinv[data.table(symbol=s(inticker)),on=.(symbol),nomatch=NULL]
@@ -221,34 +260,40 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=
       tickers <- unique(substitute_data$symbol)
       if(is.data.table(substitute_symset)) {
         check_min_colset(substitute_symset,s("symbol;type;currency;name"))
-        symset <- copy(substitute_symset)[,let(loadts=Sys.time())]
+        symset <- copy(substitute_symset)
       }
       else {
-        symset <- form_symset(tickers,force=force,delay=delay)[,let(loadts=Sys.time())]
+        symset <- form_symset(tickers,force=force,delay=delay)
       }
+      symset[,let(loadts=Sys.time())]
     }
-    else {
-      datasize <- fifelse(nbdays<=20 & !force,"compact","full")
+    else { # DOwnloadable, but one at a time
       symset <- form_symset(inticker,force=force)[,let(loadts=Sys.time())]
       tickertype <- symset[1,]$type
-      avfun <- epx_get_avfn(tickertype,live=FALSE)
-      dta <- av_get_pf(inticker,avfun,outputsize=datasize,verbose=FALSE)
-      if(nrow(dta)<=0) {
-        tortn <-paste0("ERROR: ",inticker," returns no price data")
-        message_if_red(TRUE,tortn)
-        return(tortn)
+      if(tickertype=="user") {
+        message_if(the_av$verbose,"av_one_px(",inticker,") is User data and must be updated outside of ShinyApp")
+        return()
       }
-      dta <- dta |> save_av_data(avfun)
-      dta <- epx_fmt_to_hist(dta,tickertype,live=FALSE)
-      src <- "downloaded"
-      if(addlive==TRUE) {
-        avfun_live <- epx_get_avfn(tickertype,live=TRUE)
-        livedta <- av_get_pf(inticker,avfun_live,outputsize="compact",verbose=FALSE)
-        livedta <- epx_fmt_to_hist(livedta,tickertype,live=TRUE)
-        message_if_green(the_av$verbose,"manage_epx: Adding ",nrow(livedta)," live prices (",livedta[,1]$close,
-                         ") to ",inticker," at ",Sys.time())
-        dta <- rbindlist(list(dta,livedta),use.names=TRUE,fill=TRUE)
-        src <- "downloaded+live"
+      else {
+        avfun <- epx_get_avfn(tickertype,live=FALSE)
+        dta <- av_get_pf(inticker,avfun,outputsize=fifelse(nbdays<=20 & !force,"compact","full"),verbose=FALSE)
+        if(nrow(dta)<=0) {
+          tortn <-paste0("ERROR: ",inticker," returns no price data")
+          message_if_red(TRUE,tortn)
+          return(tortn)
+        }
+        dta <- dta |> save_av_data(avfun)
+        dta <- epx_fmt_to_hist(dta,tickertype,live=FALSE)
+        src <- "downloaded"
+        if(addlive==TRUE) {
+          avfun_live <- epx_get_avfn(tickertype,live=TRUE)
+          livedta <- av_get_pf(inticker,avfun_live,outputsize="compact",verbose=FALSE)
+          livedta <- epx_fmt_to_hist(livedta,tickertype,live=TRUE)
+          message_if_green(the_av$verbose,"manage_epx: Adding ",nrow(livedta)," live prices (",livedta[,1]$close,
+                           ") to ",inticker," at ",Sys.time())
+          dta <- rbindlist(list(dta,livedta),use.names=TRUE,fill=TRUE)
+          src <- "downloaded+live"
+        }
       }
       tickers <- c(inticker)
     }
@@ -256,12 +301,12 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=
     the_av$pxd <- DTUpsert(the_av$pxd,dta,c("symbol","timestamp"),fill=TRUE)
     # Get asset type and update inventory
     thisinv <- the_av$pxd[symset[,.(symbol)],on=.(symbol)]
-    thisinv <- thisinv[,.(beg_dt=min(timestamp),end_dt=max(timestamp)),by=.(symbol)]
+    thisinv <- thisinv[,.(beg_dt=min(timestamp),end_dt=max(timestamp), medgap=median(diff(timestamp))),by=.(symbol)]
     thisinv <- symset[thisinv,on=.(symbol)][,':='(age=Sys.Date()-end_dt)]
     setcolorder(thisinv,"loadts",after="end_dt")
     the_av$pxinv  <- DTUpsert(the_av$pxinv, thisinv, c("symbol"),fill=TRUE)
     dtrg <- lapply(range(dta$timestamp),\(x) format(x,"%Y-%m-%d"))
-    message_if(the_av$verbose,"av_one_px(",tickers[1],"): ",src," ",nrow(dta)," rows with range ",dtrg[1],"::",dtrg[2],
+    message_if(the_av$verbose,"av_one_px(",tickers[1],",",src,") ",nrow(dta)," rows with range ",dtrg[1],"::",dtrg[2],
             " filling gap of ",nbdays," days from ",dtstoget[1], " to ",dtstoget[2])
   }
   return("")
@@ -377,7 +422,7 @@ kill_symbol <- function(inticker) {
 #' @description Prints internal data state of [av_runShiny()]
 #' `dump_the(typegrep="*")`
 #' `dump_inv()`
-#' `dump_assetlist()`
+#' `dump_assetgroups()`
 #' `dump_captured()`
 #' @param typegrep : Grep string for internal state parameters
 #' @param returngt : Return GT table
@@ -388,7 +433,7 @@ kill_symbol <- function(inticker) {
 #' \dontrun{
 #' `dump_the()`
 #' `dump_inv()`
-#' `dump_assetlist(returngt=TRUE)`
+#' `dump_assetgroups(returngt=TRUE)`
 #' `dump_captured(todo="byfunction")`
 #' }
 #'
@@ -410,6 +455,9 @@ dump_the <- function(typegrep="*") {
       outdump<-rbindlist(list(outdump,data.table(nm=x,classtype=type[1], toget=toget)),ignore.attr=TRUE)
     }
   }
+  # Comment out after creating vignettes
+  #outdump[nm=="avapikey",]$toget<-"Hidden"
+  #-------------------
   return(outdump[order(classtype,nm)])
 }
 
@@ -421,8 +469,8 @@ dump_inv <- function() {
 
 #' @rdname dump_the
 #' @export
-dump_assetlist <- function(returngt=TRUE) {
-  return(the_av$assetlist[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)])
+dump_assetgroups <- function(returngt=TRUE) {
+  return(the_av$assetgroups[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)])
 }
 
 #' @rdname dump_the

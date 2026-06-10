@@ -1,9 +1,9 @@
-﻿var,vartype,value_str,value_log,value_num
+var,vartype,value_str,value_log,value_num
 avapientitlement,str,delayed,,
 avapikey,str,NOT_SET,,
 datestring,str,-2y::,,
 extracalc_file,str,notimplemented,,
-inpline1,str,SPY,,
+inpline1,str,SPY;QQQ,,
 inpline2,str,SPY,,
 ochains,str,"F,M,C,otm",,
 otodisplay,str,reduced,,
@@ -17,9 +17,12 @@ ts_rebase,str,none,,
 ts_volparams,str,gk.yz;20;252,,
 capture_av_what,str,none,,
 capture_av_update,str,update,,
-capture_av_save,str,none,,
+capture_av_save,str,SaveEveryAVCall,,
 newsgrep,str,,,
 minabssent,num,,,0.1
 maxagedays,num,,,15
 nArticles,num,,,50
 verbose,log,,TRUE,
+autocopy,log,,FALSE,
+starttab,str,AVOPTS,,
+autocopy,log,,FALSE,
