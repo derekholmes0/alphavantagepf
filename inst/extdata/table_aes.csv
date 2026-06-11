@@ -1,7 +1,7 @@
 tablenm,colname,aesnm,val_num
 live,age,width,90
 live,default,width,60
-pxinv,symbol,width,60
+pxinv,symbol,width,90
 pxinv,type,width,60
 pxinv,currency,width,40
 pxinv,name,width,250

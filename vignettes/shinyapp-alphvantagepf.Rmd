@@ -17,7 +17,8 @@ The **Alphavantagepf** package also contains a Shiny Application which can be us
 the asset-specific functions provided by the Alphavantage API. The app provides an intuitive way to compare small baskets of assets both technically and fundamentally.
 
 This vignette will first go through some overall design goals and conventions before providing an overview of how to start and configure the application
-then give a brief overview of list management and individual analysis components.  Future plans are discussed in an appendix.
+then give a brief overview of list management and individual analysis components.  Augmenting the data is also describes. 
+Future plans are discussed in an appendix.
 
 # Overall design goals and conventions
 
@@ -42,7 +43,7 @@ A few conventions which are helpful to know before using the app are
 
 The app requires a very modest amount of setup before using.  It can be run with 
 
-```{r setup}
+```{r, eval=FALSE}
 library(alphavantagepf)
 av_runShiny()
 ```
@@ -101,12 +102,29 @@ documentation. Empty out the boxes for clean graphs. The date ranges plotted com
 recent data can be focused in on using the <span style="color:blue">FocusPct</span> slider.  For example, if the slider is set to 50pct,
 and the date string is `"-2y::"` then the graph will only show the last year of data, but can be slid back to see the entire 2 year period.
 
+Note that status messages are sent to the console if the "Status Msgs" box is checked and output data for each 
+analysis is copied to the clipboad if the "copyTable" box is checked.
+
+## Plotting options
+
 Data is plotted in raw form unless the <span style="color:blue">Rebase</blue> options are used. Rebasing at the start will normalize all series
 to 100 at the start of the window. (In the the example above, the rebase would occur at the first point plotted 2 years prior to today).
 If Rebasing is set to the focus point, the rebasing occurs at that point set by the slider.
 
-The table below shows the current options that can be run. Note that status messages are sent to the console if the "Status Msgs" box
-is checked and output data for each analysis is copied to the clipboad if the "copyTable" box is checked.
+An alternative to rebasing is to plot the first asset on it's own axis, which can be done by selecting `"splitts"` in the `"TSGraphOpts"` box.
+Other options that can be selected in that box are
+
+* Highlighting the first series with a thicker line
+* Adding Labels showing the last value or series title
+* Adding hi-low shading, if the data is available.
+* Changing the line colors (via the `"fgts colorset"` setting in the `"AVOPTS"` tab.)
+
+Events (See e.g.[FinanceGraphs::fg_get_dates_of_interest()]) can also be specified in the `"events"` box.  These can be single day events or highlighted ranges of 
+dates. Also, time series that do not appear to be daily will be plotted with step functions.
+
+## Analyses that can be run
+
+The table below shows the current analyses that can be run. 
 
 |Analysis|Explanation/Notes|
 |:----------------|:-----------------------|
@@ -166,10 +184,11 @@ knitr::include_graphics("img/optsearch.jpg")
 
 # Managing data outside of the app.
 
+The Shiny App also has facilities for adding and retrieving time series data externally using other R scripts or documents.
 All of the downloaded price history, as well as an inventory of prices are stored either in a temporary directory created when the app is first run,
 or a directory specified in the "AVOPTS" tab.  The price data is stored in [fst](https://www.fstpackage.org/) format, which has been the performance winner for
-several years.  The data stored augments that returned by (e.g.) `av_get_pf("IBM","TIME_SERIES_DAILY")` function wih split and dividend data returned by
-other [av_get_pf()] calls.  The full set is shown below
+several years.  Time series data stored in that cache augments that returned by (e.g.) `av_get_pf("IBM","TIME_SERIES_DAILY")` function wih split and dividend data returned by
+other [av_get_pf()] calls.  The full set is shown below. Note that a timestamp for each data retrieval is also kept.
 
 `
   symbol  timestamp  open  high   low close adjusted_close volume dividend_amount split_coefficient                  ts origclose
@@ -178,20 +197,64 @@ other [av_get_pf()] calls.  The full set is shown below
    ABBNY 2001-04-09  7.32  7.50  7.32  7.50           7.50  31300               0             0.433 2026-05-31 08:06:48      17.3
 `
 
-Note that a timestamp for each data retrieval is also kept. Of course, that data can be accessed by any other R script or document.  The data can also be added to externally 
-using the [av_add_data()] function.  Any time series can be added, but not all time series can be guaranteed to be updated by Alphavantage calls. The app tries to update any data as 
-best as it can.
+## Adding data and integrating different asset classes.
 
-## Integrating different asset classes.
+The data can also be added to externally using the [av_add_data()] function.  Any time series can be added, but not all time series can be 
+guaranteed to be updated by Alphavantage calls.  One difficulty with Alphavantages' API platform is that there are different function calls 
+(and returned data sets) for each major asset class.  This app integrates them into one price table, but at the expense of *having to know each asset type* for the data added.  
 
-One difficulty with Alphavantages' API platform is that there are different function calls (and returned data sets) for each major asset class.  This app integrates them 
-into one price table, but at the expense of *having to know each asset type* for the data added.  The app will call `av_get_pf(."SYMBOL_SEACH")` to determine if an ETF or Equity,
-or will infer the type from the ticker and lists of supported indices and Crypto pairs.
+The app tries to determine what asset class a symbol is to update it using [av_get_pf()] calls as best as it can.
+Specifically, each new ticker is checked against current Index lists, cryptocurrency lists, and then with Alphavantage's `"SYMBOL_SEARCH"`.
+**If several tickers are passed at once**, this can be quite expensive, as Alphavantage tends to limit data usage if too many calls are made in succession.
+If possible, it's much better to predetermine the asset type (one of `c("Equity","ETF","Index","FX","Crypto")`) in advance and pass it to [av_add_data()] call at runtime.
 
-Data which is completely exogenous to Alphavnatage can also be added to the app's cached data set. 
+Data which is completely exogenous to Alphavantage can also be added to the app's cached data set. If the asset type isn't specified or cannot be determined, it's assumed
+to be a `"user"` asset type which isn't updated, but can still be plotted or used.  As an example, suppose we wish to plot the prices of a common
+credit ETF against FRED's FEDFUNDS data.  We will download both and add them programmatically.  Generic data needs to be manipulated into the form the app expects, but
+data downloaded from Alphavantage is already in that form.
 
+```{r, , eval=FALSE, echo=FALSE, out.width="80%"}
+# av_add_data can be used simply, but
+av_add_data(av_get_pf("IBM","TIME_SERIES_DAILY_ADJUSTED"))
 
+# For many assets, use this
+asset_df <- data.frame(symbol=c("HYG"),type=c("ETF"),currency=c("USD"), name=c("HY ETF"))
+av_add_data(av_get_pf("HYG","TIME_SERIES_DAILY_ADJUSTED"), assettypes=asset_df)
 
+# External Data
+suppressMessages(require(quantmod))
+ffdta <- as.data.table(quantmod::getSymbols("FEDFUNDS",src="FRED",auto.assign=FALSE))
+ffdta <- ffdta[,.(DT_ENTRY=index,close=FEDFUNDS,adjusted_close=FEDFUNDS,symbol="FEDFUNDS")]
+av_add_data(ffdta)
 
+dump_inv()
+```
 
+`
+> dump_inv()
+   symbol                                          name   type list_ts currency matchScore     beg_dt     end_dt              loadts     medgap        age
+   <char>                                        <char> <char>  <Date>   <char>      <num>     <IDat>     <IDat>              <POSc> <difftime> <difftime>
+  BTC/USD                                       BTC/USD Crypto    <NA>      BTC          1 2010-07-17 2026-06-11 2026-06-11 06:00:18     1 days     0 days
+ FEDFUNDS                                          <NA>   user    <NA>      USD          1 1954-07-01 2026-05-01 2026-06-11 06:22:55    31 days    41 days
+      HYG ISHARES IBOXX $ HIGH YIELD CORPORATE BOND ETF    ETF    <NA>      USD          1 2007-04-11 2026-06-10 2026-06-11 07:24:41     1 days     1 days
+      IBM          International Business Machines Corp Equity    <NA>      USD          1 1999-11-01 2026-06-10 2026-06-11 06:22:10     1 days     1 days
+      QQQ                    Invesco QQQ Trust Series 1    ETF    <NA>      USD          1 1999-11-01 2026-06-10 2026-06-10 15:47:57     1 days     1 days
+  USD/BRL                                       USD/BRL     FX    <NA>      USD          1 2014-11-07 2026-06-10 2026-06-11 07:23:37     1 days     1 days
+> 
+`
 
+The data added can be plotted using the `"TS:PriceTS"` analytic, as seen below.  Note that the monthly time series needs to be used with care,
+since it doesn't correspond to the actual Fed Meetings.
+
+```{r, echo=FALSE, out.width="80%"}
+knitr::include_graphics("img/wFedFunds.jpg")
+```
+
+# Future plans
+
+Planned improvements currently include
+
+* Earnings and dividends incorporated into plots including E/P analysis.
+* Ability to plug in user-defined functions which have access to the internal data store.
+* Correlation and hedging analyses.
+* Interface to events and aesethics sets relevant to [FinanceGraphs](https://github.com/derekholmes0/FinanceGraphs)

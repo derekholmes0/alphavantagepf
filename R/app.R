@@ -45,11 +45,11 @@ av_make_ui <- function() {
                            c("last","lastlabel","hilightfirst","splitts","hilow"),
                            selected=c("last"),
                            multiple=TRUE,options(list(maxOptions=5,maxItems=1,avsd$selectizeoptions))),
-            textInput(inputId="events", label="Events", value = "tp,5"),
+            textInput(inputId="ts_events", label="Events", value = the_av$ts_events),
             textInput(inputId="datestring", label="dts", value=the_av$datestring),
-            textInput(inputId="volparams", label="Histvolparams", value="gk.yz;20;252"),
+            textInput(inputId="ts_volparams", label="Histvolparams", value=the_av$ts_volparams),
             sliderInput(inputId="dtstartfrac","FocusPct",min=0,max=100,value=0),
-            radioButtons(inputId="rebase","Rebase",choices=c("none","start","focus"),selected="none"),
+            radioButtons(inputId="ts_rebase","Rebase",choices=c("none","start","focus"),selected=the_av$ts_rebase),
             checkboxInput(inputId="totrtn","TotalRtn",value=TRUE),
             checkboxInput(inputId="useLive","useLive",value=FALSE),
             checkboxInput(inputId="verbose","Status Msgs",value=the_av$verbose),
@@ -146,15 +146,16 @@ av_make_ui <- function() {
 #' @importFrom stats cor
 av_make_server <- function() {
 #  adjusted_close=anopt1=anopt2=catg=catprio=change_percentage=cummktrtn=cumrtn=datestring=dtstartfrac=EquityName=ETFName=NULL
-#  events=istr1=istr2=list1=list2=listnm=mindelta=mktrtn=ncak=newssort=ochains=oscaling=otodisplay=NULL
-#  pctchg=price=prio=rcor=rebase=region=rtn=runcode=sector=showset=sigpct=sntmt=symbol=ticker=NULL
-#  time_published=value_num=value_str=volparams=weight=n=nm=NULL
+#  ts_events=istr1=istr2=list1=list2=listnm=mindelta=mktrtn=ncak=newssort=ochains=oscaling=otodisplay=NULL
+#  pctchg=price=prio=rcor=ts_rebase=region=rtn=runcode=sector=showset=sigpct=sntmt=symbol=ticker=NULL
+#  time_published=value_num=value_str=ts_volparams=weight=n=nm=NULL
+  ts_rebase=ts_events=ts_volparams=NULL
   out <- list()
   av_server<-function(input, output,session) {
     inlist=list_ts=NULL
     quick_message <- function(wh,this_message,eval=TRUE) {
       shinyFeedback::hideFeedback(inputId=wh)
-      if(nchar(this_message)>0& eval==TRUE) {
+      if(nchar(this_message)>0 & eval==TRUE) {
         this_message <- paste0("<small>",this_message,"</small>")
         shinyFeedback::showFeedback(inputId=wh, text=this_message,color="#1f78b4")
       }
@@ -298,8 +299,11 @@ av_make_server <- function() {
         quick_message("anopt2","SET Alphavantage API key")
         return()
       }
-      # Two different ways to do it
-      toplot<-lapply(names(rv),\(x) { assign(x,rv[[x]],envir=thisenv)})
+      # Make variables out of captured input values
+      lapply(names(rv),\(x) { assign(x,rv[[x]],envir=thisenv)})
+      # Save plotting data
+      lapply(grepv("^ts",names(rv)), \(x) av_set_defaults(x,rv[[x]]))
+      save_avs_state("the")
       # Out gets destroyed on end of routine.  Need to keep it in the the environment.
       message("H1 >>>>>>>>>>   AA input(",anopt1,"/",anopt2,") sid1(", istr1, ") sid2(", istr2, ") sz:",length(out))
       if( nrow(savedgtnames <- dump_the()[classtype=="gt_tbl",])>0) {
@@ -336,16 +340,16 @@ av_make_server <- function() {
       if(anopt1=="TS:PriceTS") {
         toplot <- lapply(eqlist1, \(x) manage_epx(x,datestring,addlive=input$useLive))
         quick_message("istr1",paste(toplot,collapse=""))
-        toplot <- get_one_ts(eqlist1,rebase,datestring,dtstartfrac)
+        toplot <- get_one_ts(eqlist1,ts_rebase,datestring,dtstartfrac)
         avsh_clipboard(toplot,anopt1)
-        out[["TS1"]] <- one_px_ts(toplot,rv,events=events,dtstartfrac=dtstartfrac)
+        out[["TS1"]] <- one_px_ts(toplot,rv,events=ts_events,dtstartfrac=dtstartfrac)
         save_avs_state("px")
       }
       if(anopt2=="TS:PriceTS") {
         toplot <- lapply(eqlist2, \(x) manage_epx(x,datestring,addlive=input$useLive))
         quick_message("istr2",paste(toplot,collapse=""))
-        toplot <- get_one_ts(eqlist2,rebase,datestring,dtstartfrac)
-        out[["TS2"]] <- one_px_ts(toplot,rv,events=events,dtstartfrac=dtstartfrac)
+        toplot <- get_one_ts(eqlist2,ts_rebase,datestring,dtstartfrac)
+        out[["TS2"]] <- one_px_ts(toplot,rv,events=ts_events,dtstartfrac=dtstartfrac)
         save_avs_state("px")
       }
       if(anopt1=="TS:ActiveTS") {
@@ -366,14 +370,14 @@ av_make_server <- function() {
         toplot_tridx <- toplot_idx[,.(timestamp,variable=symbol,value=100*exp(cumrtn-cummktrtn))]
         avsh_clipboard(toplot_tridx,anopt1)
         out[["TS1"]] <-  one_px_ts(toplot_tridx,rv,title=paste0("Excess Returns over ",eqlist2[1]),extra_anno="hline,100",
-                                   events=events,dtstartfrac=dtstartfrac)
+                                   events=ts_events,dtstartfrac=dtstartfrac)
         toplot_idx <- toplot_idx[,let(rtn=100*rtn,mktrtn=100*mktrtn)]
-        volp_n <- as.integer(s(volparams)[[2]])
+        volp_n <- as.integer(s(ts_volparams)[[2]])
         toplot_corr <- toplot_idx[,rcor:=frollapply(.SD,volp_n,\(x) 100*cor(x$mktrtn,x$rtn,method="kendall",
                                                         use="complete.obs"),by.column=FALSE), by=.(symbol)]
         out[["TS2"]] <- one_px_ts(toplot_corr[,.(timestamp,variable=symbol,value=rcor)],rv,
                   title=paste0("Rolling ",volp_n," day kendall correlation"),extra_anno="hline,100",
-                  events=events,dtstartfrac=dtstartfrac)
+                  events=ts_events,dtstartfrac=dtstartfrac)
         rtnscatall <- fg_scatplot(toplot_idx,"rtn ~ mktrtn + color:symbol +  point:label", "lm",datecuts=c(7),
                                       title=paste0("Asset Daily returns vs ",eqlist2[1], "Daily rtn"),
                                       axislabels=paste0("Asset TR;",eqlist2[1]," TR"),returnregresults=TRUE)
@@ -387,8 +391,8 @@ av_make_server <- function() {
       if(anopt1=="TS:HistVolTS") {
         toplot <- lapply(eqlist1, \(x) manage_epx(x,datestring,addlive=input$useLive))
         quick_message("istr1",paste(toplot,collapse=""))
-        toplot <- get_one_ts(eqlist1,rebase,datestring,dtstartfrac)
-        volp <- s(volparams)
+        toplot <- get_one_ts(eqlist1,ts_rebase,datestring,dtstartfrac)
+        volp <- s(ts_volparams)
         onevol <- function(x) {
           tdta <- toplot[[1]][symbol==x,]
           xdta <- tdta[,lapply(.SD,\(x) x+(get(seriesnm)-close)), .SDcols=s("open;high;low;close")]
@@ -396,8 +400,8 @@ av_make_server <- function() {
                       value=100*TTR::volatility(xdta, calc=volp[[1]],n=as.integer(volp[[2]]), N=as.integer(volp[[3]]))) }
         toplot2 <- rbindlist(lapply(eqlist1, onevol))
         avsh_clipboard(toplot2,"HistVol")
-        out[["TS1"]] <- one_px_ts(toplot2,rv,title=paste("Volatility (pct) using ",volparams),events=events,dtstartfrac=dtstartfrac)
-        out[["TS2"]] <- one_px_ts(toplot,rv,events=events,dtstartfrac=dtstartfrac)
+        out[["TS1"]] <- one_px_ts(toplot2,rv,title=paste("Volatility (pct) using ",ts_volparams),events=ts_events,dtstartfrac=dtstartfrac)
+        out[["TS2"]] <- one_px_ts(toplot,rv,events=ts_events,dtstartfrac=dtstartfrac)
       }
       if(anopt1=="EQ:DES") {
         tickerset = the_av$pxinv[data.table(symbol=eqlist1),on=.(symbol)][,.(symbol,type,currency)]

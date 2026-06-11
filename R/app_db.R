@@ -21,6 +21,9 @@
 #' @examples
 #' \dontrun{
 #' av_add_data(av_get_pf("IBM","TIME_SERIES_DAILY_ADJUSTED"))
+#' asset_df <- data.frame(symbol=c("HYG"),type=c("ETF"),currency=c("USD"), name=c("HY ETF"))
+#' av_add_data(av_get_pf("HYG","TIME_SERIES_DAILY_ADJUSTED"), assettypes=asset_df)
+#'
 #' suppressMessages(require(quantmod))
 #' ffdta <- as.data.table(quantmod::getSymbols("FEDFUNDS",src="FRED",auto.assign=FALSE))
 #' ffdta <- ffdta[,.(DT_ENTRY=index,close=FEDFUNDS,adjusted_close=FEDFUNDS,symbol="FEDFUNDS")]

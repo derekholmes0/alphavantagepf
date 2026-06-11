@@ -99,11 +99,11 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dtstart
     default = "")
   #avsh_clipboard(fgdt,title)
   xstepcols = data.table(symbol=unique(fgdt$variable))[the_av$pxinv,on=.(symbol)][fcoalesce(as.numeric(medgap),1)>4,]
-  stepcols <- FALSE
-  if(nrow(xstepcols)>0) { stepcols=xstepcols$symbol }
+  if(nrow(xstepcols)>0) { stepcols=xstepcols$symbol } else { stepcols<- FALSE }
   outdyg <- fgts_dygraph(fgdt,title=title,events=events, dtstartfrac=dtstartfrac/100,
                          annotations=paste0(c(tanno,extra_anno),collapse=";"), colorset=the_av$ts_colorset,
                          splitcols=("splitts" %in% rv$gropts),roller=1,
+                         stepcols=stepcols,
                          hilightcols=fifelse("hilightfirst" %in% rv$gropts,fgdt[,.SD[1]]$variable,""),
                          rebase=trebase)
   return(outdyg)
