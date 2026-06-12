@@ -44,6 +44,9 @@ av_add_data <- function(indta,assettypes=NULL,delay=0) {
   save_avs_state("all")
 }
 
+# =======================================================================================================
+#' App database functions
+#'
 #' @name av_add_assetgroups
 #' @description Adds asset lists to [av_runShiny()] internal data.
 #' @param indta A data.frame with two columns `c("listnm","ticker")` with one or more lines for each `"listnm"`
@@ -57,6 +60,7 @@ av_add_data <- function(indta,assettypes=NULL,delay=0) {
 #' # To remove an asset list, just use an empty string for the ticker
 #' av_add_assetgroups(data.table(listnm=c("new"),ticker=c("")))
 #' }
+#'
 #' @export
 av_add_assetgroups <- function(indta) {
   indta <- as.data.table(indta)
@@ -176,7 +180,7 @@ epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
 
 #' @importFrom stringr str_extract
 form_symset <- function(tickers, force=FALSE, delay=0) {
-  symbol=name=matchScore=NULL
+  symbol=name=matchScore=list_ts=NULL
   alltickers=s(toupper(tickers))
   if(force==TRUE || nrow(the_av$pxinv)<=0) {
     newtickers <- alltickers
@@ -233,7 +237,6 @@ form_symset <- function(tickers, force=FALSE, delay=0) {
 # mange_eps will download repeatedly before market opens, no real way to avoid it without time of day logic
 
 #' @importFrom stats median
-
 manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=NULL, addlive=FALSE, force=FALSE, delay=0.1) {
   symbol=beg_dt=medgap=NULL
   dtstoget <- gendtstr(dtstr,rtn="list") # Dates to get

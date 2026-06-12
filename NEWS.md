@@ -1,5 +1,9 @@
 # alphavantagepf (development version)
 
+# alphavantagepf 0.7.7
+
+* Documentation, small fixes in DES and av_add_data
+
 # alphavantagepf 0.7.5
 
 * Fixed cryptocurrency download conventions

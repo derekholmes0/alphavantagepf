@@ -2,15 +2,13 @@
 % Please edit documentation in R/app_db.R
 \name{av_add_data}
 \alias{av_add_data}
-\alias{av_add_assetgroups}
 \title{App database functions}
 \usage{
 av_add_data(indta, assettypes = NULL, delay = 0)
-
-av_add_assetgroups(indta)
 }
 \arguments{
-\item{indta}{A data.frame with two columns \code{c("listnm","ticker")} with one or more lines for each \code{"listnm"}}
+\item{indta}{A data.frame with the following minimal columns: \code{c(symbol,timestamp,close,adjusted_close)}.
+Other variables added could be \code{c(open,high,low,volume,dividend_amount,split_coefficient)}}
 
 \item{assettypes}{(default NULL)  An optional data.frame with minimal columns \code{c(symbol,type,currency,name)} with
 descriptive data for the assets given in \code{indta}.  If not specified, a call to \code{av_get_pf(.,"SYMBOL_SEARCH")}
@@ -22,18 +20,12 @@ unused if \code{assettypes} is given.}
 }
 \value{
 Nothing
-
-Nothing
 }
 \description{
 Adds price data to \code{\link[=av_runShiny]{av_runShiny()}} internal data.
-
-Adds asset lists to \code{\link[=av_runShiny]{av_runShiny()}} internal data.
 }
 \details{
 Entire set of columns from \code{\link[=av_get_pf]{av_get_pf()}} can be added. First date column renamed to \code{timestamp}
-
-Lists are specified in normalized form.  Duplicate list names with those currently in use are replaced.
 }
 \examples{
 \dontrun{
@@ -47,12 +39,6 @@ ffdta <- ffdta[,.(DT_ENTRY=index,close=FEDFUNDS,adjusted_close=FEDFUNDS,symbol="
 av_add_data(ffdta)
 }
 
-\dontrun{
-newtickers <- c("QQQ","QQQE","NDX")
-av_add_assetgroups(data.table(listnm=rep("nasdaq",length(newtickers)),ticker=newtickers))
-# To remove an asset list, just use an empty string for the ticker
-av_add_assetgroups(data.table(listnm=c("new"),ticker=c("")))
-}
 }
 \seealso{
 \code{\link[=av_runShiny]{av_runShiny()}}
