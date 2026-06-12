@@ -13,12 +13,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{css, echo=FALSE}
-pre, code {
-  font-size: 10px;
-}
-```
-
 # alphavantagepf
 
 <!-- badges: start -->

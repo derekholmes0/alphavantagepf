@@ -1,12 +1,6 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-<style type="text/css">
-pre, code {
-  font-size: 10px;
-}
-</style>
-
 # alphavantagepf
 
 <!-- badges: start -->
