@@ -1,6 +1,12 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+<style type="text/css">
+pre, code {
+  font-size: 10px;
+}
+</style>
+
 # alphavantagepf
 
 <!-- badges: start -->
@@ -103,8 +109,8 @@ attached if relevant, as in
 
 ``` r
 av_get_pf(c("ORCL","Q","IBM","EWZ"),"REALTIME_BULK_QUOTES")
-   symbol           timestamp  open  high   low close   volume previous_close change change_percent extended_hours_quote
-   <char>              <POSc> <num> <num> <num> <num>    <int>          <num>  <num>          <num>               <lgcl>
+   symbol     timestamp  open  high   low close   volume previous_close change change_percent extended_hours_quote
+   <char>      <POSc> <num> <num> <num> <num>    <int>          <num>  <num>          <num>               <lgcl>
 1:      Q 2026-01-07 15:43:06  ...
 2:    EWZ 2026-01-07 15:43:08  ...
 3:    IBM 2026-01-07 15:43:08  ...
@@ -116,9 +122,13 @@ av_get_pf(c("ORCL","Q","IBM","EWZ"),"REALTIME_BULK_QUOTES")
 The `alphavantagepf` package includes a few default overrides to the
 defaults chosen in [Alphavantage API
 documentation](https://www.alphavantage.co/documentation/). Those
-defaults can be seen using the `av_funhelp()` function, or can be seen
-by calling `av_get_pf()` with `verbose=TRUE`. Any overrides to those
-parameters can be specified as additional arguments to `av_get_pf()`.
+defaults can be seen using the
+[av_funhelp()](https://derekholmes0.github.io/alphvantagepf/reference/av_funhelp.html)
+function, or can be seen by calling
+[av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html)
+with `verbose=TRUE`. Any overrides to those parameters can be specified
+as additional arguments to
+[av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html).
 For example, to get SMA using multiple horizon lengths can be seen
 below:
 
@@ -142,7 +152,8 @@ datatype                                     csv
 ### Extracting embedded data.frames
 
 Some API calls return more complex data, i.e. data with strings,
-numbers, and nested data.frames collected together. The `av_get_pf()`
+numbers, and nested data.frames collected together. The
+[av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html)
 returns data in as natural a format as possible. For example, time
 series are not melted, but single name quotes are. The parameter to
 control this is `melted` with a default value of “melted”. `melted` can
@@ -167,14 +178,19 @@ Key: <variable>
 - Note that symbol for `TOP_GAINERS_LOSERS` isn’t used, but still needs
   to be specified.
 - Note that the data returned is in long form, and always has at least
-  three columns, `symbol` (which cna be changed in `av_get_pf()`
+  three columns, `symbol` (which cna be changed in
+  [av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html)
   optional parameters). `variable` which is the name of the data item
   returned, and (e.g.) `value_str` or `value_df` with appropriate data
   components. The data is separated out by type so further delisting
   doesn’t have to be done after the call.
 
 If you want to just get, e.g. the top losers, the returned data can be
-piped into the `av_extract_df()` function:
+piped into the
+[av_extract_df()](https://derekholmes0.github.io/alphvantagepf/reference/av_extract_df.html)
+function
+
+`av_extract_df()` function:
 
 ``` r
 av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
@@ -263,32 +279,40 @@ the extracting function `av_extract_analytics`.
 3.  `symbol` is always returned in the output dataset, and defaults to
     the name of the `av_fun` call if no symbol is relevant.
 4.  There is no need to specify the `datatype` parameter as an argument
-    to `av_get_pf()`. The function will return a data.table
+    to
+    [av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html).
+    The function will return a data.table
 5.  Some output above has been truncated to adhere to licensing rules.
 
 # Shiny interface
 
 A Shiny interface is included in the package to manage and visualize
-data. To launch the app, use `av_runShiny()`, and start with the first
-step of setting your API key. (See Vignette for other items you can set,
-or the video with a demonstration.) Once the API key is set, type in a
-set of symbols you ae interested in (separated by semicolons) and select
-an analysis to make. For example, to show a normalized total return
-chart for 3 common ETS, select “start” to rebase at the start of the
-requested period (`"-2y::"`in datestring) select `TS:PriceTS` to get a
-time series graph, and press `RUN`. The result will be as below.
+data. To launch the app, use
+[av_runShiny()](https://derekholmes0.github.io/alphvantagepf/reference/av_runShiny.html),
+and start with the first step of setting your API key. (See
+[Vignette](https://derekholmes0.github.io/alphvantagepf/articles/shinyapp-alphvantagepf.html)
+for other items you can set) Once the API key is set, type in a set of
+symbols you ae interested in (separated by semicolons) and select an
+analysis to make. For example, to show a normalized total return chart
+for 3 common ETS, select “start” to rebase at the start of the requested
+period (`"-2y::"`in datestring) select `TS:PriceTS` to get a time series
+graph, and press
+<span style="background-color: #003366; color: #FFFFFF;">RUN</span>. The
+result will be as below.
 
-<img src="vignettes/img/av_shiny_1.jpg" alt="" width="100%" />
+<img src="./vignettes/img/av_shiny_1.jpg" alt="" width="100%" />
 
 When `TS:PriceTS` is run, `av_runShiny()` will
 
-1.  Call `av_get_pf()` with parameters appropriate to the asset
-    (e.g. `TIME_SERIES_DAILY` for stocks, `FX_DAILY` for FX),
+1.  Call
+    [av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html)
+    with parameters appropriate to the asset (e.g. `TIME_SERIES_DAILY`
+    for stocks, `FX_DAILY` for FX),
 2.  **Save** the data in an internal data store, or update existing data
     as necessary, and
-3.  Plot an interactive graph using
-    [FinanceGraphs](https://github.com/derekholmes0/FinanceGraphs)
-    `fgts_dygraph()` function.
+3.  Plot an interactive graph using the
+    [fgts_dygraph()](https://derekholmes0.github.io/FinanceGraphs/reference/fgts_dygraph.html)
+    function.
 
 A few key features of the app include:
 
@@ -299,9 +323,12 @@ A few key features of the app include:
   live, check `useLive` in the app.
 - Groups of assets can be saved as “asset lists” and save or recalled by
   name. To do so, type in your list name in the box to the right of the
-  yellow asset line, and click `save`. To recall, select the name from
-  the dropdown and click `get`. The assets in that list will then be
-  pasted into the relevant line.
+  yellow asset line, and click
+  <span style="background-color: #003366; color: #FFFFFF;">save</span>.\
+  To recall the items in a list, select the name from the dropdown and
+  click
+  <span style="background-color: #003366; color: #FFFFFF;">get</span>.
+  The assets in that list will then be pasted into the relevant line.
 - Each individual call to `av_get_pf()` can be cached to a directory of
   the users’ choice. Data is saved in a named (by Alphavantage function)
   list of data.tables, and can be keyed (and upserted) or appended to a
@@ -310,7 +337,7 @@ A few key features of the app include:
 Other Analyses that are currently implemented include:
 
 | Analysis | Description |
-|:--:|:---|
+|:---|:---|
 | Inventory | Shows the current inventory of price data and current asset lists |
 | NameSearch | Search for asset names matching a string |
 | LivePx | Get live prices for all assets |

@@ -113,40 +113,40 @@ the degree possible) older price data.</li>
 <li>Provide interfaces for capturing any data requested and adding
 external data to the internal cache.</li>
 <li>Provide easy ways to create and retrieve baskets of assets.</li>
-<li>Use modern design elements as much as possible, in particular the
-<code>gt()</code> package and the <code>dygraphs()</code> package. The
-latter is used via a “sister” package <a href="https://github.com/derekholmes0/FinanceGraphs" class="external-link">FinanceGraphs</a>.</li>
+<li>Use modern design elements as much as possible, in particular the <a href="https://gt.rstudio.com/" class="external-link">gt</a> package and the <a href="https://rstudio.github.io/dygraphs/" class="external-link">dygraphs</a> package. The
+latter is used via a “sister” package <a href="https://derekholmes0.github.io/FinanceGraphs/reference/index.html" class="external-link">FinanceGraphs</a>
+</li>
 </ul>
 <p>A few conventions which are helpful to know before using the app
 are</p>
 <table class="table">
 <colgroup>
 <col width="19%">
-<col width="64%">
-<col width="15%">
+<col width="63%">
+<col width="17%">
 </colgroup>
 <thead><tr class="header">
 <th align="center">Item</th>
 <th align="left">Convention</th>
-<th align="center">Example</th>
+<th align="left">Example</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td align="center">Asset Sets</td>
 <td align="left">Semicolon <code>;</code> delimited</td>
-<td align="center"><code>"IBM;NDX;USD/MXN"</code></td>
+<td align="left"><code>"IBM;NDX;USD/MXN"</code></td>
 </tr>
 <tr class="even">
 <td align="center">Relative Dates</td>
-<td align="left">Signed integers followed by <code>[m|d|y]</code>,
+<td align="left">(Signed) integers followed by <code>[m|d|y]</code>,
 relative to today</td>
-<td align="center"><code>"-4m"</code></td>
+<td align="left"><code>"-4m"</code></td>
 </tr>
 <tr class="odd">
 <td align="center">Date Ranges</td>
 <td align="left">Relative dates separated by <code>"::"</code>
 </td>
-<td align="center">
+<td align="left">
 <code>"-4m::"</code>, <code>"-1y::+1y"</code>
 </td>
 </tr>
@@ -162,13 +162,13 @@ be run with</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/derekholmes0/alphavantagepf" class="external-link">alphavantagepf</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/av_runShiny.html">av_runShiny</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>When the app is first run, the following screen will be shown, with
-the <code>AVOPTS</code> tab selected. A screenshot of the first tab is
-shown below. The first order of business will be to set the Alphavantage
+the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab
+selected. The first order of business will be to set the Alphavantage
 API keys. To do so, just type or copy in both your API key and your
 entitlement status (Either <code>delayed</code> or
-<code>realtime</code>), and hit the blue <span style="color:blue">Set
-Opts</span> button.</p>
-<p><img src="img/av_opts.jpg" class="r-plt" alt="" width="80%"></p>
+<code>realtime</code>), and hit the blue <span style="background-color: #003366; color: #FFFFFF;">Set Opts</span>
+button.</p>
+<p><img src="img/av_opts.jpg" class="r-plt" alt="" width="100%"></p>
 <p>Other optional items that can be set are</p>
 <table class="table">
 <colgroup>
@@ -193,7 +193,8 @@ file</td>
 <tr class="odd">
 <td align="center">fgts colorset</td>
 <td align="left">A named aesthetic set for time series line colors, See
-[fg_update_aes()]</td>
+<a href="https://derekholmes0.github.io/FinanceGraphs/reference/fg_update_aes.html" class="external-link">fg_update_aes()</a>
+</td>
 </tr>
 <tr class="even">
 <td align="center">Regr Significance</td>
@@ -246,29 +247,31 @@ use ad-hoc groups of securities in this app.</p>
 <ul>
 <li><p><strong>To create a list</strong>, First, type in a new name for
 the list in the list box as shown below, and Hit Enter. Second, type in
-the components (separated by semi-colons) and hit the “set”
+the components (separated by semi-colons) and hit the <span style="background-color: #003366; color: #FFFFFF;">set</span>
 button.</p></li>
 <li><p><strong>To get the assets in a list</strong>, select the desired
-list from the dropdown and hit “get”.</p></li>
+list from the dropdown and hit <span style="background-color: #003366; color: #FFFFFF;">get</span>
+button.</p></li>
 </ul>
 <p><img src="img/assetlist.gif" class="r-plt" alt="" width="100%"></p>
 <p>You can see a table of current asset lists by running the
 “Gen:Inventory” command, and can add asset lists outside of the app
-using [av_add_assetgroups()]</p>
+using <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_add_assetgroup.html" class="external-link">av_add_assetgroups()</a></p>
 </div>
 <div class="section level2">
 <h2 id="running-basic-analyses">Running Basic Analyses<a class="anchor" aria-label="anchor" href="#running-basic-analyses"></a>
 </h2>
 <p>To run analyses, select the desired item from the dropdowns and press
-the blue <span style="color:blue">RUN</span>. One of more graphs or
-tables will be shown in the “MAIN” tab, with additional data possible in
-the “DETAIL” tab.</p>
+the blue <span style="background-color: #003366; color: #FFFFFF;">RUN</span> button.
+One of more graphs or tables will be shown in the <span style="border: 1px solid #000000; padding: 2px 6px;">MAIN</span> tab,
+with additional data possible in the <span style="border: 1px solid #000000; padding: 2px 6px;">DETAIL</span>
+tab.</p>
 <p>Graph events and decorations can be specified in the first two boxes,
 with annotations for the last level and 5 turning points used as
-defaults. The options possible are detailed in the <a href="https://github.com/derekholmes0/FinanceGraphs" class="external-link">FinanceGraphs</a>
-[fgts_dygraph()] documentation. Empty out the boxes for clean graphs.
-The date ranges plotted come from the “dts” box (see above for
-conventions), and more recent data can be focused in on using the <span style="color:blue">FocusPct</span> slider. For example, if the slider is
+defaults. The options possible are detailed in the <a href="https://derekholmes0.github.io/FinanceGraphs/reference/fgts_dygraph.html" class="external-link">fgts_dygraph()</a>
+documentation. Empty out the boxes for clean graphs. The date ranges
+plotted come from the “dts” box (see above for conventions), and more
+recent data can be focused in on using the <span style="color:blue">FocusPct</span> slider. For example, if the slider is
 set to 50pct, and the date string is <code>"-2y::"</code> then the graph
 will only show the last year of data, but can be slid back to see the
 entire 2 year period.</p>
@@ -278,12 +281,11 @@ clipboad if the “copyTable” box is checked.</p>
 <div class="section level3">
 <h3 id="plotting-options">Plotting options<a class="anchor" aria-label="anchor" href="#plotting-options"></a>
 </h3>
-<p>Data is plotted in raw form unless the
-<span style="color:blue">Rebase options are used. Rebasing at the
-start will normalize all series to 100 at the start of the window. (In
-the the example above, the rebase would occur at the first point plotted
-2 years prior to today). If Rebasing is set to the focus point, the
-rebasing occurs at that point set by the slider.</span></p>
+<p>Data is plotted in raw form unless the <span style="color:blue">Rebase options</span> are used. Rebasing at the start
+will normalize all series to 100 at the start of the window. (In the the
+example above, the rebase would occur at the first point plotted 2 years
+prior to today). If Rebasing is set to the focus point, the rebasing
+occurs at that point set by the slider.</p>
 <p>An alternative to rebasing is to plot the first asset on it’s own
 axis, which can be done by selecting <code>"splitts"</code> in the
 <code>"TSGraphOpts"</code> box. Other options that can be selected in
@@ -293,17 +295,22 @@ that box are</p>
 <li>Adding Labels showing the last value or series title</li>
 <li>Adding hi-low shading, if the data is available.</li>
 <li>Changing the line colors (via the <code>"fgts colorset"</code>
-setting in the <code>"AVOPTS"</code> tab.)</li>
+setting in the <span style="color:red"><code>"AVOPTS"</code></span>
+tab.)</li>
 </ul>
-<p>Events (See e.g.[FinanceGraphs::fg_get_dates_of_interest()]) can also
-be specified in the <code>"events"</code> box. These can be single day
-events or highlighted ranges of dates. Also, time series that do not
-appear to be daily will be plotted with step functions.</p>
+<p>Event codes can also be specified in the <code>"events"</code> box.
+See <a href="https://derekholmes0.github.io/FinanceGraphs/reference/fg_get_dates_of_interest.html" class="external-link">fg_get_dates_of_interest()</a>
+and <a href="https://derekholmes0.github.io/FinanceGraphs/articles/Time-Series-dygraph.html" class="external-link">Dygraphs
+vignette</a> These can be single day events or highlighted ranges of
+dates. Also, time series that do not appear to be daily will be plotted
+with step functions.</p>
 </div>
 <div class="section level3">
 <h3 id="analyses-that-can-be-run">Analyses that can be run<a class="anchor" aria-label="anchor" href="#analyses-that-can-be-run"></a>
 </h3>
-<p>The table below shows the current analyses that can be run.</p>
+<p>The table below shows the current analyses that can be run. Select
+what you wish and hit the <span style="background-color: #003366; color: #FFFFFF;">RUN</span>
+button.</p>
 <table class="table">
 <colgroup>
 <col width="41%">
@@ -363,20 +370,25 @@ appear to be daily will be plotted with step functions.</p>
 </tbody>
 </table>
 <p>Notes</p>
-<p>1, Due to Alphavantage limitations, the search returns tickers that
-begin with the search term. 2. Graphing options are described above. THe
-graph can interactively be zoomed in on and reset with a double
-click.<br>
+<p>1 Due to Alphavantage limitations, the search returns tickers that
+begin with the search term.</p>
+<ol start="2" style="list-style-type: decimal">
+<li><p>Graphing options are described above. THe graph can interactively
+be zoomed in on and reset with a double click.<br>
 Two synchronized graphs can be used by selecting this option for both
-Line 1 and Line 2. 3. Total return data is used unless the box is
-unchecked. The data is augmented by live data if the box is checked. 4.
-Graphs show active returns, i.e. Total return of each asset in Line 1
-less the first asset (typically a benchmark index) in Line 2. Rolling
-correlations and full period betas are also shown. 5. Volatilitity
-parameters in the <span style="color:blue">Histvolparams</span> box are
-passed to the [TTR::volatility()] function. 6. Results will be displayed
-in the “OPTIONS” tab. 7. Results will be displayed in the “NEWS”
-tab.</p>
+Line 1 and Line 2.</p></li>
+<li><p>Total return data is used unless the box is unchecked. The data
+is augmented by live data if the box is checked.</p></li>
+<li><p>Graphs show active returns, i.e. Total return of each asset in
+Line 1 less the first asset (typically a benchmark index) in Line 2.
+Rolling correlations and full period betas are also shown.</p></li>
+<li><p>Volatilitity parameters in the <span style="color:blue">Histvolparams</span> box are passed to the
+[TTR::volatility()] function.</p></li>
+<li><p>Results will be displayed in the <span style="border: 1px solid #000000; padding: 2px 6px;">OPTIONS</span>
+tab.</p></li>
+<li><p>Results will be displayed in the <span style="border: 1px solid #000000; padding: 2px 6px;">NEWS</span>
+tab.</p></li>
+</ol>
 <p>As an example, suppose we wish to look at active returns of three
 popular chip manufacturers against the Nasdaq 100 broad index. Put the
 tickers of interest in Line 1, and an index in Line 2. (If there are
@@ -384,15 +396,16 @@ more than one tickers in Line 2, only the first is used.) Select
 <code>TS:ActiveTS</code> and hit run. The app will get whatever data it
 needs, typically from the cache, but augmented with most recent (live)
 data and produce the following output:</p>
-<p><img src="img/activets.jpg" class="r-plt" alt="" width="80%"></p>
+<p><img src="img/activets.jpg" class="r-plt" alt="" width="100%"></p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="option-search">Option Search<a class="anchor" aria-label="anchor" href="#option-search"></a>
 </h2>
 <p>To find options for a given set of tickers, Run “EQ:Optsearch” which
-will take you to the “OPTIONS” tab. A few fields on that page which will
-help narrow down the options are:</p>
+will take you to the <span style="border: 1px solid #000000; padding: 2px 6px;">OPTIONS</span> tab.
+A few fields on that page which will help narrow down the options
+are:</p>
 <table class="table">
 <colgroup>
 <col width="38%">
@@ -445,7 +458,7 @@ premium</td>
 </table>
 <p>The app looks up the current spot to determine moneyness. A skew
 graph is plotted after the table.</p>
-<p><img src="img/optsearch.jpg" class="r-plt" alt="" width="80%"></p>
+<p><img src="img/optsearch.jpg" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="managing-data-outside-of-the-app-">Managing data outside of the app.<a class="anchor" aria-label="anchor" href="#managing-data-outside-of-the-app-"></a>
@@ -454,16 +467,20 @@ graph is plotted after the table.</p>
 series data externally using other R scripts or documents. All of the
 downloaded price history, as well as an inventory of prices are stored
 either in a temporary directory created when the app is first run, or a
-directory specified in the “AVOPTS” tab. The price data is stored in <a href="https://www.fstpackage.org/" class="external-link">fst</a> format, which has been the
-performance winner for several years. Time series data stored in that
-cache augments that returned by (e.g.)
+directory specified in the <span style="color:red"><code>"AVOPTS"</code></span> tab. The price data is
+stored in <a href="https://www.fstpackage.org/" class="external-link">fst</a> format, which
+has been the performance winner for several years. Time series data
+stored in that cache augments that returned by (e.g.)
 <code>av_get_pf("IBM","TIME_SERIES_DAILY")</code> function wih split and
-dividend data returned by other [av_get_pf()] calls. The full set is
-shown below. Note that a timestamp for each data retrieval is also
-kept.</p>
-<p><code>symbol  timestamp  open  high   low close adjusted_close volume dividend_amount split_coefficient                  ts origclose   &lt;char&gt;     &lt;IDat&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;          &lt;num&gt;  &lt;num&gt;           &lt;num&gt;             &lt;num&gt;              &lt;POSc&gt;     &lt;num&gt;    ABBNY 2001-04-06  7.37  7.37  7.27  7.29           7.29 162100               0             0.433 2026-05-31 08:06:48      16.8    ABBNY 2001-04-09  7.32  7.50  7.32  7.50           7.50  31300               0             0.433 2026-05-31 08:06:48      17.3</code></p>
+dividend data returned by other <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html" class="external-link">av_get_pf()</a>
+calls. The full set is shown below. Note that a timestamp for each data
+retrieval is also kept.</p>
+<pre><code>symbol timestamp  open  high   low close adjusted_close dividend_amount split_coefficient                  ts origclose
+&lt;char&gt;  &lt;IDat&gt;    &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;          &lt;num&gt;      &lt;num&gt;             &lt;num&gt;              &lt;POSc&gt;     &lt;num&gt;
+ABBNY 2001-04-06  7.37  7.37  7.27  7.29           7.29          0             0.433 2026-05-31 08:06:48      16.8
+ABBNY 2001-04-09  7.32  7.50  7.32  7.50           7.50          0             0.433 2026-05-31 08:06:48      17.3</code></pre>
 <div class="section level3">
-<h3 id="adding-data-and-integrating-different-asset-classes-">Adding data and integrating different asset classes.<a class="anchor" aria-label="anchor" href="#adding-data-and-integrating-different-asset-classes-"></a>
+<h3 id="wadding-data-and-integrating-different-asset-classes-">WAdding data and integrating different asset classes.<a class="anchor" aria-label="anchor" href="#wadding-data-and-integrating-different-asset-classes-"></a>
 </h3>
 <p>The data can also be added to externally using the [av_add_data()]
 function. Any time series can be added, but not all time series can be
@@ -473,15 +490,15 @@ Alphavantages’ API platform is that there are different function calls
 them into one price table, but at the expense of <em>having to know each
 asset type</em> for the data added.</p>
 <p>The app tries to determine what asset class a symbol is to update it
-using [av_get_pf()] calls as best as it can. Specifically, each new
-ticker is checked against current Index lists, cryptocurrency lists, and
-then with Alphavantage’s <code>"SYMBOL_SEARCH"</code>. <strong>If
-several tickers are passed at once</strong>, this can be quite
-expensive, as Alphavantage tends to limit data usage if too many calls
-are made in succession. If possible, it’s much better to predetermine
-the asset type (one of
-<code>c("Equity","ETF","Index","FX","Crypto")</code>) in advance and
-pass it to [av_add_data()] call at runtime.</p>
+using <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html" class="external-link">av_get_pf()</a>
+calls as best as it can. Specifically, each new ticker is checked
+against current Index lists, cryptocurrency lists, and then with
+Alphavantage’s <code>"SYMBOL_SEARCH"</code>. <strong>If several tickers
+are passed at once</strong>, this can be quite expensive, as
+Alphavantage tends to limit data usage if too many calls are made in
+succession. If possible, it’s much better to predetermine the asset type
+(one of <code>c("Equity","ETF","Index","FX","Crypto")</code>) in advance
+and pass it to [av_add_data()] call at runtime.</p>
 <p>Data which is completely exogenous to Alphavantage can also be added
 to the app’s cached data set. If the asset type isn’t specified or
 cannot be determined, it’s assumed to be a <code>"user"</code> asset
@@ -491,12 +508,26 @@ against FRED’s FEDFUNDS data. We will download both and add them
 programmatically. Generic data needs to be manipulated into the form the
 app expects, but data downloaded from Alphavantage is already in that
 form.</p>
-<p><code>&gt; dump_inv()    symbol                                          name   type list_ts currency matchScore     beg_dt     end_dt              loadts     medgap        age    &lt;char&gt;                                        &lt;char&gt; &lt;char&gt;  &lt;Date&gt;   &lt;char&gt;      &lt;num&gt;     &lt;IDat&gt;     &lt;IDat&gt;              &lt;POSc&gt; &lt;difftime&gt; &lt;difftime&gt;   BTC/USD                                       BTC/USD Crypto    &lt;NA&gt;      BTC          1 2010-07-17 2026-06-11 2026-06-11 06:00:18     1 days     0 days  FEDFUNDS                                          &lt;NA&gt;   user    &lt;NA&gt;      USD          1 1954-07-01 2026-05-01 2026-06-11 06:22:55    31 days    41 days       HYG ISHARES IBOXX $ HIGH YIELD CORPORATE BOND ETF    ETF    &lt;NA&gt;      USD          1 2007-04-11 2026-06-10 2026-06-11 07:24:41     1 days     1 days       IBM          International Business Machines Corp Equity    &lt;NA&gt;      USD          1 1999-11-01 2026-06-10 2026-06-11 06:22:10     1 days     1 days       QQQ                    Invesco QQQ Trust Series 1    ETF    &lt;NA&gt;      USD          1 1999-11-01 2026-06-10 2026-06-10 15:47:57     1 days     1 days   USD/BRL                                       USD/BRL     FX    &lt;NA&gt;      USD          1 2014-11-07 2026-06-10 2026-06-11 07:23:37     1 days     1 days &gt;</code></p>
-<p>The data added can be plotted using the <code>"TS:PriceTS"</code>
-analytic, as seen below. Note that the monthly time series needs to be
-used with care, since it doesn’t correspond to the actual Fed
-Meetings.</p>
-<p><img src="img/wFedFunds.jpg" class="r-plt" alt="" width="80%"></p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># av_add_data can be used simply, but</span></span>
+<span><span class="fu"><a href="../reference/av_add_data.html">av_add_data</a></span><span class="op">(</span><span class="fu"><a href="../reference/av_get_pf.html">av_get_pf</a></span><span class="op">(</span><span class="st">"IBM"</span>,<span class="st">"TIME_SERIES_DAILY_ADJUSTED"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># For many assets, use this</span></span>
+<span><span class="va">asset_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>symbol<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HYG"</span><span class="op">)</span>,type<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ETF"</span><span class="op">)</span>,currency<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"USD"</span><span class="op">)</span>, name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HY ETF"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/av_add_data.html">av_add_data</a></span><span class="op">(</span><span class="fu"><a href="../reference/av_get_pf.html">av_get_pf</a></span><span class="op">(</span><span class="st">"HYG"</span>,<span class="st">"TIME_SERIES_DAILY_ADJUSTED"</span><span class="op">)</span>, assettypes<span class="op">=</span><span class="va">asset_df</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># External Data</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://www.quantmod.com/" class="external-link">quantmod</a></span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ffdta</span> <span class="op">&lt;-</span> <span class="fu">as.data.table</span><span class="op">(</span><span class="fu">quantmod</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/quantmod/man/getSymbols.html" class="external-link">getSymbols</a></span><span class="op">(</span><span class="st">"FEDFUNDS"</span>,src<span class="op">=</span><span class="st">"FRED"</span>,auto.assign<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ffdta</span> <span class="op">&lt;-</span> <span class="va">ffdta</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span>DT_ENTRY<span class="op">=</span><span class="va">index</span>,close<span class="op">=</span><span class="va">FEDFUNDS</span>,adjusted_close<span class="op">=</span><span class="va">FEDFUNDS</span>,symbol<span class="op">=</span><span class="st">"FEDFUNDS"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="fu"><a href="../reference/av_add_data.html">av_add_data</a></span><span class="op">(</span><span class="va">ffdta</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/dump_the.html">dump_inv</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">gt</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="img/data.jpeg" class="r-plt" alt="" width="100%"> The
+data added can be plotted using the <code>"TS:PriceTS"</code> analytic,
+as seen below. Note that the monthly time series needs to be used with
+care, since it doesn’t correspond to the actual Fed Meetings.</p>
+<p><img src="img/wFedFunds.jpg" class="r-plt" alt="" width="100%"></p>
 </div>
 </div>
 <div class="section level2">
@@ -509,7 +540,7 @@ analysis.</li>
 <li>Ability to plug in user-defined functions which have access to the
 internal data store.</li>
 <li>Correlation and hedging analyses.</li>
-<li>Interface to events and aesethics sets relevant to <a href="https://github.com/derekholmes0/FinanceGraphs" class="external-link">FinanceGraphs</a>
+<li>Interface to events and aesthetics sets relevant to <a href="https://derekholmes0.github.io/FinanceGraphs/reference/index.html" class="external-link">FinanceGraphs</a>
 </li>
 </ul>
 </div>
