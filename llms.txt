@@ -1,4 +1,4 @@
-# alphavantagepf
+# [alphavantagepf](https://derekholmes0.github.io/alphavantagepf/index.html)
 
 A [data.table](https://github.com/Rdatatable/data.table) centric R and
 Shiny interface to the Alpha Vantage API, geared towards personal
