@@ -4,24 +4,19 @@ Adds price data to
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
 internal data.
 
-Adds asset lists to
-[`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
-internal data.
-
 ## Usage
 
 ``` r
 av_add_data(indta, assettypes = NULL, delay = 0)
-
-av_add_assetgroups(indta)
 ```
 
 ## Arguments
 
 - indta:
 
-  A data.frame with two columns `c("listnm","ticker")` with one or more
-  lines for each `"listnm"`
+  A data.frame with the following minimal columns:
+  `c(symbol,timestamp,close,adjusted_close)`. Other variables added
+  could be `c(open,high,low,volume,dividend_amount,split_coefficient)`
 
 - assettypes:
 
@@ -42,16 +37,11 @@ av_add_assetgroups(indta)
 
 Nothing
 
-Nothing
-
 ## Details
 
 Entire set of columns from
 [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
 can be added. First date column renamed to `timestamp`
-
-Lists are specified in normalized form. Duplicate list names with those
-currently in use are replaced.
 
 ## See also
 
@@ -69,12 +59,5 @@ suppressMessages(require(quantmod))
 ffdta <- as.data.table(quantmod::getSymbols("FEDFUNDS",src="FRED",auto.assign=FALSE))
 ffdta <- ffdta[,.(DT_ENTRY=index,close=FEDFUNDS,adjusted_close=FEDFUNDS,symbol="FEDFUNDS")]
 av_add_data(ffdta)
-} # }
-
-if (FALSE) { # \dontrun{
-newtickers <- c("QQQ","QQQE","NDX")
-av_add_assetgroups(data.table(listnm=rep("nasdaq",length(newtickers)),ticker=newtickers))
-# To remove an asset list, just use an empty string for the ticker
-av_add_assetgroups(data.table(listnm=c("new"),ticker=c("")))
 } # }
 ```
