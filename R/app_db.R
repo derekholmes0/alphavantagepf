@@ -57,7 +57,6 @@ av_add_data <- function(indta,assettypes=NULL,delay=0) {
 #' # To remove an asset list, just use an empty string for the ticker
 #' av_add_assetgroups(data.table(listnm=c("new"),ticker=c("")))
 #' }
-#' @rdname av_add_data
 #' @export
 av_add_assetgroups <- function(indta) {
   indta <- as.data.table(indta)
@@ -186,14 +185,14 @@ form_symset <- function(tickers, force=FALSE, delay=0) {
   else {
     # Symbols we already  have
     symset<- data.table(symbol=s(tickers))[the_av$pxinv,on=.(symbol),nomatch=NULL]
-    symset<- symset[,.(symbol,type,currency,name,matchScore)]
+    symset<- symset[,.(symbol,type,currency,name,matchScore,list_ts)]
     newtickers <- setdiff(alltickers,symset$symbol)
   }
   # -----------------------------------------Downloadable assets: KNown from ticker
   # Known Indices
   symnew_ix <- the_av$tickerlist[type=="Index",][data.table(symbol=newtickers),on=.(symbol),nomatch=NULL]
   if(nrow(symnew_ix)>0) {
-    symnew_ix <- symnew_ix[,.(symbol,type,currency="USD",name,matchScore=1)]
+    symnew_ix <- symnew_ix[,.(symbol,type,currency="USD",name,matchScore=1,list_ts)]
   }
   # New Crypto
   possible_fxcr <- grepv("[A-Z]/[A-Z]",newtickers)
@@ -216,14 +215,14 @@ form_symset <- function(tickers, force=FALSE, delay=0) {
       return(data.table())
     }
     else {
-      return(z1[matchScore>=0.99,.(symbol=x,type,currency,name,matchScore)])
+      return(z1[matchScore>=0.99,.(symbol=x,type,currency,name,matchScore,list_ts=Sys.Date())])
     }
   }))
   newtickers=setdiff(newtickers,symnew_eq$symbol)
   # -----------------------------------------Un Downloadable assets/ User Data
   symnew_user <- data.table()
   if( length(newtickers)>0 ) {
-    symnew_user <- data.table(symbol=newtickers,type="user",currency="USD",matchScore=1)
+    symnew_user <- data.table(symbol=newtickers,type="user",currency="USD",matchScore=1,list_ts=Sys.Date())
   }
   # Collect all together
   symset <- rbindlist(list(symset,symnew_inferable,symnew_eq,symnew_user),fill=TRUE,use.names=TRUE)
@@ -238,7 +237,7 @@ form_symset <- function(tickers, force=FALSE, delay=0) {
 manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=NULL, addlive=FALSE, force=FALSE, delay=0.1) {
   symbol=beg_dt=medgap=NULL
   dtstoget <- gendtstr(dtstr,rtn="list") # Dates to get
-  if(nrow(the_av$pxinv)>0) {
+  if(nrow(the_av$pxinv)>0 & is.null(substitute_data) & is.null(substitute_symset)) {
     edates <- the_av$pxinv[data.table(symbol=s(inticker)),on=.(symbol),nomatch=NULL]
     if(nrow(edates)>0) {
       earlystarts <- edates[beg_dt>dtstoget[1],]
@@ -268,6 +267,7 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=
       else {
         symset <- form_symset(tickers,force=force,delay=delay)
       }
+      symset = symset[data.table(symbol=unique(dta$symbol)), on=.(symbol)] # If subst is a superset
       symset[,let(loadts=Sys.time())]
     }
     else { # DOwnloadable, but one at a time
@@ -304,12 +304,13 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=
     the_av$pxd <- DTUpsert(the_av$pxd,dta,c("symbol","timestamp"),fill=TRUE)
     # Get asset type and update inventory
     thisinv <- the_av$pxd[symset[,.(symbol)],on=.(symbol)]
-    thisinv <- thisinv[,.(beg_dt=min(timestamp),end_dt=max(timestamp), medgap=median(diff(timestamp))),by=.(symbol)]
+    thisinv <- thisinv[,.(beg_dt=min(timestamp),end_dt=max(timestamp),
+                          medgap=median(diff(as.numeric(timestamp)))),by=.(symbol)]
     thisinv <- symset[thisinv,on=.(symbol)][,':='(age=Sys.Date()-end_dt)]
     setcolorder(thisinv,"loadts",after="end_dt")
     the_av$pxinv  <- DTUpsert(the_av$pxinv, thisinv, c("symbol"),fill=TRUE)
     dtrg <- lapply(range(dta$timestamp),\(x) format(x,"%Y-%m-%d"))
-    message_if(the_av$verbose,"av_one_px(",tickers[1],",",src,") ",nrow(dta)," rows with range ",dtrg[1],"::",dtrg[2],
+    message_if(the_av$verbose,"av_one_px(",tickers[1],fifelse(length(tickers)>1,"... ,",","),src,") ",nrow(dta)," rows with range ",dtrg[1],"::",dtrg[2],
             " filling gap of ",nbdays," days from ",dtstoget[1], " to ",dtstoget[2])
   }
   return("")

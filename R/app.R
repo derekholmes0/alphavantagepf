@@ -413,7 +413,7 @@ av_make_server <- function() {
           eqdta <- eqdta[order(catprio,prio)][,.(category,symbol,catprio,prio,variable,ltype,value_str,format ,value_num)]
           toplot <- dcast(eqdta[order(catprio,prio)], catprio+prio+category + variable+format ~ symbol, value.var="value_str")
           tbl_loc <- fifelse(length(eqset)>3, "TABLE1GT","TABLE4GT")
-          out[[tbl_loc]] <-  toplot |> gt(groupname_col="category",row_group_as_column=TRUE) |> gt.avtheme(themeset="eqdesc1")
+          out[[tbl_loc]] <-  toplot |> gt.avtheme(themeset="eqdesc1")
         }
         # tab_style(eval(parse(text=fm31)),eval(parse(text=fm32)))
         if( length(eqset <- symbol_grep_by_type(eqlist1,"ETF"))>0 ) {
@@ -430,7 +430,7 @@ av_make_server <- function() {
             toplot <- rbindlist(list(toplot, sectorset),use.names=TRUE,fill=TRUE)
           }
           tbl_loc <- fifelse(length(eqset)>3, "TABLE2GT","TABLE3GT")
-          out[[tbl_loc]] <-  toplot |> gt(groupname_col="category",row_group_as_column=TRUE) |> gt.avtheme(themeset="eqdescsec")
+          out[[tbl_loc]] <-  toplot |> gt.avtheme(themeset="eqdescsec")
 
           holdset <- eqdt |> av_extract_df("holdings")
           if("weight" %in% holdset) {

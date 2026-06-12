@@ -114,6 +114,23 @@ gt.avtheme<- function(x,themeset="",...) {
         cols_hide(s("inlist"))
     }
   }
+  # EQ:DES ============================================================= EQ:DES
+  if(themeset=="eqdesc1") {
+    thisgt <- x |> gt(groupname_col="category",row_group_as_column=TRUE)
+    thisgt <- thisgt |> gt.basetheme() |>
+      row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
+      tab_header(title="Equities") |> tab_footnote(paste("As Of",Sys.time())) |>
+      fmt_number(suffixing=TRUE) |>
+      add_colwidths("eqdisc1") |>
+      gt.basetheme()
+  }
+  if(themeset=="eqdescsec") {
+    thisgt <- x |> gt(groupname_col="category",row_group_as_column=TRUE)
+    thisgt <- thisgt  |> row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
+      add_colwidths("eqdescsec") |>
+      fmt_number(suffixing=TRUE) |>
+      gt.basetheme()
+  }
   # If a gt =============================================================
   if (is.null(thisgt)) {
     thisgt <- x |> gt()
@@ -149,20 +166,6 @@ gt.avtheme<- function(x,themeset="",...) {
           fmt_integer(columns=n)
   }
   # EQ:DES ============================================================= EQ:DES
-  if(themeset=="eqdesc1") {
-    thisgt <- thisgt |> gt.basetheme() |>
-      row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
-      tab_header(title="Equities") |> tab_footnote(paste("As Of",Sys.time())) |>
-      fmt_number(suffixing=TRUE) |>
-      add_colwidths("eqdisc1") |>
-      gt.basetheme()
-  }
-  if(themeset=="eqdescsec") {
-    thisgt <- thisgt  |> row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
-      add_colwidths("eqdescsec") |>
-      fmt_number(suffixing=TRUE) |>
-      gt.basetheme()
-  }
   if(themeset=="etfholdings") {
     thisgt <- thisgt  |> gt.basetheme() |> tab_spanner_delim(delim = "_",reverse=TRUE) |>
               fmt_number(suffixing=TRUE) |>
