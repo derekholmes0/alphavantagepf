@@ -120,20 +120,21 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
 save_avs_state <- function(todo="all") {
   classtype=NULL
   exception_names <- s("pxd;pxinv")
+  shortmsg <- ""
   if(grepl("all|px",todo)) {
     nonpx_names <-  dump_the()[classtype=="data.table"& !(nm %in% c("pxd")),]$nm
     pxinv <- setNames(lapply(nonpx_names,\(x) get(x,envir=the_av)), nonpx_names)
     save(pxinv,file=the_av$inv_fn)
-    # pxd to fst
-    fst::write_fst(the_av$pxd,the_av$pxd_fn,compress=20)
-    message_if_green(the_av$verbose,"Wrote inventories to ",the_av$inv_fn, ",price data to ",the_av$pxd_fn)
+    fst::write_fst(the_av$pxd,the_av$pxd_fn,compress=20) # pxd to fst
+    shortmsg <- paste(shortmsg,"px,inv")
   }
   if(grepl("all|the",todo)) {
     #unames=names(the_av)[sapply(the_av, class) %in% c("logical","character","numeric","difftime")]
     unames <- setdiff(names(the_av),exception_names)
     save(list=unames,envir=the_av,file=the_av$constants_fn)
-    message_if_green(the_av$verbose,"Wrote constants state to ",the_av$constants_fn)
+    shortmsg <- paste(shortmsg,"const")
   }
+  message_if_green(the_av$verbose,"Save State (",todo,") or (",shortmsg," at ",Sys.time())
 }
 
 # epx_get_avfn : Which function to call given type
