@@ -41,7 +41,7 @@ av_add_data <- function(indta,assettypes=NULL,delay=0) {
   setnames(indta,firstdate,"timestamp")
   check_min_colset(indta,s("symbol;timestamp;close;adjusted_close"))
   manage_epx(unique(indta$symbol),"-30y::",substitute_data=indta,substitute_symset=assettypes,force=TRUE,delay=delay)
-  save_avs_state("all")
+  save_avs_state("all",msg="av_add_data")
 }
 
 # =======================================================================================================
@@ -68,7 +68,7 @@ av_add_assetgroups <- function(indta) {
   restore_avs_state("constants")
   the_av$assetgroups <- DTUpsert(the_av$assetgroups,indta,c("listnm"))
   the_av$assetgroups <- the_av$assetgroups[nchar(ticker)>0,]
-  save_avs_state("all")
+  save_avs_state("all",msg="add_assetgroups")
 }
 
 #' @noRd
@@ -84,7 +84,7 @@ update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
   indexlist <- rbindlist(list(indexlist,cryptolist),use.names=TRUE,fill=TRUE)[,list_ts:=Sys.Date()][]
   the_av$tickerlist <- DTUpsert(the_av$tickerlist,indexlist,c("symbol"))
   message_if_red(the_av$verbose,"Reconstructed index and crypto lists at ",Sys.time())
-  save_avs_state("all") # must use all with any inventory data
+  save_avs_state("all",msg="updatetickers") # must use all with any inventory data
 }
 
 # inv_fn/pxinv is a list of all user-level data.
@@ -117,7 +117,7 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
 }
 
 #' @importFrom stats setNames
-save_avs_state <- function(todo="all") {
+save_avs_state <- function(todo="all",msg="") {
   classtype=NULL
   exception_names <- s("pxd;pxinv")
   shortmsg <- ""
@@ -134,7 +134,8 @@ save_avs_state <- function(todo="all") {
     save(list=unames,envir=the_av,file=the_av$constants_fn)
     shortmsg <- paste(shortmsg,"const")
   }
-  message_if_green(the_av$verbose,"Save State (",todo,") or (",shortmsg," at ",Sys.time())
+  message_if_green(the_av$verbose,"Save State (",todo,") or (",shortmsg,") ",
+      fifelse(nchar(msg)>0," from ",msg,""), " at ",Sys.time())
 }
 
 # epx_get_avfn : Which function to call given type
@@ -322,8 +323,8 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=
 
 redownload_all <- function() {
   u1=lapply(the_av$pxinv$symbol,\(x) manage_epx(x,"-30y::",force=TRUE))
-  save_avs_state("px")
-  save_avs_state("asset")
+  save_avs_state("px",msg="redownload_px")
+  save_avs_state("asset",msg="redownload_asset")
 }
 
 # save_av_data:  Capture all outputs from alphavantage calls, possibly keyed appropriately
@@ -420,7 +421,7 @@ kill_symbol <- function(inticker) {
   the_av$pxd <- the_av$pxd[!(symbol==inticker),]
   the_av$pxinv <- the_av$pxinv[!(symbol==inticker),]
   message_if_red(TRUE,"Removed ",inticker," from price database")
-  save_avs_state()
+  save_avs_state(,msg=" Ttticker RRREdrum")
 }
 
 
