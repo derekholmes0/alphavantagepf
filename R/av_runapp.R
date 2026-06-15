@@ -67,5 +67,6 @@ av_runShiny <- function() {
     restore_avs_state("init") # Fills in avsd defaults
     save_avs_state("all")
   }
+  message("av_runShiny:. Running 0.7.7.2")
   shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1400,height=800,"launch.browser"))
 }

@@ -17,7 +17,6 @@ source("./R/utilities.R")
 
 av_make_ui <- function() {
   order1=order2=NULL
-  #restore_avs_state(msg="OnStartup")
   curr_assetgroups <- sort(unique(the_av$assetgroups$listnm))
   runlist1 <- avsd$deflist[!is.na(order1)]$runcode
   runlist2 <- avsd$deflist[!is.na(order2)]$runcode
