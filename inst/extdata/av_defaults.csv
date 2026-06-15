@@ -26,3 +26,4 @@ nArticles,num,news,,,50
 verbose,log,,,TRUE,
 autocopy,log,autocopy,,FALSE,
 starttab,str,,AVOPTS,,
+gropts,str,onrun,last,,

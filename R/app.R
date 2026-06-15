@@ -8,7 +8,7 @@
 #' @import FinanceGraphs
 
 source("./R/utilities.R")
-tver<-"0.7.7.51"
+tver<-"0.7.72.1"
 
 # 1.8: News, ability to keep output from one run to the next
 # 1.6: Bug checks and check()
@@ -42,7 +42,7 @@ av_make_ui <- function() {
             actionButton("RUN","RUN",width='100%',class = "btn btn-primary"),
             selectizeInput("gropts","TSGraphopts",
                            c("last","lastlabel","hilightfirst","splitts","hilow"),
-                           selected=c("last"),
+                           selected=s(the_av$gropts),
                            multiple=TRUE,options(list(maxOptions=5,maxItems=1,avsd$selectizeoptions))),
             textInput(inputId="ts_events", label="Events", value = the_av$ts_events),
             textInput(inputId="datestring", label="dts", value=the_av$datestring),
@@ -199,10 +199,15 @@ av_make_server <- function() {
         rtnmsg <-paste0("Deleted Asset List: ",tlist)
         save_avs_state("all",msg="deleteassets")
       }
-      Sys.sleep(0.3)
+      Sys.sleep(0.2)
       updateRadioButtons(session,paste0("managelist",no),selected=character(0))
       return(rtnmsg)
     }
+
+    observeEvent(input$gropts, {
+      req(input$gropts)
+      av_set_defaults("gropts",paste0(input$gropts,sep=";"))
+    })
 
     observeEvent(input$managelist1, {
       req(input$managelist1)
@@ -264,25 +269,27 @@ av_make_server <- function() {
     })
 
     observeEvent(input$capture_av_save, {
-      req(input$capture_av_save)
-      if("SaveNowOnOptUpdate" %in% input$capture_av_save) {
-        save_av_data(data.table(),"SaveNowOnOptUpdate")
-        updateSelectInput(session,"capture_av_save",selected=the_av$capture_av_save)
+      if(!(input$capture_av_save==the_av$capture_av_save)) {
+        if("SaveNowOnOptUpdate" %in% input$capture_av_save) {
+          save_av_data(data.table(),"SaveNowOnOptUpdate")
+          updateSelectInput(session,"capture_av_save",selected=the_av$capture_av_save)
+        }
       }
     })
 
     observeEvent(input$verbose, {
-      req(input$verbose)
-      av_set_defaults("verbose",input$verbose)
-      save_avs_state("all",msg="verbose")
+      if(!(input$verbose==the_av$verbose)) {
+        av_set_defaults("verbose",input$verbose)
+        save_avs_state("all",msg="verbose")
+      }
       })
 
     observeEvent(input$autocopy, {
-      req(input$autocopy)
-      av_set_defaults("autocopy",input$autocopy)
-      save_avs_state("all",msg="autocopy")
+      if(!(input$autocopy==the_av$autocopy)) {
+        av_set_defaults("autocopy",input$autocopy)
+        save_avs_state("all",msg="autocopy")
+      }
     })
-
 
     observeEvent(input$RUN, {
       rv <- isolate(reactiveValuesToList(input))
@@ -510,7 +517,8 @@ av_make_server <- function() {
       }
       if(anopt1=="EQ:News") {
         av_set_default_set("news",rv)
-        allnews <- rbindlist(lapply(eqlist1,\(x)
+        eqset <- symbol_grep_by_type(eqlist1,"Equity|ETF")
+        allnews <- rbindlist(lapply(eqset,\(x)
                     getNews(x,nArticles=input$nArticles,minabssent=input$minabssent,newsfilter=input$newsfilter,
                               newsagrep=input$newsgrep,maxage=input$maxagedays)))
         if(newssort=="sentiment") { allnews<- allnews[order(symbol,-sntmt)] }

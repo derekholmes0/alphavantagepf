@@ -228,6 +228,7 @@ form_symset <- function(tickers, force=FALSE, delay=0) {
   symnew_user <- data.table()
   if( length(newtickers)>0 ) {
     symnew_user <- data.table(symbol=newtickers,type="user",currency="USD",matchScore=1,list_ts=Sys.Date())
+    the_av$tickerlist <- DTUpsert(the_av$tickerlist,symnew_user[,.(symbol,name=symbol,type,list_ts)],c("symbol"))
   }
   # Collect all together
   symset <- rbindlist(list(symset,symnew_inferable,symnew_eq,symnew_user),fill=TRUE,use.names=TRUE)
