@@ -180,7 +180,7 @@ av_make_server <- function() {
         else {
           newassets <- data.table(ticker=s(instr))[,listnm:=tlist][]
           the_av$assetgroups <- DTUpsert(the_av$assetgroups,newassets,c("listnm"),replaceifbempty=the_av$assetgroups[!(listnm==tlist),])
-          save_avs_state("all")
+          save_avs_state("all",msg="saveassets")
           updateSelectizeInput(session,"list1", choices=sort(unique(the_av$assetgroups$listnm)))
           updateSelectizeInput(session,"list2", choices=sort(unique(the_av$assetgroups$listnm)))
           rtnmsg <-paste0("Asset set saved as ",tlist)
@@ -188,7 +188,7 @@ av_make_server <- function() {
       }
       if(todo=="get") {
         av_set_defaults(paste0("inpline",no),paste0( the_av$assetgroups[listnm==tlist,]$ticker,collapse=";") )
-        save_avs_state("all")
+        save_avs_state("all",msg="getassets")
         updateTextInput(session,paste0("istr",no), value= the_av[[paste0("inpline",no)]])
       }
       if(todo=="delete") {
@@ -196,7 +196,7 @@ av_make_server <- function() {
         updateSelectizeInput(session,"list1", choices=sort(unique(the_av$assetgroups$listnm)))
         updateSelectizeInput(session,"list2", choices=sort(unique(the_av$assetgroups$listnm)))
         rtnmsg <-paste0("Deleted Asset List: ",tlist)
-        save_avs_state("all")
+        save_avs_state("all",msg="deleteassets")
       }
       Sys.sleep(0.3)
       updateRadioButtons(session,paste0("managelist",no),selected=character(0))
@@ -272,12 +272,12 @@ av_make_server <- function() {
 
     observeEvent(input$verbose, {
       av_set_defaults("verbose",input$verbose)
-      save_avs_state("all")
+      save_avs_state("all",msg="verbose")
       })
 
     observeEvent(input$autocopy, {
       av_set_defaults("autocopy",input$autocopy)
-      save_avs_state("all")
+      save_avs_state("all",msg="autocopy")
     })
 
 
@@ -335,14 +335,14 @@ av_make_server <- function() {
         toplot <- get_one_ts(eqlist1,ts_rebase,datestring,dtstartfrac)
         avsh_clipboard(toplot,anopt1)
         out[["TS1"]] <- one_px_ts(toplot,rv,events=ts_events,dtstartfrac=dtstartfrac)
-        save_avs_state("px")
+        save_avs_state("px",msg="px1")
       }
       if(anopt2=="TS:PriceTS") {
         toplot <- lapply(eqlist2, \(x) manage_epx(x,datestring,addlive=input$useLive))
         quick_message("istr2",paste(toplot,collapse=""))
         toplot <- get_one_ts(eqlist2,ts_rebase,datestring,dtstartfrac)
         out[["TS2"]] <- one_px_ts(toplot,rv,events=ts_events,dtstartfrac=dtstartfrac)
-        save_avs_state("px")
+        save_avs_state("px",msg="px2")
       }
       if(anopt1=="TS:ActiveTS") {
         is_in_list <- s(istr2)[1] %in% the_av$pxinv$symbol
