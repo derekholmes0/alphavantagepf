@@ -134,8 +134,7 @@ save_avs_state <- function(todo="all",msg="") {
     save(list=unames,envir=the_av,file=the_av$constants_fn)
     shortmsg <- paste(shortmsg,"const")
   }
-  message_if_green(the_av$verbose,"Save State (",todo,") or (",shortmsg,") ",
-      fifelse(nchar(msg)>0," from ",msg,""), " at ",Sys.time())
+  message_if_green(the_av$verbose,"Save State (",todo,") or (",shortmsg,") from '",msg,"' at ",Sys.time())
 }
 
 # epx_get_avfn : Which function to call given type
@@ -358,7 +357,7 @@ save_av_data <- function(indta, in_av_fun) {
                       default=""
                       )
   if(nchar(skipreason)>0 & !(skipreason=="none")) {
-    message_if(the_av$verbose,"save_av_data(",in_av_fun,") : Skipping save data (",skipreason,")")
+    # debug>> message_if(the_av$verbose,"save_av_data(",in_av_fun,") : Skipping save data (",skipreason,")")
     return(indta)
   }
   # Special events

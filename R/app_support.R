@@ -4,6 +4,7 @@
 #' @noRd
 symbol_grep_by_type <- function(eqlist,grepstr="Equity", rtn="list") {
   symbol=NULL
+  if(nrow(the_av$pxinv)<=0) { return("NOPXINV")}
   if(is.null(eqlist)) { tickerset <- the_av$pxinv[,.(symbol,type,currency)] }
   else {
     tickerset <- the_av$pxinv[data.table(symbol=eqlist),on=.(symbol)][,.(symbol,type,currency)]

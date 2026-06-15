@@ -8,6 +8,7 @@
 #' @import FinanceGraphs
 
 source("./R/utilities.R")
+tver<-"0.7.7.51"
 
 # 1.8: News, ability to keep output from one run to the next
 # 1.6: Bug checks and check()
@@ -70,7 +71,7 @@ av_make_ui <- function() {
             column(width=2,radioButtons("managelist2","",choices=c("get","save","delete"),selected =character(0),width="60%",inline=TRUE))
           ),
           fluidRow(
-            tabsetPanel(id="inTabset", selected=the_av$starttab,
+            tabsetPanel(id="inTabset",selected=the_av$starttab,
                 tabPanel("MAIN", value="main",
                         gt_output(outputId = "t1gt"),
                         #splitLayout(gt_output(outputId = "t3l_gt"), gt_output(outputId = "t3r_gt"),cellWidths=c("60%","40%")),
@@ -83,7 +84,7 @@ av_make_ui <- function() {
                 ),
                 tabPanel("DETAIL", value="detail",gt_output(outputId = "det1gt"), gt_output(outputId = "det2gt"),
                                   imageOutput("plot1"), imageOutput("plot2")),
-                tabPanel("OPTIONS",
+                tabPanel("OPTIONS",value="options",
                     fluidRow(
                       column(width=2,span(textInput(inputId="ochains", label="Chains",value=the_av$ochains),style=avsd$labelcss)),
                       column(width=2,numericInput(inputId="mindelta", label="mindelta", value=5,min=0,max=100)),
@@ -97,7 +98,7 @@ av_make_ui <- function() {
                       imageOutput(outputId="optplot1")
                     )
                 ),
-                tabPanel("NEWS",
+                tabPanel("NEWS",value="news",
                     fluidRow(
                     column(width=2,
                        numericInput(inputId="nArticles", label="nArticles", value=the_av$nArticles,min=20,max=300),
@@ -114,7 +115,7 @@ av_make_ui <- function() {
                      )
                   )
                 ),
-                tabPanel("AVOPTS",
+                tabPanel("AVOPTS",value="avopts",
                   column(width=3,
                     actionButton("SetOpts","Set Opts",width='50%',class = "btn btn-primary"),
                     span(passwordInput(inputId="avapikey", label="av api key", value=the_av$avapikey),style=avsd$labelcss),
@@ -242,7 +243,7 @@ av_make_server <- function() {
       }
       # constants_fn always has to be in tmp directory: av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
       av_set_caching_directories()
-      av_set_defaults("starttab","usedefault")
+      av_set_defaults("starttab","main")
       av_set_default_set("setopts",rv)
       th1 <- th1[,.(nm,old=toget)][dump_the(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
       th1 <- th1[,.SD,.SDcols=s("classtype;nm;toget;format")]
@@ -271,11 +272,13 @@ av_make_server <- function() {
     })
 
     observeEvent(input$verbose, {
+      req(input$verbose)
       av_set_defaults("verbose",input$verbose)
       save_avs_state("all",msg="verbose")
       })
 
     observeEvent(input$autocopy, {
+      req(input$autocopy)
       av_set_defaults("autocopy",input$autocopy)
       save_avs_state("all",msg="autocopy")
     })
@@ -292,20 +295,19 @@ av_make_server <- function() {
       # Make variables out of captured input values
       lapply(names(rv),\(x) { assign(x,rv[[x]],envir=thisenv)})
       # Save plotting data and tab to select
-      av_set_defaults("starttab",avsd$deflist[runcode==anopt1,]$focus )
+      av_set_defaults("starttab",tolower(avsd$deflist[runcode==anopt1,]$focus) )
       av_set_default_set("onrun",rv,save="the")
       # Out gets destroyed on end of routine.  Need to keep it in the the environment.
-      message("H1 >>>>>>>>>>   AA input(",anopt1,"/",anopt2,") sid1(", istr1, ") sid2(", istr2, ") sz:",length(out))
+      message("avrs(",tver,") >>>> input(",anopt1,"/",anopt2,") sid1:", istr1, " sid2:", istr2, " szout:",length(out))
+      # Recreate old tabs
       if( nrow(savedgtnames <- dump_the()[classtype=="gt_tbl",])>0) {
         for(x in savedgtnames$nm) out[[x]]<- get(x,envir=the_av)
-        message_if_green(the_av$verbose,"Restoring previous items ",savedgtnames$nm)
       }
       lapply(s("istr1;istr2"),\(x) quick_message(x,""))
       eqlist1 <- s(istr1)
       eqlist2 <- s(istr2)
       avsh_set_tabtitle()
       seriesnm <- fifelse(rv$totrtn,"adjusted_close","close")
-      #restore_avs_state(nrow(the_av$pxinv)>1 || substr(anopt1,1,2)=="TS" || substr(anopt2,1,2)=="TS",msg="always")
       if(anopt1=="Gen:Inventory") {
         if(nrow(the_av$pxinv)<=0) {  quick_message("istr1","Create Data by running a Time Series Graph") }
         else {
@@ -316,17 +318,20 @@ av_make_server <- function() {
         }
       }
       if(anopt1=="Gen:LivePx") {
-        #message(" get live:  entitlement: ",  options("av_api_entitlement")$av_api_entitlement, " > ")
-        # Adding FX:  At this point, I'm almost done with this..
-        # Non FX
-        toplot <- av_get_pf(symbol_grep_by_type(NULL,"Equity|ETF"),"REALTIME_BULK_QUOTES",melted=FALSE)
-        if( length( fxsymbols <-symbol_grep_by_type(NULL,"FX") )>0 ) {
-          toplot_fx <- lapply(fxsymbols, \(x) av_get_pf(x,"CURRENCY_EXCHANGE_RATE",melted=FALSE) |> av_extract_fx(cols="symbol;timestamp;close") )
-          toplot <- rbindlist(list(toplot,rbindlist(toplot_fx)),use.names=TRUE,fill=TRUE)
+        toplot <- symbol_grep_by_type(NULL,"Equity|ETF")
+        if(toplot[[1]]=="NOPXINV") {
+          quick_message("istr1","Run some Price History first..")
         }
-        toplot <- data.table(symbol=eqlist1)[,inlist:=TRUE][toplot,on=.(symbol)][order(change_percent)]
-        avsh_clipboard(toplot,"liveprice")
-        out[["TABLE1GT"]]<- toplot |>  gt.avtheme(themeset="live")
+        else {
+          toplot <- av_get_pf(toplot,"REALTIME_BULK_QUOTES",melted=FALSE)
+          if( length( fxsymbols <-symbol_grep_by_type(NULL,"FX") )>0 ) {
+            toplot_fx <- lapply(fxsymbols, \(x) av_get_pf(x,"CURRENCY_EXCHANGE_RATE",melted=FALSE) |> av_extract_fx(cols="symbol;timestamp;close") )
+            toplot <- rbindlist(list(toplot,rbindlist(toplot_fx)),use.names=TRUE,fill=TRUE)
+          }
+          toplot <- data.table(symbol=eqlist1)[,inlist:=TRUE][toplot,on=.(symbol)][order(change_percent)]
+          avsh_clipboard(toplot,"liveprice")
+          out[["TABLE1GT"]]<- toplot |>  gt.avtheme(themeset="live")
+        }
         # Save latest to history, but how to ensure no gaps?
       }
       if(anopt1=="TS:PriceTS") {

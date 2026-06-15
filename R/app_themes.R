@@ -217,7 +217,7 @@ gt.avtheme<- function(x,themeset="",...) {
   if(themeset=="news") {
     ff1 <- function(x) { paste0('<a href="',x,'" target="_blank">LK</a>') }
     ff2 <- function(x) { paste0('<a href="#" onclick="window.open(\'', x, '\', \'_blank\'); return false;">','LK','</a>')   }
-    thisgt <- x |>
+    thisgt <- thisgt |>
       fmt_url(columns=url,label=icon("link"),color="blue") |>
       tab_style(locations=cells_body(columns=title),style=(size="x-small")) |>
       tab_header(title=paste0("News for ",ldots[[1]])) |> tab_footnote(paste("retrieved as of",Sys.time())) |>
