@@ -14,8 +14,6 @@ source("./R/utilities.R")
 # 1.45: APpearance changes: Plumbed list management out of options, but still need to code
 # 1.4: Passed Check, add new data
 # 1.3: Most of list done; check opts for invalid tickers
-# Save temp data, many parameters added to "the"
-#av_set_defaults("ochains","F,M,C,otm"); save_avs_state("the")
 
 av_make_ui <- function() {
   order1=order2=NULL
@@ -25,6 +23,7 @@ av_make_ui <- function() {
   runlist2 <- avsd$deflist[!is.na(order2)]$runcode
   av_ui<- fluidPage(
     shinyFeedback::useShinyFeedback(),
+    shinyjs::useShinyjs(),
      tags$head(
         tags$style(type='text/css',avsd$inputcss_side),
         tags$style(type='text/css',avsd$inputcss_top),
@@ -73,7 +72,7 @@ av_make_ui <- function() {
           ),
           fluidRow(
             tabsetPanel(id="inTabset",
-                tabPanel("MAIN",
+                tabPanel("MAIN", value="main",
                         gt_output(outputId = "t1gt"),
                         #splitLayout(gt_output(outputId = "t3l_gt"), gt_output(outputId = "t3r_gt"),cellWidths=c("60%","40%")),
                         fillPage(div(class = "no-gap-row",
@@ -83,7 +82,7 @@ av_make_ui <- function() {
                         dygraphOutput("view"),
                         dygraphOutput("view2")
                 ),
-                tabPanel("DETAIL", gt_output(outputId = "det1gt"), gt_output(outputId = "det2gt"),
+                tabPanel("DETAIL", value="detail",gt_output(outputId = "det1gt"), gt_output(outputId = "det2gt"),
                                   imageOutput("plot1"), imageOutput("plot2")),
                 tabPanel("OPTIONS",
                     fluidRow(
@@ -144,6 +143,7 @@ av_make_ui <- function() {
 }
 
 #' @importFrom stats cor
+#' @importFrom shinyjs runjs
 av_make_server <- function() {
 #  adjusted_close=anopt1=anopt2=catg=catprio=change_percentage=cummktrtn=cumrtn=datestring=dtstartfrac=EquityName=ETFName=NULL
 #  ts_events=istr1=istr2=list1=list2=listnm=mindelta=mktrtn=ncak=newssort=ochains=oscaling=otodisplay=NULL
@@ -153,13 +153,6 @@ av_make_server <- function() {
   out <- list()
   av_server<-function(input, output,session) {
     inlist=list_ts=NULL
-    quick_message <- function(wh,this_message,eval=TRUE) {
-      shinyFeedback::hideFeedback(inputId=wh)
-      if(nchar(this_message)>0 & eval==TRUE) {
-        this_message <- paste0("<small>",this_message,"</small>")
-        shinyFeedback::showFeedback(inputId=wh, text=this_message,color="#1f78b4")
-      }
-    }
     curr_assetgroups <- sort(unique(the_av$assetgroups$listnm))
     quick_message("ochains","[F(ront)|B(ack)],[M(onth)|Q(tr)],[C(all)|P(ut)],[itm|otm|all]")
     # On Startup download current index list if not there
@@ -243,8 +236,6 @@ av_make_server <- function() {
       th1<- dump_the()
       oldcache <- th1[nm=="cachedir",]$toget
       av_api_key(rv$avapikey,rv$avapientitlement)
-      u1<-lapply(s("cachedir;av_dump_dir;capture_av_what;capture_av_update;capture_av_save;ts_colorset;avapikey;avapientitlement"),
-                    \(x) av_set_defaults(x,rv[[x]]) )
       if(!(rv$cachedir==oldcache)) {
         message_if_red(TRUE,"Cache directory moved; cleaning up old price/inventory data")
         file.remove(paste0(oldcache,"/avpf_px.fst"))
@@ -253,9 +244,9 @@ av_make_server <- function() {
       # constants_fn always has to be in tmp directory: av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
       av_set_caching_directories()
       av_set_defaults("starttab","usedefault")
+      av_set_default_set("setopts",rv)
       th1 <- th1[,.(nm,old=toget)][dump_the(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
       th1 <- th1[,.SD,.SDcols=s("classtype;nm;toget;format")]
-      save_avs_state("all")
       output$dumpthe <- render_gt(expr=th1 |> gt() |> gt.basetheme() |> decorate_table())
     })
 
@@ -302,8 +293,7 @@ av_make_server <- function() {
       # Make variables out of captured input values
       lapply(names(rv),\(x) { assign(x,rv[[x]],envir=thisenv)})
       # Save plotting data
-      lapply(grepv("^ts",names(rv)), \(x) av_set_defaults(x,rv[[x]]))
-      save_avs_state("the")
+      av_set_default_set("onrun",rv,save="the")
       # Out gets destroyed on end of routine.  Need to keep it in the the environment.
       message("H1 >>>>>>>>>>   AA input(",anopt1,"/",anopt2,") sid1(", istr1, ") sid2(", istr2, ") sz:",length(out))
       if( nrow(savedgtnames <- dump_the()[classtype=="gt_tbl",])>0) {
@@ -313,14 +303,16 @@ av_make_server <- function() {
       lapply(s("istr1;istr2"),\(x) quick_message(x,""))
       eqlist1 <- s(istr1)
       eqlist2 <- s(istr2)
+      avsh_set_tabtitle()
       seriesnm <- fifelse(rv$totrtn,"adjusted_close","close")
       #restore_avs_state(nrow(the_av$pxinv)>1 || substr(anopt1,1,2)=="TS" || substr(anopt2,1,2)=="TS",msg="always")
       if(anopt1=="Gen:Inventory") {
         if(nrow(the_av$pxinv)<=0) {  quick_message("istr1","Create Data by running a Time Series Graph") }
         else {
-          out[["TABLE4GT"]]<- dump_assetgroups(returngt=TRUE) |>  gt.avtheme(themeset="assetgroups")
           out[["TABLE3GT"]]<- the_av$pxinv[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv")
-          out[["DET1GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
+          out[["DET1GT"]]<- dump_assetgroups(returngt=TRUE) |>  gt.avtheme(themeset="assetgroups")
+          out[["DET2GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
+          avsh_set_tabtitle("AssetList")
         }
       }
       if(anopt1=="Gen:LivePx") {
@@ -439,7 +431,7 @@ av_make_server <- function() {
             holdsetcn <- data.table(nm=colnames(holdset)[-1])[,let(i=.I+1,symbol=s(nm,"_")[2]),by=.I][order(symbol,nm)]
             setcolorder(holdset, c(1,holdsetcn$i))
             out[["DET1GT"]] <- holdset |> gt.avtheme(themeset="etfholdings")
-            quick_message("istr1","ETF holdings in DETAILS tab")
+            avsh_set_tabtitle("ETF Holdings")
           }
         }
       }
@@ -456,6 +448,7 @@ av_make_server <- function() {
           xout <- xout[,title:=fcase(grepl("Chief Executive|CEO",title),"CEO",grepl("Chief Financial|CFO",title),"CFO",grepl("Investor Relations",title),"InvRel",default=title)]
           xout <- xout |> gt.avtheme(themeset="earningstranscript",paste0(alleqs[[1]]," ",lastqtr))
           out[["DET1GT"]]<- xout
+          avsh_set_tabtitle("Transcript")
         }
         alldivs <- rbindlist(lapply(eqlist1, \(x) oneticker_divs(x,datestring)),fill=TRUE,use.names=TRUE)
         out[["TABLE2GT"]]<- alldivs |> gt.avtheme(themeset="dividends")
@@ -511,8 +504,7 @@ av_make_server <- function() {
         }
       }
       if(anopt1=="EQ:News") {
-        u1<-lapply(s("newsgrep;minabssent;maxagedays;nArticles"),\(x) av_set_defaults(x,rv[[x]]))
-        save_avs_state("all")
+        av_set_default_set("news",rv)
         allnews <- rbindlist(lapply(eqlist1,\(x)
                     getNews(x,nArticles=input$nArticles,minabssent=input$minabssent,newsfilter=input$newsfilter,
                               newsagrep=input$newsgrep,maxage=input$maxagedays)))

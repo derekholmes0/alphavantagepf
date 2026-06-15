@@ -97,7 +97,6 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dtstart
     "lastlabel" %in% rv$gropts, "last,line",
     "last" %in% rv$gropts, "last,linevalue",
     default = "")
-  #avsh_clipboard(fgdt,title)
   xstepcols = data.table(symbol=unique(fgdt$variable))[the_av$pxinv,on=.(symbol)][fcoalesce(as.numeric(medgap),1)>4,]
   if(nrow(xstepcols)>0) { stepcols=xstepcols$symbol } else { stepcols<- FALSE }
   outdyg <- fgts_dygraph(fgdt,title=title,events=events, dtstartfrac=dtstartfrac/100,
@@ -130,9 +129,21 @@ getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),newsagrep="",max
   }
   news1<-news1[abs(overall_sentiment_score)>=fifelse("useMinSentiment" %in% newsfilter,minabssent,0),]
   news1<-news1[age<=fifelse("maxDays" %in% newsfilter, maxage,+Inf),]
-  #news1<-news1[,url:=paste0('<a href="', url, '" target="_blank">', "<<", '</a>')]
   return(news1[,.(symbol=x,age,time_published,sntmt=overall_sentiment_score,source,title,url)])
 }
+
+# ------------------ SHiny Specific
+
+#' @noRd
+quick_message <- function(wh,this_message,eval=TRUE) {
+  shinyFeedback::hideFeedback(inputId=wh)
+  if(nchar(this_message)>0 & eval==TRUE) {
+    this_message <- paste0("<small>",this_message,"</small>")
+    shinyFeedback::showFeedback(inputId=wh, text=this_message,color="#1f78b4")
+  }
+}
+
+
 
 #' @noRd
 #' @import clipr
@@ -140,6 +151,15 @@ avsh_clipboard <- function(x,title="") {
   if(the_av$autocopy) {
     write_clip(as.data.frame(x))
     message_if_green(the_av$verbose,"to Clipboard: ",title," w/ ",nrow(x)," rows")
+    quick_message("anopt1","Data copied to Clipboad")
   }
 }
+
+#' @noRd
+#' @importFrom shinyjs runjs
+avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail") {
+  shpf <- sprintf('$(\'#inTabset li a[data-value="%s"]\').text("%s");',tabnm,newtext)
+  shinyjs::runjs(shpf)
+  }
+
 

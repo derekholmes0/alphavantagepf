@@ -54,6 +54,13 @@ av_set_defaults <- function(optnm=NULL,optval=NULL,savetoconstants=FALSE) {
   }
 }
 
+av_set_default_set <- function(setset,rv,save="all") {
+  persistset=NULL
+  toset <- avsd$defaults[persistset==setset,]$var
+  lapply(toset, \(x) av_set_defaults(x,rv[[x]]))
+  save_avs_state(save)
+}
+
 av_set_caching_directories <- function() {
   vartype=NULL
   toset <- avsd$defaults[vartype=="cache",]

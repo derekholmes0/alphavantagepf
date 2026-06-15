@@ -93,9 +93,7 @@ av_grep_opts<-function(indta, grepstring="F,M,C,otm",spot=NULL,mindays=3,startdt
 av_opt_helper_cols<-function(indta, scaling=NULL, spot=NULL) {
   mark=strike=ask=bid=implied_volatility=bid_size=open_interest=ncak=NULL
   if( !("spot" %in% colnames(indta))) {
-      message("spot before: ",spot)
       spot <- spot %||% indta[type=="call",][,.SD[1]][,.(spot=mark+strike)]$spot %||% indta[type=="put",][,.SD[.N]][,.(spot=strike-mark)]$spot
-      message("spot after: ",spot)
   }
   indta <- indta[,let(daysExp=as.integer(expiration-date),bo_pct=200*(ask-bid)/(ask+bid),IV=100*implied_volatility,
                       bid_size_poi=100*bid_size/fcoalesce(open_interest,1L), ask_size_poi=100*bid_size/fcoalesce(open_interest,1L),
