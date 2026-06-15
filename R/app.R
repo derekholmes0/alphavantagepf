@@ -71,7 +71,7 @@ av_make_ui <- function() {
             column(width=2,radioButtons("managelist2","",choices=c("get","save","delete"),selected =character(0),width="60%",inline=TRUE))
           ),
           fluidRow(
-            tabsetPanel(id="inTabset",
+            tabsetPanel(id="inTabset", selected=the_av$starttab,
                 tabPanel("MAIN", value="main",
                         gt_output(outputId = "t1gt"),
                         #splitLayout(gt_output(outputId = "t3l_gt"), gt_output(outputId = "t3r_gt"),cellWidths=c("60%","40%")),
@@ -292,7 +292,8 @@ av_make_server <- function() {
       }
       # Make variables out of captured input values
       lapply(names(rv),\(x) { assign(x,rv[[x]],envir=thisenv)})
-      # Save plotting data
+      # Save plotting data and tab to select
+      av_set_defaults("starttab",avsd$deflist[runcode==anopt1,]$focus )
       av_set_default_set("onrun",rv,save="the")
       # Out gets destroyed on end of routine.  Need to keep it in the the environment.
       message("H1 >>>>>>>>>>   AA input(",anopt1,"/",anopt2,") sid1(", istr1, ") sid2(", istr2, ") sz:",length(out))
@@ -535,8 +536,7 @@ av_make_server <- function() {
     output$plot2 <- renderPlot({ out[["SCAT2"]] })
     output$optplot1<- renderPlot({ out[["SCAT1"]] })
     output$msg <- renderPrint({  print(out[["MSG"]]) })
-    starttab <- fifelse(the_av$starttab %in% unique(avsd$deflist$focus), the_av$starttab, avsd$deflist[runcode==anopt1,]$focus )
-    updateTabsetPanel(session,"inTabset",selected=starttab)
+    updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
    }) # obsARUnn
   } # Server
   return(av_server)
