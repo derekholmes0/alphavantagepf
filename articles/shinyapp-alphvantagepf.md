@@ -303,7 +303,7 @@ actual Fed Meetings.
 
 Planned improvements currently include
 
-- Earnings and dividends incorporated into plots including E/P analysis.
+- Earnings and dividends incorporated into plots
 - Ability to plug in user-defined functions which have access to the
   internal data store.
 - Correlation and hedging analyses.
