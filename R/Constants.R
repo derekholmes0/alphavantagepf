@@ -19,20 +19,17 @@ av_reset_defaults <- function(fileopts=TRUE) {
     newd <- dir.create(the_av$defaultcachedir)
     message("Creating ",the_av$constants_fn)
   }
-  # Must be decorated
-  the_av$pxd_fn <- paste0( the_av$cachedir, "/avpf_px.fst")
-  the_av$inv_fn <- paste0( the_av$cachedir, "/avpf_inv.RD")
-  # Data Tables
-  the_av$assetgroups <- data.table(listnm=rep("defaultIdx",2),ticker=c("SPY","QQQ"))
-  lapply(s("pxd;pxinv;tickerlist;table_aes"), \(x) assign(x, data.table(), envir=the_av))
-  # all else from defaults
   for(i in seq(1,nrow(avsd$defaults))) {
     ivartype <- avsd$defaults[i,]$vartype
     ivarnm <- avsd$defaults[i,]$var
-    if( ivartype=="cache" ) { ivarval <- paste0(the_av$cachedir,"/", avsd$defaults[i,get("value_str")]) }
-    else { ivarval <- avsd$defaults[i,get(paste0("value_",ivartype))] }
-    assign(ivarnm, ivarval, envir=the_av)
+    if(!(ivarnm=="cachedir")) {
+      if( ivartype=="cache" ) { ivarval <- paste0(the_av$cachedir,"/", avsd$defaults[i,get("value_str")]) }
+      else { ivarval <- avsd$defaults[i,get(paste0("value_",ivartype))] }
+      assign(ivarnm, ivarval, envir=the_av)
+    }
   }
+  the_av$assetgroups <- data.table(listnm=rep("defaultIdx",2),ticker=c("SPY","QQQ"))
+  lapply(s("pxd;pxinv;tickerlist;table_aes"), \(x) assign(x, data.table(), envir=the_av))
   message_if_red(TRUE,"Filling in app defaults")
   if(fileopts==TRUE) {
     file.remove(the_av$constants_fn)

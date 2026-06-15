@@ -460,7 +460,7 @@ dump_the <- function(typegrep="*") {
       if("list" %in% type) {
         toget<-paste0("<<list>> with ",length(toget), " items")
       }
-      outdump<-rbindlist(list(outdump,data.table(nm=x,classtype=type[1], toget=toget)),ignore.attr=TRUE)
+      outdump<-rbindlist(list(outdump,data.table(nm=x,classtype=type[1], toget=toget)),ignore.attr=TRUE,fill=TRUE)
     }
   }
   # Comment out after creating vignettes
