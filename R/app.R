@@ -8,7 +8,7 @@
 #' @import FinanceGraphs
 
 source("./R/utilities.R")
-tver<-"0.7.72.1"
+tver<-"0.7.74.1"
 
 # 1.8: News, ability to keep output from one run to the next
 # 1.6: Bug checks and check()
