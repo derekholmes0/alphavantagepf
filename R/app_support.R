@@ -18,6 +18,20 @@ symbol_grep_by_type <- function(eqlist,grepstr="Equity", rtn="list") {
   }
 }
 
+data_from_list <-function(inlist,datestring,doaddlive,ts_rebase,dtstartfrac,msg_inputID="istr1") {
+    toplot <- lapply(inlist, \(x) manage_epx(x,datestring,addlive=doaddlive))
+    if(any(badtickers <- sapply(toplot,is.null))) {
+      quick_message(msg_inputID,"Invalid tickers:", inlist[badtickers])
+      return(data.table())
+    }
+    else {
+      quick_message(msg_inputID,"Data retrived:", paste0(inlist,collapse=" "))
+      toplot <- get_one_ts(inlist,ts_rebase,datestring,dtstartfrac)
+      avsh_clipboard(toplot[[1]],"px")
+      return(toplot)
+    }
+}
+
 get_one_ts <- function(assets,rebase,datestring,dtstartfrac) {
   symbol=NULL
   toplot <- the_av$pxd[data.table(symbol=assets),on=.(symbol)] |> narrowbydtstr(datestring)
@@ -29,7 +43,6 @@ get_one_ts <- function(assets,rebase,datestring,dtstartfrac) {
 }
 
 # Earnings Data
-
 oneticker_earns <- function(thisticker,fwddts,datestring) {
   symbol=horizon=eps_estimate_average=eps_estimate_high=eps_estimate_low=eps_estimate_average_30_days_ago=NULL
   eps_estimate_analyst_count=eps_estimate_average_90_days_ago=reportTime=fiscalDateEnding=EPpct=estimatedEPS=NULL
@@ -152,7 +165,7 @@ avsh_clipboard <- function(x,title="") {
   if(the_av$autocopy) {
     write_clip(as.data.frame(x))
     message_if_green(the_av$verbose,"to Clipboard: ",title," w/ ",nrow(x)," rows")
-    quick_message("anopt1","Data copied to Clipboad")
+    quick_message("istr1","Data copied to Clipboad")
   }
 }
 

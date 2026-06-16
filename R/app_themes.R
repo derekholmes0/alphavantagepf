@@ -175,7 +175,7 @@ gt.avtheme<- function(x,themeset="",...) {
   }
   # Gen:NameSearch ============================================================= Gen:NameSearch
   if(themeset=="namesearch") {
-    thisgt <- x |> gt.basetheme() |> fmt_percent(columns=matchScore,decimals=1)  |>
+    thisgt <- thisgt |> gt.basetheme() |> fmt_percent(columns=matchScore,decimals=1)  |>
               decorate_table() |> tab_header(title=paste0("Search for ",ldots[[1]]))
     if(ntable_len>40) {
       thisgt <- thisgt |> opt_interactive(use_search=TRUE,use_resizers=TRUE, page_size_default=70,use_compact_mode=TRUE)

@@ -1,10 +1,10 @@
 Package: alphavantagepf
 Title: Comprehensive R Wrapper and Shiny Interface for 'Alphavantage Financial Data' API
-Version: 0.7.742
+Version: 0.7.743
 Authors@R: c(
     person("Derek", "Holmes", email = "derek@derekholmes.com", role = c("aut", "cre", "cph"))
     )
-Description: Download, manage, and visualize 'Alphavantage financial data' <https://www.alphavantage.co/documentation/> to reduced 'data.table' objects. API interface Includes support functions to extract and simplify returned complex data.  A Shiny application is also provided to download, manage, and graph asset prices and characteristics.
+Description: Download, manage, and visualize 'Alphavantage financial data' <https://www.alphavantage.co/documentation/>. Data is downloaded and organized into `data.table` objects using a single calling function with optional helper functions to extract and simplify more complex data.   A Shiny interface is also provided to download, manage, and graph asset prices and characteristics.
 License: GPL (>= 3)
 Encoding: UTF-8
 Depends: 
