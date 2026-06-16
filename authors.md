@@ -11,12 +11,12 @@ Source:
 
 Holmes D (2026). *alphavantagepf: Comprehensive R Wrapper and Shiny
 Interface for 'Alphavantage Financial Data' API*. R package version
-0.7.742, <https://github.com/derekholmes0/alphavantagepf>.
+0.7.743, <https://github.com/derekholmes0/alphavantagepf>.
 
     @Manual{,
       title = {alphavantagepf: Comprehensive R Wrapper and Shiny Interface for 'Alphavantage Financial Data' API},
       author = {Derek Holmes},
       year = {2026},
-      note = {R package version 0.7.742},
+      note = {R package version 0.7.743},
       url = {https://github.com/derekholmes0/alphavantagepf},
     }

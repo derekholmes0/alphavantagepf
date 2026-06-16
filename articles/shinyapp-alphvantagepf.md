@@ -129,7 +129,7 @@ window. (In the the example above, the rebase would occur at the first
 point plotted 2 years prior to today). If Rebasing is set to the focus
 point, the rebasing occurs at that point set by the slider.
 
-An alternative to rebasing is to plot the first asset on it’s own axis,
+An alternative to rebasing is to plot the first asset on its own axis,
 which can be done by selecting `"splitts"` in the `"TSGraphOpts"` box.
 Other options that can be selected in that box are
 
@@ -137,15 +137,21 @@ Other options that can be selected in that box are
 - Adding Labels showing the last value or series title
 - Adding hi-low shading, if the data is available.
 - Changing the line colors (via the `"fgts colorset"` setting in the
-  `"AVOPTS"` tab.)
+  AVOPTS tab.)
 
 Event codes can also be specified in the `"events"` box. See
 [fg_get_dates_of_interest()](https://derekholmes0.github.io/FinanceGraphs/reference/fg_get_dates_of_interest.html)
 and [Dygraphs
 vignette](https://derekholmes0.github.io/FinanceGraphs/articles/Time-Series-dygraph.html)
-These can be single day events or highlighted ranges of dates. Also,
-time series that do not appear to be daily will be plotted with step
-functions.
+These can be single day events or highlighted ranges of dates. (An
+example is below.)
+
+Time series graphs are harder to interpret when muitple time series
+frequencies or missing data is plotted together.  
+When time series do not appear to be daily, they will be plotted with
+step functions. When data is missing (as would be the case when plotting
+equities with assets such as FX or Crypto that trade over weekends),
+gaps in the time series will be evident.
 
 ### Analyses that can be run
 
@@ -198,7 +204,14 @@ more than one tickers in Line 2, only the first is used.) Select
 typically from the cache, but augmented with most recent (live) data and
 produce the following output:
 
-![](img/activets.jpg)
+![](img/activets.jpg) Here is another example which highlights both the
+comprehensive abilities to combine assets in the app with graphing
+abilities. Suppose we wish to plot the fair value history of the crypto
+ETF `IBIT`, and add some visual indication of overall market direction.
+Using the `TS:ActiveTS` analysis with `IBIT` on line 1, `BTC/USD` on
+line 2, and `doi:regm` in Events, we would see
+
+![](img/ibit_fv.jpg)
 
 ## Option Search
 
@@ -243,7 +256,7 @@ retrieval is also kept.
     ABBNY 2001-04-06  7.37  7.37  7.27  7.29           7.29          0             0.433 2026-05-31 08:06:48      16.8
     ABBNY 2001-04-09  7.32  7.50  7.32  7.50           7.50          0             0.433 2026-05-31 08:06:48      17.3
 
-### WAdding data and integrating different asset classes.
+### Adding data and integrating different asset classes.
 
 The data can also be added to externally using the \[av_add_data()\]
 function. Any time series can be added, but not all time series can be
