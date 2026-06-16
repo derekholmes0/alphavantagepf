@@ -164,13 +164,13 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
         content <- httr::content(response, as = "text", encoding = "UTF-8")
         content_list <- content |> jsonlite::fromJSON()
         if ("Error Message" %in% names(content_list)) {
-            message("av_get_pf:", content_list[[1]])
+            message_if_red(TRUE,"av_get_pf:", content_list[[1]])
             return(data.frame())
         }
         # Detect good/bad call
         if (length(content_list)>0) {
           if(content_list[1] |> names() == "meta_data") {  # Good call with Metadata returned
-                message(" av_get_pf: Reurning raw output; send to appropriate helper ---------------------------- ")
+                message_if_green(the_av$verbose %||% FALSE," av_get_pf: Reurning raw output; send to appropriate helper ---------------------------- ")
                 return(content_list)
             }
             else {  # Mixed results, process as best as possible
@@ -198,7 +198,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
             params <- paste(names(params_list), params_list, sep = "=", collapse = ", ")
             params <- gsub("av_fun","function",params)
             content <- content  |> paste(". API parameters used: ", params)
-            message("av_get_pf Error: ", content)
+            message_if_red(TRUE,"av_get_pf Error: ", content)
             return(data.table::data.table())
         }
     }
@@ -287,7 +287,7 @@ av_form_param_url<- function(this_av_fn,dots,t_entitlement=NA_character_) {
     pset <- pset[nchar(value)>0,]
     missing_required = pset[get("ro")=="R" & is.na(value),] # get marginally faster
     if(nrow(missing_required)>0) {
-        message("av_form_param_url: ERROR ",this_av_fn," missing required parameters: ", paste0(missing_required$paramname,collapse=", "))
+        message_if_red(TRUE,"av_form_param_url: ERROR ",this_av_fn," missing required parameters: ", paste0(missing_required$paramname,collapse=", "))
         return(NULL)
     }
     url_list <- pset[!is.na(get("value")),]

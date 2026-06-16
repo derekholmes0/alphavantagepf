@@ -11,8 +11,8 @@
 #' @details
 #' Invocation starts Shiny application.  See vignette for full details.
 #' **On first use**, click on `AVOPTS` tab, fill in the following fields, and  hit the "Set Opts" button.
-#' * ++AV API Key++: API key obtained from  [Alpha Vantage](https://www.alphavantage.co/documentation/)
-#' * ++Entitlement++ Entitlement status (either `delayed` or `realtime`)
+#' * **AV API Key**: API key obtained from  [Alpha Vantage](https://www.alphavantage.co/documentation/)
+#' * **Entitlement** Entitlement status (either `delayed` or `realtime`)
 #' Other options that can be set are given below.
 #'
 #' **To run analysis**, Enter a semicolon delimited set of securities (e.g. `SPY;QQQ;DIA`), select a runtime option from
@@ -29,7 +29,7 @@
 #' |`DivEarn`|Dividends, earnings, and earnings estimates for tickers in top row.|
 #' |`OptSearch`|Search for options for tickers in top row. (`OPTS` tab)|
 #'
-#' ** Options that can be set**. click on `AVOPTS` tab, fill in the following fields, and  hit the "Set Opts" button.
+#' **Options that can be set**. click on `AVOPTS` tab, fill in the following fields, and  hit the "Set Opts" button.
 #'
 #' * __fgts colorset__: A named list of colors which can be set using the  [FinanceGraphs::fg_update_aes()] function.
 #' * __Regr Significance__: p-level to highlight significant regressions. (Used in the `HistVolTS` function above.)
@@ -48,12 +48,10 @@
 #'  - `CleanOnStart` : cleans out the cache file every time the app is started.
 #'  - `SaveEveryAVCall` : Saves cache file after every call.
 #'  - `SaveNow` : Save cache file when this is selected.
-#'
 #' @examples
 #' \dontrun{
 #' av_runShiny()
 #' }
-#'
 #' @rdname av_runShiny
 #' @export
 av_runShiny <- function() {
@@ -67,5 +65,6 @@ av_runShiny <- function() {
     restore_avs_state("init") # Fills in avsd defaults
     save_avs_state("all",msg="I N I T")
   }
+  av_set_defaults("dbglvl",0)
   shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1400,height=800,"launch.browser"))
 }

@@ -21,13 +21,10 @@ compare sets of assets easily.
 ## Installation
 
 You can install the development version of alphavantagepf from Github,
-or the production version from CRAN. To
+or the production version from CRAN using
 
-``` r
-# install.packages("pak")
-#pak::pak("derekholmes0/alphavantagepf")
-install.packages("alphavantagepf")
-```
+    #pak::pak("derekholmes0/alphavantagepf")
+    install.packages("alphavantagepf")
 
 Load the package.
 
@@ -141,7 +138,7 @@ datatype                                     csv
    2:    IBM 2026-01-05 303.7
 ```
 
-## More complex data and helpful data extractors.
+## More complex data and helpful data extractors
 
 ### Extracting embedded data.frames
 
@@ -294,9 +291,13 @@ graph, and press
 <span style="background-color: #003366; color: #FFFFFF;">RUN</span>. The
 result will be as below.
 
-<img src="./vignettes/img/av_shiny_1.jpg" alt="" width="100%" />
+<figure>
+<img src="man/figures/av_shiny_1.jpg" alt="ShinyPic" />
+<figcaption aria-hidden="true">ShinyPic</figcaption>
+</figure>
 
-When `TS:PriceTS` is run, `av_runShiny()` will
+The analytics all follow the same outline. For example, when
+`TS:PriceTS` is run, `av_runShiny()` will
 
 1.  Call
     [av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html)

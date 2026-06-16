@@ -10,9 +10,10 @@
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Comprehensive R Wrapper and Shiny Interface for Alphavantage Financial Data API">
-<meta name="description" content="Download, manage, and visualize Alphavantage financial data &lt;https://www.alphavantage.co/documentation/&gt; to reduced data.table objects. API interface Includes support functions to extract and simplify returned complex data. A Shiny application is also provided to download, manage, and graph asset prices and characteristics.">
-<meta property="og:description" content="Download, manage, and visualize Alphavantage financial data &lt;https://www.alphavantage.co/documentation/&gt; to reduced data.table objects. API interface Includes support functions to extract and simplify returned complex data. A Shiny application is also provided to download, manage, and graph asset prices and characteristics.">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
+<meta property="og:title" content="Comprehensive R Wrapper and Shiny Interface for Alphavantage Financial Data API">
+<meta name="description" content="Download, manage, and visualize via Shiny App Alphavantage financial data &lt;https://www.alphavantage.co/documentation/&gt;. Data is downloaded and organized into `data.table` objects using a single calling function with optional helper functions to extract and simplify more complex data. A Shiny interface is also provided to download, manage, and graph asset prices and characteristics.">
+<meta property="og:description" content="Download, manage, and visualize via Shiny App Alphavantage financial data &lt;https://www.alphavantage.co/documentation/&gt;. Data is downloaded and organized into `data.table` objects using a single calling function with optional helper functions to extract and simplify more complex data. A Shiny interface is also provided to download, manage, and graph asset prices and characteristics.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.75</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,7 +55,8 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="alphavantagepf">alphavantagepf<a class="anchor" aria-label="anchor" href="#alphavantagepf"></a>
+<div class="page-header"><h1 id="alphavantagepf">
+<a href="https://derekholmes0.github.io/alphavantagepf/index.html">alphavantagepf</a><a class="anchor" aria-label="anchor" href="#alphavantagepf"></a>
 </h1></div>
 <!-- badges: start -->
 <!-- badges: end -->
@@ -63,11 +65,9 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the development version of alphavantagepf from Github, or the production version from CRAN. To</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
-<span><span class="co">#pak::pak("derekholmes0/alphavantagepf")</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"alphavantagepf"</span><span class="op">)</span></span></code></pre></div>
+<p>You can install the development version of alphavantagepf from Github, or the production version from CRAN using</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co">#pak::pak("derekholmes0/alphavantagepf")</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"alphavantagepf"</span>)</span></code></pre></div>
 <p>Load the package.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/derekholmes0/alphavantagepf" class="external-link">alphavantagepf</a></span><span class="op">)</span></span></code></pre></div>
@@ -142,7 +142,7 @@
 </div>
 </div>
 <div class="section level2">
-<h2 id="more-complex-data-and-helpful-data-extractors">More complex data and helpful data extractors.<a class="anchor" aria-label="anchor" href="#more-complex-data-and-helpful-data-extractors"></a>
+<h2 id="more-complex-data-and-helpful-data-extractors">More complex data and helpful data extractors<a class="anchor" aria-label="anchor" href="#more-complex-data-and-helpful-data-extractors"></a>
 </h2>
 <div class="section level3">
 <h3 id="extracting-embedded-dataframes">Extracting embedded data.frames<a class="anchor" aria-label="anchor" href="#extracting-embedded-dataframes"></a>
@@ -239,8 +239,9 @@
 <h1 id="shiny-interface">Shiny interface<a class="anchor" aria-label="anchor" href="#shiny-interface"></a>
 </h1>
 <p>A Shiny interface is included in the package to manage and visualize data. To launch the app, use <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_runShiny.html" class="external-link">av_runShiny()</a>, and start with the first step of setting your API key. (See <a href="https://derekholmes0.github.io/alphvantagepf/articles/shinyapp-alphvantagepf.html" class="external-link">Vignette</a> for other items you can set) Once the API key is set, type in a set of symbols you ae interested in (separated by semicolons) and select an analysis to make. For example, to show a normalized total return chart for 3 common ETS, select “start” to rebase at the start of the requested period (<code>"-2y::"</code>in datestring) select <code>TS:PriceTS</code> to get a time series graph, and press <span style="background-color: #003366; color: #FFFFFF;">RUN</span>. The result will be as below.</p>
-<p><img src="./articles/img/av_shiny_1.jpg" alt="" width="100%"></p>
-<p>When <code>TS:PriceTS</code> is run, <code><a href="reference/av_runShiny.html">av_runShiny()</a></code> will</p>
+<figure><img src="reference/figures/av_shiny_1.jpg" alt="ShinyPic"><figcaption aria-hidden="true">
+ShinyPic
+</figcaption></figure><p>The analytics all follow the same outline. For example, when <code>TS:PriceTS</code> is run, <code><a href="reference/av_runShiny.html">av_runShiny()</a></code> will</p>
 <ol style="list-style-type: decimal">
 <li>Call <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html" class="external-link">av_get_pf()</a> with parameters appropriate to the asset (e.g. <code>TIME_SERIES_DAILY</code> for stocks, <code>FX_DAILY</code> for FX),</li>
 <li>

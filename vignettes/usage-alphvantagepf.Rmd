@@ -31,7 +31,7 @@ av_api_key("YOUR_API_KEY")
 print(av_api_key())
 ```
 
-## Finding Functions and their defaults""
+## Finding Functions and their defaults
 
 To find parameters and defaults provided by the `alphavantagepf` package, use `av_funhelp()`
 

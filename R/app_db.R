@@ -134,7 +134,7 @@ save_avs_state <- function(todo="all",msg="") {
     save(list=unames,envir=the_av,file=the_av$constants_fn)
     shortmsg <- paste(shortmsg,"const")
   }
-  message_if_green(the_av$verbose,"Save State (",todo,") or (",shortmsg,") from '",msg,"' at ",Sys.time())
+  message_if_green(the_av$verbose & the_av$dbglvl>=1,"Save State (",todo,") or (",shortmsg,") from '",msg,"' at ",Sys.time())
 }
 
 # epx_get_avfn : Which function to call given type
@@ -161,12 +161,12 @@ epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
     tortn <- inquote[,.(symbol,timestamp,open,high,low,close,adjusted_close=close,volume=0,dividend_amount=0,split_coefficient=1)]
   }
   else if(live==TRUE & (intype=="Equity" | intype=="ETF")) {
-    tortn <- inquote[,.(symbol,timestamp=latestDay,open,high,low,close,adjusted_close=close,volume,dividend_amount=0,split_coefficient=1)]
+    tortn <- inquote[,.(symbol,timestamp=latestDay,open,high,low,close=price,adjusted_close=price,volume,dividend_amount=0,split_coefficient=1)]
   }
-  else if(live==TRUE & (intype=="Index")) {
+  else if(live==TRUE & (intype=="Index" | intype=="user")) {
     tortn <- data.table()
   }
-  else if(live==TRUE & (intype=="FX")) {
+  else if(live==TRUE & (intype=="FX" | intype=="Crypto")) {
     tortn <- inquote[,.SD[.N]][,.(symbol,timestamp=as.Date(timestamp),open,high,low,close,adjusted_close=close)]
   }
   else {
@@ -216,14 +216,14 @@ form_symset <- function(tickers, force=FALSE, delay=0) {
   symnew_eq <- rbindlist(lapply(newtickers, \(x) {
     z1=av_get_pf("","SYMBOL_SEARCH",keywords=x,delay=delay)
     if(nrow(z1)<=0) {
-      message_if_red(TRUE,"Alphavantage cannot find  ",x,": May be a user data series")
-      return(data.table())
+      #message_if_red(TRUE,"Alphavantage cannot find  ",x,": May be a user data series")
+      return(data.table(symbol=x,matchScore=0))
     }
     else {
       return(z1[matchScore>=0.99,.(symbol=x,type,currency,name,matchScore,list_ts=Sys.Date())])
     }
   }))
-  newtickers=setdiff(newtickers,symnew_eq$symbol)
+  newtickers=setdiff(newtickers,symnew_eq[matchScore<0.5,]$symbol)
   # -----------------------------------------Un Downloadable assets/ User Data
   symnew_user <- data.table()
   if( length(newtickers)>0 ) {
@@ -231,7 +231,7 @@ form_symset <- function(tickers, force=FALSE, delay=0) {
     the_av$tickerlist <- DTUpsert(the_av$tickerlist,symnew_user[,.(symbol,name=symbol,type,list_ts)],c("symbol"))
   }
   # Collect all together
-  symset <- rbindlist(list(symset,symnew_inferable,symnew_eq,symnew_user),fill=TRUE,use.names=TRUE)
+  symset <- rbindlist(list(symset,symnew_inferable,symnew_eq[matchScore>=0.5,],symnew_user),fill=TRUE,use.names=TRUE)
   return(symset[])
 }
 
@@ -263,6 +263,7 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=
   else {
     if(is.data.table(substitute_data)) {
       dta <- data.table::copy(substitute_data)
+      if("low" %notin% colnames(dta)) {   dta <- dta[,let(open=close,high=close,low=close)]  }
       src <- "Added"
       tickers <- unique(substitute_data$symbol)
       if(is.data.table(substitute_symset)) {
@@ -277,10 +278,15 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=
     }
     else { # DOwnloadable, but one at a time
       symset <- form_symset(inticker,force=force)[,let(loadts=Sys.time())]
+      if(nrow(symset)<=0) {
+          message_if_red(the_av$verbose,"av_one_px(",inticker,") Not Found Anywhere")
+          return("ERROR: cannot find ticker")
+      }
       tickertype <- symset[1,]$type
       if(tickertype=="user") {
-        message_if(the_av$verbose,"av_one_px(",inticker,") is User data and must be updated outside of ShinyApp")
-        return()
+        message_if(the_av$verbose,"avs_update(",inticker,") is User data w/ last day ",the_av$pxinv[symbol==inticker,]$end_dt,
+                        "and must be updated outside of ShinyApp")
+        return("user")
       }
       else {
         avfun <- epx_get_avfn(tickertype,live=FALSE)
@@ -293,14 +299,14 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=
         dta <- dta |> save_av_data(avfun)
         dta <- epx_fmt_to_hist(dta,tickertype,live=FALSE)
         src <- "downloaded"
-        if(addlive==TRUE) {
-          avfun_live <- epx_get_avfn(tickertype,live=TRUE)
+        avfun_live <- epx_get_avfn(tickertype,live=TRUE)
+        if(addlive==TRUE & !(avfun_live=="NOTAVAIL")) {
           livedta <- av_get_pf(inticker,avfun_live,outputsize="compact",verbose=FALSE)
           livedta <- epx_fmt_to_hist(livedta,tickertype,live=TRUE)
-          message_if_green(the_av$verbose,"manage_epx: Adding ",nrow(livedta)," live prices (",livedta[,1]$close,
+          src <- paste0("downloaded+live:",livedta[1,]$close)
+          message_if_green(the_av$verbose,"manage_epx: Adding ",nrow(livedta)," live prices (",livedta[1,]$close,
                            ") to ",inticker," at ",Sys.time())
-          dta <- rbindlist(list(dta,livedta),use.names=TRUE,fill=TRUE)
-          src <- "downloaded+live"
+          dta <- DTUpsert(dta,livedta,c("symbol","timestamp"),fill=TRUE)
         }
       }
       tickers <- c(inticker)
@@ -315,10 +321,11 @@ manage_epx <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=
     setcolorder(thisinv,"loadts",after="end_dt")
     the_av$pxinv  <- DTUpsert(the_av$pxinv, thisinv, c("symbol"),fill=TRUE)
     dtrg <- lapply(range(dta$timestamp),\(x) format(x,"%Y-%m-%d"))
-    message_if(the_av$verbose,"av_one_px(",tickers[1],fifelse(length(tickers)>1,"... ,",","),src,") ",nrow(dta)," rows with range ",dtrg[1],"::",dtrg[2],
-            " filling gap of ",nbdays," days from ",dtstoget[1], " to ",dtstoget[2])
+    message_if(the_av$verbose,
+        "av_one_px(",tickers[1],fifelse(length(tickers)>1,"... ,",","),src,") ",nrow(dta)," rows with range ",dtrg[1],"::",dtrg[2],
+        " filling gap of ",nbdays," days (",dtstoget[1], "::",dtstoget[2],")")
   }
-  return("")
+  return("updated")
 }
 
 redownload_all <- function() {

@@ -16,8 +16,8 @@ knitr::opts_chunk$set(
 The **Alphavantagepf** package also contains a Shiny Application which can be used to query, save, and visualize basic market information without having to navigate
 the asset-specific functions provided by the Alphavantage API. The app provides an intuitive way to compare small baskets of assets both technically and fundamentally.
 
-This vignette will first go through some overall design goals and conventions before providing an overview of how to start and configure the application
-then give a brief overview of list management and individual analysis components.  Augmenting the data is also describes. 
+This vignette will first go through some overall design goals and conventions before providing an overview of how to start and configure the application.
+Once it is running, we then give a brief overview of list management and individual analysis components.  Augmenting the data is also described. 
 Future plans are discussed in an appendix.
 
 # Overall design goals and conventions
@@ -44,8 +44,11 @@ A few conventions which are helpful to know before using the app are
 
 The app requires a very modest amount of setup before using.  It can be run with 
 
+```{r, eval=TRUE}
+require(alphavantagepf)
+```
+
 ```{r, eval=FALSE}
-library(alphavantagepf)
 av_runShiny()
 ```
 When the app is first run, the following screen will be shown, with the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab selected.
@@ -71,8 +74,8 @@ Other optional items that can be set are
 ||For example, `Update` will only store the latest price for a particular symbol and date|
 |Data Saving Options|Control how often the captured data file is cleared or saved|
 
-When capturing is turned on a file called `av_download.RD` will be created and updated in the specified dump directory.
-This file will be a named list of data.tables, with a data.table containing all downloaded data corresponding to 
+When capturing is turned on, a file called `av_download.RD` will be created and updated in the specified dump directory.
+This file will be a named list of  [data.tables](https://github.com/Rdatatable/data.table), with a data.table containing all downloaded data corresponding to 
 an Alphavantage function (e.g. `TIME_SERIES_DAILY`).  If "cumulative" is selected, all data will time-stamped and added
 to the relevant data.table.  If not, then data will be replaced for each relevant key (usually `SYMBOL`).  The user
 can then use that file to integrate search histories into other analytics, such as a rolling Markdown file.
@@ -98,7 +101,9 @@ You can see a table of current asset lists by running the "Gen:Inventory" comman
 To run analyses, select the desired item from the dropdowns and press the blue 
 <span style="background-color: #003366; color: #FFFFFF;">RUN</span> button.  One of more graphs or tables
 will be shown in the  <span style="border: 1px solid #000000; padding: 2px 6px;">MAIN</span> tab, with additional data
-possible in the  <span style="border: 1px solid #000000; padding: 2px 6px;">DETAIL</span> tab.  
+possible in the  <span style="border: 1px solid #000000; padding: 2px 6px;">DETAIL</span> tab.  That tab (the
+one to the right of <span style="border: 1px solid #000000; padding: 2px 6px;">MAIN</span>) will change headings when
+relevant.
 
 Graph events and decorations can be specified in the first two boxes, with annotations for the last level and 5 turning points
 used as defaults. The options possible are detailed in the [fgts_dygraph()](https://derekholmes0.github.io/FinanceGraphs/reference/fgts_dygraph.html)
@@ -115,17 +120,22 @@ Data is plotted in raw form unless the <span style="color:blue">Rebase options</
 to 100 at the start of the window. (In the the example above, the rebase would occur at the first point plotted 2 years prior to today).
 If Rebasing is set to the focus point, the rebasing occurs at that point set by the slider.
 
-An alternative to rebasing is to plot the first asset on it's own axis, which can be done by selecting `"splitts"` in the `"TSGraphOpts"` box.
+An alternative to rebasing is to plot the first asset on its own axis, which can be done by selecting `"splitts"` in the `"TSGraphOpts"` box.
 Other options that can be selected in that box are
 
 * Highlighting the first series with a thicker line
 * Adding Labels showing the last value or series title
 * Adding hi-low shading, if the data is available.
-* Changing the line colors (via the `"fgts colorset"` setting in the  <span style="color:red">`"AVOPTS"`</span> tab.)
+* Changing the line colors (via the `"fgts colorset"` setting in the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab.)
 
 Event codes can also be specified in the `"events"` box.  See [fg_get_dates_of_interest()](https://derekholmes0.github.io/FinanceGraphs/reference/fg_get_dates_of_interest.html)
 and [Dygraphs vignette](https://derekholmes0.github.io/FinanceGraphs/articles/Time-Series-dygraph.html)
-These can be single day events or highlighted ranges of dates. Also, time series that do not appear to be daily will be plotted with step functions.
+These can be single day events or highlighted ranges of dates. (An example is below.)
+
+Time series graphs are harder to interpret when muitple time series frequencies or missing data is plotted together.  
+When time series do not appear to be daily, they will be plotted with step functions.  When data is missing (as would
+be the case when plotting equities with assets such as FX or Crypto that trade over weekends), gaps in the time series will 
+be evident.
 
 ## Analyses that can be run
 
@@ -170,6 +180,13 @@ get whatever data it needs, typically from the cache, but augmented with most re
 ```{r, echo=FALSE, out.width="100%"}
 knitr::include_graphics("img/activets.jpg")
 ```
+Here is another example which highlights both the comprehensive abilities to combine assets in the app with graphing abilities. 
+Suppose we wish to plot the fair value history of the crypto ETF `IBIT`, and add some visual indication of overall market direction.
+Using the `TS:ActiveTS` analysis with `IBIT` on line 1,  `BTC/USD` on line 2, and `doi:regm` in Events, we would see
+
+```{r, echo=FALSE, out.width="100%"}
+knitr::include_graphics("img/ibit_fv.jpg")
+```
 
 # Option Search
 
@@ -208,7 +225,7 @@ ABBNY 2001-04-06  7.37  7.37  7.27  7.29           7.29          0             0
 ABBNY 2001-04-09  7.32  7.50  7.32  7.50           7.50          0             0.433 2026-05-31 08:06:48      17.3
 ```
 
-## WAdding data and integrating different asset classes.
+## Adding data and integrating different asset classes.
 
 The data can also be added to externally using the [av_add_data()] function.  Any time series can be added, but not all time series can be 
 guaranteed to be updated by Alphavantage calls.  One difficulty with Alphavantages' API platform is that there are different function calls 
@@ -219,7 +236,7 @@ Specifically, each new ticker is checked against current Index lists, cryptocurr
 **If several tickers are passed at once**, this can be quite expensive, as Alphavantage tends to limit data usage if too many calls are made in succession.
 If possible, it's much better to predetermine the asset type (one of `c("Equity","ETF","Index","FX","Crypto")`) in advance and pass it to [av_add_data()] call at runtime.
 
-Data which is completely exogenous to Alphavantage can also be added to the app's cached data set. If the asset type isn't specified or cannot be determined, it's assumed
+Data which is completely exogenous to Alphavantage can also be added to the cached data set. If the asset type isn't specified or cannot be determined, it's assumed
 to be a `"user"` asset type which isn't updated, but can still be plotted or used.  As an example, suppose we wish to plot the prices of a common
 credit ETF against FRED's FEDFUNDS data.  We will download both and add them programmatically.  Generic data needs to be manipulated into the form the app expects, but
 data downloaded from Alphavantage is already in that form.
@@ -258,4 +275,5 @@ Planned improvements currently include
 * Earnings and dividends incorporated into plots
 * Ability to plug in user-defined functions which have access to the internal data store.
 * Correlation and hedging analyses.
+* Calendars
 * Interface to events and aesthetics sets relevant to [FinanceGraphs](https://derekholmes0.github.io/FinanceGraphs/reference/index.html)

@@ -26,13 +26,13 @@ it allows users to plot, summarize and compare sets of assets easily.
 
 ## Installation
 
-You can install the development version of alphavantagepf from Github, or the production version from CRAN.  To
+You can install the development version of alphavantagepf from Github, or the production version from CRAN using
 
-``` r
-# install.packages("pak")
+```
 #pak::pak("derekholmes0/alphavantagepf")
 install.packages("alphavantagepf")
 ```
+
 Load the package.
 ```{r}
 library(alphavantagepf)
@@ -108,7 +108,7 @@ datatype                                     csv
    2:    IBM 2026-01-05 303.7
 ```
 
-## More complex data and helpful data extractors.
+## More complex data and helpful data extractors
 
 ### Extracting embedded data.frames
 
@@ -224,11 +224,9 @@ Once the API key is set, type in a set of symbols you ae interested in (separate
 For example, to show a normalized total return chart for 3 common ETS, select "start" to rebase at the start of the requested period (`"-2y::"`in datestring) select `TS:PriceTS` to get a time series graph,
 and press <span style="background-color: #003366; color: #FFFFFF;">RUN</span>.  The result will be as below.
 
-```{r out.width = '100%', echo = FALSE}
-knitr::include_graphics("./vignettes/img/av_shiny_1.jpg")
-```
+![ShinyPic](man/figures/av_shiny_1.jpg)
 
-When `TS:PriceTS` is run, `av_runShiny()` will 
+The analytics all follow the same outline.  For example, when `TS:PriceTS` is run, `av_runShiny()` will 
 
 1. Call [av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html) with 
 parameters appropriate to the asset (e.g. `TIME_SERIES_DAILY` for stocks, `FX_DAILY` for FX), 

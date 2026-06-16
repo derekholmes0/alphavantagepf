@@ -18,18 +18,29 @@ symbol_grep_by_type <- function(eqlist,grepstr="Equity", rtn="list") {
   }
 }
 
+data_from_list <-function(inlist,datestring,ts_rebase,dtstartfrac,msg_inputID="istr1") {
+    toplot <- sapply(inlist, \(x) manage_epx(x,datestring,addlive=the_av$uselive))
+    if(length(badtickers <- names(toplot)[grep("ERROR",toplot)])>0) {
+      quick_message(msg_inputID,paste("Invalid tickers:", paste0(badtickers,sep=" ")))
+    }
+    inlist <- inlist[!grepl("ERROR",toplot)]
+    #quick_message(msg_inputID,"Data retrived:", paste0(inlist,collapse=" "))
+    toplot <- get_one_ts(inlist,ts_rebase,datestring,dtstartfrac) # REturns list(data.table,"") if nothing valid
+    avsh_clipboard(toplot[[1]],"px")
+    return(toplot)
+}
+
 get_one_ts <- function(assets,rebase,datestring,dtstartfrac) {
   symbol=NULL
   toplot <- the_av$pxd[data.table(symbol=assets),on=.(symbol)] |> narrowbydtstr(datestring)
   rebasedt <- fcase(rebase=="none","",
                     rebase=="start",paste0(format(toplot[1,]$timestamp,"%Y-%m-%d"),",100"),
                     rebase=="focus",paste0(format(toplot[,.N,by=.(timestamp)][,.SD[floor(.N*dtstartfrac/100)]]$timestamp,"%Y-%m-%d"),",100"))
-  message_if_green(the_av$verbose,"get_one_ts(",paste0(assets,collapse=" "),") gets ",nrow(toplot), " rows to  ",as.Date(max(toplot$timestamp)))
+  #message_if_green(the_av$verbose,"get_one_ts(",paste0(assets,collapse=" "),") retrieves ",nrow(toplot), " rows up to ",as.Date(max(toplot$timestamp)))
   return(list(toplot,rebasedt))
 }
 
 # Earnings Data
-
 oneticker_earns <- function(thisticker,fwddts,datestring) {
   symbol=horizon=eps_estimate_average=eps_estimate_high=eps_estimate_low=eps_estimate_average_30_days_ago=NULL
   eps_estimate_analyst_count=eps_estimate_average_90_days_ago=reportTime=fiscalDateEnding=EPpct=estimatedEPS=NULL
@@ -109,6 +120,21 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dtstart
   return(outdyg)
 }
 
+ts_vol <- function(toplot,ts_volparams) {
+  volp <- s(ts_volparams)
+  seriesnm <- fifelse(the_av$totrtn,"adjusted_close","close")
+  message("  ... tsvol ",the_av$totrtn, ": > ",seriesnm)
+  one_ts_vol <- function(x) {
+    tdta <- toplot[[1]][symbol==x,]
+    xdta <- tdta[,lapply(.SD,\(x) x+(get(seriesnm)-close)), .SDcols=s("open;high;low;close")]
+    xdta <- tdta[,lapply(.SD,\(x) fcoalesce(x,close)),  .SDcols=s("open;high;low;close")]
+    setnafill(xdta,"locf")
+    data.table(timestamp=tdta$timestamp,variable=x,value=100*TTR::volatility(xdta, calc=volp[[1]],n=as.integer(volp[[2]]), N=as.integer(volp[[3]])))
+  }
+  return(rbindlist(lapply(unique(toplot[[1]]$symbol), one_ts_vol)))
+}
+
+
 getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),newsagrep="",maxage=+Inf) {
   news0=news1=artno=ticker=overall_sentiment_score=time_published=title=NULL
   news0 <- av_get_pf(x,"NEWS_SENTIMENT",limit=floor(nArticles)) |>  save_av_data("NEWS_SENTIMENT")
@@ -144,7 +170,9 @@ quick_message <- function(wh,this_message,eval=TRUE) {
   }
 }
 
-
+#quick_message <- function(wh,this_message,eval=TRUE) {
+#  message("wh:",wh," msg: ",this_message)
+#}
 
 #' @noRd
 #' @import clipr
@@ -152,7 +180,7 @@ avsh_clipboard <- function(x,title="") {
   if(the_av$autocopy) {
     write_clip(as.data.frame(x))
     message_if_green(the_av$verbose,"to Clipboard: ",title," w/ ",nrow(x)," rows")
-    quick_message("anopt1","Data copied to Clipboad")
+    quick_message("istr1","Data copied to Clipboad")
   }
 }
 
