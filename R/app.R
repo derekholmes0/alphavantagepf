@@ -8,7 +8,7 @@
 #' @import FinanceGraphs
 
 source("./R/utilities.R")
-tver<-"0.7.74.1"
+tver<-"0.7.74.2"
 
 # 1.8: News, ability to keep output from one run to the next
 # 1.6: Bug checks and check()
@@ -243,13 +243,13 @@ av_make_server <- function() {
       av_api_key(rv$avapikey,rv$avapientitlement)
       if(!(rv$cachedir==oldcache)) {
         message_if_red(TRUE,"Cache directory moved; cleaning up old price/inventory data")
-        file.remove(paste0(oldcache,"/avpf_px.fst"))
-        file.remove(paste0(oldcache,"/avpf_inv.RD"))
+        u1<-file.remove(paste0(oldcache,"/avpf_px.fst"))
+        u2<-file.remove(paste0(oldcache,"/avpf_inv.RD"))
       }
       # constants_fn always has to be in tmp directory: av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
+      av_set_default_set("setopts",rv)
       av_set_caching_directories()
       av_set_defaults("starttab","main")
-      av_set_default_set("setopts",rv)
       th1 <- th1[,.(nm,old=toget)][dump_the(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
       th1 <- th1[,.SD,.SDcols=s("classtype;nm;toget;format")]
       output$dumpthe <- render_gt(expr=th1 |> gt() |> gt.basetheme() |> decorate_table())
