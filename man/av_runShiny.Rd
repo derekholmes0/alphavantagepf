@@ -18,8 +18,8 @@ API calls, all data can be saved for external use, and external data can be adde
 Invocation starts Shiny application.  See vignette for full details.
 \strong{On first use}, click on \code{AVOPTS} tab, fill in the following fields, and  hit the "Set Opts" button.
 \itemize{
-\item ++AV API Key++: API key obtained from  \href{https://www.alphavantage.co/documentation/}{Alpha Vantage}
-\item ++Entitlement++ Entitlement status (either \code{delayed} or \code{realtime})
+\item \strong{AV API Key}: API key obtained from  \href{https://www.alphavantage.co/documentation/}{Alpha Vantage}
+\item \strong{Entitlement} Entitlement status (either \code{delayed} or \code{realtime})
 Other options that can be set are given below.
 }
 
@@ -38,7 +38,7 @@ the adjacent dropdown, and press the `RUN button.  Options include:\tabular{cl}{
 }
 
 
-** Options that can be set**. click on \code{AVOPTS} tab, fill in the following fields, and  hit the "Set Opts" button.
+\strong{Options that can be set}. click on \code{AVOPTS} tab, fill in the following fields, and  hit the "Set Opts" button.
 \itemize{
 \item \strong{fgts colorset}: A named list of colors which can be set using the  \code{\link[FinanceGraphs:fg_update_aes]{FinanceGraphs::fg_update_aes()}} function.
 \item \strong{Regr Significance}: p-level to highlight significant regressions. (Used in the \code{HistVolTS} function above.)
@@ -66,5 +66,4 @@ If \code{cumulative} then all API data (including a timestamp) is saved sequenti
 \dontrun{
 av_runShiny()
 }
-
 }
