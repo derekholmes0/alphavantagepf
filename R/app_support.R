@@ -18,6 +18,7 @@ symbol_grep_by_type <- function(eqlist,grepstr="Equity", rtn="list") {
   }
 }
 
+<<<<<<< HEAD
 data_from_list <-function(inlist,datestring,ts_rebase,dtstartfrac,msg_inputID="istr1") {
     toplot <- sapply(inlist, \(x) manage_epx(x,datestring,addlive=the_av$uselive))
     if(length(badtickers <- names(toplot)[grep("ERROR",toplot)])>0) {
@@ -28,6 +29,20 @@ data_from_list <-function(inlist,datestring,ts_rebase,dtstartfrac,msg_inputID="i
     toplot <- get_one_ts(inlist,ts_rebase,datestring,dtstartfrac) # REturns list(data.table,"") if nothing valid
     avsh_clipboard(toplot[[1]],"px")
     return(toplot)
+=======
+data_from_list <-function(inlist,datestring,doaddlive,ts_rebase,dtstartfrac,msg_inputID="istr1") {
+    toplot <- lapply(inlist, \(x) manage_epx(x,datestring,addlive=doaddlive))
+    if(any(badtickers <- sapply(toplot,is.null))) {
+      quick_message(msg_inputID,"Invalid tickers:", inlist[badtickers])
+      return(data.table())
+    }
+    else {
+      quick_message(msg_inputID,"Data retrived:", paste0(inlist,collapse=" "))
+      toplot <- get_one_ts(inlist,ts_rebase,datestring,dtstartfrac)
+      avsh_clipboard(toplot[[1]],"px")
+      return(toplot)
+    }
+>>>>>>> d530b169947c468f880d715330f9ba129f2b0630
 }
 
 get_one_ts <- function(assets,rebase,datestring,dtstartfrac) {

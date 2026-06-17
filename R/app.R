@@ -8,7 +8,11 @@
 #' @import FinanceGraphs
 
 source("./R/utilities.R")
+<<<<<<< HEAD
 tver<-"0.7.75"
+=======
+tver<-"0.7.74.3"
+>>>>>>> d530b169947c468f880d715330f9ba129f2b0630
 
 # 1.8: News, ability to keep output from one run to the next
 # 1.6: Bug checks and check()
@@ -327,16 +331,24 @@ av_make_server <- function() {
         # Save latest to history, but how to ensure no gaps?
       }
       if(anopt1=="TS:PriceTS") {
+<<<<<<< HEAD
         toplot<-data_from_list(eqlist1,datestring,ts_rebase,dtstartfrac,msg_inputID="istr1")
         out[["MSG"]]<-""
+=======
+        toplot<-data_from_list(eqlist1,datestring,input$useLive,ts_rebase,dtstartfrac,msg_inputID="istr1")
+>>>>>>> d530b169947c468f880d715330f9ba129f2b0630
         if( nrow(toplot[[1]])>0) {
           out[["TS1"]] <- one_px_ts(toplot,rv,events=ts_events,dtstartfrac=dtstartfrac)
           save_avs_state("px",msg="px1")
         }
       }
       if(anopt2=="TS:PriceTS") {
+<<<<<<< HEAD
         out[["MSG"]]<-""
         toplot<-data_from_list(eqlist2,datestring,ts_rebase,dtstartfrac,msg_inputID="istr2")
+=======
+        toplot<-data_from_list(eqlist2,datestring,input$useLive,ts_rebase,dtstartfrac,msg_inputID="istr2")
+>>>>>>> d530b169947c468f880d715330f9ba129f2b0630
         if( nrow(toplot[[1]])>0) {
           out[["TS2"]] <- one_px_ts(toplot,rv,events=ts_events,dtstartfrac=dtstartfrac)
           save_avs_state("px",msg="px2")
@@ -347,7 +359,11 @@ av_make_server <- function() {
         is_in_list <- s(istr2)[1] %in% the_av$pxinv$symbol
         shinyFeedback::feedbackDanger("istr2", !is_in_list, "2. Need a previously downloaded hedge/index")
         req(is_in_list, cancelOutput = TRUE)
+<<<<<<< HEAD
         toplot<-data_from_list(c(eqlist1,eqlist2),datestring,ts_rebase,dtstartfrac,msg_inputID="istr1")
+=======
+        toplot<-data_from_list(c(eqlist1,eqlist2),datestring,input$useLive,ts_rebase,dtstartfrac,msg_inputID="istr1")
+>>>>>>> d530b169947c468f880d715330f9ba129f2b0630
         if( nrow(toplot[[1]])>0) {
           t_toget <- data.table(symbol=c(eqlist2[1],eqlist1),catg=c("idx",rep("act",length(eqlist1))))
           t_toget <- t_toget[,.SD[1],by=.(symbol)] # Weed out duplicates
@@ -379,10 +395,22 @@ av_make_server <- function() {
         # TO do, other statistics (PCA?)
       }
       if(anopt1=="TS:HistVolTS") {
+<<<<<<< HEAD
         out[["MSG"]]<-""
         toplot<-data_from_list(eqlist1,datestring,ts_rebase,dtstartfrac,msg_inputID="istr1")
         if( nrow(toplot[[1]])>0) {
           toplot2 <- ts_vol(toplot,ts_volparams);
+=======
+        toplot<-data_from_list(eqlist1,datestring,input$useLive,ts_rebase,dtstartfrac,msg_inputID="istr1")
+        if( nrow(toplot[[1]])>0) {
+          volp <- s(ts_volparams)
+          onevol <- function(x) {
+            tdta <- toplot[[1]][symbol==x,]
+            xdta <- tdta[,lapply(.SD,\(x) x+(get(seriesnm)-close)), .SDcols=s("open;high;low;close")]
+            data.table(timestamp=tdta$timestamp,variable=x,
+                        value=100*TTR::volatility(xdta, calc=volp[[1]],n=as.integer(volp[[2]]), N=as.integer(volp[[3]]))) }
+          toplot2 <- rbindlist(lapply(eqlist1, onevol))
+>>>>>>> d530b169947c468f880d715330f9ba129f2b0630
           avsh_clipboard(toplot2,"HistVol")
           out[["TS1"]] <- one_px_ts(toplot2,rv,title=paste("Volatility (pct) using ",ts_volparams),events=ts_events,dtstartfrac=dtstartfrac)
           out[["TS2"]] <- one_px_ts(toplot,rv,events=ts_events,dtstartfrac=dtstartfrac)
