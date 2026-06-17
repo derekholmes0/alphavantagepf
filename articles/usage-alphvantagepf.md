@@ -22,7 +22,7 @@ print(av_api_key())
 #> [1] "YOUR_API_KEY" NA
 ```
 
-### Finding Functions and their defaults””
+### Finding Functions and their defaults
 
 To find parameters and defaults provided by the `alphavantagepf`
 package, use

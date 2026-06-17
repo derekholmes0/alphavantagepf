@@ -14,11 +14,9 @@ compare sets of assets easily.
 ## Installation
 
 You can install the development version of alphavantagepf from Github,
-or the production version from CRAN. To
+or the production version from CRAN using
 
-``` r
-
-# install.packages("pak")
+``` R
 #pak::pak("derekholmes0/alphavantagepf")
 install.packages("alphavantagepf")
 ```
@@ -140,7 +138,7 @@ datatype                                     csv
    2:    IBM 2026-01-05 303.7
 ```
 
-## More complex data and helpful data extractors.
+## More complex data and helpful data extractors
 
 ### Extracting embedded data.frames
 
@@ -297,9 +295,12 @@ for 3 common ETS, select “start” to rebase at the start of the requested
 period (`"-2y::"`in datestring) select `TS:PriceTS` to get a time series
 graph, and press RUN. The result will be as below.
 
-![](./articles/img/av_shiny_1.jpg)
+![ShinyPic](reference/figures/av_shiny_1.jpg)
 
-When `TS:PriceTS` is run,
+ShinyPic
+
+The analytics all follow the same outline. For example, when
+`TS:PriceTS` is run,
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
 will
 

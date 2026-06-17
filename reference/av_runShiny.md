@@ -25,10 +25,10 @@ Invocation starts Shiny application. See vignette for full details. **On
 first use**, click on `AVOPTS` tab, fill in the following fields, and
 hit the "Set Opts" button.
 
-- ++AV API Key++: API key obtained from [Alpha
+- **AV API Key**: API key obtained from [Alpha
   Vantage](https://www.alphavantage.co/documentation/)
 
-- ++Entitlement++ Entitlement status (either `delayed` or `realtime`)
+- **Entitlement** Entitlement status (either `delayed` or `realtime`)
   Other options that can be set are given below.
 
 **To run analysis**, Enter a semicolon delimited set of securities (e.g.
@@ -48,7 +48,7 @@ press the \`RUN button. Options include:
 | `DivEarn` | Dividends, earnings, and earnings estimates for tickers in top row. |
 | `OptSearch` | Search for options for tickers in top row. (`OPTS` tab) |
 
-\*\* Options that can be set\*\*. click on `AVOPTS` tab, fill in the
+**Options that can be set**. click on `AVOPTS` tab, fill in the
 following fields, and hit the "Set Opts" button.
 
 - **fgts colorset**: A named list of colors which can be set using the

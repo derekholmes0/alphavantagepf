@@ -9,7 +9,7 @@ Adds default elements to
 gt.basetheme(
   x,
   gtopts = "all",
-  sizepct = 100,
+  sizepct = 70,
   style = 4,
   digits = 2,
   seps = FALSE,

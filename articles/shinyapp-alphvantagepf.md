@@ -8,9 +8,9 @@ baskets of assets both technically and fundamentally.
 
 This vignette will first go through some overall design goals and
 conventions before providing an overview of how to start and configure
-the application then give a brief overview of list management and
-individual analysis components. Augmenting the data is also describes.
-Future plans are discussed in an appendix.
+the application. Once it is running, we then give a brief overview of
+list management and individual analysis components. Augmenting the data
+is also described. Future plans are discussed in an appendix.
 
 ## Overall design goals and conventions
 
@@ -45,7 +45,12 @@ run with
 
 ``` r
 
-library(alphavantagepf)
+require(alphavantagepf)
+#> Loading required package: alphavantagepf
+```
+
+``` r
+
 av_runShiny()
 ```
 
@@ -71,15 +76,15 @@ Other optional items that can be set are
 |  | For example, `Update` will only store the latest price for a particular symbol and date |
 | Data Saving Options | Control how often the captured data file is cleared or saved |
 
-When capturing is turned on a file called `av_download.RD` will be
+When capturing is turned on, a file called `av_download.RD` will be
 created and updated in the specified dump directory. This file will be a
-named list of data.tables, with a data.table containing all downloaded
-data corresponding to an Alphavantage function
-(e.g. `TIME_SERIES_DAILY`). If “cumulative” is selected, all data will
-time-stamped and added to the relevant data.table. If not, then data
-will be replaced for each relevant key (usually `SYMBOL`). The user can
-then use that file to integrate search histories into other analytics,
-such as a rolling Markdown file.
+named list of [data.tables](https://github.com/Rdatatable/data.table),
+with a data.table containing all downloaded data corresponding to an
+Alphavantage function (e.g. `TIME_SERIES_DAILY`). If “cumulative” is
+selected, all data will time-stamped and added to the relevant
+data.table. If not, then data will be replaced for each relevant key
+(usually `SYMBOL`). The user can then use that file to integrate search
+histories into other analytics, such as a rolling Markdown file.
 
 ## Asset List management
 
@@ -104,7 +109,8 @@ using
 
 To run analyses, select the desired item from the dropdowns and press
 the blue RUN button. One of more graphs or tables will be shown in the
-MAIN tab, with additional data possible in the DETAIL tab.
+MAIN tab, with additional data possible in the DETAIL tab. That tab (the
+one to the right of MAIN) will change headings when relevant.
 
 Graph events and decorations can be specified in the first two boxes,
 with annotations for the last level and 5 turning points used as
@@ -279,8 +285,8 @@ better to predetermine the asset type (one of
 \[av_add_data()\] call at runtime.
 
 Data which is completely exogenous to Alphavantage can also be added to
-the app’s cached data set. If the asset type isn’t specified or cannot
-be determined, it’s assumed to be a `"user"` asset type which isn’t
+the cached data set. If the asset type isn’t specified or cannot be
+determined, it’s assumed to be a `"user"` asset type which isn’t
 updated, but can still be plotted or used. As an example, suppose we
 wish to plot the prices of a common credit ETF against FRED’s FEDFUNDS
 data. We will download both and add them programmatically. Generic data
@@ -320,5 +326,6 @@ Planned improvements currently include
 - Ability to plug in user-defined functions which have access to the
   internal data store.
 - Correlation and hedging analyses.
+- Calendars
 - Interface to events and aesthetics sets relevant to
   [FinanceGraphs](https://derekholmes0.github.io/FinanceGraphs/reference/index.html)

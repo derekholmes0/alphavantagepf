@@ -1,0 +1,32 @@
+/* Base font size for all body text */
+body {
+  font-size: 13px;
+}
+
+/* Code blocks and inline code */
+pre, code {
+  font-size: 11px !important;
+}
+
+/* Reference/function documentation */
+.contents {
+  font-size: 13px;
+}
+
+/* Article/vignette text */
+.row.article-content {
+  font-size: 12px;
+}
+
+/* Table output */
+table {
+  font-size: 11px;
+}
+
+.contents img {
+  border: 1px solid #cccccc;
+  padding: 4px;
+  border-radius: 4px;
+  display: block;
+  margin: 10px auto;   /* centers the image too */
+}

@@ -4,7 +4,9 @@
 
 ## alphavantagepf 0.7.7
 
-- Documentation, small fixes in DES and av_add_data
+- Documentation, refactors, small fixes in DES and av_add_data
+- Formatting changes, fix live feeds for user and Crypto Data
+- Added support for user supplied data.
 
 ## alphavantagepf 0.7.5
 
@@ -20,7 +22,7 @@
 - Added support for INDEX_DATA and FX
 - Refactored AV capture
 - Redesigned NEWS page
-- ELiminated hash package dependencies
+- Eliminated hash package dependencies
 
 ## alphavantagepf 0.7.2
 
@@ -41,7 +43,6 @@
 ## alphavantagepf 0.4.0
 
 - Make sure empty columns are returned as reals
-
 - Use default user-agent
 
 ## alphavantagepf 0.3.2

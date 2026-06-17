@@ -10,7 +10,8 @@
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="shinyapp-alphvantagepf">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="shinyapp-alphvantagepf">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -20,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.743</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.75</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,9 +74,9 @@ provided by the Alphavantage API. The app provides an intuitive way to
 compare small baskets of assets both technically and fundamentally.</p>
 <p>This vignette will first go through some overall design goals and
 conventions before providing an overview of how to start and configure
-the application then give a brief overview of list management and
-individual analysis components. Augmenting the data is also describes.
-Future plans are discussed in an appendix.</p>
+the application. Once it is running, we then give a brief overview of
+list management and individual analysis components. Augmenting the data
+is also described. Future plans are discussed in an appendix.</p>
 <div class="section level2">
 <h2 id="overall-design-goals-and-conventions">Overall design goals and conventions<a class="anchor" aria-label="anchor" href="#overall-design-goals-and-conventions"></a>
 </h2>
@@ -135,8 +136,10 @@ relative to today</td>
 <p>The app requires a very modest amount of setup before using. It can
 be run with</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/derekholmes0/alphavantagepf" class="external-link">alphavantagepf</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/av_runShiny.html">av_runShiny</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/derekholmes0/alphavantagepf" class="external-link">alphavantagepf</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: alphavantagepf</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/av_runShiny.html">av_runShiny</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>When the app is first run, the following screen will be shown, with
 the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab
 selected. The first order of business will be to set the Alphavantage
@@ -204,16 +207,16 @@ saved</td>
 </tr>
 </tbody>
 </table>
-<p>When capturing is turned on a file called <code>av_download.RD</code>
-will be created and updated in the specified dump directory. This file
-will be a named list of data.tables, with a data.table containing all
-downloaded data corresponding to an Alphavantage function
-(e.g. <code>TIME_SERIES_DAILY</code>). If “cumulative” is selected, all
-data will time-stamped and added to the relevant data.table. If not,
-then data will be replaced for each relevant key (usually
-<code>SYMBOL</code>). The user can then use that file to integrate
-search histories into other analytics, such as a rolling Markdown
-file.</p>
+<p>When capturing is turned on, a file called
+<code>av_download.RD</code> will be created and updated in the specified
+dump directory. This file will be a named list of <a href="https://github.com/Rdatatable/data.table" class="external-link">data.tables</a>, with a
+data.table containing all downloaded data corresponding to an
+Alphavantage function (e.g. <code>TIME_SERIES_DAILY</code>). If
+“cumulative” is selected, all data will time-stamped and added to the
+relevant data.table. If not, then data will be replaced for each
+relevant key (usually <code>SYMBOL</code>). The user can then use that
+file to integrate search histories into other analytics, such as a
+rolling Markdown file.</p>
 </div>
 <div class="section level2">
 <h2 id="asset-list-management">Asset List management<a class="anchor" aria-label="anchor" href="#asset-list-management"></a>
@@ -240,8 +243,9 @@ using <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_add_ass
 <p>To run analyses, select the desired item from the dropdowns and press
 the blue <span style="background-color: #003366; color: #FFFFFF;">RUN</span> button.
 One of more graphs or tables will be shown in the <span style="border: 1px solid #000000; padding: 2px 6px;">MAIN</span> tab,
-with additional data possible in the <span style="border: 1px solid #000000; padding: 2px 6px;">DETAIL</span>
-tab.</p>
+with additional data possible in the <span style="border: 1px solid #000000; padding: 2px 6px;">DETAIL</span> tab.
+That tab (the one to the right of <span style="border: 1px solid #000000; padding: 2px 6px;">MAIN</span>) will
+change headings when relevant.</p>
 <p>Graph events and decorations can be specified in the first two boxes,
 with annotations for the last level and 5 turning points used as
 defaults. The options possible are detailed in the <a href="https://derekholmes0.github.io/FinanceGraphs/reference/fgts_dygraph.html" class="external-link">fgts_dygraph()</a>
@@ -489,15 +493,14 @@ succession. If possible, it’s much better to predetermine the asset type
 (one of <code>c("Equity","ETF","Index","FX","Crypto")</code>) in advance
 and pass it to [av_add_data()] call at runtime.</p>
 <p>Data which is completely exogenous to Alphavantage can also be added
-to the app’s cached data set. If the asset type isn’t specified or
-cannot be determined, it’s assumed to be a <code>"user"</code> asset
-type which isn’t updated, but can still be plotted or used. As an
-example, suppose we wish to plot the prices of a common credit ETF
-against FRED’s FEDFUNDS data. We will download both and add them
-programmatically. Generic data needs to be manipulated into the form the
-app expects, but data downloaded from Alphavantage is already in that
-form.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+to the cached data set. If the asset type isn’t specified or cannot be
+determined, it’s assumed to be a <code>"user"</code> asset type which
+isn’t updated, but can still be plotted or used. As an example, suppose
+we wish to plot the prices of a common credit ETF against FRED’s
+FEDFUNDS data. We will download both and add them programmatically.
+Generic data needs to be manipulated into the form the app expects, but
+data downloaded from Alphavantage is already in that form.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># av_add_data can be used simply, but</span></span>
 <span><span class="fu"><a href="../reference/av_add_data.html">av_add_data</a></span><span class="op">(</span><span class="fu"><a href="../reference/av_get_pf.html">av_get_pf</a></span><span class="op">(</span><span class="st">"IBM"</span>,<span class="st">"TIME_SERIES_DAILY_ADJUSTED"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -528,6 +531,7 @@ care, since it doesn’t correspond to the actual Fed Meetings.</p>
 <li>Ability to plug in user-defined functions which have access to the
 internal data store.</li>
 <li>Correlation and hedging analyses.</li>
+<li>Calendars</li>
 <li>Interface to events and aesthetics sets relevant to <a href="https://derekholmes0.github.io/FinanceGraphs/reference/index.html" class="external-link">FinanceGraphs</a>
 </li>
 </ul>
