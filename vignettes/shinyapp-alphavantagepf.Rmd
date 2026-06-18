@@ -1,8 +1,8 @@
 ---
-title: "shinyapp-alphvantagepf"
+title: "shinyapp-alphavantagepf"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{shinyapp-alphvantagepf}
+  %\VignetteIndexEntry{shinyapp-alphavantagepf}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -94,7 +94,7 @@ knitr::include_graphics("img/assetlist.gif")
 ```
 
 You can see a table of current asset lists by running the "Gen:Inventory" command, and can add asset lists outside of the app using
-[av_add_assetgroups()](https://derekholmes0.github.io/alphvantagepf/reference/av_add_assetgroup.html)
+[av_add_assetgroups()](https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.html)
 
 # Running Basic Analyses
 
@@ -216,7 +216,7 @@ The Shiny App also has facilities for adding and retrieving time series data ext
 All of the downloaded price history, as well as an inventory of prices are stored either in a temporary directory created when the app is first run,
 or a directory specified in the  <span style="color:red">`"AVOPTS"`</span> tab.  The price data is stored in [fst](https://www.fstpackage.org/) format, which has been the performance winner for
 several years.  Time series data stored in that cache augments that returned by (e.g.) `av_get_pf("IBM","TIME_SERIES_DAILY")` function wih split and dividend data returned by
-other [av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html) calls.  The full set is shown below. Note that a timestamp for each data retrieval is also kept.
+other [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html) calls.  The full set is shown below. Note that a timestamp for each data retrieval is also kept.
 
 ```
 symbol timestamp  open  high   low close adjusted_close dividend_amount split_coefficient                  ts origclose
@@ -231,7 +231,7 @@ The data can also be added to externally using the [av_add_data()] function.  An
 guaranteed to be updated by Alphavantage calls.  One difficulty with Alphavantages' API platform is that there are different function calls 
 (and returned data sets) for each major asset class.  This app integrates them into one price table, but at the expense of *having to know each asset type* for the data added.  
 
-The app tries to determine what asset class a symbol is to update it using [av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html) calls as best as it can.
+The app tries to determine what asset class a symbol is to update it using [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html) calls as best as it can.
 Specifically, each new ticker is checked against current Index lists, cryptocurrency lists, and then with Alphavantage's `"SYMBOL_SEARCH"`.
 **If several tickers are passed at once**, this can be quite expensive, as Alphavantage tends to limit data usage if too many calls are made in succession.
 If possible, it's much better to predetermine the asset type (one of `c("Equity","ETF","Index","FX","Crypto")`) in advance and pass it to [av_add_data()] call at runtime.

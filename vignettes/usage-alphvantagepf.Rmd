@@ -1,8 +1,8 @@
 ---
-title: "usage-alphvantagepf"
+title: "usage-alphavantagepf"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{usage-alphvantagepf}
+  %\VignetteIndexEntry{usage-alphavantagepf}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
