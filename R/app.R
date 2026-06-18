@@ -233,8 +233,8 @@ av_make_server <- function() {
       av_api_key(rv$avapikey,rv$avapientitlement)
       if(!(rv$cachedir==oldcache)) {
         message_if_red(TRUE,"Cache directory moved; cleaning up old price/inventory data from ",oldcache)
-        unlink(paste0(oldcache,"/avpf_px.fst"),force = TRUE)
-        unlink(paste0(oldcache,"/avpf_inv.RD"),force = TRUE)
+        unlink(gsub("\\","/",paste0(oldcache,"/avpf_px.fst"),fixed=TRUE),force = TRUE)
+        unlink(gsub("\\","/",paste0(oldcache,"/avpf_inv.RD"),fixed=TRUE),force = TRUE)
       }
       # constants_fn always has to be in tmp directory: av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
       av_set_default_set("setopts",rv)
