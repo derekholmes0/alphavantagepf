@@ -2,6 +2,10 @@
 
 ## alphavantagepf (development version)
 
+## alphavantagepf 0.7.8
+
+- CRAN Ready
+
 ## alphavantagepf 0.7.7
 
 - Documentation, refactors, small fixes in DES and av_add_data
