@@ -28,7 +28,7 @@ av_reset_defaults <- function(fileopts=TRUE) {
       assign(ivarnm, ivarval, envir=the_av)
     }
   }
-  the_av$assetgroups <- data.table(listnm=rep("defaultIdx",2),ticker=c("SPY","QQQ"))
+  the_av$assetgroups <- data.table(listnm=c(rep("defaultIdx",3)),ticker=c("SPY","QQQ","DIA"))
   lapply(s("pxd;pxinv;tickerlist;table_aes"), \(x) assign(x, data.table(), envir=the_av))
   message_if_red(TRUE,"Filling in app defaults")
   if(fileopts==TRUE) {

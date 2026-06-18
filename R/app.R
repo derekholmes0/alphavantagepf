@@ -232,14 +232,15 @@ av_make_server <- function() {
       oldcache <- th1[nm=="cachedir",]$toget
       av_api_key(rv$avapikey,rv$avapientitlement)
       if(!(rv$cachedir==oldcache)) {
-        message_if_red(TRUE,"Cache directory moved; cleaning up old price/inventory data")
-        u1<-file.remove(paste0(oldcache,"/avpf_px.fst"))
-        u2<-file.remove(paste0(oldcache,"/avpf_inv.RD"))
+        message_if_red(TRUE,"Cache directory moved; cleaning up old price/inventory data from ",oldcache)
+        unlink(paste0(oldcache,"/avpf_px.fst"),force = TRUE)
+        unlink(paste0(oldcache,"/avpf_inv.RD"),force = TRUE)
       }
       # constants_fn always has to be in tmp directory: av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
       av_set_default_set("setopts",rv)
       av_set_caching_directories()
       av_set_defaults("starttab","main")
+      save_avs_state("all",msg="sEToPTS")
       th1 <- th1[,.(nm,old=toget)][dump_the(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
       th1 <- th1[,.SD,.SDcols=s("classtype;nm;toget;format")]
       output$dumpthe <- render_gt(expr=th1 |> gt() |> gt.basetheme() |> decorate_table())

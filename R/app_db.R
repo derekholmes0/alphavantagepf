@@ -223,7 +223,7 @@ form_symset <- function(tickers, force=FALSE, delay=0) {
       return(z1[matchScore>=0.99,.(symbol=x,type,currency,name,matchScore,list_ts=Sys.Date())])
     }
   }))
-  newtickers=setdiff(newtickers,symnew_eq[matchScore<0.5,]$symbol)
+  newtickers=setdiff(newtickers,symnew_eq[matchScore>=0.5,]$symbol)
   # -----------------------------------------Un Downloadable assets/ User Data
   symnew_user <- data.table()
   if( length(newtickers)>0 ) {
@@ -429,6 +429,11 @@ kill_symbol <- function(inticker) {
   the_av$pxinv <- the_av$pxinv[!(symbol==inticker),]
   message_if_red(TRUE,"Removed ",inticker," from price database")
   save_avs_state(,msg=" Ttticker RRREdrum")
+}
+
+av_dbgmode <- function() {
+  source("c:\\d\\src\\R\\ut_package.R");
+  av_set_defaults("dbglvl",5)
 }
 
 

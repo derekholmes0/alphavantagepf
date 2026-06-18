@@ -62,9 +62,7 @@ av_runShiny <- function() {
   }
   else {
     av_reset_defaults(fileopts=FALSE)
-    restore_avs_state("init") # Fills in avsd defaults
     save_avs_state("all",msg="I N I T")
   }
-  av_set_defaults("dbglvl",0)
   shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1400,height=800,"launch.browser"))
 }
