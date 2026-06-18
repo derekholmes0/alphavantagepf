@@ -146,7 +146,8 @@ av_make_server <- function() {
     curr_assetgroups <- sort(unique(the_av$assetgroups$listnm))
     quick_message("ochains","[F(ront)|B(ack)],[M(onth)|Q(tr)],[C(all)|P(ut)],[itm|otm|all]")
     # On Startup download current index list if not there
-    update_tickerlists( is.null(the_av$tickerlist) | nrow(the_av$tickerlist)<=0 | (min(the_av$tickerlist$list_ts)<=Sys.Date()-7) )
+    update_tickerlists( is.null(the_av$tickerlist) || nrow(the_av$tickerlist)<=0 ||
+            (min(the_av$tickerlist$list_ts)<=Sys.Date()-7) )
     FinanceGraphs::fg_sync_group("avshiny")
     if("CleanOnStart" %in% the_av$capture_av_save) {  save_av_data(data.table(),"KILL") }
     # ----
@@ -231,14 +232,21 @@ av_make_server <- function() {
       th1<- dump_the()
       oldcache <- th1[nm=="cachedir",]$toget
       av_api_key(rv$avapikey,rv$avapientitlement)
-      if(!(rv$cachedir==oldcache)) {
-        message_if_red(TRUE,"Cache directory moved; cleaning up old price/inventory data from ",oldcache)
-        unlink(gsub("\\","/",paste0(oldcache,"/avpf_px.fst"),fixed=TRUE),force = TRUE)
-        unlink(gsub("\\","/",paste0(oldcache,"/avpf_inv.RD"),fixed=TRUE),force = TRUE)
-      }
-      # constants_fn always has to be in tmp directory: av_set_defaults("constants_fn",paste0(rv$cachedir,"/avpf_constants.RD"))
       av_set_default_set("setopts",rv)
-      av_set_caching_directories()
+      if( nchar(newcache<-av_validate_directory(rv$cachedir,"cachedir"))>0 ) {
+        if(!(newcache==oldcache)) {
+          message_if_red(TRUE,"Cache directory moved; cleaning up old price/inventory data from ",oldcache)
+          unlink(paste0(oldcache,"/avpf_px.fst"),force = TRUE)
+          unlink(paste0(oldcache,"/avpf_inv.RD"),force = TRUE)
+          av_set_defaults("cachedir",newcache)
+        }
+        oldcache <- newcache
+      }
+      av_set_defaults("cachedir",oldcache)
+      av_set_caching_directories() # constants_fn always has to be in tmp directory:
+      if( nchar(newcache<- av_validate_directory(rv$av_dump_dir,"av_dump_dir"))>0 ) {
+          av_set_defaults("av_dump_dir",newcache)
+      }
       av_set_defaults("starttab","main")
       save_avs_state("all",msg="sEToPTS")
       th1 <- th1[,.(nm,old=toget)][dump_the(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]

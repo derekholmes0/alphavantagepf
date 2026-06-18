@@ -189,6 +189,24 @@ avsh_clipboard <- function(x,title="") {
 avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail") {
   shpf <- sprintf('$(\'#inTabset li a[data-value="%s"]\').text("%s");',tabnm,newtext)
   shinyjs::runjs(shpf)
+}
+
+#' @noRd
+av_validate_directory <- function(newdir,src_inputID) {
+  outdir<-""
+  if(nchar(newdir)>0) {
+    newdir <- gsub("\\","/",newdir,fixed=TRUE)
+    if(!dir.exists(newdir)) {
+      quick_message(src_inputID,"Invalid Directory.....")
+    }
+    else {
+      quick_message(src_inputID,"")
+      outdir<-newdir
+    }
   }
+  message("av_validate_directory(",newdir,") : ",outdir)
+  return(outdir)
+}
+
 
 
