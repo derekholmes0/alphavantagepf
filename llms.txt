@@ -114,12 +114,12 @@ The `alphavantagepf` package includes a few default overrides to the
 defaults chosen in [Alphavantage API
 documentation](https://www.alphavantage.co/documentation/). Those
 defaults can be seen using the
-[av_funhelp()](https://derekholmes0.github.io/alphvantagepf/reference/av_funhelp.html)
+[av_funhelp()](https://derekholmes0.github.io/alphavantagepf/reference/av_funhelp.html)
 function, or can be seen by calling
-[av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html)
+[av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html)
 with `verbose=TRUE`. Any overrides to those parameters can be specified
 as additional arguments to
-[av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html).
+[av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html).
 For example, to get SMA using multiple horizon lengths can be seen
 below:
 
@@ -144,7 +144,7 @@ datatype                                     csv
 
 Some API calls return more complex data, i.e. data with strings,
 numbers, and nested data.frames collected together. The
-[av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html)
+[av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html)
 returns data in as natural a format as possible. For example, time
 series are not melted, but single name quotes are. The parameter to
 control this is `melted` with a default value of “melted”. `melted` can
@@ -170,7 +170,7 @@ Key: <variable>
   to be specified.
 - Note that the data returned is in long form, and always has at least
   three columns, `symbol` (which cna be changed in
-  [av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html)
+  [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html)
   optional parameters). `variable` which is the name of the data item
   returned, and (e.g.) `value_str` or `value_df` with appropriate data
   components. The data is separated out by type so further delisting
@@ -178,7 +178,7 @@ Key: <variable>
 
 If you want to just get, e.g. the top losers, the returned data can be
 piped into the
-[av_extract_df()](https://derekholmes0.github.io/alphvantagepf/reference/av_extract_df.html)
+[av_extract_df()](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.html)
 function
 
 [`av_extract_df()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md)
@@ -277,7 +277,7 @@ the extracting function `av_extract_analytics`.
     the name of the `av_fun` call if no symbol is relevant.
 4.  There is no need to specify the `datatype` parameter as an argument
     to
-    [av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html).
+    [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html).
     The function will return a data.table
 5.  Some output above has been truncated to adhere to licensing rules.
 
@@ -285,9 +285,9 @@ the extracting function `av_extract_analytics`.
 
 A Shiny interface is included in the package to manage and visualize
 data. To launch the app, use
-[av_runShiny()](https://derekholmes0.github.io/alphvantagepf/reference/av_runShiny.html),
+[av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html),
 and start with the first step of setting your API key. (See
-[Vignette](https://derekholmes0.github.io/alphvantagepf/articles/shinyapp-alphvantagepf.html)
+[Vignette](https://derekholmes0.github.io/alphavantagepf/articles/shinyapp-alphavantagepf.html)
 for other items you can set) Once the API key is set, type in a set of
 symbols you ae interested in (separated by semicolons) and select an
 analysis to make. For example, to show a normalized total return chart
@@ -305,7 +305,7 @@ The analytics all follow the same outline. For example, when
 will
 
 1.  Call
-    [av_get_pf()](https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html)
+    [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html)
     with parameters appropriate to the asset (e.g. `TIME_SERIES_DAILY`
     for stocks, `FX_DAILY` for FX),
 2.  **Save** the data in an internal data store, or update existing data
@@ -399,5 +399,5 @@ data manipulation.
 
 ### All vignettes
 
-- [shinyapp-alphvantagepf](https://derekholmes0.github.io/alphavantagepf/articles/shinyapp-alphvantagepf.md):
-- [usage-alphvantagepf](https://derekholmes0.github.io/alphavantagepf/articles/usage-alphvantagepf.md):
+- [shinyapp-alphavantagepf](https://derekholmes0.github.io/alphavantagepf/articles/shinyapp-alphavantagepf.md):
+- [usage-alphavantagepf](https://derekholmes0.github.io/alphavantagepf/articles/usage-alphvantagepf.md):

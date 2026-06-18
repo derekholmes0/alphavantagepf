@@ -1,4 +1,4 @@
-# usage-alphvantagepf
+# usage-alphavantagepf
 
 **Alphavantagepf** interfaces the Alphavantage API to R in a way most
 compatible with normalized data stores. It returns data in `data.table`
