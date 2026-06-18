@@ -28,3 +28,4 @@ verbose,log,,,TRUE,
 autocopy,log,autocopy,,FALSE,
 starttab,str,,avopts,,
 gropts,str,onrun,last,,
+dbglvl ,num,,,,0
