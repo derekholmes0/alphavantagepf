@@ -36,8 +36,8 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/shinyapp-alphvantagepf.html">shinyapp-alphvantagepf</a></li>
-    <li><a class="dropdown-item" href="articles/usage-alphvantagepf.html">usage-alphvantagepf</a></li>
+<li><a class="dropdown-item" href="articles/shinyapp-alphavantagepf.html">shinyapp-alphavantagepf</a></li>
+    <li><a class="dropdown-item" href="articles/usage-alphvantagepf.html">usage-alphavantagepf</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -126,7 +126,7 @@
 <div class="section level3">
 <h3 id="using-defaults-and-overrides">Using defaults and overrides<a class="anchor" aria-label="anchor" href="#using-defaults-and-overrides"></a>
 </h3>
-<p>The <code>alphavantagepf</code> package includes a few default overrides to the defaults chosen in <a href="https://www.alphavantage.co/documentation/" class="external-link">Alphavantage API documentation</a>. Those defaults can be seen using the <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_funhelp.html" class="external-link">av_funhelp()</a> function, or can be seen by calling <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html" class="external-link">av_get_pf()</a> with <code>verbose=TRUE</code>. Any overrides to those parameters can be specified as additional arguments to <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html" class="external-link">av_get_pf()</a>. For example, to get SMA using multiple horizon lengths can be seen below:</p>
+<p>The <code>alphavantagepf</code> package includes a few default overrides to the defaults chosen in <a href="https://www.alphavantage.co/documentation/" class="external-link">Alphavantage API documentation</a>. Those defaults can be seen using the <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_funhelp.html">av_funhelp()</a> function, or can be seen by calling <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a> with <code>verbose=TRUE</code>. Any overrides to those parameters can be specified as additional arguments to <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a>. For example, to get SMA using multiple horizon lengths can be seen below:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="sc">&gt;</span> <span class="fu">av_get_pf</span>(<span class="st">"IBM"</span>,<span class="st">"SMA"</span>,<span class="at">verbose=</span>T,<span class="at">time_period=</span><span class="dv">30</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>https<span class="sc">:</span><span class="er">//</span>www.alphavantage.co<span class="sc">/</span>query?<span class="cf">function</span>   SMA                                          </span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>symbol                                       IBM                                          </span>
@@ -147,7 +147,7 @@
 <div class="section level3">
 <h3 id="extracting-embedded-dataframes">Extracting embedded data.frames<a class="anchor" aria-label="anchor" href="#extracting-embedded-dataframes"></a>
 </h3>
-<p>Some API calls return more complex data, i.e. data with strings, numbers, and nested data.frames collected together. The <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html" class="external-link">av_get_pf()</a> returns data in as natural a format as possible. For example, time series are not melted, but single name quotes are. The parameter to control this is <code>melted</code> with a default value of “melted”. <code>melted</code> can be set to TRUE (for example) to force or suppress melting into longer data.tables. As an example where the melted form makes more sense is the <code>TOP_GAINERS_LOSERS</code> function, which returns separate data.frames for each category. The natural output is</p>
+<p>Some API calls return more complex data, i.e. data with strings, numbers, and nested data.frames collected together. The <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a> returns data in as natural a format as possible. For example, time series are not melted, but single name quotes are. The parameter to control this is <code>melted</code> with a default value of “melted”. <code>melted</code> can be set to TRUE (for example) to force or suppress melting into longer data.tables. As an example where the melted form makes more sense is the <code>TOP_GAINERS_LOSERS</code> function, which returns separate data.frames for each category. The natural output is</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">""</span>,<span class="st">"TOP_GAINERS_LOSERS"</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a></span>
 <span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>Key<span class="sc">:</span> <span class="er">&lt;</span>variable<span class="sc">&gt;</span></span>
@@ -160,9 +160,9 @@
 <span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="dv">5</span><span class="sc">:</span> TOP_GAINERS_LOSERS           top_losers      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span></code></pre></div>
 <ul>
 <li>Note that symbol for <code>TOP_GAINERS_LOSERS</code> isn’t used, but still needs to be specified.</li>
-<li>Note that the data returned is in long form, and always has at least three columns, <code>symbol</code> (which cna be changed in <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html" class="external-link">av_get_pf()</a> optional parameters). <code>variable</code> which is the name of the data item returned, and (e.g.) <code>value_str</code> or <code>value_df</code> with appropriate data components. The data is separated out by type so further delisting doesn’t have to be done after the call.</li>
+<li>Note that the data returned is in long form, and always has at least three columns, <code>symbol</code> (which cna be changed in <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a> optional parameters). <code>variable</code> which is the name of the data item returned, and (e.g.) <code>value_str</code> or <code>value_df</code> with appropriate data components. The data is separated out by type so further delisting doesn’t have to be done after the call.</li>
 </ul>
-<p>If you want to just get, e.g. the top losers, the returned data can be piped into the <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_extract_df.html" class="external-link">av_extract_df()</a> function</p>
+<p>If you want to just get, e.g. the top losers, the returned data can be piped into the <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.html">av_extract_df()</a> function</p>
 <p><code><a href="reference/av_extract_df.html">av_extract_df()</a></code> function:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">""</span>,<span class="st">"TOP_GAINERS_LOSERS"</span>) <span class="sc">|&gt;</span> <span class="fu">av_extract_df</span>(<span class="st">"top_losers"</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a></span>
@@ -230,7 +230,7 @@
 <li>An additional parameter <code>entitlement</code> is added to the url if specified in the <code><a href="reference/av_api_key.html">av_api_key()</a></code> call and relevant.</li>
 <li>
 <code>symbol</code> is always returned in the output dataset, and defaults to the name of the <code>av_fun</code> call if no symbol is relevant.</li>
-<li>There is no need to specify the <code>datatype</code> parameter as an argument to <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html" class="external-link">av_get_pf()</a>. The function will return a data.table</li>
+<li>There is no need to specify the <code>datatype</code> parameter as an argument to <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a>. The function will return a data.table</li>
 <li>Some output above has been truncated to adhere to licensing rules.</li>
 </ol>
 </div>
@@ -238,12 +238,12 @@
 <div class="section level1">
 <h1 id="shiny-interface">Shiny interface<a class="anchor" aria-label="anchor" href="#shiny-interface"></a>
 </h1>
-<p>A Shiny interface is included in the package to manage and visualize data. To launch the app, use <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_runShiny.html" class="external-link">av_runShiny()</a>, and start with the first step of setting your API key. (See <a href="https://derekholmes0.github.io/alphvantagepf/articles/shinyapp-alphvantagepf.html" class="external-link">Vignette</a> for other items you can set) Once the API key is set, type in a set of symbols you ae interested in (separated by semicolons) and select an analysis to make. For example, to show a normalized total return chart for 3 common ETS, select “start” to rebase at the start of the requested period (<code>"-2y::"</code>in datestring) select <code>TS:PriceTS</code> to get a time series graph, and press <span style="background-color: #003366; color: #FFFFFF;">RUN</span>. The result will be as below.</p>
+<p>A Shiny interface is included in the package to manage and visualize data. To launch the app, use <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html">av_runShiny()</a>, and start with the first step of setting your API key. (See <a href="https://derekholmes0.github.io/alphavantagepf/articles/shinyapp-alphavantagepf.html">Vignette</a> for other items you can set) Once the API key is set, type in a set of symbols you ae interested in (separated by semicolons) and select an analysis to make. For example, to show a normalized total return chart for 3 common ETS, select “start” to rebase at the start of the requested period (<code>"-2y::"</code>in datestring) select <code>TS:PriceTS</code> to get a time series graph, and press <span style="background-color: #003366; color: #FFFFFF;">RUN</span>. The result will be as below.</p>
 <figure><img src="reference/figures/av_shiny_1.jpg" alt="ShinyPic"><figcaption aria-hidden="true">
 ShinyPic
 </figcaption></figure><p>The analytics all follow the same outline. For example, when <code>TS:PriceTS</code> is run, <code><a href="reference/av_runShiny.html">av_runShiny()</a></code> will</p>
 <ol style="list-style-type: decimal">
-<li>Call <a href="https://derekholmes0.github.io/alphvantagepf/reference/av_get_pf.html" class="external-link">av_get_pf()</a> with parameters appropriate to the asset (e.g. <code>TIME_SERIES_DAILY</code> for stocks, <code>FX_DAILY</code> for FX),</li>
+<li>Call <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a> with parameters appropriate to the asset (e.g. <code>TIME_SERIES_DAILY</code> for stocks, <code>FX_DAILY</code> for FX),</li>
 <li>
 <strong>Save</strong> the data in an internal data store, or update existing data as necessary, and</li>
 <li>Plot an interactive graph using the <a href="https://derekholmes0.github.io/FinanceGraphs/reference/fgts_dygraph.html" class="external-link">fgts_dygraph()</a> function.</li>
