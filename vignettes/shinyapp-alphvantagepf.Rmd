@@ -66,7 +66,7 @@ Other optional items that can be set are
 |:---------:|:------------------------------------|
 |Cache Data Directory|Directory to store cached price data.  If not specified, a temporary directory will be created and used.|
 ||Cached data is in a price file (in [fst](https://www.fstpackage.org/) format), and an inventory file|
-|fgts colorset|A named aesthetic set for time series line colors, See [fg_update_aes()](https://derekholmes0.github.io/FinanceGraphs/reference/fg_update_aes.html)|
+|fgts colorset|A named aesthetic set for time series line colors, See [fg_update_aes()](https://derekholmes0.github.io/FinanceGraphs/reference/set_constants.html)|
 |Regr Significance|p-values below which regression terms will be highlighted|
 |AV dump directory|A directory in which to create a file with each downloaded function call.  See below for details.|
 |Capture AV Data|What Alphavantage calls to capture (e.g. Prices, non-prices, or all data)|
