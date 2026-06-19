@@ -16,7 +16,10 @@
 #' @import gt
 #' @import data.table
 gt.basetheme<-function(x,gtopts="all",sizepct=70,style=4,digits=2,seps=FALSE,na_format="-",size="",interactive=FALSE) {
-  style <- fifelse(interactive==TRUE,1,style)
+  if(interactive) {
+    style <- 1
+    sizepct <- 100
+  }
   if(gtopts=="all" | gtopts=="fmtnumber") {
     x = x |> tab_style_body(style=cell_text(color="red"),columns=where(is.numeric),fn=function(x) x<0) |> fmt_number(accounting=TRUE,decimals = digits,use_seps=seps)
     x = x |> sub_missing(missing_text=na_format)
@@ -29,14 +32,13 @@ gt.basetheme<-function(x,gtopts="all",sizepct=70,style=4,digits=2,seps=FALSE,na_
   }
   if(interactive==TRUE) {
     x = x |> opt_interactive(use_filters=TRUE,use_resizers=TRUE, page_size_default=40,use_compact_mode=TRUE) |>
-                tab_options( table.font.size = px(11))
+                tab_options( table.font.size = px(12))
   }
   if(grepl("wide",size) | interactive==TRUE) {
-#    x = x |> tab_options(table.width=pct(90),table.align="left",table.margin.left=px(0))
     x = x |> tab_options(table.align="left",table.margin.left=px(0))
   }
   if(!grepl("smalltext",size)) {
-    x = x |> opt_table_font(stack = "rounded-sans",size="70%")
+    x = x |> opt_table_font(stack = "rounded-sans",size=sprintf("%2.0f%%",sizepct))
   }
   return(x)
 }
@@ -44,11 +46,11 @@ gt.basetheme<-function(x,gtopts="all",sizepct=70,style=4,digits=2,seps=FALSE,na_
 #' @noRd
 decorate_table <- function(gtx) {
   return(gtx |>
-           tab_style(style=cell_text(size="xx-small"),locations=cells_body(rows=(format=="xx-small"))) |>
-           tab_style(style=cell_text(size="x-small"),locations=cells_body(rows=(format=="x-small"))) |>
-           tab_style(style=cell_text(weight="bold"),locations=cells_body(rows=(format=="bold"))) |>
-           tab_style(style=cell_fill(color="yellow"),locations=cells_body(rows=(format=="yellow"))) |>
-           tab_style(style=cell_fill(color="green"),locations=cells_body(rows=(format=="green"))) |>
+           tab_style(style=cell_text(size="xx-small"),locations=cells_body(rows=grepl("xx-small",format))) |>
+           tab_style(style=cell_text(size="x-small"),locations=cells_body(rows=grepl("x-small",format))) |>
+           tab_style(style=cell_text(weight="bold"),locations=cells_body(rows=grepl("bold",format))) |>
+           tab_style(style=cell_fill(color="lightyellow"),locations=cells_body(rows=grepl("yellow",format))) |>
+           tab_style(style=cell_fill(color="lightgreen"),locations=cells_body(rows=grepl("green",format))) |>
            fmt_url(rows=(format=="fmt_url")) |>
            cols_hide(columns=c(format))
   )
@@ -115,22 +117,6 @@ gt.avtheme<- function(x,themeset="",...) {
         cols_hide(s("inlist"))
     }
   }
-  # EQ:DES ============================================================= EQ:DES
-  if(themeset=="eqdesc1") {
-    thisgt <- x |> gt(groupname_col="category",row_group_as_column=TRUE)
-    thisgt <- thisgt |> gt.basetheme() |>
-      row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
-      tab_header(title="Equities") |> tab_footnote(paste("As Of",Sys.time())) |>
-      fmt_number(suffixing=TRUE) |>
-      add_colwidths("eqdisc1")
-  }
-  if(themeset=="eqdescsec") {
-    thisgt <- x |> gt(groupname_col="category",row_group_as_column=TRUE) |> gt.basetheme()
-    thisgt <- thisgt  |> row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
-      tab_header(title="ETF") |>
-      add_colwidths("eqdescsec") |>
-      fmt_number(suffixing=TRUE)
-  }
   # =============================================================
   # If a gt =============================================================
   # =============================================================
@@ -167,8 +153,24 @@ gt.avtheme<- function(x,themeset="",...) {
           fmt_integer(columns=n)
   }
   # EQ:DES ============================================================= EQ:DES
+  if(themeset=="eqdesc1") {
+    #thisgt <- x |> gt(groupname_col="category",row_group_as_column=TRUE) just not formatted right
+    thisgt <- thisgt |> gt.basetheme(interactive=TRUE) |>
+      row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
+      tab_header(title="Equities") |> tab_footnote(paste("As Of",Sys.time())) |>
+      fmt_number(suffixing=TRUE) |>
+      add_colwidths("eqdisc1")
+  }
+  if(themeset=="eqdescsec") {
+    #thisgt <- x |> gt(groupname_col="category",row_group_as_column=TRUE) |> gt.basetheme()
+    thisgt <- thisgt |> gt.basetheme(interactive=TRUE) |> row_order(catprio,prio) |>
+      decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
+      tab_header(title="ETF") |>
+      add_colwidths("eqdescsec") |>
+      fmt_number(suffixing=TRUE)
+  }
   if(themeset=="etfholdings") {
-    thisgt <- thisgt  |> gt.basetheme() |> tab_spanner_delim(delim = "_",reverse=TRUE) |>
+    thisgt <- thisgt  |> gt.basetheme(style=1) |> tab_spanner_delim(delim = "_",reverse=TRUE) |>
               fmt_number(suffixing=TRUE) |>
               tab_header(title="ETF Holdings") |> tab_footnote(paste("retrieved as of",Sys.time()))
   }

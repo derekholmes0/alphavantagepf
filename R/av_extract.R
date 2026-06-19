@@ -32,7 +32,9 @@
 #' @rdname av_extract_df
 #' @export
 av_extract_df <- function(indta,grepstring="",melt=FALSE,empty_dt_onerror=FALSE) {  # Keep symbol, variable
-    indta <- indta[which(indta$ltype=="list"),][grepl(grepstring,get("variable")),]
+    ltype=value_df=keep=NULL
+    indta <- indta[ltype=="list",][grepl(grepstring,get("variable")),]
+    indta <- indta[,keep:=is.data.frame(value_df[[1]]),by=.I][keep==TRUE,] # Take out empty value_dfs
     if(empty_dt_onerror==TRUE && nrow(indta)<=0) {
       return(data.table())
     }

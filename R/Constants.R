@@ -177,9 +177,9 @@ av_shiny_data <- function() {
     "deflist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"],
     "helplist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"],
     "defaults"=data.table::fread("./inst/extdata/av_defaults.csv"),
-    "table_aes"= data.table::fread("./inst/extdata/table_aes.csv"),
     "crypto_list"=data.table::fread("./inst/extdata/cryptocurrency_list.csv"),
-    "overviewlist"=data.table::fread("./inst/extdata/overview_map.csv"),
+    "table_aes"= data.table::fread("./inst/extdata/table_aes.csv"), # columns widths, extra HTML
+    "overviewlist"=data.table::fread("./inst/extdata/overview_map.csv"),  # Formatting of description tables
     "edit_tableoptions"=list('editable1'='row','editable2'='row','pagelen1'=80,'pagelen2'=80,'digits'=3),
     "selectizeoptions" =I("selectize-input: 12px; background-color:red"),
     "inputcss_side" = paste(lapply(yellowed_inputs,(\(x) paste(x,tinputformstyle))),collapse=" "),

@@ -2,14 +2,21 @@
 #' App Support functions
 #'
 #' @noRd
-symbol_grep_by_type <- function(eqlist,grepstr="Equity", rtn="list") {
+symbol_grep_by_type <- function(eqlist,grepstr="Equity",check_vs_inv=TRUE, rtn="list") {
   symbol=NULL
-  if(nrow(the_av$pxinv)<=0) { return("NOPXINV")}
-  if(is.null(eqlist)) { tickerset <- the_av$pxinv[,.(symbol,type,currency)] }
-  else {
-    tickerset <- the_av$pxinv[data.table(symbol=eqlist),on=.(symbol)][,.(symbol,type,currency)]
+  if( check_vs_inv==FALSE ) { # --- -So Many exceptions..  I'm getting tired of this
+    if(grepl("Equity|ETF",grepstr,ignore.case=TRUE)) {
+      tickerset <-data.table(symbol=grepv("[A-Z]/[A-Z]",eqlist,invert=TRUE))
+    }
   }
-  tickerset <- tickerset[grepl(grepstr,type,ignore.case=TRUE),]
+  else {
+    if(nrow(the_av$pxinv)<=0) { return("NOPXINV")}
+    if(is.null(eqlist)) { tickerset <- the_av$pxinv[,.(symbol,type,currency)] }
+    else {
+      tickerset <- the_av$pxinv[data.table(symbol=eqlist),on=.(symbol)][,.(symbol,type,currency)]
+    }
+    tickerset <- tickerset[grepl(grepstr,type,ignore.case=TRUE),]
+  }
   if(rtn=="list") {
     return(tickerset$symbol)
   }

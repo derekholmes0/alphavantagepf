@@ -8,7 +8,7 @@
 #' @import FinanceGraphs
 
 source("./R/utilities.R")
-tver<-"0.7.8"
+tver<-"0.7.81"
 
 # 1.8: News, ability to keep output from one run to the next
 # 1.6: Bug checks and check()
@@ -66,50 +66,52 @@ av_make_ui <- function() {
           ),
           fluidRow(
             tabsetPanel(id="inTabset",selected=the_av$starttab,
-                tabPanel("MAIN", value="main",
-                        gt_output(outputId = "t1gt"),
-                        #splitLayout(gt_output(outputId = "t3l_gt"), gt_output(outputId = "t3r_gt"),cellWidths=c("60%","40%")),
-                        fillPage(div(class = "no-gap-row",
-                                     div(class = "table-pane", gt_output("t3l_gt")),
-                                     div(class = "table-pane", gt_output("t3r_gt")) )),
-                        gt_output(outputId = "t2gt"),
-                        dygraphOutput("view"),
-                        dygraphOutput("view2")
+              # Main: t1gt | t3l_gt + t3r_gt | t2gt | (dy)view1 | (dy)view2
+              tabPanel("MAIN", value="main",
+                gt_output(outputId = "t1gt"),
+                #splitLayout(gt_output(outputId = "t3l_gt"), gt_output(outputId = "t3r_gt"),cellWidths=c("60%","40%")),
+                fillPage(div(class = "no-gap-row",
+                    div(class = "table-pane", gt_output("t3l_gt")),
+                    div(class = "table-pane", gt_output("t3r_gt")) )),
+                gt_output(outputId = "t2gt"),
+                dygraphOutput("view"),
+                dygraphOutput("view2")
                 ),
-                tabPanel("DETAIL", value="detail",gt_output(outputId = "det1gt"), gt_output(outputId = "det2gt"),
-                                  imageOutput("plot1"), imageOutput("plot2")),
-                tabPanel("OPTIONS",value="options",
-                    fluidRow(
-                      column(width=2,span(textInput(inputId="ochains", label="Chains",value=the_av$ochains),style=avsd$labelcss)),
-                      column(width=2,numericInput(inputId="mindelta", label="mindelta", value=5,min=0,max=100)),
-                      column(width=2,selectInput(inputId="otodisplay", label="Output",
+              # Detail: det1gt | det2gt | plot1 | plot2
+              tabPanel("DETAIL", value="detail",
+                gt_output(outputId = "det1gt"), gt_output(outputId = "det2gt"), imageOutput("plot1"), imageOutput("plot2")),
+              tabPanel("OPTIONS",value="options",
+                fluidRow(
+                  column(width=2,span(textInput(inputId="ochains", label="Chains",value=the_av$ochains),style=avsd$labelcss)),
+                  column(width=2,numericInput(inputId="mindelta", label="mindelta", value=5,min=0,max=100)),
+                  column(width=2,selectInput(inputId="otodisplay", label="Output",
                                                  c("reduced","trading","all"),selected=the_av$otodisplay,multiple=FALSE)),
-                      column(width=2,selectInput(inputId="oscaling", label="Scaling",
+                  column(width=2,selectInput(inputId="oscaling", label="Scaling",
                                                  c("None","10contracts","10kMV"),selected=the_av$oscaling,multiple=FALSE))
-                    ),
-                    fluidRow(
-                      gt_output(outputId="opt1gt"),
-                      imageOutput(outputId="optplot1")
-                    )
-                ),
-                tabPanel("NEWS",value="news",
-                    fluidRow(
-                    column(width=2,
-                       numericInput(inputId="nArticles", label="nArticles", value=the_av$nArticles,min=20,max=300),
-                       selectInput(inputId="newssort",label="SortOn",c("time","sentiment","time,symbol","symbol,time"),selected=the_av$newssort,
-                                   multiple=FALSE),
-                       selectInput(inputId="newsfilter",label="Filter on:",c("none","tickerOnly","useMinSentiment","maxDays"),
-                                   selected="none",multiple=TRUE),
-                       span(textInput(inputId="newsgrep", label="Terms to filter out", value=the_av$newsgrep),style=avsd$labelcss),
-                       numericInput(inputId="minabssent", label="MinSentiment", value=the_av$minabssent,min=0,max=1),
-                       numericInput(inputId="maxagedays", label="Maximum Age (Days)", value=the_av$maxagedays,min=0),
-                    ),
-                    column(width=8,
-                       gt_output(outputId = "newsgt")
-                     )
+                  ),
+                  fluidRow(
+                    gt_output(outputId="opt1gt"),
+                    imageOutput(outputId="optplot1")
                   )
                 ),
-                tabPanel("AVOPTS",value="avopts",
+              tabPanel("NEWS",value="news",
+                fluidRow(
+                  column(width=2,
+                    numericInput(inputId="nArticles", label="nArticles", value=the_av$nArticles,min=20,max=300),
+                    selectInput(inputId="newssort",label="SortOn",c("time","sentiment","time,symbol","symbol,time"),selected=the_av$newssort,
+                                   multiple=FALSE),
+                    selectInput(inputId="newsfilter",label="Filter on:",c("none","tickerOnly","useMinSentiment","maxDays"),
+                                   selected="none",multiple=TRUE),
+                    span(textInput(inputId="newsgrep", label="Terms to filter out", value=the_av$newsgrep),style=avsd$labelcss),
+                    numericInput(inputId="minabssent", label="MinSentiment", value=the_av$minabssent,min=0,max=1),
+                    numericInput(inputId="maxagedays", label="Maximum Age (Days)", value=the_av$maxagedays,min=0),
+                    ),
+                  column(width=8,
+                    gt_output(outputId = "newsgt")
+                    )
+                  )
+                ),
+              tabPanel("AVOPTS",value="avopts",
                   column(width=3,
                     actionButton("SetOpts","Set Opts",width='50%',class = "btn btn-primary"),
                     span(passwordInput(inputId="avapikey", label="av api key", value=the_av$avapikey),style=avsd$labelcss),
@@ -139,7 +141,7 @@ av_make_ui <- function() {
 #' @importFrom stats cor
 #' @importFrom shinyjs runjs
 av_make_server <- function() {
-  ts_rebase=ts_events=ts_volparams=NULL
+  ts_rebase=ts_events=ts_volparams=imp=NULL
   out <- list()
   av_server<-function(input, output,session) {
     inlist=list_ts=NULL
@@ -294,7 +296,6 @@ av_make_server <- function() {
       }
       # Make variables out of captured input values
       lapply(names(rv),\(x) { assign(x,rv[[x]],envir=thisenv)})
-      # Save plotting data and tab to select
       av_set_defaults("starttab",tolower(avsd$deflist[runcode==anopt1,]$focus) )
       av_set_default_set("onrun",rv,save="the")
       # Out gets destroyed on end of routine.  Need to keep it in the the environment.
@@ -396,9 +397,11 @@ av_make_server <- function() {
           out[["TS1"]] <- one_px_ts(toplot2,rv,title=paste("Volatility (pct) using ",ts_volparams),events=ts_events,dtstartfrac=dtstartfrac)
           out[["TS2"]] <- one_px_ts(toplot,rv,events=ts_events,dtstartfrac=dtstartfrac)
         }
+
       }
       if(anopt1=="EQ:DES") {
         out[["MSG"]]<-""
+        toplot<-data_from_list(eqlist1,datestring,ts_rebase,dtstartfrac,msg_inputID="istr1") # Just to get the asset type.
         tickerset = the_av$pxinv[data.table(symbol=eqlist1),on=.(symbol)][,.(symbol,type,currency)]
         if( length(eqset <- symbol_grep_by_type(eqlist1,"Equity"))>0 ) {
           eqdt <- rbindlist(lapply(eqset, \(x) av_get_pf(x,"OVERVIEW")))
@@ -407,9 +410,9 @@ av_make_server <- function() {
           eqdta <- olist[eqdt,on=.(variable)][source=="av",]
           eqdta <- eqdta[order(catprio,prio)][,.(category,symbol,catprio,prio,variable,ltype,value_str,format ,value_num)]
           toplot <- dcast(eqdta[order(catprio,prio)], catprio+prio+category + variable+format ~ symbol, value.var="value_str")
-          tbl_loc <- fifelse(length(eqset)>3, "TABLE1GT","TABLE4GT")
-          avsh_clipboard(toplot,"desc")
-          out[[tbl_loc]] <-  toplot |> gt.avtheme(themeset="eqdesc1")
+          toplot <- toplot[,imp:=fifelse(grepl("green|yellow|bold",format),"imp","")]
+          setcolorder(toplot,"imp",after="category")
+          out[["TABLE1GT"]] <-  toplot |> gt.avtheme(themeset="eqdesc1")
         }
         # tab_style(eval(parse(text=fm31)),eval(parse(text=fm32)))
         if( length(eqset <- symbol_grep_by_type(eqlist1,"ETF"))>0 ) {
@@ -419,22 +422,21 @@ av_make_server <- function() {
           eqdta <- olist[eqdt,on=.(variable)][source=="av",]
           toplot <- dcast(eqdta[order(catprio,prio)], catprio+prio+category + variable+format ~ symbol, value.var="value_str")
           sectorset <- eqdt |> av_extract_df("sectors")
-          if("weight" %in% sectorset) {
+          if("weight" %in% colnames(sectorset)) {
             sectorset <- dcast(sectorset[!is.na(sector),][,let(weight=100*weight)], sector ~ symbol,value.var="weight")
             sectorset <- sectorset[,let(category="sects",catprio=max(toplot$catprio)+1,prio=.I,format="")]
             setnames(sectorset,"sector","variable")
             toplot <- rbindlist(list(toplot, sectorset),use.names=TRUE,fill=TRUE)
           }
-          tbl_loc <- fifelse(length(eqset)>3, "TABLE2GT","TABLE3GT")
-          out[[tbl_loc]] <-  toplot |> gt.avtheme(themeset="eqdescsec")
+          out[["DET1GT"]] <-  toplot |> gt.avtheme(themeset="eqdescsec")
+          avsh_set_tabtitle("ETF")
           holdset <- eqdt |> av_extract_df("holdings")
-          if("weight" %in% holdset) {
+          if("weight" %in% colnames(holdset)) {
             holdset <- holdset[,.SD[order(-weight)][,let(n=.I-min(.I)+1, weight=100*weight)], by=.(symbol)]
             holdset <- dcast(holdset[n<=50,],n ~ symbol,value.var=c("description","weight"))
             holdsetcn <- data.table(nm=colnames(holdset)[-1])[,let(i=.I+1,symbol=s(nm,"_")[2]),by=.I][order(symbol,nm)]
             setcolorder(holdset, c(1,holdsetcn$i))
-            out[["DET1GT"]] <- holdset |> gt.avtheme(themeset="etfholdings")
-            avsh_set_tabtitle("ETF Holdings")
+            out[["DET2GT"]] <- holdset |> gt.avtheme(themeset="etfholdings")
           }
         }
       }
@@ -513,7 +515,7 @@ av_make_server <- function() {
       }
       if(anopt1=="EQ:News") {
         av_set_default_set("news",rv)
-        eqset <- symbol_grep_by_type(eqlist1,"Equity|ETF")
+        eqset <- symbol_grep_by_type(eqlist1,"Equity|ETF",check_vs_inv=FALSE)
         allnews <- rbindlist(lapply(eqset,\(x)
                     getNews(x,nArticles=input$nArticles,minabssent=input$minabssent,newsfilter=input$newsfilter,
                               newsagrep=input$newsgrep,maxage=input$maxagedays)))
