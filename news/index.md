@@ -5,6 +5,7 @@
 ## alphavantagepf 0.7.8
 
 - CRAN Ready
+- av_extract_df now only extracts non-empty data.frames.
 
 ## alphavantagepf 0.7.7
 
@@ -19,7 +20,7 @@
 
 ## alphavantagepf 0.7.4
 
-- Added delay to av_get_pf
+- Added timing delay to av_get_pf for multiple small requests.
 
 ## alphavantagepf 0.7.3
 
