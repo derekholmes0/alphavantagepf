@@ -137,6 +137,7 @@ gt.avtheme<- function(x,themeset="",...) {
       tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,type,currency,age), rows=(as.numeric(age)>=3))) |>
       tab_style(style = cell_text(size = px(10)),locations = cells_body(columns = c(loadts))) |>
       tab_footnote(paste("Data older than 3 days highlighted")) |>
+      cols_hide(columns=c("list_ts")) |>
       add_colwidths("pxinv")
   }
   if(themeset=="mktstatus") {

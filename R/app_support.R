@@ -129,11 +129,9 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dtstart
 
 ts_vol <- function(toplot,ts_volparams) {
   volp <- s(ts_volparams)
-  seriesnm <- fifelse(the_av$totrtn,"adjusted_close","close")
-  message("  ... tsvol ",the_av$totrtn, ": > ",seriesnm)
   one_ts_vol <- function(x) {
     tdta <- toplot[[1]][symbol==x,]
-    xdta <- tdta[,lapply(.SD,\(x) x+(get(seriesnm)-close)), .SDcols=s("open;high;low;close")]
+    xdta <- tdta[,lapply(.SD,\(x) x+(get(the_av$seriesnm)-close)), .SDcols=s("open;high;low;close")]
     xdta <- tdta[,lapply(.SD,\(x) fcoalesce(x,close)),  .SDcols=s("open;high;low;close")]
     setnafill(xdta,"locf")
     data.table(timestamp=tdta$timestamp,variable=x,value=100*TTR::volatility(xdta, calc=volp[[1]],n=as.integer(volp[[2]]), N=as.integer(volp[[3]])))
