@@ -4,6 +4,7 @@
 #' @importFrom fst read_fst write_fst
 #' @importFrom lubridate is.instant
 #' @import data.table
+#' @importFrom stats setNames
 #'
 #' @name av_add_data
 #' @description Adds price data to [av_runShiny()] internal data.

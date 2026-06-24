@@ -48,6 +48,8 @@
 #'  - `CleanOnStart` : cleans out the cache file every time the app is started.
 #'  - `SaveEveryAVCall` : Saves cache file after every call.
 #'  - `SaveNow` : Save cache file when this is selected.
+#' @returns
+#' A `ShinyAppHandle` object.
 #' @examples
 #' \dontrun{
 #' av_runShiny()
@@ -64,5 +66,5 @@ av_runShiny <- function() {
     av_reset_defaults(fileopts=FALSE)
     save_avs_state("all",msg="I N I T")
   }
-  shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1400,height=800,"launch.browser"))
+  return(startApp(shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1400,height=800,"launch.browser"))))
 }

@@ -1,6 +1,22 @@
 # alphavantagepf (development version)
 
-# alphavantagepf 0.8.1
+# alphavantagepf 0.8.2: in Progress
+
+Changes
+
+`av_runShiny()` now returns a `ShinyAppHandle` object and does not block execution.+-
+
+
+New items
+
+* Saving dividends and Earnings into database.
+* Dividends and earnings into px graph
+* P/E and P/D graphs
+* Hooks for external functions
+* Statistics
+* calendars
+
+# alphavantagepf 0.8.1 (RELEASE)
 
 * Fixed initial user directory creation problem.
 
