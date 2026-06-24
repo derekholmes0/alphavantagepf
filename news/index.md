@@ -2,6 +2,16 @@
 
 ## alphavantagepf (development version)
 
+## alphavantagepf 0.8.1
+
+- Fixed initial user directory creation problem.
+
+## alphavantagepf 0.8.0
+
+CRAN release: 2026-06-22
+
+- Release to CRAN
+
 ## alphavantagepf 0.7.8
 
 - CRAN Ready

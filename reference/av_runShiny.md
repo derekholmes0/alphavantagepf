@@ -52,7 +52,7 @@ press the \`RUN button. Options include:
 following fields, and hit the "Set Opts" button.
 
 - **fgts colorset**: A named list of colors which can be set using the
-  [`FinanceGraphs::fg_update_aes()`](https://rdrr.io/pkg/FinanceGraphs/man/set_constants.html)
+  [`FinanceGraphs::fg_update_aes()`](https://derekholmes0.github.io/FinanceGraphs/reference/set_constants.html)
   function.
 
 - **Regr Significance**: p-level to highlight significant regressions.
