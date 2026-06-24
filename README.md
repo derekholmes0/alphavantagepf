@@ -29,7 +29,7 @@ or the production version from CRAN using
 <span style="color:red"> \*\* Note 6/24/2026: There is a compilation
 issue with CRAN that is in the process of being fixed. Please use the
 `pak::pak("derekholmes0/alphavantagepf")` to install the package if
-using new Shiny app</span>.
+using new Shiny app.</span>.
 
 Load the package.
 
