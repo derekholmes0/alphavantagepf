@@ -8,7 +8,7 @@
 #' @import FinanceGraphs
 
 source("./R/utilities.R")
-tver<-"0.7.81"
+tver<-"0.8.11"
 
 # 1.8: News, ability to keep output from one run to the next
 # 1.6: Bug checks and check()
@@ -421,7 +421,7 @@ av_make_server <- function() {
           olist <- avsd$overviewlist[,variable:=ETFName][]
           eqdta <- olist[eqdt,on=.(variable)][source=="av",]
           toplot <- dcast(eqdta[order(catprio,prio)], catprio+prio+category + variable+format ~ symbol, value.var="value_str")
-          sectorset <- eqdt |> av_extract_df("sectors")
+          sectorset <- eqdt |> av_extract_df("sectors",empty_dt_onerror=TRUE)
           if("weight" %in% colnames(sectorset)) {
             sectorset <- dcast(sectorset[!is.na(sector),][,let(weight=100*weight)], sector ~ symbol,value.var="weight")
             sectorset <- sectorset[,let(category="sects",catprio=max(toplot$catprio)+1,prio=.I,format="")]
@@ -430,7 +430,7 @@ av_make_server <- function() {
           }
           out[["DET1GT"]] <-  toplot |> gt.avtheme(themeset="eqdescsec")
           avsh_set_tabtitle("ETF")
-          holdset <- eqdt |> av_extract_df("holdings")
+          holdset <- eqdt |> av_extract_df("holdings",empty_dt_onerror=TRUE)
           if("weight" %in% colnames(holdset)) {
             holdset <- holdset[,.SD[order(-weight)][,let(n=.I-min(.I)+1, weight=100*weight)], by=.(symbol)]
             holdset <- dcast(holdset[n<=50,],n ~ symbol,value.var=c("description","weight"))
