@@ -380,19 +380,19 @@ av_make_server <- function() {
           out[["TS2"]] <- one_px_ts(toplot_corr[,.(timestamp,variable=symbol,value=rcor)],rv,
                     title=paste0("Rolling ",volp_n," day kendall correlation"),extra_anno="hline,100",
                     events=ts_events,dt_window=dtstr_window)
-          rtnscatall <- fg_scatplot(toplot_idx,"rtn ~ mktrtn + color:symbol +  point:label", "lm",datecuts=c(7),
-                                        title=paste0("Asset Daily returns vs ",eqlist2[1], "Daily rtn"),
-                                        axislabels=paste0("Asset TR;",eqlist2[1]," TR"),returnregresults=TRUE)
-          out[["TABLE1GT"]]<- rtnscatall[[2]] |> gt.avtheme(themeset="activeregression", s(istr2)[1], sigpct)
-          toplot_idx <- toplot_idx[,let(rtnidx=100*exp(cumrtn), mktrtnidx=100*exp(cummktrtn))]
           ffor = "y~x"
           if("tailhedge" %in% rv$scatopts) {
             knots <- round(quantile(toplot_idx[symbol==first(symbol),]$mktrtn,c(0.2,0.8),na.rm=T),2)
             ffor  <- paste0("y~splines::bs(x,knots=c(",paste(knots,collapse=","),"),degree=1)")
             message_if_red(TRUE,"ActiveTS: Using Splineset: ",ffor)
           }
-          o2 <- fg_scatplot(toplot_idx,"rtnidx ~ mktrtnidx + color:symbol + point:label", "lm",datecuts=c(7),
+          rtnscatall <- fg_scatplot(toplot_idx,"rtn ~ mktrtn + color:symbol +  point:label", "lm",datecuts=c(7),
                                         tformula=formula(ffor),
+                                        title=paste0("Asset Daily returns vs ",eqlist2[1], "Daily rtn"),
+                                        axislabels=paste0("Asset TR;",eqlist2[1]," TR"),returnregresults=TRUE)
+          out[["TABLE1GT"]]<- rtnscatall[[2]] |> gt.avtheme(themeset="activeregression", s(istr2)[1], sigpct)
+          toplot_idx <- toplot_idx[,let(rtnidx=100*exp(cumrtn), mktrtnidx=100*exp(cummktrtn))]
+          o2 <- fg_scatplot(toplot_idx,"rtnidx ~ mktrtnidx + color:symbol + point:label", "lm",datecuts=c(7),
                                         title=paste0("TR Level vs Level ",dtstr_hist),axislabels="Asset TR Index;Index TR Index")
           out[["SCAT1"]] <- patchwork::wrap_plots( rtnscatall[[1]],o2,ncol=2)
           avsh_set_tabtitle("Scatter")

@@ -88,14 +88,24 @@ gt.avtheme<- function(x,themeset="",...) {
   ldots = list(...)
   # -- Tables that require further processing
   if(themeset=="activeregression") {
-    x <- x[.(term=c("(Intercept)","x"), to=c("a","Beta")),on="term",term:=i.to]
-    x <- x |> dcast(regfactor ~ term,value.var=setdiff(colnames(x),s("regfactor;term")))
-    setnames(x,"regfactor","ticker")
-    thisgt <- x |> gt() |> tab_spanner_delim(delim="_") |> gt.basetheme(gtopts="theme") |>
-      tab_style(style=cell_text(color="red",weight="bold"),
-                locations=cells_body(columns=estimate_Beta, rows=p.value_Beta<=as.numeric(ldots[[2]]))) |>
+    nterms = max(x[,.N,by=.(regfactor)]$N)
+    if(nterms==2) {
+      x <- x[.(term=c("(Intercept)","x"), to=c("a","Beta")),on="term",term:=i.to]
+      x <- x |> dcast(regfactor ~ term,value.var=setdiff(colnames(x),s("regfactor;term")))
+      setnames(x,"regfactor","ticker")
+      thisgt <- x |> gt() |> tab_spanner_delim(delim="_") |> gt.basetheme(gtopts="theme")
+      thisgt = thisgt |> tab_style(style=cell_text(color="red",weight="bold"),
+                                   locations=cells_body(columns=estimate_Beta, rows=p.value_Beta<=as.numeric(ldots[[2]])))
+    }
+    else {
+      thisgt <- x |> gt() |> tab_spanner_delim(delim="_") |> gt.basetheme(gtopts="theme")
+      thisgt = thisgt |> tab_style(style=cell_text(color="red",weight="bold"),
+                                   locations=cells_body(columns=estimate, rows=p.value<=as.numeric(ldots[[2]])))
+    }
+    thisgt = thisgt |>
       tab_header(title=paste0("Return regression vs ",ldots[[1]])) |>
       tab_footnote(paste("Estimated highlighted at p=",100*as.numeric(ldots[[2]]), "pct as of",Sys.time()))
+    return(thisgt)
   }
   if(themeset=="live") {
     # x = av_get_pf(c("ORCL","IBM","EWZ","ARGT"),"REALTIME_BULK_QUOTES",melt=FALSE)

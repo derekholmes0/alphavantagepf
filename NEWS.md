@@ -20,7 +20,7 @@ New Features
 
 * `av_runShiny()` now returns a `ShinyAppHandle` object and does not block execution
 * `av_extract_df` now returns an empty data.table if there is nothing to extract. Set `empty_dt_onerror=FALSE` to throw an error.
-* Scatter plot added to ActiveTS, with piecewise linear regression
+* Scatter plot added to ActiveTS, with piecewise linear regression, accessed via "tailhedge" scatter plot option
 
 
 Small Changes
