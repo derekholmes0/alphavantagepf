@@ -8,7 +8,7 @@
 #' @import FinanceGraphs
 
 source("./R/utilities.R")
-tver<-"0.8.12"
+tver<-"0.8.13"
 
 av_make_ui <- function() {
   order1=order2=aesnm=NULL
@@ -340,6 +340,7 @@ av_make_server <- function() {
       }
       if(anopt1=="TS:PriceTS") {
         toplot<-data_from_list(eqlist1,dtstr_hist,ts_rebase,dtstr_window,msg_inputID="istr1")
+        the_av$plot1_dta <- toplot
         out[["MSG"]]<-""
         if( nrow(toplot[[1]])>0) {
           out[["TS1"]] <- one_px_ts(toplot,rv,events=ts_events,dt_window=dtstr_window)
@@ -349,8 +350,18 @@ av_make_server <- function() {
       if(anopt2=="TS:PriceTS") {
         out[["MSG"]]<-""
         toplot<-data_from_list(eqlist2,dtstr_hist,ts_rebase,dtstr_window,msg_inputID="istr2")
+        the_av$plot2_dta <- toplot
         if( nrow(toplot[[1]])>0) {
           out[["TS2"]] <- one_px_ts(toplot,rv,events=ts_events,dt_window=dtstr_window)
+          if(nrow(tp2<-the_av$plot1_dta[[1]])>0) {
+            combdta = toplot[[1]][symbol==first(symbol),.(timestamp,x_close=adjusted_close)]
+            combdta <- combdta[tp2[,.(symbol,timestamp,y_close=adjusted_close)], on=.(timestamp)]
+            setnafill(combdta,type="locf",cols=s("x_close;y_close"))
+            out[["SCAT1"]] <- fg_scatplot(combdta,"y_close ~ x_close + color:symbol + doi:recent + point:label",
+                                          type="lmnoeqn",tsize=5,axislabels=paste0("PX ",eqlist2[[1]],";PX (Line 1)"),
+                                          title="Px vs Px")
+            avsh_set_tabtitle("Scatter")
+          }
           save_avs_state("px",msg="px2")
         }
       }

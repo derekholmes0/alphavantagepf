@@ -147,7 +147,7 @@ gt.avtheme<- function(x,themeset="",...) {
   if(themeset=="pxinv") {
     thisgt <- thisgt |> tab_header(title="Data Inventory") |> gt.basetheme(interactive="all") |>
       fmt_datetime(columns=loadts,date_style="Md",time_style="iso-short") |>
-      tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,type,currency,age), rows=(as.numeric(age)>=3))) |>
+      tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,name,type,currency,age), rows=(as.numeric(age)>=3))) |>
       tab_style(style = cell_text(size = px(10)),locations = cells_body(columns = c(loadts))) |>
       tab_footnote(paste("Data older than 3 days highlighted")) |>
       cols_hide(columns=c("list_ts")) |>

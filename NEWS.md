@@ -6,7 +6,6 @@ Bug todo:
 
 New feature todo
 
-* Scattperplot first on second with run of secondTS
 * Total return and basic statistics with graphed prices.
 * Saving dividends and Earnings into database.
 * Dividends and earnings into px graph
@@ -21,6 +20,7 @@ New Features
 * `av_runShiny()` now returns a `ShinyAppHandle` object and does not block execution
 * `av_extract_df` now returns an empty data.table if there is nothing to extract. Set `empty_dt_onerror=FALSE` to throw an error.
 * Scatter plot added to ActiveTS, with piecewise linear regression, accessed via "tailhedge" scatter plot option
+* Scatter plot added to PriceTS line 1 vs PriceTS line 2 when line 2 is plotted.
 
 
 Small Changes
