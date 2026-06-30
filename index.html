@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -239,7 +239,7 @@
 <div class="section level1">
 <h1 id="shiny-interface">Shiny interface<a class="anchor" aria-label="anchor" href="#shiny-interface"></a>
 </h1>
-<p>A Shiny interface is included in the package to manage and visualize data. To launch the app, use <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html">av_runShiny()</a>, and start with the first step of setting your API key. (See <a href="https://derekholmes0.github.io/alphavantagepf/articles/shinyapp-alphavantagepf.html">Vignette</a> for other items you can set) Once the API key is set, type in a set of symbols you ae interested in (separated by semicolons) and select an analysis to make. For example, to show a normalized total return chart for 3 common ETS, select “start” to rebase at the start of the requested period (<code>"-2y::"</code>in datestring) select <code>TS:PriceTS</code> to get a time series graph, and press <span style="background-color: #003366; color: #FFFFFF;">RUN</span>. The result will be as below.</p>
+<p>A Shiny interface is included in the package to manage and visualize data. To launch the app, use <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html">av_runShiny()</a>, and start with the first step of setting your API key. (See <a href="https://derekholmes0.github.io/alphavantagepf/articles/shinyapp-alphavantagepf.html">Vignette</a> for other items you can set) Once the API key is set, type in a set of symbols you ae interested in (separated by semicolons) and select an analysis to make. For example, to show a normalized total return chart for 3 common ETS, select “start” to rebase at the start of the requested period (<code>"-2y::"</code>in <code>dts</code>) select <code>TS:PriceTS</code> to get a time series graph, and press <span style="background-color: #003366; color: #FFFFFF;">RUN</span>. The result will be as below.</p>
 <figure><img src="reference/figures/av_shiny_1.jpg" alt="ShinyPic"><figcaption aria-hidden="true">
 ShinyPic
 </figcaption></figure><p>The analytics all follow the same outline. For example, when <code>TS:PriceTS</code> is run, <code><a href="reference/av_runShiny.html">av_runShiny()</a></code> will</p>

@@ -19,6 +19,8 @@ av_runShiny()
 
 Nothing
 
+A `ShinyAppHandle` object.
+
 ## Details
 
 Invocation starts Shiny application. See vignette for full details. **On

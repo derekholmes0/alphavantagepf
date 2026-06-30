@@ -297,7 +297,7 @@ for other items you can set) Once the API key is set, type in a set of
 symbols you ae interested in (separated by semicolons) and select an
 analysis to make. For example, to show a normalized total return chart
 for 3 common ETS, select “start” to rebase at the start of the requested
-period (`"-2y::"`in datestring) select `TS:PriceTS` to get a time series
+period (`"-2y::"`in `dts`) select `TS:PriceTS` to get a time series
 graph, and press RUN. The result will be as below.
 
 ![ShinyPic](reference/figures/av_shiny_1.jpg)

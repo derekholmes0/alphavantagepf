@@ -14,7 +14,7 @@ returns melted data.table from calls to `av_get_pf("DIVIDENDS")` or
 ## Usage
 
 ``` r
-av_extract_df(indta, grepstring = "", melt = FALSE, empty_dt_onerror = FALSE)
+av_extract_df(indta, grepstring = "", melt = FALSE, empty_dt_onerror = TRUE)
 
 av_extract_fx(indta, outputform = "common", cols = "")
 
@@ -40,7 +40,7 @@ av_extract_divs_or_splits(indta)
 
 - empty_dt_onerror:
 
-  (default : FALSE): Return gracefully an empty data.table if requested
+  (default : TRUE): Return gracefully an empty data.table if requested
   item is not present.
 
 - outputform:

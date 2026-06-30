@@ -15,7 +15,7 @@ gt.basetheme(
   seps = FALSE,
   na_format = "-",
   size = "",
-  interactive = FALSE
+  interactive = ""
 )
 ```
 
@@ -56,4 +56,5 @@ gt.basetheme(
 
 - interactive:
 
-  (default: `FALSE`) Add interactive elements
+  (default: "") String with interative elements: contains one of
+  `(all|filter|search)`
