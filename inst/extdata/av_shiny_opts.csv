@@ -1,4 +1,4 @@
-cat,order1,order2,category,runcode,focus,datestring,help,inpstring,window
+cat,order1,order2,category,runcode,focus,dtstr_hist,help,inpstring,window
 runset,0,0,Gen,SelectOption,,,,,1
 runset,1,,Gen,Gen:Inventory,MAIN,,Data and List inventory,,1
 runset,2,1,Gen,Gen:LivePx,MAIN,,Summarize Live Prices,,1

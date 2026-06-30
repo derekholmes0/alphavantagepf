@@ -13,7 +13,7 @@ gt.basetheme(
   seps = FALSE,
   na_format = "-",
   size = "",
-  interactive = FALSE
+  interactive = ""
 )
 }
 \arguments{
@@ -33,7 +33,7 @@ gt.basetheme(
 
 \item{size}{(default: "") Size of text, either \code{""} or \code{"small"}}
 
-\item{interactive}{(default: \code{FALSE}) Add interactive elements}
+\item{interactive}{(default: "") String with interative elements: contains one of \code{(all|filter|search)}}
 }
 \description{
 Adds default elements to \code{\link[gt:gt]{gt()}} table

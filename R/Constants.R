@@ -172,7 +172,7 @@ av_make_dtmap <- function(yrs_ahead=5) {
 #' @importFrom usethis use_data
 av_shiny_data <- function() {
   tinputformstyle <- I("{font-size:12px; font-weight:bold; background-color: #ffff99}")
-  yellowed_inputs <- s("#datestring;#events;#volparams;#forecast;#pointers;#window;#ochains")
+  yellowed_inputs <- s("#dtstr_hist;#dtstr_window;#events;#volparams;#forecast;#pointers;#window;#ochains")
   avsd <- list(
     "deflist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"],
     "helplist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"],

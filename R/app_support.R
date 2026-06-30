@@ -25,24 +25,26 @@ symbol_grep_by_type <- function(eqlist,grepstr="Equity",check_vs_inv=TRUE, rtn="
   }
 }
 
-data_from_list <-function(inlist,datestring,ts_rebase,dtstartfrac,msg_inputID="istr1") {
-    toplot <- sapply(inlist, \(x) manage_epx(x,datestring,addlive=the_av$uselive))
-    if(length(badtickers <- names(toplot)[grep("ERROR",toplot)])>0) {
+data_from_list <-function(inlist,datestring,ts_rebase,dtstr_window,msg_inputID="istr1") {
+  inlist=unique(inlist)
+  toplot <- sapply(inlist, \(x) manage_epx(x,datestring,addlive=the_av$uselive))
+  if(length(badtickers <- names(toplot)[grep("ERROR",toplot)])>0) {
       quick_message(msg_inputID,paste("Invalid tickers:", paste0(badtickers,sep=" ")))
-    }
-    inlist <- inlist[!grepl("ERROR",toplot)]
-    #quick_message(msg_inputID,"Data retrived:", paste0(inlist,collapse=" "))
-    toplot <- get_one_ts(inlist,ts_rebase,datestring,dtstartfrac) # REturns list(data.table,"") if nothing valid
-    avsh_clipboard(toplot[[1]],"px")
-    return(toplot)
+  }
+  inlist <- inlist[!grepl("ERROR",toplot)]
+  #quick_message(msg_inputID,"Data retrived:", paste0(inlist,collapse=" "))
+  toplot <- get_one_ts(inlist,ts_rebase,datestring,dtstr_window) # REturns list(data.table,"") if nothing valid
+  avsh_clipboard(toplot[[1]],"px")
+  return(toplot)
 }
 
-get_one_ts <- function(assets,rebase,datestring,dtstartfrac) {
+get_one_ts <- function(assets,rebase,datestring,dtstr_window) {
   symbol=NULL
   toplot <- the_av$pxd[data.table(symbol=assets),on=.(symbol)] |> narrowbydtstr(datestring)
   rebasedt <- fcase(rebase=="none","",
                     rebase=="start",paste0(format(toplot[1,]$timestamp,"%Y-%m-%d"),",100"),
-                    rebase=="focus",paste0(format(toplot[,.N,by=.(timestamp)][,.SD[floor(.N*dtstartfrac/100)]]$timestamp,"%Y-%m-%d"),",100"))
+                    rebase=="focus",paste0(format(
+                        max(toplot[1,]$timestamp,gendtstr(dtstr_window,rtn="first")),"%Y-%m-%d"),",100"))
   #message_if_green(the_av$verbose,"get_one_ts(",paste0(assets,collapse=" "),") retrieves ",nrow(toplot), " rows up to ",as.Date(max(toplot$timestamp)))
   return(list(toplot,rebasedt))
 }
@@ -96,7 +98,7 @@ oneticker_divs <- function(thisticker,datestring) {
   return(divs[])
 }
 
-one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dtstartfrac=NULL) {
+one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_window=NULL) {
   symbol=low=high=medgap=NULL
   seriesnm <- fifelse(rv$totrtn,"adjusted_close","close")
   if(is.data.table(toplot[[1]])) {
@@ -116,9 +118,9 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dtstart
     "lastlabel" %in% rv$gropts, "last,line",
     "last" %in% rv$gropts, "last,linevalue",
     default = "")
-  xstepcols = data.table(symbol=unique(fgdt$variable))[the_av$pxinv,on=.(symbol)][fcoalesce(as.numeric(medgap),1)>4,]
+  xstepcols = the_av$pxinv[data.table(symbol=unique(fgdt$variable)),on=.(symbol)][fcoalesce(as.numeric(medgap),1)>4,]
   if(nrow(xstepcols)>0) { stepcols=xstepcols$symbol } else { stepcols<- FALSE }
-  outdyg <- fgts_dygraph(fgdt,title=title,events=events, dtstartfrac=dtstartfrac/100,
+  outdyg <- fgts_dygraph(fgdt,title=title,events=events, dtwindow=dt_window,
                          annotations=paste0(c(tanno,extra_anno),collapse=";"), colorset=the_av$ts_colorset,
                          splitcols=("splitts" %in% rv$gropts),roller=1,
                          stepcols=stepcols,
@@ -139,6 +141,18 @@ ts_vol <- function(toplot,ts_volparams) {
   return(rbindlist(lapply(unique(toplot[[1]]$symbol), one_ts_vol)))
 }
 
+get_allNews <- function(eqlist,rv) {
+  symbol=sntmt=time_published=NULL
+  allnews=data.table()
+  eqset <- symbol_grep_by_type(eqlist,"Equity|ETF",check_vs_inv=FALSE)
+  allnews <- rbindlist(lapply(eqset,\(x)
+                              getNews(x,nArticles=rv$nArticles,minabssent=rv$minabssent,newsfilter=rv$newsfilter,
+                                      newsagrep=rv$newsgrep,maxage=rv$maxagedays)))
+  if(rv$newssort=="sentiment") { allnews<- allnews[order(symbol,-sntmt)] }
+  if(rv$newssort=="time,symbol") { allnews<- allnews[order(-time_published,symbol)] }
+  if(rv$newssort=="symbol,time") { allnews<- allnews[order(symbol, -time_published)] }
+  return(allnews)
+}
 
 getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),newsagrep="",maxage=+Inf) {
   news0=news1=artno=ticker=overall_sentiment_score=time_published=title=NULL

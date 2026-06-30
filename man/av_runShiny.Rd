@@ -8,6 +8,8 @@ av_runShiny()
 }
 \value{
 Nothing
+
+A \code{ShinyAppHandle} object.
 }
 \description{
 \code{av_runShiny()} runs an interactive RShiny app to download, manage, and visualize data from the \href{https://www.alphavantage.co/documentation/}{Alpha Vantage} data service.

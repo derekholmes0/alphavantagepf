@@ -2,19 +2,38 @@
 
 # alphavantagepf 0.8.2: in Progress
 
-Changes
+Bug todo:
 
-`av_runShiny()` now returns a `ShinyAppHandle` object and does not block execution.+-
+New feature todo
 
-
-New items
-
+* Scattperplot first on second with run of secondTS
+* Total return and basic statistics with graphed prices.
 * Saving dividends and Earnings into database.
 * Dividends and earnings into px graph
 * P/E and P/D graphs
 * Hooks for external functions
 * Statistics
 * calendars
+* reset splitfirst on ActiveTS -- very confusing
+
+New Features
+
+* `av_runShiny()` now returns a `ShinyAppHandle` object and does not block execution
+* `av_extract_df` now returns an empty data.table if there is nothing to extract. Set `empty_dt_onerror=FALSE` to throw an error.
+* Scatter plot added to ActiveTS, with piecewise linear regression
+
+
+Small Changes
+
+* Improved filtering and search acrosss tables.
+* Option sets and parameters are now persistent
+* Slider for date windows now replaced  with date string
+* GUI reorganization, including moving volatility parameters to AVOPTS
+
+Bug fixes
+
+* Fixed app crash if no earnings transcript available.
+* Fixed graphing so that stepPlots are chosen appropriately, not always.
 
 # alphavantagepf 0.8.1 (RELEASE)
 

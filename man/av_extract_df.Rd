@@ -7,7 +7,7 @@
 \alias{av_extract_divs_or_splits}
 \title{Extract data from Alpha Vantage returned data}
 \usage{
-av_extract_df(indta, grepstring = "", melt = FALSE, empty_dt_onerror = FALSE)
+av_extract_df(indta, grepstring = "", melt = FALSE, empty_dt_onerror = TRUE)
 
 av_extract_fx(indta, outputform = "common", cols = "")
 
@@ -22,7 +22,7 @@ av_extract_divs_or_splits(indta)
 
 \item{melt}{Return data in melted/normalized form}
 
-\item{empty_dt_onerror}{(default : FALSE): Return gracefully an empty data.table if requested item is not present.}
+\item{empty_dt_onerror}{(default : TRUE): Return gracefully an empty data.table if requested item is not present.}
 
 \item{outputform}{(default : \code{common}, \code{av_extract_fx()} only):  Use common names from \code{REALTIME_BULK_QUOTES}}
 

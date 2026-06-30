@@ -63,7 +63,7 @@ av_runShiny <- function() {
     options(av_api_entitlement = the_av$avapientitlement)
   }
   else {
-    av_reset_defaults(fileopts=FALSE)
+    av_reset_defaults(fileopts=FALSE) # Only use true if reinstalling entire package
     save_avs_state("all",msg="I N I T")
   }
   return(startApp(shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1400,height=800,"launch.browser"))))
