@@ -83,7 +83,7 @@ add_colwidths <- function(gtx,xtablenm) {
 gt.avtheme<- function(x,themeset="",...) {
   term=`i.to`=estimate_Beta=p.value_Beta=loadts=n=catprio=prio=matchScore=nlink=sntmt=time_published=estiamtedEPS=NULL
   est_low=est_high=est_n=est_30dpchg=est_90dpchg=divdays=estimatedEPS=volume=low=high=chgpct=EH_chgpct=age=EH_mid=isah=inlist=thisgt=NULL
-  tablenm=aesnm=NULL
+  tablenm=aesnm=regfactor=estimate=p.value=beg_dt=NULL
   ntable_len<-0
   ldots = list(...)
   # -- Tables that require further processing
@@ -151,6 +151,9 @@ gt.avtheme<- function(x,themeset="",...) {
       tab_style(style = cell_text(size = px(10)),locations = cells_body(columns = c(loadts))) |>
       tab_footnote(paste("Data older than 3 days highlighted")) |>
       cols_hide(columns=c("list_ts")) |>
+      cols_move_to_start(s("type")) |>
+      fmt_datetime(columns=c(beg_dt,end_dt),format="y.mn.d") |>
+      cols_merge(columns=c(beg_dt,end_dt), pattern = "{1}::{2}") |>
       add_colwidths("pxinv")
   }
   if(themeset=="mktstatus") {

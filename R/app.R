@@ -8,7 +8,9 @@
 #' @import FinanceGraphs
 
 source("./R/utilities.R")
-tver<-"0.8.13"
+tver<-"0.8.135"
+
+# 135: Separate out inventory tab, start Plumbing for new functions
 
 av_make_ui <- function() {
   order1=order2=aesnm=NULL
@@ -63,7 +65,7 @@ av_make_ui <- function() {
           ),
           fluidRow(
             tabsetPanel(id="inTabset",selected=the_av$starttab,
-              # Main: t1gt | t3l_gt + t3r_gt | t2gt | (dy)view1 | (dy)view2
+              # Generic tab 1: Main: t1gt | t3l_gt + t3r_gt | t2gt | (dy)view1 | (dy)view2
               tabPanel("MAIN", value="main",
                 gt_output(outputId = "t1gt"),
                 #splitLayout(gt_output(outputId = "t3l_gt"), gt_output(outputId = "t3r_gt"),cellWidths=c("60%","40%")),
@@ -74,9 +76,16 @@ av_make_ui <- function() {
                 dygraphOutput("view"),
                 dygraphOutput("view2")
                 ),
-              # Detail: det1gt | det2gt | plot1 | plot2
-              tabPanel("DETAIL", value="detail",
-                gt_output(outputId = "det1gt"), gt_output(outputId = "det2gt"), imageOutput("plot1"), imageOutput("plot2")),
+              # Generic tab 2: Detail: det1gt | det2gt | plot1 | plot2
+              tabPanel("DETAIL", value="detail",gt_output(outputId="det1gt"), gt_output(outputId="det2gt"),imageOutput("plot1"),imageOutput("plot2")),
+              # Other tabs
+              tabPanel("INVENTORY",value="inventory",
+                  actionButton("RefreshInv","RefreshInv",width='30%',class = "btn btn-primary"),
+                  tabsetPanel(id="inv_tabset",selected="inv1",
+                    tabPanel("Assets",value="inv1", gt_output(outputId="inv1") ),
+                    tabPanel("AssetList",value="inv2", gt_output(outputId="inv2") )
+                  )
+              ),
               tabPanel("OPTIONS",value="options",
                 fluidRow(
                   column(width=2,span(textInput(inputId="ochains", label="Chains",value=the_av$ochains),style=avsd$labelcss)),
@@ -143,7 +152,7 @@ av_make_ui <- function() {
 #' @importFrom stats quantile formula
 
 av_make_server <- function() {
-  ts_rebase=ts_events=ts_volparams=imp=NULL
+  ts_rebase=ts_events=ts_volparams=imp=x_close=y_close=NULL
   out <- list()
   av_server<-function(input, output,session) {
     inlist=list_ts=NULL
@@ -255,7 +264,22 @@ av_make_server <- function() {
       save_avs_state("all",msg="sEToPTS")
       th1 <- th1[,.(nm,old=toget)][dump_the(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
       th1 <- th1[,.SD,.SDcols=s("classtype;nm;toget;format")]
-      output$dumpthe <- render_gt(expr=th1 |> gt() |> gt.basetheme() |> decorate_table())
+      output$dumpthe <- render_gt(th1 |> gt() |> gt.basetheme(interactive="filter") |> decorate_table())
+    })
+
+    observe({ # Want executed at startup
+      if(input$RefreshInv==1 || exists("do_on_start",envir=the_av)) {
+        quick_message("anopt1","Inventory Loading")
+        if(nrow(the_av$pxinv)<=0) {  quick_message("istr1","Create Data by running a Time Series Graph") }
+        else {
+          output$inv1 <- the_av$pxinv[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv") |> render_gt()
+          output$inv2 <- dump_assetgroups(returngt=TRUE) |>  gt.avtheme(themeset="assetgroups") |> render_gt()
+        }
+        #the_av$starttab <- "INVENTORY"
+        the_av$do_on_start <- NULL
+        message_if_green(the_av$verbose,"Inventory on way to tab")
+        #updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
+      }
     })
 
     observeEvent(input$capture_av_what, {
@@ -312,15 +336,6 @@ av_make_server <- function() {
       avsh_set_tabtitle()
       av_set_defaults("seriesnm", fifelse(rv$totrtn,"adjusted_close","close"))
       av_set_defaults("uselive",rv$useLive)
-      if(anopt1=="Gen:Inventory") {
-        if(nrow(the_av$pxinv)<=0) {  quick_message("istr1","Create Data by running a Time Series Graph") }
-        else {
-          out[["TABLE3GT"]]<- the_av$pxinv[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv")
-          out[["DET1GT"]]<- dump_assetgroups(returngt=TRUE) |>  gt.avtheme(themeset="assetgroups")
-          out[["DET2GT"]]<- av_get_pf("","MARKET_STATUS")  |> av_extract_df()  |>  gt.avtheme(themeset="mktstatus")
-          avsh_set_tabtitle("AssetList")
-        }
-      }
       if(anopt1=="Gen:LivePx") {
         toplot <- symbol_grep_by_type(NULL,"Equity|ETF")
         if(toplot[[1]]=="NOPXINV") {
@@ -349,7 +364,7 @@ av_make_server <- function() {
       }
       if(anopt2=="TS:PriceTS") {
         out[["MSG"]]<-""
-        toplot<-data_from_list(eqlist2,dtstr_hist,ts_rebase,dtstr_window,msg_inputID="istr2")
+        toplot<-data_from_list(eqlist2,dtstr_hist,ts_rebase,dtstr_window,msg_inputID="istr2",copytable=FALSE)
         the_av$plot2_dta <- toplot
         if( nrow(toplot[[1]])>0) {
           out[["TS2"]] <- one_px_ts(toplot,rv,events=ts_events,dt_window=dtstr_window)
@@ -357,9 +372,14 @@ av_make_server <- function() {
             combdta = toplot[[1]][symbol==first(symbol),.(timestamp,x_close=adjusted_close)]
             combdta <- combdta[tp2[,.(symbol,timestamp,y_close=adjusted_close)], on=.(timestamp)]
             setnafill(combdta,type="locf",cols=s("x_close;y_close"))
-            out[["SCAT1"]] <- fg_scatplot(combdta,"y_close ~ x_close + color:symbol + doi:recent + point:label",
+            combdta <- combdta[,let(x_logrtn=c(0,diff(log(x_close),1)),y_logrtn=c(0,diff(log(y_close),1)))]
+            outscat1<- fg_scatplot(combdta,"y_close ~ x_close + color:symbol + doi:recent + point:label",
                                           type="lmnoeqn",tsize=5,axislabels=paste0("PX ",eqlist2[[1]],";PX (Line 1)"),
                                           title="Px vs Px")
+            outscat2<- fg_scatplot(combdta,"y_logrtn ~ x_logrtn + color:symbol + doi:recent + point:label",
+                                   type="lm",tsize=5,axislabels=paste0("rtn ",eqlist2[[1]],";rtn (Line 1)"),
+                                   title="rtn vs rtn")
+            out[["SCAT1"]] <- patchwork::wrap_plots( outscat1,outscat2,ncol=2)
             avsh_set_tabtitle("Scatter")
           }
           save_avs_state("px",msg="px2")
@@ -384,22 +404,24 @@ av_make_server <- function() {
           rv$gropts <- setdiff(rv$gropts,"splitts")
           out[["TS1"]] <-  one_px_ts(toplot_tridx,rv,title=paste0("Excess Returns over ",eqlist2[1]),extra_anno="hline,100",
                                      events=ts_events,dt_window=dtstr_window)
-          toplot_idx <- toplot_idx[,let(rtn=100*rtn,mktrtn=100*mktrtn)]
+          toplot_idx <- toplot_idx[,let(rtn=100*rtn,mktrtn=100*mktrtn)][!is.na(mktrtn)]
           volp_n <- as.integer(s(ts_volparams)[[2]])
           toplot_corr <- toplot_idx[,rcor:=frollapply(.SD,volp_n,\(x) 100*cor(x$mktrtn,x$rtn,method="kendall",
                                                           use="complete.obs"),by.column=FALSE), by=.(symbol)]
           out[["TS2"]] <- one_px_ts(toplot_corr[,.(timestamp,variable=symbol,value=rcor)],rv,
                     title=paste0("Rolling ",volp_n," day kendall correlation"),extra_anno="hline,100",
                     events=ts_events,dt_window=dtstr_window)
-          ffor = "y~x"
+          ffor = "y~x+0"
           if("tailhedge" %in% rv$scatopts) {
             knots <- round(quantile(toplot_idx[symbol==first(symbol),]$mktrtn,c(0.2,0.8),na.rm=T),2)
-            ffor  <- paste0("y~splines::bs(x,knots=c(",paste(knots,collapse=","),"),degree=1)")
+            ffor  <- paste0("y~splines::bs(x,knots=c(",paste(knots,collapse=","),"),degree=1)+0")
             message_if_red(TRUE,"ActiveTS: Using Splineset: ",ffor)
           }
+          #cAssign("toplot_idx;ffor")
           rtnscatall <- fg_scatplot(toplot_idx,"rtn ~ mktrtn + color:symbol +  point:label", "lm",datecuts=c(7),
-                                        tformula=formula(ffor),
+                                        tformula=formula(ffor),n_hex_switch=260*4,
                                         title=paste0("Asset Daily returns vs ",eqlist2[1], "Daily rtn"),
+                                        subtitle="Assumes zero intercept",
                                         axislabels=paste0("Asset TR;",eqlist2[1]," TR"),returnregresults=TRUE)
           out[["TABLE1GT"]]<- rtnscatall[[2]] |> gt.avtheme(themeset="activeregression", s(istr2)[1], sigpct)
           toplot_idx <- toplot_idx[,let(rtnidx=100*exp(cumrtn), mktrtnidx=100*exp(cummktrtn))]
@@ -560,8 +582,8 @@ av_make_server <- function() {
     output$newsgt <- render_gt({ out[["NEWSGT"]] })
     output$view   <- renderDygraph({ out[["TS1"]] })
     output$view2  <- renderDygraph({ out[["TS2"]] })
-    output$plot1 <- renderPlot({ out[["SCAT1"]] })
-    output$plot2 <- renderPlot({ out[["SCAT2"]] })
+    output$plot1 <- renderPlot({ out[["SCAT1"]] }, height="600px")
+    output$plot2 <- renderPlot({ out[["SCAT2"]] }, height="600px")
     output$optplot1<- renderPlot({ out[["SCAT1"]] })
     output$msg <- renderPrint({  print(out[["MSG"]]) })
     updateTabsetPanel(session,"inTabset",selected=the_av$starttab)

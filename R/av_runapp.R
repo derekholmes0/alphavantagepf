@@ -64,7 +64,9 @@ av_runShiny <- function() {
   }
   else {
     av_reset_defaults(fileopts=FALSE) # Only use true if reinstalling entire package
+    the_av$funclist <- copy(avsd$deflist)
     save_avs_state("all",msg="I N I T")
   }
+  the_av$do_on_start <- TRUE
   return(startApp(shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1400,height=800,"launch.browser"))))
 }

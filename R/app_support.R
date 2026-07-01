@@ -25,7 +25,7 @@ symbol_grep_by_type <- function(eqlist,grepstr="Equity",check_vs_inv=TRUE, rtn="
   }
 }
 
-data_from_list <-function(inlist,datestring,ts_rebase,dtstr_window,msg_inputID="istr1") {
+data_from_list <-function(inlist,datestring,ts_rebase,dtstr_window,msg_inputID="istr1",copytable=TRUE) {
   inlist=unique(inlist)
   toplot <- sapply(inlist, \(x) manage_epx(x,datestring,addlive=the_av$uselive))
   if(length(badtickers <- names(toplot)[grep("ERROR",toplot)])>0) {
@@ -34,7 +34,7 @@ data_from_list <-function(inlist,datestring,ts_rebase,dtstr_window,msg_inputID="
   inlist <- inlist[!grepl("ERROR",toplot)]
   #quick_message(msg_inputID,"Data retrived:", paste0(inlist,collapse=" "))
   toplot <- get_one_ts(inlist,ts_rebase,datestring,dtstr_window) # REturns list(data.table,"") if nothing valid
-  avsh_clipboard(toplot[[1]],"px")
+  if(copytable) { avsh_clipboard(toplot[[1]],"px") }
   return(toplot)
 }
 
