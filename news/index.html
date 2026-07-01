@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.135</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,11 +59,14 @@
 <code>av_extract_df</code> now returns an empty data.table if there is nothing to extract. Set <code>empty_dt_onerror=FALSE</code> to throw an error.</li>
 <li>Scatter plot added to ActiveTS, with piecewise linear regression, accessed via “tailhedge” scatter plot option</li>
 <li>Scatter plot added to PriceTS line 1 vs PriceTS line 2 when line 2 is plotted.</li>
+</ul><p>GUI Changes</p>
+<ul><li>Separate tab for Inventory, which is searchable and loaded (slowly) on app startup.</li>
+<li>Moved volatility parameters to AVOPTS</li>
+<li>Slider for date windows now replaced with date string</li>
 </ul><p>Small Changes</p>
 <ul><li>Improved filtering and search acrosss tables.</li>
 <li>Option sets and parameters are now persistent</li>
-<li>Slider for date windows now replaced with date string</li>
-<li>GUI reorganization, including moving volatility parameters to AVOPTS</li>
+<li>Copy Table just copies results from actions taken on Line 1</li>
 </ul><p>Bug fixes</p>
 <ul><li>Fixed app crash if no earnings transcript available.</li>
 <li>Fixed graphing so that stepPlots are chosen appropriately, not always.</li>

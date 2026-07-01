@@ -14,17 +14,14 @@ compare sets of assets easily.
 ## Installation
 
 You can install the development version of alphavantagepf from Github,
-or the production version from CRAN using
+or the production version from CRAN using either of the following. I’m
+continually improving the shiny app, so if you are a frequent user, you
+may want to install the development version.
 
 ``` R
 #pak::pak("derekholmes0/alphavantagepf")
 install.packages("alphavantagepf")
 ```
-
-\*\* Note 6/24/2026: There is a compilation issue with CRAN that is in
-the process of being fixed. Please use the
-`pak::pak("derekholmes0/alphavantagepf")` to install the package if
-using new Shiny app..
 
 Load the package.
 
@@ -347,7 +344,7 @@ Other Analyses that are currently implemented include:
 | NameSearch | Search for asset names matching a string |
 | LivePx | Get live prices for all assets |
 | PriceTS | Plot asset prices (actual or normalized relative to a referernce date) |
-|  | Note that two stacked independent plots are possible |
+| PriceTS (Line 2) | Stacks a second time series onto the top and creates scatterplot |
 | ActiveTS | Plot asset prices relative to first asset in lower yellow bar |
 | HistVolTS | Plot historical volatility and correlation of asset prices |
 | DES | Descriptive data |

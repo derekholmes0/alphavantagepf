@@ -28,12 +28,18 @@ New Features
 - Scatter plot added to PriceTS line 1 vs PriceTS line 2 when line 2 is
   plotted.
 
+GUI Changes
+
+- Separate tab for Inventory, which is searchable and loaded (slowly) on
+  app startup.
+- Moved volatility parameters to AVOPTS
+- Slider for date windows now replaced with date string
+
 Small Changes
 
 - Improved filtering and search acrosss tables.
 - Option sets and parameters are now persistent
-- Slider for date windows now replaced with date string
-- GUI reorganization, including moving volatility parameters to AVOPTS
+- Copy Table just copies results from actions taken on Line 1
 
 Bug fixes
 

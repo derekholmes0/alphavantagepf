@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.135</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,10 +65,10 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the development version of alphavantagepf from Github, or the production version from CRAN using</p>
+<p>You can install the development version of alphavantagepf from Github, or the production version from CRAN using either of the following. I’m continually improving the shiny app, so if you are a frequent user, you may want to install the development version.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co">#pak::pak("derekholmes0/alphavantagepf")</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"alphavantagepf"</span>)</span></code></pre></div>
-<p><span style="color:red"> ** Note 6/24/2026: There is a compilation issue with CRAN that is in the process of being fixed. Please use the <code>pak::pak("derekholmes0/alphavantagepf")</code> to install the package if using new Shiny app.</span>.</p>
+<p><span style="color:red"></span></p>
 <p>Load the package.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/derekholmes0/alphavantagepf" class="external-link">alphavantagepf</a></span><span class="op">)</span></span></code></pre></div>
@@ -285,8 +285,8 @@ To recall the items in a list, select the name from the dropdown and click <span
 <td align="left">Plot asset prices (actual or normalized relative to a referernce date)</td>
 </tr>
 <tr>
-<td align="left"></td>
-<td align="left">Note that two stacked independent plots are possible</td>
+<td align="left">PriceTS (Line 2)</td>
+<td align="left">Stacks a second time series onto the top and creates scatterplot</td>
 </tr>
 <tr>
 <td align="left">ActiveTS</td>
