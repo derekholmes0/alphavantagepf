@@ -190,7 +190,7 @@ av_shiny_data <- function() {
   av_funcmap <- av_make_funcmap()
   dtmap  <- av_make_dtmap()
   usethis::use_data(av_funcmap, dtmap, avsd, internal = TRUE,overwrite=TRUE)
-  return(avsd)
+  return("Made default data into avsd")
 }
 
 

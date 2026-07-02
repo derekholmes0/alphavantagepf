@@ -13,14 +13,13 @@ New feature todo
 * Hooks for external functions
 * Statistics
 * calendars
-* reset splitfirst on ActiveTS -- very confusing
 
 New Features
 
 * `av_runShiny()` now returns a `ShinyAppHandle` object and does not block execution
 * `av_extract_df` now returns an empty data.table if there is nothing to extract. Set `empty_dt_onerror=FALSE` to throw an error.
 * Scatter plot added to ActiveTS, with piecewise linear regression, accessed via "tailhedge" scatter plot option
-* Scatter plot added to PriceTS line 1 vs PriceTS line 2 when line 2 is plotted.
+* Scatter plots added to PriceTS line 1 vs PriceTS line 2 when line 2 is plotted.
 
 GUI Changes
 
@@ -38,6 +37,7 @@ Bug fixes
 
 * Fixed app crash if no earnings transcript available.
 * Fixed graphing so that stepPlots are chosen appropriately, not always.
+* splitfirst ignored for AcriveTS
 
 # alphavantagepf 0.8.1 (RELEASE)
 
