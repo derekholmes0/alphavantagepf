@@ -4,7 +4,6 @@
 
 # =======================================================================================================
 #' Other utititlies internal to this package
-
 #' @name message_if
 #' @description Prints message if condition met
 #' @param reallydothis Condition to be met
@@ -69,7 +68,7 @@ DTUpsert<-function(a,b,keys, fill=FALSE,verbose="",replaceifbempty=NULL) { # DT 
     aandb<- data.table::rbindlist(list(a[!b],b),use.names=TRUE,fill=fill)
     if(nchar(verbose)>1) { message("DTUpsert(",verbose,"): adds ",nrow(b)," rows, now ",nrow(aandb)) }
     if(  any(grepl(".x",colnames(aandb),fixed=TRUE)) ) {
-      stop(" ERORR in DTUpser... colnames: ",paste0(colnames(aandb),collapse=","))
+      stop(" ERORR Mulktiple cols in DTUpsert: ",paste0(colnames(aandb),collapse=","))
     }
   }
   data.table::setkeyv(aandb,keys)

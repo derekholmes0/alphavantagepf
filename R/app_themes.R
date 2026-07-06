@@ -152,7 +152,7 @@ gt.avtheme<- function(x,themeset="",...) {
       tab_footnote(paste("Data older than 3 days highlighted")) |>
       cols_hide(columns=c("list_ts")) |>
       cols_move_to_start(s("type")) |>
-      fmt_datetime(columns=c(beg_dt,end_dt),format="y.mn.d") |>
+      fmt_datetime(columns=c(beg_dt,end_dt),format="y.Mn.d") |>
       cols_merge(columns=c(beg_dt,end_dt), pattern = "{1}::{2}") |>
       add_colwidths("pxinv")
   }

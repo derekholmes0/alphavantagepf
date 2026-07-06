@@ -13,23 +13,30 @@
 #' }
 #'
 #' @export
-av_reset_defaults <- function(fileopts=TRUE) {
-  the_av$cachedir <- the_av$defaultcachedir
-  if(!dir.exists(the_av$defaultcachedir)) {
-    newd <- dir.create(the_av$defaultcachedir)
-    message("Creating ",the_av$constants_fn)
+av_reset_defaults <- function(fileopts=TRUE,keep_apikeys=FALSE) {
+  defaultdf <-avsd$defaults
+  if(keep_apikeys) {
+    # also keep cachedirs
+    defaultdf <- defaultdf[!data.table(var=s("avapikey;avapientitlement")),on=.(var)]
   }
-  for(i in seq(1,nrow(avsd$defaults))) {
-    ivartype <- avsd$defaults[i,]$vartype
-    ivarnm <- avsd$defaults[i,]$var
+  else {
+    the_av$cachedir <- the_av$defaultcachedir
+    if(!dir.exists(the_av$defaultcachedir)) {
+      newd <- dir.create(the_av$defaultcachedir)
+      message("Creating ",the_av$constants_fn)
+    }
+  }
+  for(i in seq(1,nrow(defaultdf))) {
+    ivartype <- defaultdf[i,]$vartype
+    ivarnm <- defaultdf[i,]$var
     if(!(ivarnm=="cachedir")) {
-      if( ivartype=="cache" ) { ivarval <- paste0(the_av$cachedir,"/", avsd$defaults[i,get("value_str")]) }
-      else { ivarval <- avsd$defaults[i,get(paste0("value_",ivartype))] }
+      if( ivartype=="cache" ) { ivarval <- paste0(the_av$cachedir,"/", defaultdf[i,get("value_str")]) }
+      else { ivarval <- defaultdf[i,get(paste0("value_",ivartype))] }
       assign(ivarnm, ivarval, envir=the_av)
     }
   }
   the_av$assetgroups <- data.table(listnm=c(rep("defaultIdx",3)),ticker=c("SPY","QQQ","DIA"))
-  lapply(s("pxd;pxinv;tickerlist;table_aes"), \(x) assign(x, data.table(), envir=the_av))
+  lapply(s("pxd;pxinv;earn;earnest;tickerlist"), \(x) assign(x, data.table(), envir=the_av))
   message_if_red(TRUE,"Filling in app defaults")
   if(fileopts==TRUE) {
     file.remove(the_av$constants_fn)

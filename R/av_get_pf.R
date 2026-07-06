@@ -255,13 +255,16 @@ melt_tobasetype <- function(dta,idvar="symbol",varname="variable") {
     }
     char_cols <- setdiff(names(which(sapply(dta, is.character))),idvar)
     num_cols <- c(names(which(sapply(dta, \(x) !is.character(x)))))
+    date_cols <- c(names(which(sapply(dta, \(x) is.instant(x)))))
     mm1 <- data.table::data.table()
     if(length(char_cols)>0) {
         mm1 <- data.table::melt(dta, id.vars=idvar,measure.vars=char_cols,variable.name=varname,value.name="value_str")
     }
     # Warning will always be given for numeric-like objects coerced into numeric
     mm2 <- suppressWarnings(data.table::melt(dta,id.vars=idvar,measure.vars=num_cols,variable.name=varname,value.name="value_num"))
-    return(data.table::rbindlist(list(mm1,mm2),use.names=TRUE,fill=TRUE))
+    tortn <- data.table::rbindlist(list(mm1,mm2),use.names=TRUE,fill=TRUE)
+    tortn[data.table(variable=date_cols),on=.(variable),value_date:=as.Date(value_num)][]
+    return(tortn)
 }
 
 av_form_param_url<- function(this_av_fn,dots,t_entitlement=NA_character_) {

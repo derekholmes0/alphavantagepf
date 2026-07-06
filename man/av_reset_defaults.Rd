@@ -4,7 +4,7 @@
 \alias{av_reset_defaults}
 \title{Extract data from Alpha Vantage retuned data}
 \usage{
-av_reset_defaults(fileopts = TRUE)
+av_reset_defaults(fileopts = TRUE, keep_apikeys = FALSE)
 }
 \arguments{
 \item{fileopts}{(default: TRUE)  If TRUE, then remove all files and subdirectories}

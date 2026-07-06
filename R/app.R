@@ -8,8 +8,10 @@
 #' @import FinanceGraphs
 
 source("./R/utilities.R")
-tver<-"0.8.135"
+tver<-"0.8.14"
 
+# 145: Command line interface
+# 14: Saving earnings and estimates: LOtsa plumbing, redid symset
 # 135: Separate out inventory tab, start Plumbing for new functions
 
 av_make_ui <- function() {
@@ -249,8 +251,7 @@ av_make_server <- function() {
       if( nchar(newcache<-av_validate_directory(rv$cachedir,"cachedir"))>0 ) {
         if(!(newcache==oldcache)) {
           message_if_red(TRUE,"Cache directory moved; cleaning up old price/inventory data from ",oldcache)
-          unlink(paste0(oldcache,"/avpf_px.fst"),force = TRUE)
-          unlink(paste0(oldcache,"/avpf_inv.RD"),force = TRUE)
+          lapply(avsd$defaults[vartype=="cache",]$value_str, \(x) unlink(paste0(oldcache,"/",x),force = TRUE))
           av_set_defaults("cachedir",newcache)
         }
         oldcache <- newcache
@@ -264,15 +265,16 @@ av_make_server <- function() {
       save_avs_state("all",msg="sEToPTS")
       th1 <- th1[,.(nm,old=toget)][dump_the(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
       th1 <- th1[,.SD,.SDcols=s("classtype;nm;toget;format")]
+      if(nrow(th1)<=0) { quick_message("istr1","No data in inventory; load or ask for some via PriceTS")}
       output$dumpthe <- render_gt(th1 |> gt() |> gt.basetheme(interactive="filter") |> decorate_table())
     })
 
     observe({ # Want executed at startup
       if(input$RefreshInv==1 || exists("do_on_start",envir=the_av)) {
         quick_message("anopt1","Inventory Loading")
-        if(nrow(the_av$pxinv)<=0) {  quick_message("istr1","Create Data by running a Time Series Graph") }
+        if(nrow(the_av$pxinv)<=0) {  quick_message("istr1","No INventory: Create Data by running a Time Series Graph") }
         else {
-          output$inv1 <- the_av$pxinv[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv") |> render_gt()
+          output$inv1 <- the_av$pxinv[,age:=Sys.Date()-end_dt] |> render_gt() #  gt.avtheme(themeset="pxinv") |>
           output$inv2 <- dump_assetgroups(returngt=TRUE) |>  gt.avtheme(themeset="assetgroups") |> render_gt()
         }
         #the_av$starttab <- "INVENTORY"
