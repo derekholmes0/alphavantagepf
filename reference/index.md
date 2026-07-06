@@ -6,7 +6,7 @@
   : alphavantagepf: A lightweight R interface to the Alpha Vantage API
 - [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.md)
   : App database functions
-- [`av_add_data()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_data.md)
+- [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.md)
   : App database functions
 - [`av_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/av_api_key.md)
   : Set the Alpha Vantage API Key

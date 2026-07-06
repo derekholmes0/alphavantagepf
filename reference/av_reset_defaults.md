@@ -5,7 +5,7 @@ Extract data from Alpha Vantage retuned data
 ## Usage
 
 ``` r
-av_reset_defaults(fileopts = TRUE)
+av_reset_defaults(fileopts = TRUE, keep_apikeys = FALSE)
 ```
 
 ## Arguments

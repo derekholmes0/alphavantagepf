@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.135</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,17 +42,23 @@
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.8.2" id="alphavantagepf-082-in-progress">alphavantagepf 0.8.2: in Progress<a class="anchor" aria-label="anchor" href="#alphavantagepf-082-in-progress"></a></h2>
-<p>Bug todo:</p>
+<p>CUrrent: 0.8.136: Adding tickerlists.</p>
 <p>New feature todo</p>
-<ul><li>Total return and basic statistics with graphed prices.</li>
-<li>Saving dividends and Earnings into database.</li>
-<li>Dividends and earnings into px graph</li>
-<li>P/E and P/D graphs</li>
-<li>Hooks for external functions</li>
-<li>Statistics</li>
-<li>calendars</li>
+<ul><li><p>Redo:</p></li>
+<li><p>Search tickerlist using internal data</p></li>
+<li><p>Add dividends and earnings events to price graph</p></li>
+<li><p>Replace symbol_search with search of listings data.table. Will make MUCH faster</p></li>
+<li><p>Total return and basic statistics with graphed prices.</p></li>
+<li><p>Saving dividends and Earnings into database.</p></li>
+<li><p>Dividends and earnings into px graph</p></li>
+<li><p>P/E and P/D graphs</p></li>
+<li><p>Hooks for external functions</p></li>
+<li><p>Statistics</p></li>
+<li><p>calendars</p></li>
 </ul><p>New Features</p>
 <ul><li>
+<code><a href="../reference/av_get_pf.html">av_get_pf()</a></code> returns a date column for melted data.</li>
+<li>
 <code><a href="../reference/av_runShiny.html">av_runShiny()</a></code> now returns a <code>ShinyAppHandle</code> object and does not block execution</li>
 <li>
 <code>av_extract_df</code> now returns an empty data.table if there is nothing to extract. Set <code>empty_dt_onerror=FALSE</code> to throw an error.</li>
@@ -66,7 +72,8 @@
 <ul><li>Improved filtering and search acrosss tables.</li>
 <li>Option sets and parameters are now persistent</li>
 <li>Copy Table just copies results from actions taken on Line 1</li>
-</ul><p>Bug fixes</p>
+</ul><p>Bug todo: ——————————————</p>
+<p>Bug fixes</p>
 <ul><li>Fixed app crash if no earnings transcript available.</li>
 <li>Fixed graphing so that stepPlots are chosen appropriately, not always.</li>
 <li>splitfirst ignored for AcriveTS</li>

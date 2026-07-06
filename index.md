@@ -319,9 +319,8 @@ will
 A few key features of the app include:
 
 - The app will download any data needed that is not already cached. The
-  function
-  [`av_add_data()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_data.md)
-  can be used to add price data from other sources.
+  function `av_add_data()` can be used to add price data from other
+  sources.
 - If at any point the user wants to make sure the last observation is
   live, check `useLive` in the app.
 - Groups of assets can be saved as “asset lists” and save or recalled by

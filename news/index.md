@@ -4,20 +4,37 @@
 
 ## alphavantagepf 0.8.2: in Progress
 
-Bug todo:
+CUrrent: 0.8.136: Adding tickerlists.
 
 New feature todo
 
+- Redo:
+
+- Search tickerlist using internal data
+
+- Add dividends and earnings events to price graph
+
+- Replace symbol_search with search of listings data.table. Will make
+  MUCH faster
+
 - Total return and basic statistics with graphed prices.
+
 - Saving dividends and Earnings into database.
+
 - Dividends and earnings into px graph
+
 - P/E and P/D graphs
+
 - Hooks for external functions
+
 - Statistics
+
 - calendars
 
 New Features
 
+- [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
+  returns a date column for melted data.
 - [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
   now returns a `ShinyAppHandle` object and does not block execution
 - `av_extract_df` now returns an empty data.table if there is nothing to
@@ -39,6 +56,8 @@ Small Changes
 - Improved filtering and search acrosss tables.
 - Option sets and parameters are now persistent
 - Copy Table just copies results from actions taken on Line 1
+
+Bug todo: ——————————————
 
 Bug fixes
 
