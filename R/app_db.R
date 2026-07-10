@@ -66,7 +66,7 @@ epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
 
 #' @importFrom stringr str_extract
 form_symset <- function(tickers, force=FALSE, delay=0) {
-  symbol=name=matchScore=list_ts=NULL
+  symbol=name=matchScore=list_ts=assetType=NULL
   alltickers=s(toupper(tickers))
   if(force==TRUE || nrow(the_av$pxinv)<=0) {
     newtickers <- alltickers
@@ -150,6 +150,7 @@ manage_epx <- function(inticker, dtstr,
 # ------------------------------------------------------------------ INventories
 # symset must be given to update names etc of user data in pxinv
 get_inv <- function(tickerlist=NULL,override_symset=NULL) {
+  matchScore=list_ts=dividend_amount=reportedEPS=horizon=ts=eps_estimate_average=NULL
   if(nrow(the_av$pxinv)<=0) {
     tickerlist <-unique(the_av$pxd$symbol)
   }
@@ -267,6 +268,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
 # todo:  only download earnings when you think you might need to
 
 manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,delay=0.2) {
+  ts=horizon=eps_estimate_average=NULL
   src<-""; rtniv<-data.table()
   earntickers <- tickerdt[type=="Equity"]
   if( nrow(earntickers)>0) {
@@ -281,18 +283,25 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
     if(src=="") {
       src <- "Downloaded"
       earn_past <- lapply(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"))
-      earn_past <- rbindlist(earn_past)[,ts:=Sys.Date()]
+      earn_past <- rbindlist(earn_past)
       earn_fwd <- lapply(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"))
-      earn_fwd <- rbindlist(earn_fwd)[,ts:=Sys.Date()]
+      earn_fwd <- rbindlist(earn_fwd)
     }
-    setkeyv(earn_past,s("symbol;reportedDate;fiscalDateEnding"))
-    setkeyv(earn_fwd,s("symbol;date;horizon;ts"))  # Possibly want evolution.
-    rtninv_past = earn_past[,.(lastearndt=max(reportedDate)),by=.(symbol)]
-    rtninv_fwd = earn_fwd[horizon=="fiscal quarter",.SD[which.max(date)],by=.(symbol)][,
-                          .(symbol,earnf_ts=ts,earnf_nextdt=date,earnf_next=eps_estimate_average)]
-    rtniv =  rtninv_fwd[rtninv_past,on=.(symbol)]
-    the_av$earn <- DTUpsert(the_av$earn,earn_past,key(earn_past))
-    the_av$earnest <- DTUpsert(the_av$earnest,earn_fwd,key(earn_fwd))
+    if(nrow(earn_past)>0) {
+      setkeyv(earn_past,s("symbol;reportedDate;fiscalDateEnding"))
+      earn_past <- earn_past[,ts:=Sys.Date()]
+      rtninv_past = earn_past[,.(lastearndt=max(reportedDate)),by=.(symbol)]
+      the_av$earn <- DTUpsert(the_av$earn,earn_past,key(earn_past))
+    }
+    if(nrow(earn_fwd)>0) {
+      earn_fwd <- earn_fwd[,ts:=Sys.Date()]
+      setkeyv(earn_fwd,s("symbol;date;horizon;ts"))  # Possibly want evolution.
+      the_av$earnest <- DTUpsert(the_av$earnest,earn_fwd,key(earn_fwd))
+
+      rtninv_fwd <- earn_fwd[horizon=="fiscal quarter",.SD[which.max(date)],by=.(symbol)][,
+                            .(symbol,earnf_ts=ts,earnf_nextdt=date,earnf_next=eps_estimate_average)]
+      rtniv =  rtninv_fwd[rtninv_past,on=.(symbol)]
+    }
     message_if_green(the_av$verbose,"earnings(",earntickers$symbol,") from ",src," adds ",nrow(earn_past), " past and ",nrow(earn_fwd), " fwd earnings")
     message_if_red(src=="","manage_earn: No tickers to update.  Have they been priced?")
   }
@@ -482,14 +491,17 @@ av_dbgmode <- function() {
 #' @param typegrep : Grep string for internal state parameters
 #' @param returngt : Return GT table
 #' @param todo : One of c("byfunction","pxhist",any av function name)
+#' @param rv : An isolated list of av_shiny parameters
 #' @returns data.table with desired data.
 #' @seealso [av_runShiny()]
 #' @examples
 #' \dontrun{
 #' `dump_the()`
 #' `dump_inv()`
+#' `dump_av_funcs()`
 #' `dump_assetgroups(returngt=TRUE)`
 #' `dump_captured(todo="byfunction")`
+#' `inv_rv(rv)`
 #' }
 #'
 #' @rdname dump_the
@@ -518,6 +530,16 @@ dump_the <- function(typegrep="*") {
 
 #' @rdname dump_the
 #' @export
+inv_rv <- function(rv) {
+  tnames <- names(rv)
+  tclass <- sapply(tnames, \(x) paste0(class(rv[[x]]),sep=" "))
+  tres <- rv[tnames]
+  return(data.table(inputId=tnames, type=tclass, res=tres))
+}
+
+
+#' @rdname dump_the
+#' @export
 dump_inv <- function() {
   return(the_av$pxinv)
 }
@@ -526,6 +548,12 @@ dump_inv <- function() {
 #' @export
 dump_assetgroups <- function(returngt=TRUE) {
   return(the_av$assetgroups[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)])
+}
+
+#' @rdname dump_the
+#' @export
+dump_av_funcs <- function() {
+  return(the_av$avsh_funcs)
 }
 
 #' @rdname dump_the

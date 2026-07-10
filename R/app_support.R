@@ -1,5 +1,51 @@
+
+# ----------------------- Exported Shiny Functions
+#' @name quick_message
+#' @description Displays a message underneath an input box
+#' @param wh inputID for shiny element to put a message underneath of.  See Documentation and/or Code
+#' @param this_message (default "")  A text message to  be used. If empty string, the current message is cleared.
+#' @param eval (default TRUE) OPtional parameter to suppress execution.
+#' @param color Optional text color
+#' @returns logical value of `eval`
+quick_message <- function(wh,this_message="",eval=TRUE,color="#1f78b4") {
+  shinyFeedback::hideFeedback(inputId=wh)
+  if(nchar(this_message)>0 & eval==TRUE) {
+    this_message <- paste0("<small>",this_message,"</small>")
+    shinyFeedback::showFeedback(inputId=wh, text=this_message,color=color)
+  }
+  return(eval)
+}
+
+#' @name avsh_clipboard
+#' @description Copies a data.frame to the clipboard, with a status message if relevant
+#' @param x A `data.frame` or equivalent.
+#' @param title String to add to a message printed if relevant
+#' @returns Nothing
+#' @import clipr
+avsh_clipboard <- function(x,title="") {
+  if(the_av$autocopy) {
+    write_clip(as.data.frame(x))
+    message_if_green(the_av$verbose,"to Clipboard: ",title," w/ ",nrow(x)," rows")
+    quick_message("istr1","Data copied to Clipboad")
+  }
+}
+
+#' @name avsh_set_tabtitle
+#' @description Sets the title for the Details tab
+#' @param newtext (default"DETAIL") What to name the tab as
+#' @param tabnm (default "detail") inputID of relevant tab
+#' @returns Nothing
+#' @importFrom shinyjs runjs
+avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail",makefocus=TRUE) {
+  shpf <- sprintf('$(\'#inTabset li a[data-value="%s"]\').text("%s");',tabnm,newtext)
+  if(makefocus==TRUE) av_set_defaults("starttab",tabnm)
+  shinyjs::runjs(shpf)
+}
+
+
+
 # =======================================================================================================
-#' App Support functions
+#' Unexported App Support functions" Data and interface
 #'
 #' @noRd
 symbol_grep_by_type <- function(eqlist,grepstr="Equity",check_vs_inv=TRUE, rtn="list") {
@@ -24,6 +70,95 @@ symbol_grep_by_type <- function(eqlist,grepstr="Equity",check_vs_inv=TRUE, rtn="
     return(tickerset)
   }
 }
+
+# REturns command, then assets
+#' @importFrom utils tail
+parse_inpline <- function(istr1,envir=parent.frame()) {
+  istrs <- s(toupper(istr1),sep=" ")
+  if(grepl("^AV.",toupper(istrs)[[1]]) | length(istrs)==1) {  # No asset list or some sort of error
+    tcmd <- stringr::str_squish(istr1)
+    targs <- ""
+    tasset<- "" }
+  else {
+    tasset <- stringr::str_squish(istrs[[1]])
+    tcmd <- stringr::str_squish(istrs[[2]])
+    targs <- stringr::str_squish(paste(tail(istrs,-2),collapse=" "))
+  }
+  outlist = list("todo"=paste(tcmd,targs),"todofunc"=tcmd,"todoargs"=targs,"assetline"=tasset)
+  if(is.environment(envir)) { list2env(outlist,envir=envir)  }
+  else{   return(outlist)  }
+}
+
+
+
+#' @noRd
+av_validate_directory <- function(newdir,src_inputID) {
+  outdir<-""
+  if(nchar(newdir)>0) {
+    newdir <- gsub("\\","/",newdir,fixed=TRUE)
+    if(!dir.exists(newdir)) {
+      quick_message(src_inputID,"Invalid Directory.....")
+    }
+    else {
+      quick_message(src_inputID,"")
+      outdir<-newdir
+    }
+  }
+  message("av_validate_directory(",newdir,") : ",outdir)
+  return(outdir)
+}
+
+av_determine_output_locs <- function(inlist,location="MAIN") {
+  Location=noin_class=inclass=ninlist=NULL
+  telements <- avsd$avsh_elements
+  if(length(names(inlist))>0) {
+    if(length(  invalid_ids <- setdiff(names(inlist),telements$outname) )>0 ) {
+      message_if_red(TRUE,"Invalid output elements: ",invalid_ids, " are being dropped")
+    }
+    return(intersect(names(inlist),telements$outname))
+  }
+  else {
+    outlocs <- telements[Location==location,][,noin_class:=(.I-min(.I)), by=.(inclass)]
+    prefix_grep <- paste0(unique(telements$inclass),collapse="|")
+    listclasses <- data.table(inclass= sapply(inlist,\(x) grepv(prefix_grep,class(x))))[,ninlist:=.I]
+    listclasses <- listclasses[order(inclass)][,noin_class:=(.I-min(.I)), by=.(inclass)]
+    listclasses <- outlocs[listclasses,on=.(inclass,noin_class)]
+    return(listclasses[order(ninlist)]$outname)
+  }
+}
+
+find_arg <- function(x,argnm,altno=2) {
+  sepx <- s(x," ")
+  argnm1 <- s(grepv(paste0(argnm,"="),sepx,ignore.case=T),"=")[[2]]
+  argnm2 <- NULL
+  if(length(sepx)>=altno) {
+    if( !grepl("=",sepx[altno]) ) argnm2 <- sepx[altno]
+  }
+  return(argnm1 %||% argnm2)
+}
+
+#' @importFrom stringr str_sub
+find_rebasecode <- function(todo,default_window=the_av$dtstr_hist) {
+  # SCAT, GP <- Need to figure out how better to generalize
+  todolist <- grepv("\\w+|\\d+",s(toupper(todo)," "))
+  actual_func <- gsub("\\d$","",todolist[[1]])
+  ts_rebase <- switch(stringr::str_sub(actual_func, -1), "I"="start","D"="focus") %||% "none"
+  dtstr_window <- default_window
+  if(ts_rebase=="focus") {
+    if(length(todolist)<2) { message_if_red(the_av$verbose,"Rebasing date not specified, dedaulting to start") }
+    else { dtstr_window<- todolist[[2]]  }
+  }
+  dtstr_window <- find_arg(todo,"w") %||% dtstr_window
+  ts_title <- switch(stringr::str_sub(actual_func, -1), "I"="Index","D"=paste("Index centered at",dtstr_window)) %||% "Prices"
+  message_if_green(the_av$verbose,paste("rebase",ts_rebase,"rebase_window",dtstr_window,"func",actual_func))
+  return(list("rebase"=ts_rebase,"rebase_window"=dtstr_window,"func"=actual_func,"grtitle"=ts_title))
+}
+
+# =====================-==============================================================================
+# =====================-==============================================================================
+# Specific function helpers
+# =====================-==============================================================================
+
 
 data_from_list <-function(inlist,datestring,ts_rebase,dtstr_window,msg_inputID="istr1",copytable=TRUE) {
   inlist=unique(inlist)
@@ -100,7 +235,7 @@ oneticker_divs <- function(thisticker,datestring) {
 
 one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_window=NULL) {
   symbol=low=high=medgap=NULL
-  seriesnm <- fifelse(rv$totrtn,"adjusted_close","close")
+  seriesnm <- the_av$seriesnm
   if(is.data.table(toplot[[1]])) {
     trebase <- toplot[[2]]
     fgdt <- toplot[[1]][,.(timestamp,variable=symbol,value=get(seriesnm))]
@@ -177,55 +312,3 @@ getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),newsagrep="",max
   news1<-news1[age<=fifelse("maxDays" %in% newsfilter, maxage,+Inf),]
   return(news1[,.(symbol=x,age,time_published,sntmt=overall_sentiment_score,source,title,url)])
 }
-
-# ------------------ SHiny Specific
-
-#' @noRd
-quick_message <- function(wh,this_message,eval=TRUE) {
-  shinyFeedback::hideFeedback(inputId=wh)
-  if(nchar(this_message)>0 & eval==TRUE) {
-    this_message <- paste0("<small>",this_message,"</small>")
-    shinyFeedback::showFeedback(inputId=wh, text=this_message,color="#1f78b4")
-  }
-}
-
-#quick_message <- function(wh,this_message,eval=TRUE) {
-#  message("wh:",wh," msg: ",this_message)
-#}
-
-#' @noRd
-#' @import clipr
-avsh_clipboard <- function(x,title="") {
-  if(the_av$autocopy) {
-    write_clip(as.data.frame(x))
-    message_if_green(the_av$verbose,"to Clipboard: ",title," w/ ",nrow(x)," rows")
-    quick_message("istr1","Data copied to Clipboad")
-  }
-}
-
-#' @noRd
-#' @importFrom shinyjs runjs
-avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail") {
-  shpf <- sprintf('$(\'#inTabset li a[data-value="%s"]\').text("%s");',tabnm,newtext)
-  shinyjs::runjs(shpf)
-}
-
-#' @noRd
-av_validate_directory <- function(newdir,src_inputID) {
-  outdir<-""
-  if(nchar(newdir)>0) {
-    newdir <- gsub("\\","/",newdir,fixed=TRUE)
-    if(!dir.exists(newdir)) {
-      quick_message(src_inputID,"Invalid Directory.....")
-    }
-    else {
-      quick_message(src_inputID,"")
-      outdir<-newdir
-    }
-  }
-  message("av_validate_directory(",newdir,") : ",outdir)
-  return(outdir)
-}
-
-
-

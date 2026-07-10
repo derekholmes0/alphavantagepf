@@ -249,6 +249,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
 }
 
 melt_tobasetype <- function(dta,idvar="symbol",varname="variable") {
+    value_date=NULL
     # idvar must always be in input
     if( !(idvar %in% names(dta))) {
         stop(paste0("melt_tobasetype> Need ",idvar," in input dta"))

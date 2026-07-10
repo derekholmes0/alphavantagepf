@@ -2,6 +2,7 @@
 #'
 #' @name av_reset_defaults
 #' @param fileopts (default: TRUE)  If TRUE, then remove all files and subdirectories
+#' @param keep_apikeys (default: FALSE) Keep whatever API keys are stored
 #' @returns No return
 #'
 #' @details Resets [av_runShiny()] defaults to original (newly installed) state
@@ -14,6 +15,7 @@
 #'
 #' @export
 av_reset_defaults <- function(fileopts=TRUE,keep_apikeys=FALSE) {
+  var=NULL
   defaultdf <-avsd$defaults
   if(keep_apikeys) {
     # also keep cachedirs
@@ -35,14 +37,18 @@ av_reset_defaults <- function(fileopts=TRUE,keep_apikeys=FALSE) {
       assign(ivarnm, ivarval, envir=the_av)
     }
   }
+  # Tables that will get modified by users
   the_av$assetgroups <- data.table(listnm=c(rep("defaultIdx",3)),ticker=c("SPY","QQQ","DIA"))
+  the_av$avsh_funcs <- copy(avsd$def_avsh_funcs)
+  # Data to keep track of
   lapply(s("pxd;pxinv;earn;earnest;tickerlist"), \(x) assign(x, data.table(), envir=the_av))
-  message_if_red(TRUE,"Filling in app defaults")
+  # Move files if you need
   if(fileopts==TRUE) {
     file.remove(the_av$constants_fn)
     unlink(the_av$defaultcachedir, force=TRUE,recursive=TRUE)
     unlink(the_av$cachedir, force=TRUE,recursive=TRUE)
   }
+  message_if_red(TRUE,"Filling in app defaults")
 }
 
 # One time or many
@@ -56,6 +62,7 @@ av_set_defaults <- function(optnm=NULL,optval=NULL,savetoconstants=FALSE) {
     save(list=unames,envir=the_av,file= the_av$constants_fn)
     message("Saving to ",the_av$constants_fn)
   }
+  return(optval)
 }
 
 av_set_default_set <- function(setset,rv,save="all") {
@@ -181,11 +188,14 @@ av_shiny_data <- function() {
   tinputformstyle <- I("{font-size:12px; font-weight:bold; background-color: #ffff99}")
   yellowed_inputs <- s("#dtstr_hist;#dtstr_window;#events;#volparams;#forecast;#pointers;#window;#ochains")
   avsd <- list(
-    "deflist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"],
-    "helplist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"],
+    "deflist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"], # ----------------->  don't need
+    "helplist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"], # ----------------->  don't need
+
     "defaults"=data.table::fread("./inst/extdata/av_defaults.csv"),
     "crypto_list"=data.table::fread("./inst/extdata/cryptocurrency_list.csv"),
     "table_aes"= data.table::fread("./inst/extdata/table_aes.csv"), # columns widths, extra HTML
+    "def_avsh_funcs"= data.table::fread("./inst/extdata/avsh_funcs.csv"), # Functions and options
+    "avsh_elements"= data.table::fread("./inst/extdata/avsh_elements.csv"), # Functions and options
     "overviewlist"=data.table::fread("./inst/extdata/overview_map.csv"),  # Formatting of description tables
     "edit_tableoptions"=list('editable1'='row','editable2'='row','pagelen1'=80,'pagelen2'=80,'digits'=3),
     "selectizeoptions" =I("selectize-input: 12px; background-color:red"),

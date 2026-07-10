@@ -59,12 +59,14 @@
 av_runShiny <- function() {
   if(file.exists(the_av$constants_fn)) {
     restore_avs_state(msg="Startup")
+    the_av$outcopy<-list()
     options(av_api_key = the_av$avapikey)
     options(av_api_entitlement = the_av$avapientitlement)
   }
   else {
     av_reset_defaults(fileopts=FALSE) # Only use true if reinstalling entire package
     the_av$funclist <- copy(avsd$deflist)
+    the_av$avsh_funcs <- copy(avsd$def_avsh_funcs)
     save_avs_state("all",msg="I N I T")
   }
   the_av$do_on_start <- TRUE

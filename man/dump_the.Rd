@@ -2,21 +2,29 @@
 % Please edit documentation in R/app_db.R
 \name{dump_the}
 \alias{dump_the}
+\alias{inv_rv}
 \alias{dump_inv}
 \alias{dump_assetgroups}
+\alias{dump_av_funcs}
 \alias{dump_captured}
 \title{Extract internal state}
 \usage{
 dump_the(typegrep = "*")
 
+inv_rv(rv)
+
 dump_inv()
 
 dump_assetgroups(returngt = TRUE)
+
+dump_av_funcs()
 
 dump_captured(todo = "byfunction")
 }
 \arguments{
 \item{typegrep}{: Grep string for internal state parameters}
+
+\item{rv}{: An isolated list of av_shiny parameters}
 
 \item{returngt}{: Return GT table}
 
@@ -36,8 +44,10 @@ Prints internal data state of \code{\link[=av_runShiny]{av_runShiny()}}
 \dontrun{
 `dump_the()`
 `dump_inv()`
+`dump_av_funcs()`
 `dump_assetgroups(returngt=TRUE)`
 `dump_captured(todo="byfunction")`
+`inv_rv(rv)`
 }
 
 }

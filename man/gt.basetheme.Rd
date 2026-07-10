@@ -7,9 +7,10 @@
 gt.basetheme(
   x,
   gtopts = "all",
-  sizepct = 70,
+  sizepct = 100,
   style = 4,
   digits = 2,
+  interactive_mult = 1.14,
   seps = FALSE,
   na_format = "-",
   size = "",
@@ -26,6 +27,8 @@ gt.basetheme(
 \item{style}{(default: 4) Style number (see \code{\link[gt:gt]{gt()}})}
 
 \item{digits}{(default: 2) Number formatting}
+
+\item{interactive_mult}{(default: 80/70) Multtiple of \code{sizepct} applies to interactive tables.}
 
 \item{seps}{(default: FALSE) Number formatting thousands separators}
 

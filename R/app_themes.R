@@ -6,6 +6,7 @@
 #' @param x Input data or `gt` table
 #' @param gtopts Which elements to add
 #' @param sizepct (default: 70) How big to make tables
+#' @param interactive_mult (default: 80/70) Multtiple of `sizepct` applies to interactive tables.
 #' @param style (default: 4) Style number (see [gt()])
 #' @param size (default: "") Size of text, either `""` or `"small"`
 #' @param digits (default: 2) Number formatting
@@ -15,10 +16,11 @@
 
 #' @import gt
 #' @import data.table
-gt.basetheme<-function(x,gtopts="all",sizepct=70,style=4,digits=2,seps=FALSE,na_format="-",size="",interactive="") {
+gt.basetheme<-function(x,gtopts="all",sizepct=100,style=4,digits=2,interactive_mult= 1.14,
+                       seps=FALSE,na_format="-",size="",interactive="") {
   if(nchar(interactive)>0) {
     style <- 1
-    sizepct <- 100
+    sizepct <- round(sizepct * interactive_mult,2)
   }
   if(gtopts=="all" | gtopts=="fmtnumber") {
     x = x |> tab_style_body(style=cell_text(color="red"),columns=where(is.numeric),fn=function(x) x<0) |> fmt_number(accounting=TRUE,decimals = digits,use_seps=seps)
@@ -34,8 +36,8 @@ gt.basetheme<-function(x,gtopts="all",sizepct=70,style=4,digits=2,seps=FALSE,na_
     x = x |> opt_interactive(use_filters=grepl("all|filter",interactive),
                              use_search =grepl("all|search",interactive),
                              use_resizers=grepl("all|filter",interactive),
-                             page_size_default=40,use_compact_mode=TRUE) |>
-                tab_options( table.font.size = px(12))
+                             page_size_default=50,use_compact_mode=TRUE)
+    x = x |> tab_options( table.font.size = px(12))
   }
   if(grepl("wide",size) |  nchar(interactive)>0) {
     x = x |> tab_options(table.align="left",table.margin.left=px(0))
@@ -68,6 +70,7 @@ add_colwidths <- function(gtx,xtablenm) {
   if(nrow(colset)<=0) {
     return(gtx)
   }
+  colset <- colset[data.table(colname=names(gtx$`_data`)),on=.(colname), nomatch=NULL]
   colnodef <- colset[!colname=="default",]
   width_list <- map2( colnodef$colname, colnodef$val_num, ~rlang::expr(!!rlang::sym(.x) ~ px(!!.y)) )
   if(nrow(coldef <- colset[colname=="default",])>0) {
@@ -83,7 +86,7 @@ add_colwidths <- function(gtx,xtablenm) {
 gt.avtheme<- function(x,themeset="",...) {
   term=`i.to`=estimate_Beta=p.value_Beta=loadts=n=catprio=prio=matchScore=nlink=sntmt=time_published=estiamtedEPS=NULL
   est_low=est_high=est_n=est_30dpchg=est_90dpchg=divdays=estimatedEPS=volume=low=high=chgpct=EH_chgpct=age=EH_mid=isah=inlist=thisgt=NULL
-  tablenm=aesnm=regfactor=estimate=p.value=beg_dt=NULL
+  tablenm=aesnm=regfactor=estimate=p.value=beg_dt=imp=NULL
   ntable_len<-0
   ldots = list(...)
   # -- Tables that require further processing
@@ -150,11 +153,12 @@ gt.avtheme<- function(x,themeset="",...) {
       tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,name,type,currency,age), rows=(as.numeric(age)>=3))) |>
       tab_style(style = cell_text(size = px(10)),locations = cells_body(columns = c(loadts))) |>
       tab_footnote(paste("Data older than 3 days highlighted")) |>
-      cols_hide(columns=c("list_ts")) |>
+      cols_hide(columns=s("list_ts;loadts")) |>
       cols_move_to_start(s("type")) |>
-      fmt_datetime(columns=c(beg_dt,end_dt),format="y.Mn.d") |>
       cols_merge(columns=c(beg_dt,end_dt), pattern = "{1}::{2}") |>
       add_colwidths("pxinv")
+
+
   }
   if(themeset=="mktstatus") {
     thisgt <- thisgt |> gt.basetheme() |> tab_header(title="Market Status") |> tab_footnote(paste("Retrieved as of ",Sys.time()))
@@ -171,12 +175,11 @@ gt.avtheme<- function(x,themeset="",...) {
   }
   # EQ:DES ============================================================= EQ:DES
   if(themeset=="eqdesc1") {
-    #thisgt <- x |> gt(groupname_col="category",row_group_as_column=TRUE) just not formatted right
     thisgt <- thisgt |> gt.basetheme(interactive="all") |>
-      row_order(catprio,prio) |> decorate_table() |> cols_hide(columns=c(catprio,prio)) |>
+      row_order(catprio,prio) |> cols_hide(columns=c(catprio,prio,imp)) |>
       tab_header(title="Equities") |> tab_footnote(paste("As Of",Sys.time())) |>
       fmt_number(suffixing=TRUE) |>
-      add_colwidths("eqdisc1")
+      decorate_table() |> add_colwidths("eqdisc1")
   }
   if(themeset=="eqdescsec") {
     #thisgt <- x |> gt(groupname_col="category",row_group_as_column=TRUE) |> gt.basetheme()

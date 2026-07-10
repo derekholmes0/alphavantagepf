@@ -2,6 +2,9 @@
 
 # alphavantagepf 0.8.2: in Progress
 
+
+
+
 CUrrent: 0.8.136:  Adding tickerlists.
 
 
@@ -20,6 +23,10 @@ New feature todo
 * Hooks for external functions
 * Statistics
 * calendars
+
+# alphavantagepf 0.8.15:  Redesign of interface
+
+# alphavantagepf 0.8.14: Baked in
 
 New Features
 
