@@ -10,9 +10,13 @@ Prints internal data state of
 ``` r
 dump_the(typegrep = "*")
 
+inv_rv(rv)
+
 dump_inv()
 
 dump_assetgroups(returngt = TRUE)
+
+dump_av_funcs()
 
 dump_captured(todo = "byfunction")
 ```
@@ -22,6 +26,10 @@ dump_captured(todo = "byfunction")
 - typegrep:
 
   : Grep string for internal state parameters
+
+- rv:
+
+  : An isolated list of av_shiny parameters
 
 - returngt:
 
@@ -45,7 +53,9 @@ data.table with desired data.
 if (FALSE) { # \dontrun{
 `dump_the()`
 `dump_inv()`
+`dump_av_funcs()`
 `dump_assetgroups(returngt=TRUE)`
 `dump_captured(todo="byfunction")`
+`inv_rv(rv)`
 } # }
 ```

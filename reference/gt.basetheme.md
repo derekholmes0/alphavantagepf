@@ -9,9 +9,10 @@ Adds default elements to
 gt.basetheme(
   x,
   gtopts = "all",
-  sizepct = 70,
+  sizepct = 100,
   style = 4,
   digits = 2,
+  interactive_mult = 1.14,
   seps = FALSE,
   na_format = "-",
   size = "",
@@ -41,6 +42,10 @@ gt.basetheme(
 - digits:
 
   (default: 2) Number formatting
+
+- interactive_mult:
+
+  (default: 80/70) Multtiple of `sizepct` applies to interactive tables.
 
 - seps:
 

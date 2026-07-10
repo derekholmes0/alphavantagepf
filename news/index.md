@@ -31,6 +31,10 @@ New feature todo
 
 - calendars
 
+## alphavantagepf 0.8.15: Redesign of interface
+
+## alphavantagepf 0.8.14: Baked in
+
 New Features
 
 - [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)

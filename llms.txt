@@ -387,8 +387,10 @@ data manipulation.
 - [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
   : RShiny App
 - [`dump_the()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_the.md)
+  [`inv_rv()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_the.md)
   [`dump_inv()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_the.md)
   [`dump_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_the.md)
+  [`dump_av_funcs()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_the.md)
   [`dump_captured()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_the.md)
   : Extract internal state
 - [`gt.basetheme()`](https://derekholmes0.github.io/alphavantagepf/reference/gt.basetheme.md)
