@@ -323,8 +323,8 @@ av_make_server <- function() {
 
       # General Magick here:
       #cAssign("todo;rv",silent=TRUE)
-      outres <- do.call(runfunc_set$func_name, list(todo,rv))
-      #message("                               outtypes: ",av_determine_output_locs(outres))
+      tenv <- ifelse(runfunc_set$func_src=="avsh",thisenv,.GlobalEnv())
+      outres <- do.call(runfunc_set$func_name, list(todo,rv), envir=tenv)
       outres <- setNames(outres,av_determine_output_locs(outres))
 
       for(nm in names(outres)) { out[[nm]]<-outres[[nm]] } # hash w/o hash
