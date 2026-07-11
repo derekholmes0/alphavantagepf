@@ -1,3 +1,13 @@
+source("./R/utilities.R")
+tver<-"0.8.201"
+
+# 201: Generalize render, JS to only run on enter
+# 20: WOrking copy
+# 16: Fix scatter plotting, refactor ui names
+# 145: Command line interface
+# 14: Saving earnings and estimates: LOtsa plumbing, redid symset
+# 135: Separate out inventory tab, start Plumbing for new functions
+
 #' @importFrom TTR volatility
 #' @import gt
 #' @import gtExtras
@@ -6,52 +16,43 @@
 #' @import shiny
 #' @import shinyFeedback
 #' @import FinanceGraphs
-
-source("./R/utilities.R")
-tver<-"0.8.16"
-
-# 16: Fix scatter plotting, refactor ui names
-# 145: Command line interface
-# 14: Saving earnings and estimates: LOtsa plumbing, redid symset
-# 135: Separate out inventory tab, start Plumbing for new functions
-
 av_make_ui <- function() {
   order1=order2=aesnm=var=NULL
   curr_assetgroups <- sort(unique(the_av$assetgroups$listnm))
-  runlist1 <- avsd$deflist[!is.na(order1)]$runcode
-  runlist2 <- avsd$deflist[!is.na(order2)]$runcode
   av_ui<- fluidPage(
     shinyFeedback::useShinyFeedback(),
     shinyjs::useShinyjs(),
      tags$head(
-        tags$style(type='text/css',avsd$inputcss_side),
-        tags$style(type='text/css',avsd$inputcss_top),
-        tags$style(type='text/css',"#msg {font-size:10px; background-color: #ddfcd9; width:330px}"),
-        tags$style(type='text/css',"#gropts {font-size:10px; background-color: #ddfcd9}"),
+       tags$script(HTML("
+          $(document).on('keyup', '.enter-submit input', function(e) {
+          if (e.key === 'Enter') {
+              Shiny.setInputValue(this.id + '_enter', this.value, {priority: 'event'});
+          }
+        });
+        ")),
+        lapply(grepv("css",names(avsd)), \(x) tags$style(type='text/css',avsd[[x]])),
         lapply(avsd$table_aes[aesnm=="HTML"]$val_str, \(x) tags$style(HTML(x))),
      ),
      fluidRow(
        column(1,
-            actionButton("RUNLN","RUNLN",width='100%',class = "btn btn-primary"),
-            selectizeInput("gropts","TSGraphopts",
+            #actionButton("RUNLN","RUNLN",width='100%',class = "btn btn-primary"),
+            selectizeInput("gropts","TS opts",
                            c("last","lastlabel","hilightfirst","splitts","hilow"),
                            selected=s(the_av$gropts),
                            multiple=TRUE,options(list(maxOptions=5,maxItems=1,avsd$selectizeoptions))),
-            selectizeInput("scatopts","Scatopts",
+            selectizeInput("scatopts","Scat opts",
                            c("last","tailhedge"),
                            selected=s(the_av$gropts),
                            multiple=TRUE,options(list(maxOptions=5,maxItems=1,avsd$selectizeoptions))),
             textInput(inputId="ts_events", label="Events", value = the_av$ts_events),
-            textInput(inputId="dtstr_hist", label="HistDates", value=the_av$dtstr_hist),
+            textInput(inputId="dtstr_hist", label="HistDates", value=the_av$dtstr_hist)
        ),
-
        column(10,  # Was 11
           fluidRow(
-            column(width=6,textInput("istr1", "", the_av$inpline1,width='100%')),
-            column(width=2,selectizeInput("list1","",c("List"="", c("",sort(unique(the_av$assetgroups$listnm)))),
-                                          size="80%",options=list(create=TRUE))),
+            column(width=6,div(class = "enter-submit", textInput("istr1", "AVShiny Command", the_av$inpline1,width='100%'))),
+            column(width=2,selectizeInput("list1","",c("AssetListnm"="", c("",sort(unique(the_av$assetgroups$listnm)))),size="80%",options=list(create=TRUE))),
             column(width=2,radioButtons("managelist1","",choices=c("get","save","delete"),selected =character(0),width="90%",inline=TRUE)),
-            column(width=2,textInput("istr2", "CounterAsset", the_av$inpline2,width='100%'))
+            column(width=2,div(class = "enter-submit", textInput("istr2", "CounterAsset", the_av$inpline2,width='100%')))
           ),
           fluidRow(
             tabsetPanel(id="inTabset",selected=the_av$starttab,
@@ -89,7 +90,7 @@ av_make_ui <- function() {
               ),
               tabPanel("OPTIONS",value="options",
                 fluidRow(
-                  column(width=2,span(textInput(inputId="ochains", label="Chains",value=the_av$ochains),style=avsd$labelcss)),
+                  column(width=2,textInput(inputId="ochains", label="Default Chains",value=the_av$ochains)),
                   column(width=2,numericInput(inputId="mindelta", label="mindelta", value=5,min=0,max=100)),
                   column(width=2,selectInput(inputId="otodisplay", label="Output",
                                                  c("reduced","trading","all"),selected=the_av$otodisplay,multiple=FALSE)),
@@ -143,8 +144,8 @@ av_make_ui <- function() {
             )
           )
       )
-     )
-   )
+     ) #column
+   ) #fluid ROw
   return(av_ui)
 }
 
@@ -166,7 +167,6 @@ av_make_server <- function() {
             (min(the_av$tickerlist$list_ts)<=Sys.Date()-7) )
     FinanceGraphs::fg_sync_group("avshiny")
     if("CleanOnStart" %in% the_av$capture_av_save) {  save_av_data(data.table(),"KILL") }
-    # ----
 
    # height_from_obs <- reactive({ the_av$out1h })
     need_index_asset <- reactive({
@@ -256,7 +256,6 @@ av_make_server <- function() {
 
     observe({ # Want executed at startup
       if(input$RefreshInv==1 || exists("do_on_start",envir=the_av)) {
-        quick_message("istr1","Inventory Loading")
         if( !quick_message(eval=(nrow(the_av$pxinv)<=0),"istr1","No INventory: Create Data by running a Time Series Graph") ) {
           invtosend <- the_av$pxinv[,.SD,.SDcol=!s("earnf_next;div_lastval;lastearn_dt;earnf_nextdt;earnf_ts")]
           output$inv1 <- invtosend[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv") |> render_gt() #  gt.avtheme(themeset="pxinv") |>
@@ -289,22 +288,16 @@ av_make_server <- function() {
       }
       })
 
-    dump_outclass <- function(olist) {
-      x1 <- sapply(names(olist), \(x) paste(x,"=",class(olist[[x]])[[1]]))
-      return(paste(x1))
-    }
-
-    observeEvent(input$RUNLN, {
+    observeEvent(input$istr1_enter, {
       rv <- isolate(reactiveValuesToList(input))
       thisenv <- environment()
       if(the_av$avapikey=="NOT_SET") {
-        lapply(s("anopt1;anopt2"), \(x) quick_message(x,"SET Alphavantage API key"))
+        lapply(s("istr1;istr2"), \(x) quick_message(x,"SET Alphavantage API key"))
         return()
       }
       message_if(the_av$verbose,"avrs(",tver,") >>>> input(",rv$istr1,") Line2:",rv$istr2)
       # Recopy older items, but not everything
-      out <- the_av$outcopy
-      sapply(s("MSG"),\(x) out[[x]]<-NULL)
+      out <- lapply(grepv("TS",names(out)), \(x) out[[x]])
 
       parse_inpline(toupper(rv$istr1)) # New variables created:  todo todofunc todoargs assetline
       runfunc_set <-  the_av$avsh_funcs[runcode==s(todofunc," ")[[1]],]
@@ -312,8 +305,8 @@ av_make_server <- function() {
       if(nrow(runfunc_set)<=0) { return() }
       # Set defaults
       av_set_defaults("starttab",tolower(runfunc_set[[1,"focus"]]))
-      av_set_defaults("inpstr1",rv$istr1)
-      av_set_defaults("inpstr2",rv$istr2)
+      av_set_defaults("inpline1",rv$istr1)
+      av_set_defaults("inpline2",rv$istr2)
       av_set_default_set("onrun",rv,save="the")
       rv$istr1 <- assetline
 
@@ -323,47 +316,33 @@ av_make_server <- function() {
 
       # General Magick here:
       #cAssign("todo;rv",silent=TRUE)
-      tenv <- ifelse(runfunc_set$func_src=="avsh",thisenv,.GlobalEnv())
+      tenv <- thisenv
+      if(runfunc_set$func_src=="user") { tenv<-.GlobalEnv() }
       outres <- do.call(runfunc_set$func_name, list(todo,rv), envir=tenv)
       outres <- setNames(outres,av_determine_output_locs(outres))
 
       for(nm in names(outres)) { out[[nm]]<-outres[[nm]] } # hash w/o hash
-      # Save outputs
-      names_to_cp <- grepv(fifelse("persistOutput" %in% the_av$logopts,"*","TS"), names(out) )
-      av_set_defaults("outcopy",out[names_to_cp])
-      # =============================================================================================================================================
-      the_av$dyg1h <- fifelse( "dygraphs" %in% class(out[["TS1"]]), "600px","auto")
-      the_av$dyg2h <- fifelse( "dygraphs" %in% class(out[["TS2"]]), "600px","auto")
-      # =============================================================================================================================================
-      # Main Page
-      output$t1gt <- render_gt(expr=out[["GT1"]])
-      output$t2gt <- render_gt(expr=out[["GT2"]])
-      output$t3lgt <- render_gt(expr=out[["GT3L"]])
-      output$t3rgt <- render_gt(expr=out[["GT3R"]])
-      output$d_t1gt <- render_gt(expr=out[["DETGT1"]])
-      output$d_t2gt <- render_gt(expr=out[["DETGT2"]])
-      output$dy1   <- renderDygraph({ out[["TS1"]] })
-      output$dy2  <- renderDygraph({ out[["TS2"]] })
-      output$plot1 <- renderPlot({ out[["SCAT1"]] },execOnResize=TRUE)
-      output$plot2 <- renderPlot({ out[["SCAT2"]] },execOnResize=TRUE)
-      # Details page
-      output$d_t1gt <- render_gt(expr=out[["DGT1"]])
-      output$d_t2gt <- render_gt(expr=out[["DGT2"]])
-      output$d_plot1 <- renderPlot({ out[["DSCAT1"]] },execOnResize=TRUE)
-      output$d_plot2 <- renderPlot({ out[["DSCAT2"]] },execOnResize=TRUE)
-      # Other
-      output$opt_t1gt <-  render_gt(expr=out[["OPT1GT"]])
-      output$newsgt <- render_gt({ out[["NEWSGT"]] })
-      output$optplot1<- renderPlot({ out[["OPTPLOT1"]] },execOnResize=TRUE)
-      if( nchar(out[["MSG"]] %||% "")>2) {
-        output$msg <- renderPrint({  print(out[["MSG"]] %||% "") })
-      }
-      #message("                                         END: ",dump_outclass(out))
+
+      # Save outputs, May turn off
+ #     names_to_cp <- grepv(fifelse("persistOutput" %in% the_av$logopts,"*","TS"), names(out) )
+#      av_set_defaults("outcopy",out[names_to_cp])
+
+      # Render unto Caesar, several types, except null text
+      # Had to do this at one point:the_av$dyg1h <- fifelse( "dygraphs" %in% class(out[["TS1"]]), "600px","auto") , then send to renderDygraphs
+      torend <- avsd$avsh_element[data.table(outname=names(out)),on=.(outname)]
+      mapply( \(outnm,innm,intype) {
+        local({
+          output[[outnm]]<-switch(gsub("::","",intype),
+                                  gt_tbl = render_gt(out[[innm]]),
+                                  dygraphs = renderDygraph(out[[innm]]),
+                                  ggplot2ggplot = renderPlot({ out[[innm]] },execOnResize=TRUE),
+                                  text = renderPrint( out[[innm]] ))
+        })},
+        torend$ui_out, torend$outname, torend$inclass   )
       updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
       save_avs_state("all",msg="RUNLN")
     })
   } # Server
   return(av_server)
 }
-
 

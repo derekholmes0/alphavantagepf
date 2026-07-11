@@ -186,11 +186,8 @@ av_make_dtmap <- function(yrs_ahead=5) {
 #' @importFrom usethis use_data
 av_shiny_data <- function() {
   tinputformstyle <- I("{font-size:12px; font-weight:bold; background-color: #ffff99}")
-  yellowed_inputs <- s("#dtstr_hist;#dtstr_window;#events;#volparams;#forecast;#pointers;#window;#ochains")
+  yellowed_inputs <- s("#dtstr_hist;#events;#ts_volparams;#ochains")
   avsd <- list(
-    "deflist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"], # ----------------->  don't need
-    "helplist"= data.table::fread("./inst/extdata/av_shiny_opts.csv")[cat=="runset"], # ----------------->  don't need
-
     "defaults"=data.table::fread("./inst/extdata/av_defaults.csv"),
     "crypto_list"=data.table::fread("./inst/extdata/cryptocurrency_list.csv"),
     "table_aes"= data.table::fread("./inst/extdata/table_aes.csv"), # columns widths, extra HTML
@@ -202,12 +199,13 @@ av_shiny_data <- function() {
     "inputcss_side" = paste(lapply(yellowed_inputs,(\(x) paste(x,tinputformstyle))),collapse=" "),
     "inputformstyle" =tinputformstyle,
     "inputcss_top" =paste(lapply(s("#istr1;#istr2"),\(x) paste(x,tinputformstyle)),collapse=" "),
-    "labelcss" =I("font-size:11pt color:red font-weight:bold")
+    "labelcss" =I("font-size:11pt color:red font-weight:bold"),
+    "othercss1"=I("#msg {font-size:10px; background-color: #ddfcd9; width:330px}"),
+    "othercss2"=I("gropts {font-size:10px; background-color: #ddfcd9}")
   )
   av_funcmap <- av_make_funcmap()
   dtmap  <- av_make_dtmap()
   usethis::use_data(av_funcmap, dtmap, avsd, internal = TRUE,overwrite=TRUE)
   return("Made default data into avsd")
 }
-
 

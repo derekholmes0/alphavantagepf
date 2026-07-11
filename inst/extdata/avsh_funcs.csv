@@ -22,3 +22,6 @@ MISC,AV.MOV,avsh,av_movers,,,MAIN,,,Equity Movers,
 EQ,Q,avsh,av_livepx,,,MAIN,,,Live Prices (Ln 1),
 EQ,AV.LIVE,avsh,av_livepx,,,MAIN,,,Live Prices (all),
 HELP,AV.H,avsh,av_help,,grepstr,MAIN,,,Help on Commands,H PX
+MISC,AV.CLS,avsh,av_misc,,,MAIN,,,Clear all outputs,
+MISC,AV.HIST,avsh,av_misc,,,MAIN,,,Show recent history,
+MISC,AV.R,avsh,av_misc,nitem,,MAIN,,,Recall command <nitem>,
