@@ -66,6 +66,7 @@ av_runShiny <- function() {
   else {
     av_reset_defaults(fileopts=FALSE) # Only use true if reinstalling entire package
     the_av$avsh_funcs <- copy(avsd$def_avsh_funcs)
+    av_set_defaults("logopts",avsd$avsh_deflogopts)
     save_avs_state("all",msg="I N I T")
   }
   the_av$do_on_start <- TRUE

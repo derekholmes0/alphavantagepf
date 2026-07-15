@@ -1,48 +1,4 @@
 
-# ----------------------- Exported Shiny Functions
-#' @name quick_message
-#' @description Displays a message underneath an input box
-#' @param wh inputID for shiny element to put a message underneath of.  See Documentation and/or Code
-#' @param this_message (default "")  A text message to  be used. If empty string, the current message is cleared.
-#' @param eval (default TRUE) OPtional parameter to suppress execution.
-#' @param color Optional text color
-#' @returns logical value of `eval`
-quick_message <- function(wh,this_message="",eval=TRUE,color="#1f78b4") {
-  shinyFeedback::hideFeedback(inputId=wh)
-  if(nchar(this_message)>0 & eval==TRUE) {
-    this_message <- paste0("<small>",this_message,"</small>")
-    shinyFeedback::showFeedback(inputId=wh, text=this_message,color=color)
-  }
-  return(eval)
-}
-
-#' @name avsh_clipboard
-#' @description Copies a data.frame to the clipboard, with a status message if relevant
-#' @param x A `data.frame` or equivalent.
-#' @param title String to add to a message printed if relevant
-#' @returns Nothing
-#' @import clipr
-avsh_clipboard <- function(x,title="") {
-  if(the_av$autocopy) {
-    write_clip(as.data.frame(x))
-    message_if_green(the_av$verbose,"to Clipboard: ",title," w/ ",nrow(x)," rows")
-    quick_message("istr1","Data copied to Clipboad")
-  }
-}
-
-#' @name avsh_set_tabtitle
-#' @description Sets the title for the Details tab
-#' @param newtext (default"DETAIL") What to name the tab as
-#' @param tabnm (default "detail") inputID of relevant tab
-#' @returns Nothing
-#' @importFrom shinyjs runjs
-avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail",makefocus=TRUE) {
-  shpf <- sprintf('$(\'#inTabset li a[data-value="%s"]\').text("%s");',tabnm,newtext)
-  if(makefocus==TRUE) av_set_defaults("starttab",tabnm)
-  shinyjs::runjs(shpf)
-}
-
-
 
 # =======================================================================================================
 #' Unexported App Support functions" Data and interface

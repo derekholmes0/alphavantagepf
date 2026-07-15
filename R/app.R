@@ -1,7 +1,8 @@
 source("./R/utilities.R")
-tver<-"0.8.201"
+tver<-"0.8.202"
 
-# 201: Generalize render, JS to only run on enter
+# 202: ui output finally working as intended Solved dygrahs height issue with containers, error code for bad tickers
+# 201: Generalize render, JS to only run on enter, cleaned up some cruft
 # 20: WOrking copy
 # 16: Fix scatter plotting, refactor ui names
 # 145: Command line interface
@@ -49,24 +50,24 @@ av_make_ui <- function() {
        ),
        column(10,  # Was 11
           fluidRow(
-            column(width=6,div(class = "enter-submit", textInput("istr1", "AVShiny Command", the_av$inpline1,width='100%'))),
+            column(width=7,div(class = "enter-submit", textInput("istr1", paste("AVShiny",tver), the_av$inpline1,width='100%'))),
             column(width=2,selectizeInput("list1","",c("AssetListnm"="", c("",sort(unique(the_av$assetgroups$listnm)))),size="80%",options=list(create=TRUE))),
-            column(width=2,radioButtons("managelist1","",choices=c("get","save","delete"),selected =character(0),width="90%",inline=TRUE)),
-            column(width=2,div(class = "enter-submit", textInput("istr2", "CounterAsset", the_av$inpline2,width='100%')))
+            column(width=2,radioButtons("managelist1","",choices=c("get","save","delete"),selected =character(0),width="85%",inline=TRUE)),
+            column(width=1,div(class = "enter-submit", textInput("istr2", "CounterAsset", the_av$inpline2,width='100%')))
           ),
           fluidRow(
             tabsetPanel(id="inTabset",selected=the_av$starttab,
-              # Generic tab 1: Main: t1gt | t3l_gt + t3r_gt | t2gt | (dy)view1 | (dy)view2
               tabPanel("MAIN", value="main",
                   fluidRow(
                     textOutput("msg"),
+                    htmlOutput("htm1"),
                     gt_output(outputId = "t1gt"),
                     gt_output(outputId = "t2gt"),
                     div(class = "no-gap-row",
                         div(class = "table-pane", style="flex: 1", gt_output("t3lgt")),
                         div(class = "table-pane", style="flex: 1", gt_output("t3rgt")) ),
-                    dygraphOutput("dy1"),
-                    dygraphOutput("dy2"),
+                    uiOutput("dy1_container"),
+                    uiOutput("dy2_container"),
                     plotOutput(outputId="plot1"),
                     plotOutput(outputId="plot2"),
                   )
@@ -164,7 +165,7 @@ av_make_server <- function() {
     quick_message("ochains","[F(ront)|B(ack)],[M(onth)|Q(tr)],[C(all)|P(ut)],[itm|otm|all]")
     # On Startup download current index list if not there
     update_tickerlists( is.null(the_av$tickerlist) || nrow(the_av$tickerlist)<=0 ||
-            (min(the_av$tickerlist$list_ts)<=Sys.Date()-7) )
+            (max(the_av$tickerlist$list_ts)<=Sys.Date()-4) )
     FinanceGraphs::fg_sync_group("avshiny")
     if("CleanOnStart" %in% the_av$capture_av_save) {  save_av_data(data.table(),"KILL") }
 
@@ -173,6 +174,10 @@ av_make_server <- function() {
       is_in_list <- s(input$istr2)[1] %in% the_av$pxinv$symbol
       shinyFeedback::feedbackWarning("is_in_list", !is_in_list, "(1) Need an asset in inventory to compare against")
     })
+
+    dyheight1 <- reactive({ the_av$renderset[ui_out=="dy1",]$displayheight})
+    dyheight2 <- reactive({ the_av$renderset[ui_out=="dy2",]$displayheight})
+
     set_list <- function(listtodo,tlist,instr,no) {
       assetline=todo=NULL
       rtnmsg <- ""
@@ -226,7 +231,7 @@ av_make_server <- function() {
     observeEvent(input$SetOpts, {
       old=toget=NULL
       rv <- isolate(reactiveValuesToList(input))
-      th1<- dump_the()
+      th1<- dump_state()
       oldcache <- th1[nm=="cachedir",]$toget
       av_api_key(rv$avapikey,rv$avapientitlement)
       av_set_default_set("setopts",rv)
@@ -248,7 +253,7 @@ av_make_server <- function() {
       av_set_defaults("verbose", "verbose" %in% rv$logopts)
       av_set_defaults("autocopy","data2clipboard" %in% rv$logopts)
       save_avs_state("all",msg="sEToPTS")
-      th1 <- th1[,.(nm,old=toget)][dump_the(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
+      th1 <- th1[,.(nm,old=toget)][dump_state(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
       th1 <- th1[,.SD,.SDcols=s("classtype;nm;toget;format")]
       quick_message("istr1","No data in inventory; load or ask for some via PriceTS", eval=(nrow(th1)<=0))
       output$dumpthe <- render_gt(th1 |> gt() |> gt.basetheme(interactive="filter") |> decorate_table())
@@ -296,9 +301,10 @@ av_make_server <- function() {
         return()
       }
       message_if(the_av$verbose,"avrs(",tver,") >>>> input(",rv$istr1,") Line2:",rv$istr2)
-      # Recopy older items, but not everything
-      out <- lapply(grepv("TS",names(out)), \(x) out[[x]])
-
+      # Clear all but TS graphs
+      out <- list()
+      outcopy <- the_av$outcopy %||% list()
+      # ----------------
       parse_inpline(toupper(rv$istr1)) # New variables created:  todo todofunc todoargs assetline
       runfunc_set <-  the_av$avsh_funcs[runcode==s(todofunc," ")[[1]],]
       quick_message("istr1",fifelse(nrow(runfunc_set)<=0,paste(todo,":Invalid choice"),""))
@@ -317,28 +323,41 @@ av_make_server <- function() {
       # General Magick here:
       #cAssign("todo;rv",silent=TRUE)
       tenv <- thisenv
-      if(runfunc_set$func_src=="user") { tenv<-.GlobalEnv() }
+      if( runfunc_set$func_src=="user" ) { tenv <-  .GlobalEnv }
+      if( !exists(runfunc_set$func_name,envir=tenv)) {
+        quick_message("istr1",this_message=paste0("Function Code not found for ",runfunc_set$func_name),color="red")
+        return()
+      }
       outres <- do.call(runfunc_set$func_name, list(todo,rv), envir=tenv)
-      outres <- setNames(outres,av_determine_output_locs(outres))
-
-      for(nm in names(outres)) { out[[nm]]<-outres[[nm]] } # hash w/o hash
-
-      # Save outputs, May turn off
- #     names_to_cp <- grepv(fifelse("persistOutput" %in% the_av$logopts,"*","TS"), names(out) )
-#      av_set_defaults("outcopy",out[names_to_cp])
-
-      # Render unto Caesar, several types, except null text
-      # Had to do this at one point:the_av$dyg1h <- fifelse( "dygraphs" %in% class(out[["TS1"]]), "600px","auto") , then send to renderDygraphs
-      torend <- avsd$avsh_element[data.table(outname=names(out)),on=.(outname)]
+      if(length(outres)>0) {
+        outres <- setNames(outres,av_determine_output_locs(outres))
+        for(nm in names(outres)) { out[[nm]]<-outres[[nm]] } # hash w/o hash
+      }
+      else {
+        quick_message("istr1","Invalid ticker or analysis, check logs",color="red")
+      }
+      # Save outputs ONLY if another graph is being asked for OR persistOut is TRUE
+      outcopy_grepstr <- fcase("persistOutput" %in% the_av$logopts,"*",grepl("^G",todo),"TS", default="NoMatch")
+      outcopy_names <- setdiff(grepv(outcopy_grepstr, names(outcopy)), names(outres))
+      for(nm in outcopy_names) { out[[nm]]<-outcopy[[nm]]  }
+      torend <- copy(avsd$avsh_element) # Replaces everything
+      torend <- torend[outname %in% names(out),displayed:=TRUE][inclass=="dygraphs",displayheight:=fifelse(displayed,"400px","0px")]
+      av_set_defaults("outcopy",out)
+      av_set_defaults("renderset",torend)
       mapply( \(outnm,innm,intype) {
         local({
           output[[outnm]]<-switch(gsub("::","",intype),
                                   gt_tbl = render_gt(out[[innm]]),
                                   dygraphs = renderDygraph(out[[innm]]),
                                   ggplot2ggplot = renderPlot({ out[[innm]] },execOnResize=TRUE),
-                                  text = renderPrint( out[[innm]] ))
+                                  text = renderText( out[[innm]] ))
         })},
         torend$ui_out, torend$outname, torend$inclass   )
+
+      # Dygraph heights tricky.
+      output$dy1_container <- renderUI({ dygraphOutput("dy1", height= torend[ui_out=="dy1",]$displayheight) })
+      output$dy2_container <- renderUI({ dygraphOutput("dy2", height= torend[ui_out=="dy2",]$displayheight) })
+
       updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
       save_avs_state("all",msg="RUNLN")
     })

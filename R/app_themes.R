@@ -53,6 +53,7 @@ decorate_table <- function(gtx) {
   return(gtx |>
            tab_style(style=cell_text(size="xx-small"),locations=cells_body(rows=grepl("xx-small",format))) |>
            tab_style(style=cell_text(size="x-small"),locations=cells_body(rows=grepl("x-small",format))) |>
+           tab_style(style=cell_text(size="large"),locations=cells_body(rows=grepl("large",format))) |>
            tab_style(style=cell_text(weight="bold"),locations=cells_body(rows=grepl("bold",format))) |>
            tab_style(style=cell_fill(color="lightyellow"),locations=cells_body(rows=grepl("yellow",format))) |>
            tab_style(style=cell_fill(color="lightgreen"),locations=cells_body(rows=grepl("green",format))) |>
@@ -148,7 +149,7 @@ gt.avtheme<- function(x,themeset="",...) {
     thisgt <- thisgt |> gt.basetheme() |> tab_header(title="Asset lists")
   }
   if(themeset=="pxinv") {
-    thisgt <- thisgt |> tab_header(title="Data Inventory") |> gt.basetheme(interactive="all") |>
+    thisgt <- thisgt |> tab_header(title="Data Inventory") |> gt.basetheme(interactive="all",sizepct=70) |>
       fmt_datetime(columns=loadts,date_style="Md",time_style="iso-short") |>
       tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,name,type,currency,age), rows=(as.numeric(age)>=3))) |>
       tab_style(style = cell_text(size = px(10)),locations = cells_body(columns = c(loadts))) |>

@@ -33,4 +33,5 @@ starttab,str,,avopts,,
 gropts,str,onrun,last,,
 dbglvl ,num,,,,0
 save_outputs,str,,TS1;TS2,,
-avsh_logopts,str,setopts,useTotRtn;useLivePx;verbose;data2clipboard;persistOutput,,
+avsh_logopts,str,setopts,useTotRtn;useLivePx;verbose;data2clipboard;persistOutput;showGeneralHelp,,
+avsh_deflogopts,str,,useTotRtn;showGeneralHelp,,

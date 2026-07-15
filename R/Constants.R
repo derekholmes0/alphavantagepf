@@ -189,6 +189,7 @@ av_shiny_data <- function() {
   yellowed_inputs <- s("#dtstr_hist;#events;#ts_volparams;#ochains")
   avsd <- list(
     "defaults"=data.table::fread("./inst/extdata/av_defaults.csv"),
+    "generalhelp"=data.table::fread("./inst/extdata/help_docs.csv"),
     "crypto_list"=data.table::fread("./inst/extdata/cryptocurrency_list.csv"),
     "table_aes"= data.table::fread("./inst/extdata/table_aes.csv"), # columns widths, extra HTML
     "def_avsh_funcs"= data.table::fread("./inst/extdata/avsh_funcs.csv"), # Functions and options

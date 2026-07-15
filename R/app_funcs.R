@@ -8,11 +8,13 @@ av_inventory <- function(todo,rv) {
     gtout <-invout |> gt() |> gt.basetheme(interactive="all") |> add_colwidths("pxinv")
   }
   else {
-    invout <- the_av$pxinv[,age:=Sys.Date()-end_dt]
-    gtout <- invout |> gt() |>  gt.basetheme(interactive="all") |> add_colwidths("pxinv")
+    outcols <- s("symbol;name;type;currency;lastpx;end_dt;beg_dt;loadts;list_ts")
+    invout <- the_av$pxinv[,.SD,.SDcols=outcols][,age:=Sys.Date()-end_dt]
+    gtout <- invout |>  gt.avtheme(themeset="pxinv",sizepct=70)
+
   }
   out<-list("GT1"=gtout ,"DGT1"=the_av$assetgroups |> gt() |> gt.basetheme(interactive="filter"))
-  avsh_set_tabtitle("Groups",makefocus=FALSE)
+  avsh_set_tabtitle(newtext="Groups",makefocus=FALSE)
   return(out)
 }
 
@@ -24,9 +26,15 @@ av_help <- function(todo,rv) {
   grepstr <-  s(c(todo,"*")," ")[[2]]
   tortn <- the_av$avsh_funcs[,.(category,runcode,func_reqinput,func_opts,helpstr,helpexample,func_src)][order(category,runcode)][!grepl("tblhelp",category)]
   tortn <- tortn[grepl(grepstr,category,ignore.case=TRUE) | grepl(grepstr,runcode,ignore.case=TRUE)]
-  tortn <- tortn |> gt() |> gt.basetheme()
-  return(list("GT1"=tortn,"MSG"="More help here...... "))
-}
+  rtnlist <- list(tortn |> gt() |> gt.basetheme(interactive="filter"))
+  if(grepl("showGeneralHelp",the_av$logopts)) {
+    helptable <- avsd$generalhelp |> gt() |> gt.basetheme(sizepct=80) |> decorate_table() |>
+                  tab_style(style=cell_text(font="Courier"),locations=cells_body(columns=c("Example/Choice"))) |>
+                  fmt_url(columns=HelpComment,rows=grepl("http",HelpComment),label="FinanceGraphs Parameters and Events",color="blue")
+    rtnlist=c(list(helptable),rtnlist)
+  }
+  return(rtnlist)
+  }
 # For the following functions: GP GPI GPD GPI2 GPD2
 # Good
 #' @importFrom stringr str_detect

@@ -1,0 +1,28 @@
+category,format,Example/Choice,HelpComment
+Run Analytics,greenboldlarge,,Commands entered into Line 1 are of the form '[Asset String] (space) [Command' and are run on pressing Enter
+,bold,[Asset String] ,"is a semicolon delimited set of Equities, ETFS, currencies, indices, or user data."
+,bold,[Command] ,is a space delimited series of Analytics to run and possible parameters
+,,,1) A list of commands is shown below:
+,,,2) Commands which start with `AV.[command]` have no asset strings.
+,,,"3) Commands that end with ""2"" are time series graphs that are shown below the main graphs"
+,,,4) Some commands show comparisons with the asset in the second line
+,,,"5) Some results may be in a separate tab, whose name is typically changed to highlight its existance"
+,x-small,IBM;QQQ GPI2 ,plots a rebased time series (i.e. starting at 100) of the equity IBM and the ETF QQQ below whatever is in the first graph.
+,x-small,USD/BRL GPD -6m::,plots an (e.g. 2yr) time series of USD/BRL rebased to 6 months prior to today
+,x-small,av.h eq,"shows this help screen, and all functions relevant to Equities"
+,x-small,av.inv,Shows a table of all historical data saved internally.
+,x-small,IBM;QQQ RV ,plots returns of both IBM and QQQ against the second line (e.g SPY)
+Date strings,greenboldlarge,,Text of the form <startperiod>::<endperiod> where either can be blank to indicate today().
+,,,"Either is of the form [+/-][nnn][d|m|y]  OR [yyyy-mm-dd] where the first is a relative number of periods from today(), and the second is an actual date."
+,x-small,'-3m::-2m',A one month period st arting 3 months ago.
+,x-small,'-2y::',A period from 2 years ago to today.
+,x-small,'-2y::+1y',A period from 2 years ago to one year ahead of today()
+Option Filters,greenboldlarge,,A comma delimited string of four items to filter options
+,,[Expiration],"[F|B|A] where `F` is first maturity, `B` is second maturity, `A` (or blank) are all maturities"
+,,[Maturity Type],"[M|Q|A] where `M` is for monthly contracts, `Q` for quarterly,  `A` (or blank) are all"
+,,[Option Type],"[C|P|A] for [C]alls,[P]uts, or [A] all.  Blank is all"
+,,[Moneyness: ],"[otm|itm|A] Out of the money, in the money or both"
+,,[Active],"[act|A] If `A`, only pass contracts with positive open interest"
+,x-small,"B,M,P,otm",filters the second monthly maturity (from today) Out of the Money Puts
+Graphing:,greenboldlarge,,See parameters amd events for FinanceGraphs
+,,,https://derekholmes0.github.io/FinanceGraphs/

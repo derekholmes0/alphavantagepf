@@ -140,6 +140,10 @@ manage_epx <- function(inticker, dtstr,
   # rtnpx returns list (messge,dta_downloaded)
   # rtnpx <- manage_px(inticker,dtstr); rtn_earn<-manage_earn(rtnpx)
   rtnpx   <- manage_px(inticker,dtstr,substitute_data=substitute_data,substitute_symset=substitute_symset,addlive=addlive,force=force,delay=delay)
+  if(nrow(rtnpx)<=0) {
+    message_if_red(the_av$verbose,"Error: ",inticker, " is invalid ticker")
+    return()
+  }
   rtnearn <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
   thisinv <- get_inv(inticker)
   the_av$pxinv <- DTUpsert(the_av$pxinv, thisinv, c("symbol"),fill=TRUE)
@@ -196,7 +200,8 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
   # If exists, then check if data is up to date
   #   if it doesn't exist or is too old, use full download
   # Note that downloads will occur anyway if narket has not opened yet
-  symset <- form_symset(inticker,force=force)[,let(loadts=Sys.time())]
+  symset <- form_symset(inticker,force=force)[,let(loadts=Sys.time())][!is.na(type),]
+  if( nrow(symset)<=0 ) { return(data.table())}
   tortn <- symset[,.(symbol,type)]
   nbdays = nrow(dtmap[between(DT_ENTRY,dtstoget[1],dtstoget[2])])
   if(nbdays<=1 & !force & !addlive) {
@@ -357,7 +362,7 @@ save_avs_state <- function(todo="all",msg="") {
   shortmsg <- ""
   # Price and earnings in one fst file, everythign else in inventory file
   px_names <- s("pxd;earn;earnest")
-  nonpx_names <-  dump_the()[classtype=="data.table" & !(nm %in% px_names),]$nm
+  nonpx_names <-  dump_state()[classtype=="data.table" & !(nm %in% px_names),]$nm
   if(grepl("all|px",todo)) {
     pxinv <- setNames(lapply(nonpx_names,\(x) get(x,envir=the_av)), nonpx_names) # So we save a few extra things
     save(pxinv,file=the_av$inv_fn)
@@ -479,98 +484,3 @@ av_dbgmode <- function() {
   av_set_defaults("dbglvl",5)
 }
 
-
-#' Extract internal state
-#'
-#' @name dump_the
-#' @description Prints internal data state of [av_runShiny()]
-#' `dump_the(typegrep="*")`
-#' `dump_inv()`
-#' `dump_assetgroups()`
-#' `dump_captured()`
-#' @param typegrep : Grep string for internal state parameters
-#' @param returngt : Return GT table
-#' @param todo : One of c("byfunction","pxhist",any av function name)
-#' @param rv : An isolated list of av_shiny parameters
-#' @returns data.table with desired data.
-#' @seealso [av_runShiny()]
-#' @examples
-#' \dontrun{
-#' `dump_the()`
-#' `dump_inv()`
-#' `dump_av_funcs()`
-#' `dump_assetgroups(returngt=TRUE)`
-#' `dump_captured(todo="byfunction")`
-#' `inv_rv(rv)`
-#' }
-#'
-#' @rdname dump_the
-#' @export
-dump_the <- function(typegrep="*") {
-  classtype=nm=NULL
-  outdump<-data.table()
-  for (x in ls(envir=the_av)) {
-    toget <- get(x,envir=the_av)
-    type <- class(toget)
-    if(any(grepl(typegrep,type))) {
-      if("data.frame" %in% type) {
-        toget<-paste0("<<data.frame>> with ",nrow(toget), " rows")
-      }
-      if("list" %in% type) {
-        toget<-paste0("<<list>> with ",length(toget), " items")
-      }
-      outdump<-rbindlist(list(outdump,data.table(nm=x,classtype=type[1], toget=toget)),ignore.attr=TRUE,fill=TRUE)
-    }
-  }
-  # Comment out after creating vignettes
-  #outdump[nm=="avapikey",]$toget<-"Hidden"
-  #-------------------
-  return(outdump[order(classtype,nm)])
-}
-
-#' @rdname dump_the
-#' @export
-inv_rv <- function(rv) {
-  tnames <- names(rv)
-  tclass <- sapply(tnames, \(x) paste0(class(rv[[x]]),sep=" "))
-  tres <- rv[tnames]
-  return(data.table(inputId=tnames, type=tclass, res=tres))
-}
-
-
-#' @rdname dump_the
-#' @export
-dump_inv <- function() {
-  return(the_av$pxinv)
-}
-
-#' @rdname dump_the
-#' @export
-dump_assetgroups <- function(returngt=TRUE) {
-  return(the_av$assetgroups[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)])
-}
-
-#' @rdname dump_the
-#' @export
-dump_av_funcs <- function() {
-  return(the_av$avsh_funcs)
-}
-
-#' @rdname dump_the
-#' @export
-dump_captured <- function(todo="byfunction") {
-  nr=fn=load_ts=NULL
-  if(is.null(the_av$av_download)) { return("No Data downloaded")}
-  if(todo=="byfunction") {
-    rtn <- data.table(fn=names(the_av$av_download))[,nr:=nrow(the_av$av_download[[fn]]), by=.I][]
-  }
-  if(todo=="pxhist" & "TIME_SERIES_DAILY_ADJUSTED" %in% names(the_av$av_download)) {
-    rtn <- the_av$av_download[["TIME_SERIES_DAILY_ADJUSTED"]][,
-              .(lastpx=last(close), lastts=max(load_ts), mindate=min(timestamp), maxdate=max(timestamp)), by=.(symbol)]
-  }
-  if(todo %in% names(the_av$av_download)) {
-    tkeys <- setdiff(key(the_av$av_download[[todo]]),s("contractID;timestamp;timestamp"))
-    rtn <- the_av$av_download[[todo]][,.(n=.N,lastts=max(load_ts)),by=tkeys]
-  }
-  return( rtn )
-}
