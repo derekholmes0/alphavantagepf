@@ -2,13 +2,17 @@
 # FOr the following functions: AV.INV AV.EQINV
 # Good
 av_inventory <- function(todo,rv) {
+  if(nrow(the_av$pxd)<=0) {
+    quick_message("istr1","No Inventory, Run a GP graph to start",color="red")
+    return()
+  }
   if(grepl("eqinv",todo,ignore.case=TRUE)) {
     outcols <- s("symbol;name;type;currency;end_dt;lastearn_dt;div_lastdt;age;lastpx;lastearn_eps;div_lastval")
     invout <- the_av$pxinv[grepl("ETF|Equity",type),][,age:=Sys.Date()-end_dt][,.SD,.SDcols=outcols]
     gtout <-invout |> gt() |> gt.basetheme(interactive="all") |> add_colwidths("pxinv")
   }
   else {
-    outcols <- s("symbol;name;type;currency;lastpx;end_dt;beg_dt;loadts;list_ts")
+    outcols <- s("symbol;name;type;currency;lastpx;end_dt;beg_dt;list_ts")
     invout <- the_av$pxinv[,.SD,.SDcols=outcols][,age:=Sys.Date()-end_dt]
     gtout <- invout |>  gt.avtheme(themeset="pxinv",sizepct=70)
 
@@ -22,7 +26,7 @@ av_inventory <- function(todo,rv) {
 # FOr the following functions: AV.H
 # Good
 av_help <- function(todo,rv) {
-  func_reqinput=func_opts=helpstr=helpexample=func_src=NULL
+  func_reqinput=func_opts=helpstr=helpexample=func_src=HelpComment=NULL
   grepstr <-  s(c(todo,"*")," ")[[2]]
   tortn <- the_av$avsh_funcs[,.(category,runcode,func_reqinput,func_opts,helpstr,helpexample,func_src)][order(category,runcode)][!grepl("tblhelp",category)]
   tortn <- tortn[grepl(grepstr,category,ignore.case=TRUE) | grepl(grepstr,runcode,ignore.case=TRUE)]

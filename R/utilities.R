@@ -109,3 +109,79 @@ coalesce_DT_byentry<-function(DT1,DT2) { # Adds columns as necessary, either row
 
 ###
 
+sAssign<-function(x,...) { cAssign(x,copytodisk=TRUE,pframe=4,...)}
+cAssign<-function(x,dbg=TRUE,silent=FALSE,copytodisk=FALSE,copysilent=FALSE,trace=FALSE,dpath="c:\\t",dbgkey="zz",suffix="",
+                  skipsaveiftoday=FALSE, nbig=10000,title="",usefst=TRUE,pframe=3,tmp=F) {
+  #if(nchar(title)>1) { message("cAssign ---------------------------------------: ",title) }
+  newfilename=""
+  if(!is.character(x)) { stop("cAssign x must be character string for a variable name, not the actual variable..") }
+  if(tmp || dpath=="t") { dpath="c:/t/" }
+  if(copytodisk | copysilent) { silent=TRUE } # eliminated reduncany
+  reallydoingthis = (dbgkey=="zz" & dbg) | !(mget(dbgkey,envir = parent.frame(n=4),ifnotfound="notfound")=="notfound")
+  if(reallydoingthis) {
+    if(x=="all") { x=paste0(ls(envir=sys.frame(-1)),collapse=";") }
+    x=unlist(strsplit(x,";")[[1]])
+    ppp=lapply(x,function(y){
+      if(exists(y,envir=parent.frame(n=pframe))) {
+        cadtmp=get(y,pos=parent.frame(n=pframe))
+        if(nchar(suffix)>0) {
+          ynew = paste0(y,"_",suffix)
+          ymessage = sprintf("%10s as %10s",y,ynew)
+        }
+        else{
+          ynew=y
+          ymessage = sprintf("%10s",y)
+        }
+        if(!silent) {
+          thistrace=ifelse(trace,try(traceback(max.lines=1),silent=T),"--notrace--")
+          message("Assigning: ",ymessage, "(",paste(dim(cadtmp),collapse=";"),") ",paste(class(cadtmp),collapse=";"), " from ",tail(thistrace,1),">",title); }
+        assign(ynew,cadtmp,env=.GlobalEnv)}
+      else {
+        if(!silent) { print(paste("cAssign: CANNOT FIND ",y)) } }
+    } )
+  }
+  if(copytodisk) {
+    ppp=lapply(x,function(y){
+      fname=paste0(dpath,"/",y,".RD")
+      splitmsg=""
+      if(skipsaveiftoday & as.Date(file.info(fname)[['mtime']]) >= Sys.Date()) {
+        if(!copysilent) { message("skipping save, already saved for today...") }
+      }
+      else {
+        if(usefst) {
+          cadtmp=get(y,pos=parent.frame(n=pframe))
+          if("list" %in% class(cadtmp)) {
+            listonames = c(names(cadtmp),paste0("A",1:length(cadtmp)))[1:length(cadtmp)]
+            for(i in 1:length(listonames)) {
+              if("data.frame" %in% class(cadtmp[[i]]) && nrow(cadtmp[[i]])>=nbig) {
+                splitmsg=paste0("(fst:",listonames[[i]],")")
+                newfilename=paste0(y,"_",listonames[[i]],".fst")
+                write.fst(cadtmp[[i]], paste0(dpath,"/",newfilename),compress=20)
+                cadtmp[[i]]=newfilename
+              }
+            }
+          }
+          if("data.frame" %in% class(cadtmp)) {
+            if(nrow(cadtmp)>=nbig) {
+              newfilename=paste0(y,".fst")
+              write.fst(cadtmp, paste0(dpath,"/",newfilename),compress=20)
+              splitmsg = "(as fst)"
+              cadtmp=newfilename
+            }
+          }
+          e1<-new.env()
+          assign(y,cadtmp,env=e1)
+          save(list=c(y),envir=e1,file=fname)
+        }
+        else {
+          save(list=c(y),file=fname)  }
+        if(!copysilent) { message("GlobalAssign and Saving ", y, " ",splitmsg," (filesize:",file.size(fname),") to file:",fname, ",",newfilename) }
+      }
+    })
+  }
+}
+
+
+
+
+

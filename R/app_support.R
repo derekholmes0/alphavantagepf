@@ -31,14 +31,16 @@ symbol_grep_by_type <- function(eqlist,grepstr="Equity",check_vs_inv=TRUE, rtn="
 #' @importFrom utils tail
 parse_inpline <- function(istr1,envir=parent.frame()) {
   istrs <- s(toupper(istr1),sep=" ")
-  if(grepl("^AV.",toupper(istrs)[[1]]) | length(istrs)==1) {  # No asset list or some sort of error
-    tcmd <- stringr::str_squish(istr1)
-    targs <- ""
-    tasset<- "" }
-  else {
-    tasset <- stringr::str_squish(istrs[[1]])
-    tcmd <- stringr::str_squish(istrs[[2]])
-    targs <- stringr::str_squish(paste(tail(istrs,-2),collapse=" "))
+  tcmd <- targs <- tasset <- ""
+  if(length(istrs)>0) {
+    if(grepl("^AV.",toupper(istrs)[[1]]) | length(istrs)==1) {  # No asset list or some sort of error
+      tcmd <- stringr::str_squish(istr1)
+    }
+    else {
+      tasset <- stringr::str_squish(istrs[[1]])
+      tcmd <- stringr::str_squish(istrs[[2]])
+      targs <- stringr::str_squish(paste(tail(istrs,-2),collapse=" "))
+    }
   }
   outlist = list("todo"=paste(tcmd,targs),"todofunc"=tcmd,"todoargs"=targs,"assetline"=tasset)
   if(is.environment(envir)) { list2env(outlist,envir=envir)  }

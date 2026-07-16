@@ -118,7 +118,7 @@ av_add_assetgroups <- function(indta) {
 #' @description Adds a user-defined function to the av Shiny app
 #' @param runcode Code string user must run to call the function.
 #' @param func_name Name of function run when analytic is called.  If an empty string is supplied, the runcode will be de-registered.
-#' @param help_str (default: "user function"): A string comment to ad to the av.h (help) command
+#' @param helpstr (default: "user function"): A string comment to ad to the av.h (help) command
 #' @param focus (default: "MAIN")  String with tab name to set focus to when command is run
 #' @param category (default "USER") A string with a category used to sort function when help is called.
 #' @returns String message with success or failure of function addition.
@@ -166,7 +166,7 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
     return()
   }
   new_analytics <- data.table(category=category,runcode=runcode, func_src="user", func_name=func_name, focus=focus, helpstr=helpstr)
-  the_av$avsh_funcs <- DTUpsert(the_av$avsh_funcs,new_analytics,key=c("runcode"),fill=TRUE)
+  the_av$avsh_funcs <- DTUpsert(the_av$avsh_funcs,new_analytics,keys=c("runcode"),fill=TRUE)
   save_avs_state("all",msg=paste0("Add FUnction ",runcode))
 }
 

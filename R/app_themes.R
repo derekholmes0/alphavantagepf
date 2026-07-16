@@ -154,7 +154,7 @@ gt.avtheme<- function(x,themeset="",...) {
       tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,name,type,currency,age), rows=(as.numeric(age)>=3))) |>
       tab_style(style = cell_text(size = px(10)),locations = cells_body(columns = c(loadts))) |>
       tab_footnote(paste("Data older than 3 days highlighted")) |>
-      cols_hide(columns=s("list_ts;loadts")) |>
+      cols_hide(columns=s("list_ts")) |>
       cols_move_to_start(s("type")) |>
       cols_merge(columns=c(beg_dt,end_dt), pattern = "{1}::{2}") |>
       add_colwidths("pxinv")

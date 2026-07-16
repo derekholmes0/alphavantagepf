@@ -1,5 +1,5 @@
 source("./R/utilities.R")
-tver<-"0.8.202"
+tver<-"0.8.203"
 
 # 202: ui output finally working as intended Solved dygrahs height issue with containers, error code for bad tickers
 # 201: Generalize render, JS to only run on enter, cleaned up some cruft
@@ -157,7 +157,7 @@ av_make_ui <- function() {
 #' @importFrom stats quantile formula
 
 av_make_server <- function() {
-  ts_rebase=ts_events=ts_volparams=imp=x_close=y_close=NULL
+  ts_rebase=ts_events=ts_volparams=imp=x_close=y_close=ui_out=outname=displayed=inclass=displayheight=NULL
   out <- list()
   av_server<-function(input, output,session) {
     inlist=list_ts=vartype=todofunc=todo=assetline=NULL
@@ -296,8 +296,8 @@ av_make_server <- function() {
     observeEvent(input$istr1_enter, {
       rv <- isolate(reactiveValuesToList(input))
       thisenv <- environment()
-      if(the_av$avapikey=="NOT_SET") {
-        lapply(s("istr1;istr2"), \(x) quick_message(x,"SET Alphavantage API key"))
+      if( quick_message("istr1","SET Alphavantage API key",eval=the_av$avapikey=="NOT_SET") |
+          quick_message("istr1","Enter a valid command", eval=nchar(rv$istr1)<=0) ) {
         return()
       }
       message_if(the_av$verbose,"avrs(",tver,") >>>> input(",rv$istr1,") Line2:",rv$istr2)
@@ -329,12 +329,9 @@ av_make_server <- function() {
         return()
       }
       outres <- do.call(runfunc_set$func_name, list(todo,rv), envir=tenv)
-      if(length(outres)>0) {
+      if(!quick_message("istr1","Invalid ticker or analysis, check logs",color="red", eval=length(outres)<=0)) {
         outres <- setNames(outres,av_determine_output_locs(outres))
         for(nm in names(outres)) { out[[nm]]<-outres[[nm]] } # hash w/o hash
-      }
-      else {
-        quick_message("istr1","Invalid ticker or analysis, check logs",color="red")
       }
       # Save outputs ONLY if another graph is being asked for OR persistOut is TRUE
       outcopy_grepstr <- fcase("persistOutput" %in% the_av$logopts,"*",grepl("^G",todo),"TS", default="NoMatch")

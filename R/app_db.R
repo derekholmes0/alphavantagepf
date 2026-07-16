@@ -171,9 +171,15 @@ get_inv <- function(tickerlist=NULL,override_symset=NULL) {
   thisinv_div<- thisinv_dta[abs(dividend_amount)>0,.SD[which.max(timestamp),.(div_lastdt=timestamp,div_lastval=dividend_amount)],by=.(symbol)]
   thisinv_px <- thisinv_dta[,.(beg_dt=min(timestamp),end_dt=max(timestamp),age=Sys.Date()-max(timestamp),lastpx=last(adjusted_close),
                            medgap=median(diff(as.numeric(timestamp)))),by=.(symbol,type)]
-  earn_past <- the_av$earn[rtnpx,on=.(symbol)][,.SD[which.max(reportedDate)],by=.(symbol)][,.(symbol,lastearn_dt=reportedDate,lastearn_eps=reportedEPS)]
-  earn_fwd <- the_av$earnest[rtnpx,on=.(symbol)][horizon=="fiscal quarter",.SD[which.max(date)],by=.(symbol)][,
-                                                                .(symbol,earnf_ts=ts,earnf_nextdt=date,earnf_next=eps_estimate_average)]
+
+  earn_past <- data.table(symbol=tickerlist)[,let(lastearn_dt=Sys.Date(), lastearn_eps=NA_real_)]
+  if(nrow(the_av$earn)>0) {
+    earn_past <- the_av$earn[rtnpx,on=.(symbol)][,.SD[which.max(reportedDate)],by=.(symbol)][,.(symbol,lastearn_dt=reportedDate,lastearn_eps=reportedEPS)]
+  }
+  earn_fwd <- data.table(symbol=tickerlist)[,let(earnf_ts=Sys.Date(),earnf_nextdt=Sys.Date(),earnf_next=NA_real_)]
+  if(nrow(the_av$earnest)>0) {
+    earn_fwd <- the_av$earnest[rtnpx,on=.(symbol)][horizon=="fiscal quarter",.SD[which.max(date)],by=.(symbol)][,                                                                .(symbol,earnf_ts=ts,earnf_nextdt=date,earnf_next=eps_estimate_average)]
+  }
   thisinv_id <- rtnpx[,.(symbol,currency,name,matchScore,list_ts)] # Tricky
   thisinv <- Reduce(function(x,y) merge(x,y,by="symbol",all=TRUE),list(thisinv_div,thisinv_px,earn_past,earn_fwd,thisinv_id))
   setcolorder(thisinv,s("symbol;end_dt;lastearn_dt;earnf_nextdt;earnf_ts;div_lastdt;lastpx;earnf_next;div_lastval"))
