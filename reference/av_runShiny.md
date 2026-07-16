@@ -1,13 +1,13 @@
 # RShiny App
 
-`av_runShiny()` runs an interactive RShiny app to download, manage, and
-visualize data from the [Alpha
-Vantage](https://www.alphavantage.co/documentation/) data service. The
-app treats equities, ETFs, indices, and FX equally, so users do not need
-to know specific API calls to integrate data. Downloaded data is cached
-to reduce API calls, all data can be saved for external use, and
-external data can be added to the app. Sets of securities can be easily
-added and managed.
+`av_runShiny()` runs an interactive RShiny app with a professional
+command line iterface to download, manage, and visualize data from the
+[Alpha Vantage](https://www.alphavantage.co/documentation/) data
+service. The app treats equities, ETFs, indices, and FX equally, so
+users do not need to know specific API calls to integrate data.
+Downloaded data is cached to reduce API calls, all data can be saved for
+external use, and external data can be added to the app. Sets of
+securities can be easily added and managed.
 
 ## Usage
 

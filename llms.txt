@@ -361,6 +361,8 @@ data manipulation.
 
 - [`alphavantagepf`](https://derekholmes0.github.io/alphavantagepf/reference/alphavantagepf.md)
   : alphavantagepf: A lightweight R interface to the Alpha Vantage API
+- [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_analytic.md)
+  : App database functions
 - [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.md)
   : App database functions
 - [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.md)
@@ -386,13 +388,13 @@ data manipulation.
   : Extract data from Alpha Vantage retuned data
 - [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
   : RShiny App
-- [`dump_the()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_the.md)
-  [`inv_rv()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_the.md)
-  [`dump_inv()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_the.md)
-  [`dump_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_the.md)
-  [`dump_av_funcs()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_the.md)
-  [`dump_captured()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_the.md)
-  : Extract internal state
+- [`dump_state()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)
+  [`inv_rv()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)
+  [`dump_inv()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)
+  [`dump_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)
+  [`dump_av_funcs()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)
+  [`dump_captured()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)
+  : Exported Internal internal state functions
 - [`gt.basetheme()`](https://derekholmes0.github.io/alphavantagepf/reference/gt.basetheme.md)
   : App formatting functions
 - [`message_if()`](https://derekholmes0.github.io/alphavantagepf/reference/message_if.md)
