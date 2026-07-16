@@ -14,7 +14,7 @@ av_inventory <- function(todo,rv) {
   else {
     outcols <- s("symbol;name;type;currency;lastpx;end_dt;beg_dt;list_ts")
     invout <- the_av$pxinv[,.SD,.SDcols=outcols][,age:=Sys.Date()-end_dt]
-    gtout <- invout |>  gt.avtheme(themeset="pxinv",sizepct=70)
+    gtout <- invout |>  gt.avtheme(themeset="pxinv",sizepct=9)
 
   }
   out<-list("GT1"=gtout ,"DGT1"=the_av$assetgroups |> gt() |> gt.basetheme(interactive="filter"))

@@ -1,5 +1,5 @@
 source("./R/utilities.R")
-tver<-"0.8.203"
+tver<-"0.8.204"
 
 # 202: ui output finally working as intended Solved dygrahs height issue with containers, error code for bad tickers
 # 201: Generalize render, JS to only run on enter, cleaned up some cruft

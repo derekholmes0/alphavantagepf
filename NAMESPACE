@@ -2,6 +2,7 @@
 
 export(av_add_analytic)
 export(av_add_assetgroups)
+export(av_add_earn)
 export(av_add_px)
 export(av_api_key)
 export(av_extract_analytics)

@@ -17,11 +17,11 @@ av_add_analytic(
 
 \item{func_name}{Name of function run when analytic is called.  If an empty string is supplied, the runcode will be de-registered.}
 
+\item{helpstr}{(default: "user function"): A string comment to ad to the av.h (help) command}
+
 \item{focus}{(default: "MAIN")  String with tab name to set focus to when command is run}
 
 \item{category}{(default "USER") A string with a category used to sort function when help is called.}
-
-\item{help_str}{(default: "user function"): A string comment to ad to the av.h (help) command}
 }
 \value{
 String message with success or failure of function addition.
