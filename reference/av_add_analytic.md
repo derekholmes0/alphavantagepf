@@ -25,6 +25,11 @@ av_add_analytic(
   Name of function run when analytic is called. If an empty string is
   supplied, the runcode will be de-registered.
 
+- helpstr:
+
+  (default: "user function"): A string comment to ad to the av.h (help)
+  command
+
 - focus:
 
   (default: "MAIN") String with tab name to set focus to when command is
@@ -34,11 +39,6 @@ av_add_analytic(
 
   (default "USER") A string with a category used to sort function when
   help is called.
-
-- help_str:
-
-  (default: "user function"): A string comment to ad to the av.h (help)
-  command
 
 ## Value
 
