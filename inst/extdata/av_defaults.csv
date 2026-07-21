@@ -27,6 +27,8 @@ minabssent,num,news,,,0.1
 maxagedays,num,news,,,15
 newssort,str,news,"time,symbol",,
 nArticles,num,news,,,20
+maxage_earn_days,num,,,,3
+maxage_px_hrs,num,,,,0
 verbose,log,,,TRUE,
 autocopy,log,autocopy,,FALSE,
 starttab,str,,avopts,,

@@ -4,12 +4,14 @@
 \alias{av_reset_defaults}
 \title{Extract data from Alpha Vantage retuned data}
 \usage{
-av_reset_defaults(fileopts = TRUE, keep_apikeys = FALSE)
+av_reset_defaults(fileopts = TRUE, keep_apikeys = FALSE, resetgrep = "*")
 }
 \arguments{
 \item{fileopts}{(default: TRUE)  If TRUE, then remove all files and subdirectories}
 
 \item{keep_apikeys}{(default: FALSE) Keep whatever API keys are stored}
+
+\item{resetgrep}{(default "*") Only reset grepped default variables}
 }
 \value{
 No return

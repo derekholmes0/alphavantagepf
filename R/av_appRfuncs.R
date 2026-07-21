@@ -1,5 +1,5 @@
 # =======================================================================================================
-#' App database functions
+#' App database functions: Price
 #'
 #' @importFrom fst read_fst write_fst
 #' @importFrom lubridate is.instant
@@ -49,8 +49,11 @@ av_add_px <- function(indta,assettypes=NULL,delay=0) {
   save_avs_state("px",msg="av_add_px")
 }
 
+# =======================================================================================================
+#' App database functions: Earnings
+#'
 #' @name av_add_earn
-#' @description Adds price data to [av_runShiny()] internal data.
+#' @description Adds earnings data to [av_runShiny()] internal data, either by download or with user data
 #' @param substitute_earn A (default NULL)  data.frame with past earnings
 #' @param substitute_earnest  (default NULL)  A data.frame with  earnings estimates
 #' @param assettypes (default NULL)  An optional data.frame with minimal columns `c(symbol,type,currency,name)` with
@@ -60,6 +63,7 @@ av_add_px <- function(indta,assettypes=NULL,delay=0) {
 #' NOTE THAT assettypes cannot be NULL if substitute_earn and substitute_earnest are NULL.
 #' @param delay (default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
 #' unused if `assettypes` is given.
+#' @param maxage (default 0) Maxium age of data before downloaded from Alphavantage
 #' @returns Data.table with downloaded or added earnings
 #' @seealso [av_runShiny()]
 #' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`
@@ -68,7 +72,6 @@ av_add_px <- function(indta,assettypes=NULL,delay=0) {
 #' # To add earnings for a set of tickers
 #' av_add_earn(assettypes=data.table(symbol=c("AAPL","QQQ"))
 #' }
-#'
 #' @export
 av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,assettypes=NULL,delay=0,maxage=0) {
   if(nrow(the_av$earn)>0 & as.numeric(Sys.Date()-max(the_av$earn$ts))<=maxage) {
@@ -85,7 +88,7 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,assettypes=
 }
 
 # =======================================================================================================
-#' App database functions
+#' App database functions: assetgroups
 #'
 #' @name av_add_assetgroups
 #' @description Adds asset lists to [av_runShiny()] internal data.
@@ -100,7 +103,6 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,assettypes=
 #' # To remove an asset list, just use an empty string for the ticker
 #' av_add_assetgroups(data.table(listnm=c("new"),ticker=c("")))
 #' }
-#'
 #' @export
 av_add_assetgroups <- function(indta) {
   indta <- as.data.table(indta)
@@ -113,7 +115,7 @@ av_add_assetgroups <- function(indta) {
 
 
 # =======================================================================================================
-#' App database functions
+#' App database functions: New analytics
 #'
 #' @name av_add_analytic
 #' @description Adds a user-defined function to the av Shiny app
@@ -169,6 +171,29 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
   new_analytics <- data.table(category=category,runcode=runcode, func_src="user", func_name=func_name, focus=focus, helpstr=helpstr)
   the_av$avsh_funcs <- DTUpsert(the_av$avsh_funcs,new_analytics,keys=c("runcode"),fill=TRUE)
   save_avs_state("all",msg=paste0("Add FUnction ",runcode))
+}
+
+# =======================================================================================================
+#' App database functions
+#'
+#' @name av_load_shinydata
+#' @description Loads internal data (prices, earnings, etc.
+#' @param item Any data name as seen by running [dump_state()].  **If blank, loads database**
+#' @returns Data item specified by `item` or a nothing (but a message) if left blank
+#' @seealso [av_runShiny()]
+
+#' @export
+av_shinydata <- function(item=NULL) {
+  if(is.null(item)) {
+    restore_avs_state("all");
+    the_av$outcopy<-list()
+    options(av_api_key = the_av$avapikey)
+    options(av_api_entitlement = the_av$avapientitlement)
+    message_if(the_av$verbose,"Loading avShiny Internal data.  Use dump_state() to see what's available")
+  }
+  else {
+    return(get(item,envir=the_av))
+  }
 }
 
 # =======================================================================================================

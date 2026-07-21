@@ -36,7 +36,6 @@ av_make_ui <- function() {
      ),
      fluidRow(
        column(1,
-            #actionButton("RUNLN","RUNLN",width='100%',class = "btn btn-primary"),
             selectizeInput("gropts","TS opts",
                            c("last","lastlabel","hilightfirst","splitts","hilow"),
                            selected=s(the_av$gropts),
@@ -113,7 +112,7 @@ av_make_ui <- function() {
                                    selected="none",multiple=TRUE),
                     span(textInput(inputId="newsgrep", label="Terms to filter out", value=the_av$newsgrep),style=avsd$labelcss),
                     numericInput(inputId="minabssent", label="MinSentiment", value=the_av$minabssent,min=0,max=1),
-                    numericInput(inputId="maxagedays", label="Maximum Age (Days)", value=the_av$maxagedays,min=0),
+                    numericInput(inputId="maxagedays", label="Maximum News Age (Days)", value=the_av$maxagedays,min=0),
                     ),
                   column(width=8,
                     gt_output(outputId = "newsgt")
@@ -121,15 +120,13 @@ av_make_ui <- function() {
                   )
                 ),
               tabPanel("AVOPTS",value="avopts",
-                  column(width=3,
+                  column(width=2,
                     actionButton("SetOpts","Set Opts",width='50%',class = "btn btn-primary"),
                     span(passwordInput(inputId="avapikey", label="av api key", value=the_av$avapikey),style=avsd$labelcss),
                     span(textInput(inputId="avapientitlement", label="av entitlement", value=the_av$avapientitlement),style=avsd$labelcss),
                     span(textInput(inputId="cachedir", label="Cache Data Directory", value=the_av$cachedir),style=avsd$labelcss),
                     #span(textInput(inputId="extracalc_file", label="extracalc csv", value=the_av$extracalc_file),style=avsd$labelcss), ## <<--- TODO
                     span(textInput(inputId="ts_colorset", label="fgts colorset", value=the_av$ts_colorset),style=avsd$labelcss),
-                    textInput(inputId="ts_volparams", label="Histvolparams", value=the_av$ts_volparams),
-                    selectInput(inputId="sigpct","Regr Significance", c("0.05","0.025","0.1"),selected=c("0.025"),multiple=FALSE),
                     span(textInput(inputId="av_dump_dir", label="AV dump Directory", value=the_av$av_dump_dir),style=avsd$labelcss),
                     selectInput(inputId="capture_av_what",label="Capture AV Data",c("none","pricesonly","noprices","all"),
                                 selected=s(the_av$capture_av_what), multiple=FALSE),
@@ -137,10 +134,16 @@ av_make_ui <- function() {
                                 selected=s(the_av$capture_av_update), multiple=FALSE),
                     selectInput(inputId="capture_av_save",label="Data Saving Options",c("none","CleanOnStart","SaveEveryAVCall","SaveNowOnOptUpdate"),
                                 selected=the_av$capture_av_save, multiple=TRUE),
-                    checkboxGroupInput(inputId="logopts",label="Options",choices=s(avsd$defaults[var=="avsh_logopts",]$value_str),
-                                selected=s(the_av$logopts))
                   ),
-                  column(width=7,gt_output(outputId = "dumpthe"))
+                  column(width=2,
+                    numericInput(inputId="maxage_earn_days", label="Max Earnings Age (Days)", value=the_av$maxage_earn_days,min=0),
+                    numericInput(inputId="maxage_px_hrs", label="Max Price Age (Hours)", value=the_av$maxage_px_days,min=0),
+                    textInput(inputId="ts_volparams", label="Histvolparams", value=the_av$ts_volparams),
+                    selectInput(inputId="sigpct","Regr Significance", c("0.05","0.025","0.1"),selected=c("0.025"),multiple=FALSE),
+                    checkboxGroupInput(inputId="logopts",label="Options",choices=s(avsd$defaults[var=="avsh_logopts",]$value_str),
+                                            selected=s(the_av$logopts))
+                  ),
+                  column(width=6,gt_output(outputId = "dumpthe"))
                   )
             )
           )

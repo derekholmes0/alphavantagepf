@@ -189,16 +189,17 @@ get_inv <- function(tickerlist=NULL,override_symset=NULL) {
 # ------------------------------------------------------------------ PRICES
 #' @importFrom stats median
 manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=NULL, addlive=FALSE, force=FALSE, delay=0.1) {
-  symbol=beg_dt=medgap=NULL
+  symbol=beg_dt=medgap=i.enddt=NULL
   # Determine dates needed
   dtstoget <- gendtstr(dtstr,rtn="list") # Dates to get
   if(nrow(the_av$pxinv)>0 & is.null(substitute_data) & is.null(substitute_symset)) {
+    #TO do: IUmplement max age and integrate market hours
     edates <- the_av$pxinv[data.table(symbol=s(inticker)),on=.(symbol),nomatch=NULL]
     if(nrow(edates)>0) {
       earlystarts <- edates[beg_dt>dtstoget[1],]
       if(nrow(earlystarts)>0) {
         force <- TRUE
-        message_if(the_av$verbose,"av_one_px(",paste0(earlystarts$symbol,collapse=" "),"): Start Date requested earlier than series start ")
+        message_if(the_av$verbose,"av_one_px(",paste0(earlystarts$symbol,collapse=" "),"): Start Date requested earlier than series start, redownloading ")
       }
       dtstoget[1] <- min(edates$end_dt)
     }
@@ -210,10 +211,13 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
   if( nrow(symset)<=0 ) { return(data.table())}
   tortn <- symset[,.(symbol,type)]
   nbdays = nrow(dtmap[between(DT_ENTRY,dtstoget[1],dtstoget[2])])
-  if(nbdays<=1 & !force & !addlive) {
+  if(nbdays<=(the_av$maxage_px_days+1) & !force) { # Always have today (last date) in set
     src <- "Cached"
+    tortn <- the_av$pxinv[,.(symbol,minaddt=end_dt,maxadddt=end_dt)][tortn,on=.(symbol)]
+    dta <- data.table()
+    outmsg <- paste0("Using cached data for: ",dtstoget[1], "::",dtstoget[2])
   }
-  else {
+  else {  # Time Series Externally given or downloaded
     if(is.data.table(substitute_data)) {
       dta <- data.table::copy(substitute_data)
       if("low" %notin% colnames(dta)) {   dta <- dta[,let(open=close,high=close,low=close)]  }
@@ -250,26 +254,34 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
         dta <- dta |> save_av_data(avfun)
         dta <- epx_fmt_to_hist(dta,tickertype,live=FALSE)
         src <- "downloaded"
-        avfun_live <- epx_get_avfn(tickertype,live=TRUE)
-        if(addlive==TRUE & !(avfun_live=="NOTAVAIL")) {
-          livedta <- av_get_pf(inticker,avfun_live,outputsize="compact",verbose=FALSE)
-          livedta <- epx_fmt_to_hist(livedta,tickertype,live=TRUE)
-          src <- paste0("downloaded+live:",livedta[1,]$close)
-          message_if_green(the_av$verbose,"manage_epx: Adding ",nrow(livedta)," live prices (",livedta[1,]$close,
-                           ") to ",inticker," at ",Sys.time())
-          dta <- DTUpsert(dta,livedta,c("symbol","timestamp"),fill=TRUE)
-        }
       }
       tickers <- c(inticker)
+      dta <- dta[,let(ts=Sys.time())]
+      dtrg <- lapply(range(dta$timestamp),\(x) format(x,"%Y-%m-%d"))
+      tortn = tortn[dta[,.(minadddt=min(timestamp),maxadddt=max(timestamp)),by=.(symbol)],on=.(symbol)]
+      outmsg <- paste0(nrow(dta)," rows w/ range ",dtrg[1],"::",dtrg[2]," filling gap of ",nbdays," days (",dtstoget[1], "::",dtstoget[2],")")
+
+    } # Downloaded
+  } # DOwnloaded or external
+  # Add Live if requested
+  if(addlive==TRUE) {
+    for(ttype in unique(tortn$type)) {
+      if(!(avfun_live <- epx_get_avfn(ttype,live=TRUE)) =="NOTAVAIL") {
+        intickers <- tortn[type==ttype,]
+        livedta <- lapply(intickers$symbol, \(x) {
+            av_get_pf(x,avfun_live,outputsize="compact",verbose=FALSE) |> epx_fmt_to_hist(ttype,live=TRUE) })
+        livedta <- rbindlist(livedta,fill=TRUE)[,let(ts=Sys.time())]
+        src <- paste0(src,"+live")
+        outmsg <- paste0(outmsg, " w/ Live px @ ",Sys.time())
+        dta <- DTUpsert(dta,livedta,c("symbol","timestamp"),fill=TRUE)
+      }
     }
-    dta <- dta[,let(ts=Sys.time())]
-    the_av$pxd <- DTUpsert(the_av$pxd,dta,c("symbol","timestamp"),fill=TRUE)
-    dtrg <- lapply(range(dta$timestamp),\(x) format(x,"%Y-%m-%d"))
-    tortn = tortn[dta[,.(minadddt=min(timestamp),maxadddt=max(timestamp)),by=.(symbol)],on=.(symbol)]
-    message_if(the_av$verbose,
-        "av_one_px(",tickers[1],fifelse(length(tickers)>1,"... ,",","),src,") ",nrow(dta)," rows with range ",dtrg[1],"::",dtrg[2],
-        " filling gap of ",nbdays," days (",dtstoget[1], "::",dtstoget[2],")")
   }
+  if(nrow(dta)>0) {
+    the_av$pxd <- DTUpsert(the_av$pxd,dta,c("symbol","timestamp"),fill=TRUE)
+    the_av$pxinv[dta[,.(symbol,enddt=max(timestamp)),by=.(symbol)],end_dt:=i.enddt,on=.(symbol)]
+  }
+  message_if(the_av$verbose,"av_one_px(",paste_trunc(tortn$symbol)," @ ",src,") ", outmsg)
   return(tortn)
 }
 
@@ -277,11 +289,21 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
 # Assumes price data already downloaded and ticker is in pxinv
 #   -- ao call this second!
 # todo:  only download earnings when you think you might need to
-
-manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,delay=0.2) {
-  ts=horizon=eps_estimate_average=NULL
+#' @importFrom purrr map
+manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL, delay=0.05) {
+  ts=horizon=eps_estimate_average=assetType=NULL
   src<-""; rtniv<-data.table()
-  earntickers <- tickerdt[type=="Equity"]
+  earntickers <- the_av$listings[tickerdt,on=.(symbol),nomatch=NULL][assetType=="Stock",]
+  if(nrow(the_av$earn)>0) {
+    age <- as.numeric(Sys.Date()-max(the_av$earn$ts))
+    if(age<=the_av$maxage_earn_days) {
+      message_if_red(TRUE,paste0("Earnings data age of ",age," less than ",the_av$maxage_earn_days," maxage, skipping"))
+      return()
+    }
+  }
+  if( length( badtickers <- setdiff(tickerdt$symbol,earntickers$symbol))>0) {
+    message_if_red(TRUE,"Earnings skipping invalid tickers: ",paste_trunc(badtickers))
+  }
   if( nrow(earntickers)>0) {
     if(is.data.table(substitute_earn)) {
       src<-"subs earnings"
@@ -293,10 +315,10 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
     }
     if(src=="") {
       src <- "Downloaded"
-      earn_past <- lapply(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"))
-      earn_past <- rbindlist(earn_past)
-      earn_fwd <- lapply(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"))
-      earn_fwd <- rbindlist(earn_fwd)
+      earn_past <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"),.progress="Previous Earnings")
+      earn_past <- rbindlist(earn_past,fill=TRUE)
+      earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress="Forecast Earnings")
+      earn_fwd <- rbindlist(earn_fwd,fill=TRUE)
     }
     if(nrow(earn_past)>0) {
       setkeyv(earn_past,s("symbol;reportedDate;fiscalDateEnding"))
@@ -308,12 +330,11 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
       earn_fwd <- earn_fwd[,ts:=Sys.Date()]
       setkeyv(earn_fwd,s("symbol;date;horizon;ts"))  # Possibly want evolution.
       the_av$earnest <- DTUpsert(the_av$earnest,earn_fwd,key(earn_fwd))
-
       rtninv_fwd <- earn_fwd[horizon=="fiscal quarter",.SD[which.max(date)],by=.(symbol)][,
                             .(symbol,earnf_ts=ts,earnf_nextdt=date,earnf_next=eps_estimate_average)]
       rtniv =  rtninv_fwd[rtninv_past,on=.(symbol)]
     }
-    message_if_green(the_av$verbose,"earnings(",earntickers$symbol,") from ",src," adds ",nrow(earn_past), " past and ",nrow(earn_fwd), " fwd earnings")
+    message_if_green(the_av$verbose,"earnings(",paste_trunc(earntickers$symbol),") from ",src," adds ",nrow(earn_past), " past and ",nrow(earn_fwd), " fwd earnings")
     message_if_red(src=="","manage_earn: No tickers to update.  Have they been priced?")
   }
   return(rtniv)

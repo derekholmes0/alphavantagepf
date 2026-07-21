@@ -2,7 +2,7 @@
 % Please edit documentation in R/av_appRfuncs.R
 \name{av_add_analytic}
 \alias{av_add_analytic}
-\title{App database functions}
+\title{App database functions: New analytics}
 \usage{
 av_add_analytic(
   runcode,

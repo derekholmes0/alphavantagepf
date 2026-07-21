@@ -139,7 +139,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     if(is.null(url_params)) { # Missing something required
         stop("av_get_pf cannot create url; are you missing a required parameter?")
     }
-    url <- glue::glue("https://www.alphavantage.co/query?function={av_fun}&{url_params}")
+    url <- paste0("https://www.alphavantage.co/query?function=",av_fun,"&",url_params)
 
     # Alpha Advantage API call
     response <- httr::GET(url, ua)

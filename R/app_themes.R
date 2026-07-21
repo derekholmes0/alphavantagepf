@@ -82,6 +82,7 @@ add_colwidths <- function(gtx,xtablenm) {
   return(gtx)
 }
 
+
 #' @import gt
 #' @import data.table
 gt.avtheme<- function(x,themeset="",...) {

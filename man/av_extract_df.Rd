@@ -9,11 +9,11 @@
 \usage{
 av_extract_df(indta, grepstring = "", melt = FALSE, empty_dt_onerror = TRUE)
 
-av_extract_fx(indta, outputform = "common", cols = "")
+av_extract_fx(indta, outputform = "common", cols = "", empty_dt_onerror = TRUE)
 
-av_extract_analytics(indta, separate_vars = FALSE)
+av_extract_analytics(indta, separate_vars = FALSE, empty_dt_onerror = TRUE)
 
-av_extract_divs_or_splits(indta)
+av_extract_divs_or_splits(indta, empty_dt_onerror = TRUE)
 }
 \arguments{
 \item{indta}{A data.table as returned by av_get()}
@@ -26,8 +26,7 @@ av_extract_divs_or_splits(indta)
 
 \item{outputform}{(default : \code{common}, \code{av_extract_fx()} only):  Use common names from \code{REALTIME_BULK_QUOTES}}
 
-\item{cols}{(default : all columns:  \code{av_extract_fx()} only):  String or List of columns to return
-`}
+\item{cols}{(default : all columns:  \code{av_extract_fx()} only):  String or List of columns to return}
 
 \item{separate_vars}{(default : FALSE)  separate out multiple levels of variable names into new keys}
 }
@@ -42,6 +41,7 @@ Extracted data.tables for nested data returned from \code{\link[=av_get_pf]{av_g
 }
 \details{
 \code{\link[=av_get_pf]{av_get_pf()}} frequently returns a nested data.table, or a structure with nested data.frames.  These are utilities functions to extract, filter and summarize returned values.
+if \code{\link[=av_get_pf]{av_get_pf()}} returns a valid response, but empty extracted \code{data.tables}, am empty \code{data.table()} will be returned
 }
 \examples{
 \dontrun{

@@ -32,7 +32,7 @@ New Features
 
 * `av_get_pf()` returns a date column for melted data.
 * `av_runShiny()` now returns a `ShinyAppHandle` object and does not block execution
-* `av_extract_df` now returns an empty data.table if there is nothing to extract. Set `empty_dt_onerror=FALSE` to throw an error.
+* All helper functions (e.g. `av_extract_df`) now return an empty data.table if there is nothing to extract. Set `empty_dt_onerror=FALSE` to throw an error.
 * Scatter plot added to ActiveTS, with piecewise linear regression, accessed via "tailhedge" scatter plot option
 * Scatter plots added to PriceTS line 1 vs PriceTS line 2 when line 2 is plotted.
 

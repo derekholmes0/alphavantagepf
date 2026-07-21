@@ -19,26 +19,18 @@ s<-function(x,sep=";",fixed=TRUE,rtn=NULL) {
     y=unlist(strsplit(x,sep,fixed=fixed))
     if(is.numeric(rtn)) { if(length(y)>=rtn) { y=y[rtn] } }
     return(y)
-    }
+}
 
-#txtcolors <-list("red"="\033[31m","green"="\033[32m","off"="\033[0m")
+#' @noRd
+#' @importFrom utils head
+paste_trunc <- function(x,nlen=10) {
+  return(paste(paste(head(x,nlen),collapse=" ",sep=" "),fifelse(length(x)>nlen,"...","")))
+}
+
 
 #' @noRd
 dump_hash<-function(out) {
   u1=lapply(names(out), \(x) message("out[",x,"]: ",paste(class(out[[x]]),collapse=",")))
-}
-
-#  CAnt get this oto work from within shiny app
-#' @noRd
-#' @importFrom purrr map2
-lineAssign<-function(xline) {
-  if("data.table" %in% class(xline)) {
-    if(nrow(xline)>1) message("lineAssign cannot assigm more than oneline")
-    aaa1 <- purrr::map2(names(as.list(xline[1,])),as.list(xline[1,]), function(x,y){assign(x,y,envir=sys.frame(1))})
-  }
-  if("list" %in% class(xline)) {
-    aaa1<-lapply(names(xline),\(x) {  assign(x,xline[[x]],envir=sys.frame(1))})
-  }
 }
 
 #' @noRd
@@ -107,9 +99,22 @@ coalesce_DT_byentry<-function(DT1,DT2) { # Adds columns as necessary, either row
   return(DT3[])
 }
 
-###
+#  CAnt get this oto work from within shiny app
+#' @noRd
+#' @importFrom purrr map2
+lineAssign<-function(xline) {
+  if("data.table" %in% class(xline)) {
+    if(nrow(xline)>1) message("lineAssign cannot assigm more than oneline")
+    aaa1 <- purrr::map2(names(as.list(xline[1,])),as.list(xline[1,]), function(x,y){assign(x,y,envir=sys.frame(1))})
+  }
+  if("list" %in% class(xline)) {
+    aaa1<-lapply(names(xline),\(x) {  assign(x,xline[[x]],envir=sys.frame(1))})
+  }
+}
 
 sAssign<-function(x,...) { cAssign(x,copytodisk=TRUE,pframe=4,...)}
+#' @noRd
+#' @importFrom fst write.fst
 cAssign<-function(x,dbg=TRUE,silent=FALSE,copytodisk=FALSE,copysilent=FALSE,trace=FALSE,dpath="c:\\t",dbgkey="zz",suffix="",
                   skipsaveiftoday=FALSE, nbig=10000,title="",usefst=TRUE,pframe=3,tmp=F) {
   #if(nchar(title)>1) { message("cAssign ---------------------------------------: ",title) }
@@ -135,7 +140,7 @@ cAssign<-function(x,dbg=TRUE,silent=FALSE,copytodisk=FALSE,copysilent=FALSE,trac
         if(!silent) {
           thistrace=ifelse(trace,try(traceback(max.lines=1),silent=T),"--notrace--")
           message("Assigning: ",ymessage, "(",paste(dim(cadtmp),collapse=";"),") ",paste(class(cadtmp),collapse=";"), " from ",tail(thistrace,1),">",title); }
-        assign(ynew,cadtmp,env=.GlobalEnv)}
+        assign(ynew,cadtmp,envir=.GlobalEnv)}
       else {
         if(!silent) { print(paste("cAssign: CANNOT FIND ",y)) } }
     } )
@@ -170,7 +175,7 @@ cAssign<-function(x,dbg=TRUE,silent=FALSE,copytodisk=FALSE,copysilent=FALSE,trac
             }
           }
           e1<-new.env()
-          assign(y,cadtmp,env=e1)
+          assign(y,cadtmp,envir=e1)
           save(list=c(y),envir=e1,file=fname)
         }
         else {

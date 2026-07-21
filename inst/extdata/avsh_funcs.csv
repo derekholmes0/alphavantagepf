@@ -1,15 +1,15 @@
 category,runcode,func_src,func_name,func_reqinput,func_opts,focus,output,tabrename,helpstr,helpexample
 tblhlp>,Code to Type,native or user,func name,req parameter,optins to add,tab to move to,"where, if not default",,,
-PX,GP,avsh,av_gp,,w=-6m::,MAIN,TS1,,Graph Ln 1 Prices,
-PX,GPI,avsh,av_gp,,w=-6m::,MAIN,TS1,,Graph Ln 1 Prices (Rebase),
-PX,GPD,avsh,av_gp,gendatestring,,MAIN,TS1,,Graph Ln 1 Prices (Rebase at date),GPD2 -3m::
-PX,GP2,avsh,av_gp,,w=-6m::,MAIN,TS2,,Graph Ln 2 Prices,GP2 w=-3m::-1m
-PX,SCAT,avsh,av_scat,,,MAIN,SCAT1,scatter,Scatter Ln 1 vs Ln 2,
-PX,SCATI,avsh,av_scat,,w=-6m::,MAIN,SCAT1,scatter,Scatter Ln 1 vs Ln 2 (rebased),
-PX,GPI2,avsh,av_gp,,w=-6m::,MAIN,TS2,,Graph Ln 2 Prices (Rebase),
-PX,GPD2,avsh,av_gp,gendatestring,,MAIN,TS2,,Graph Ln 2 Prices (Rebase),
-RV,RV,avsh,av_active,,,MAIN,,,Ln 1 v Ln 2,
-VOL,GV,avsh,av_vol,,,MAIN,,,"Ln 1 Vol, corr w/ Ln 2",
+PX,GP,avsh,av_gp,,w=-6m::,MAIN,TS1,,Graph Prices,
+PX,GPI,avsh,av_gp,,w=-6m::,MAIN,TS1,,Graph Prices (Rebase),
+PX,GPD,avsh,av_gp,gendatestring,,MAIN,TS1,,Graph Prices (Rebase at date),GPD2 -3m::
+PX,GP2,avsh,av_gp,,w=-6m::,MAIN,TS2,,Graph Prices (Graph 2),GP2 w=-3m::-1m
+PX,SCAT,avsh,av_scat,,,MAIN,SCAT1,scatter,Scatter vs CounterAsset,
+PX,SCATI,avsh,av_scat,,w=-6m::,MAIN,SCAT1,scatter,Scatter vs CounterAsset (rebased),
+PX,GPI2,avsh,av_gp,,w=-6m::,MAIN,TS2,,Graph Prices (Rebase) on Graph 2,
+PX,GPD2,avsh,av_gp,gendatestring,,MAIN,TS2,,Graph Prices (Rebase at date) on Graph 2,
+RV,RV,avsh,av_active,,,MAIN,,,Prices vs CounterAsset,
+VOL,GV,avsh,av_vol,,,MAIN,,,"Volatility, Corr w/ CounterAsset",
 MISC,S,avsh,av_search,searchstring,,MAIN,,,Search for Ticker,
 MISC,AV.INV,avsh,av_inventory,,,MAIN,,,All Inventory,
 MISC,AV.EQINV,avsh,av_inventory,,,MAIN,,,Equity/ETF inventory,
@@ -25,3 +25,12 @@ HELP,AV.H,avsh,av_help,,grepstr,MAIN,,,Help on Commands,H PX
 MISC,AV.CLS,avsh,av_misc,,,MAIN,,,Clear all outputs,
 MISC,AV.HIST,avsh,av_misc,,,MAIN,,,Show recent history,
 MISC,AV.R,avsh,av_misc,nitem,,MAIN,,,Recall command <nitem>,
+PX,GPE,avsh,av_gearn,,,MAIN,,,Graph P/E,
+PX,GPE2,avsh,av_gearn,,,MAIN,,,Graph (on 2) P/E,
+PX,GEP,avsh,av_gearn,,,MAIN,,,Graph E/P,
+PX,GEP2,avsh,av_gearn,,,MAIN,,,Graph (on 2) E/P,
+PX,GPF,avsh,av_gearn,,,MAIN,,,Graph Fcst P/E,
+PX,GPF2,avsh,av_gearn,,,MAIN,,,Graph (on 2) Fcst P/E,
+PX,GFP,avsh,av_gearn,,,MAIN,,,Graph FcstE/P,
+PX,GFP2,avsh,av_gearn,,,MAIN,,,Graph (on 2) FcstE/P,
+PX,GPEE,avsh,av_earnest,,,MAIN,,,Graph Estimates Evolution,

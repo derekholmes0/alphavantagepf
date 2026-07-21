@@ -51,3 +51,4 @@ apphtml,line7,HTML,,".gt_table td, .gt_table th { font-size: 14px !important; }"
 apphtml,line8,HTML,,.dataTables_wrapper { font-size: 13px !important; }
 apphtml,line9,HTML,,".selectize-dropdown-content {  max-height: 500px;  }""))"
 apphtml,line10,HTML, ,.shiny-input-checkbox { font-size: 11px}
+apphtml,line11,HTML,,.control-label { font-size:11px}

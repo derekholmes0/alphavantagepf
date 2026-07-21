@@ -192,7 +192,7 @@ oneticker_divs <- function(thisticker,datestring) {
 }
 
 one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_window=NULL) {
-  symbol=low=high=medgap=NULL
+  symbol=low=high=medgap=reportedEPS=surprise=lpx=dividend_amount=NULL
   seriesnm <- the_av$seriesnm
   if(is.data.table(toplot[[1]])) {
     trebase <- toplot[[2]]
@@ -207,12 +207,37 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_wind
     fgdt<-toplot
     trebase<-""
   }
+  # Annotations
   tanno <- fcase(
     "lastlabel" %in% rv$gropts, "last,line",
     "last" %in% rv$gropts, "last,linevalue",
     default = "")
+  # What to step
   xstepcols = the_av$pxinv[data.table(symbol=unique(fgdt$variable)),on=.(symbol)][fcoalesce(as.numeric(medgap),1)>4,]
   if(nrow(xstepcols)>0) { stepcols=xstepcols$symbol } else { stepcols<- FALSE }
+  # Eartnings or dividends
+  cAssign("toplot;fgdt;events")
+  eventset <- data.table()
+  eventlist <- s(tolower(events))
+  symb_dt <- data.table(symbol=unique(fgdt$variable))
+  eventdtrange <- paste(range(fgdt$timestamp),collapse="::")
+  if("earn" %in% eventlist) {
+    teventset <- the_av$earn[symb_dt,on=.(symbol)] |> narrowbydtstr(eventdtrange)
+    eventset <- rbindlist(list(eventset, teventset[,.(timestamp =reportedDate,text=paste0("EPS:",format(reportedEPS,digits=3)),loc="top")]))
+  }
+  if("surp" %in% eventlist) {
+    teventset <- the_av$earn[symb_dt,on=.(symbol)] |> narrowbydtstr(eventdtrange)
+    eventset <- rbindlist(list(eventset, teventset[,.(timestamp =reportedDate,text=paste0("Surp:",format(surprise,digits=)),loc="top")]))
+  }
+  if("div" %in% eventlist | "divpct" %in% eventlist) {
+    teventset <- the_av$pxd[symb_dt,on=.(symbol)][,lpx:=shift(close,1,0,"lag"),by=.(symbol)][ abs(dividend_amount)>0,] |> narrowbydtstr(eventdtrange)
+    if("divpct" %in% eventlist) {
+      teventset <- teventset[,.(timestamp,text=paste0("DivPct:",format(100*dividend_amount/lpx,digits=2)))]
+    } else {
+      teventset <- teventset[,.(timestamp,text=paste0("Div:",format(dividend_amount,digits=3)))]
+    }
+    eventset <- rbindlist(list(eventset, teventset))
+  }
   outdyg <- fgts_dygraph(fgdt,title=title,events=events, dtwindow=dt_window,
                          annotations=paste0(c(tanno,extra_anno),collapse=";"), colorset=the_av$ts_colorset,
                          splitcols=("splitts" %in% rv$gropts),roller=1,

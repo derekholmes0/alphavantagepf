@@ -2,7 +2,7 @@
 % Please edit documentation in R/av_appRfuncs.R
 \name{av_add_px}
 \alias{av_add_px}
-\title{App database functions}
+\title{App database functions: Price}
 \usage{
 av_add_px(indta, assettypes = NULL, delay = 0)
 }

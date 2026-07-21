@@ -46,15 +46,71 @@ av_gp <- function(todo,rv) {
   todolist <- c(s(toupper(todo)," ")," ")
   func_details <- the_av$avsh_funcs[runcode==todolist[[1]],]
   wherefrom <- 1 # Still keep open possibility of line 2 direct
-  inpstr <- rv[[paste0("istr",wherefrom)]]
   wheretoput <- fifelse(stringr::str_detect(todolist[[1]],"2$"), "TS2" , "TS1")
   rb <- find_rebasecode(todolist,rv$dtstr_hist)
-  toplot <- data_from_list(s(inpstr),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID=paste0("istr",wherefrom))
+  toplot <- data_from_list(s(rv[["istr1"]]),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID="istr1")
   out=list()
   if( nrow(toplot[[1]])>0) {
     out[[wheretoput]] <- one_px_ts(toplot,rv,events=rv$ts_events,dt_window=rb$rebase_window,title=rb$grtitle)
   }
   return(out)
+}
+
+# For the following functions: GP GPI GPD GPI2 GPD2
+# Good
+#' @importFrom stringr str_detect
+av_gearn <- function(todo,rv) {
+  horizon=i.enddt=labs=lpx=estimatedEPS=ra_estimatedEPS=ra_reportedEPS=rb=reportedEPS=NULL
+  todolist <- c(s(toupper(todo)," ")," ")
+  func_details <- the_av$avsh_funcs[runcode==todolist[[1]],]
+  inplist <- s(rv[["istr1"]])
+  wheretoput <- fifelse(stringr::str_detect(todolist[[1]],"2$"), "TS2" , "TS1")
+  calccode <- toupper(substr(todolist[[1]],1,3))
+  bigdtstr <- extenddtstr(rv$dtstr_hist,begchg=-365)
+  toplot <- data_from_list(inplist,bigdtstr ,"none",bigdtstr ,msg_inputID="istr1")
+  tdtmap <- narrowbydtstr(dtmap[,.(timestamp=DT_ENTRY,isday)],bigdtstr)
+  earnset <- the_av$earn[data.table(symbol=inplist),on=.(symbol)][,.(symbol,timestamp=reportedDate,reportedEPS,estimatedEPS)]
+  withearn <- earnset[toplot[[1]],on=.(symbol,timestamp)][,let(reportedEPS=nafill(reportedEPS,type="locf"), estimatedEPS=nafill(estimatedEPS,type="locf")), by=.(symbol)]
+  withearn <- withearn[,let(  ra_reportedEPS=4*frollmean(reportedEPS,260), ra_estimatedEPS=4*frollmean(estimatedEPS,260))]
+  toplot_x <- withearn[,.(timestamp,variable=symbol,
+                          value=fcase(calccode=="GPE",close/ra_reportedEPS, calccode=="GEP",100*ra_reportedEPS/close,
+                                      calccode=="GPF",close/ra_estimatedEPS, calccode=="GFP",100*ra_estimatedEPS/close))]
+  out=list()
+  if( nrow(toplot_x)>0) {
+    toplot[[1]] <- toplot_x
+    out[[wheretoput]] <- one_px_ts(toplot,rv,events=rv$ts_events,dt_window=rb$rebase_window,title=rb$grtitle)
+  }
+  return(out)
+}
+
+# For the following functions: GP GPI GPD GPI2 GPD2
+# todo="GPEE"; rv<-list(istr1="IBM;GS",dtstr_hist="-2y::")
+#' @importFrom stringr str_detect
+#' @importFrom ggplot2 ggplot aes geom_errorbar geom_line geom_segment scale_color_manual geom_crossbar labs theme
+av_earnest <- function(todo,rv) {
+  date1=date2=eps_est=eps_est.hi=eps_est.lo=eps_est_30d=eps_est_90d=eps_estimate_analyst_count=ts=horizon=NULL
+  eps_estimate_revision_down_trailing_30_days=eps_estimate_revision_up_trailing_30_days=epse1=epse2=estimatedEPS=NULL
+  todolist <- c(s(toupper(todo),"invalidate")," ")
+  this_dthist <- rv$dtstr_hist
+  if(!grepl("NA",gendtstr(todolist[[2]]))) { this_dtstr <- gendtstr(todolist[[2]]) }
+  earnset <- data.table(symbol=s(rv[["istr1"]]))[,horizon:="fiscal quarter"]
+  earnset <- the_av$earnest[earnset,on=.(symbol,horizon)][,.SD[ts==max(ts)], by=.(symbol)]|> narrowbydtstr(rv$dtstr_hist)
+  earnset <- earnset[,let(analystdisp30d=100*(fcoalesce(eps_estimate_revision_up_trailing_30_days,0)-fcoalesce(eps_estimate_revision_down_trailing_30_days,0))
+                          /eps_estimate_analyst_count)]
+  colstokeep <- s("eps_est;eps_est.lo;eps_est.hi;eps_est_30d;eps_est_90d")
+  setnames(earnset,s("symbol;eps_estimate_average;eps_estimate_low;eps_estimate_high;eps_estimate_average_30_days_ago;eps_estimate_average_90_days_ago"),
+                   c("variable",colstokeep))
+  toplot <- earnset[,.SD,.SDcols=c("date","variable",colstokeep)]
+  toplot2a <- toplot[,.(variable,date1=date-30,date2=date,epse1=eps_est_30d,epse2=eps_est )]
+  toplot2b <- toplot[,.(variable,date1=date-90,date2=date-30,epse1=eps_est_90d,epse2=eps_est_30d )]
+  # Sometimes just do it the old fashioned way
+  g1 <- ggplot2::ggplot(toplot,aes(x=date,color=variable))+geom_line(aes(y=eps_est),linewidth=2)
+  g1 <- g1+ geom_crossbar(aes(y=eps_est,ymin=eps_est.lo,ymax=eps_est.hi),width=10)
+  g1 <- g1 + labs(x="Date",y="EPS",title="Earnings Estimates")
+  g1 <- g1 + scale_color_manual(values=fg_get_aesstring("lines")) + fg_current_theme() + theme(legend.position = "top",legend.justification = "left")
+  g1 <- g1 + geom_segment(aes(x=date1,y=epse1,xend=date2,yend=epse2,color=variable),linewidth=1,data=toplot2a)
+  g1 <- g1 + geom_segment(aes(x=date1,y=epse1,xend=date2,yend=epse2,color=variable),linewidth=1,data=toplot2b)
+  return(list(g1))
 }
 
 # For the following functions: SCAT SCATI SCATD

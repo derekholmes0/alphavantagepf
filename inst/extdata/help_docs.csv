@@ -26,3 +26,8 @@ Option Filters,greenboldlarge,,A comma delimited string of four items to filter 
 ,x-small,"B,M,P,otm",filters the second monthly maturity (from today) Out of the Money Puts
 Graphing:,greenboldlarge,,See parameters amd events for FinanceGraphs
 ,,,https://derekholmes0.github.io/FinanceGraphs/
+,,,Events can also be:
+,,earn,Earnings
+,,surp,Earnings Surprise (Pct)
+,,div,Dividend
+,,divpct,Dividend as percent of prev day close.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/av_appRfuncs.R
 \name{av_add_assetgroups}
 \alias{av_add_assetgroups}
-\title{App database functions}
+\title{App database functions: assetgroups}
 \usage{
 av_add_assetgroups(indta)
 }
@@ -25,7 +25,6 @@ av_add_assetgroups(data.table(listnm=rep("nasdaq",length(newtickers)),ticker=new
 # To remove an asset list, just use an empty string for the ticker
 av_add_assetgroups(data.table(listnm=c("new"),ticker=c("")))
 }
-
 }
 \seealso{
 \code{\link[=av_runShiny]{av_runShiny()}}

@@ -14,11 +14,9 @@
 #' @param outputform (default : `common`, `av_extract_fx()` only):  Use common names from `REALTIME_BULK_QUOTES`
 #' @param empty_dt_onerror (default : TRUE): Return gracefully an empty data.table if requested item is not present.
 #' @param cols (default : all columns:  `av_extract_fx()` only):  String or List of columns to return
-#'`
 #' @returns Extracted data.tables for nested data returned from [av_get_pf()], If `grepstring` is not specified, first nested table is returned. [av_extract_fx()] returns a shortened data.table with FX quotes.
-#'
 #' @details [av_get_pf()] frequently returns a nested data.table, or a structure with nested data.frames.  These are utilities functions to extract, filter and summarize returned values.
-#'
+#' if [av_get_pf()] returns a valid response, but empty extracted `data.tables`, am empty `data.table()` will be returned
 #' @seealso [av_get_pf()], [av_grep_opts()]
 #'
 #' @examples
@@ -33,9 +31,12 @@
 #' @export
 av_extract_df <- function(indta,grepstring="",melt=FALSE,empty_dt_onerror=TRUE) {  # Keep symbol, variable
     ltype=value_df=keep=NULL
+    if(empty_dt_onerror==TRUE && nrow(indta)<=0) {
+      return(data.table())
+    }
     indta <- indta[ltype=="list",][grepl(grepstring,get("variable")),]
     indta <- indta[,keep:=is.data.frame(value_df[[1]]),by=.I][keep==TRUE,] # Take out empty value_dfs
-    if(empty_dt_onerror==TRUE && nrow(indta)<=0) {
+    if(nrow(indta)<=0) {  # SPCX has no earnings
       return(data.table())
     }
     outdlist <- lapply(seq(1,nrow(indta)),
@@ -56,8 +57,11 @@ av_extract_df <- function(indta,grepstring="",melt=FALSE,empty_dt_onerror=TRUE) 
 
 #' @rdname av_extract_df
 #' @export
-av_extract_fx <- function(indta,outputform="common",cols="") {
+av_extract_fx <- function(indta,outputform="common",cols="",empty_dt_onerror=TRUE) {
     thissymbol <- indta[1,]$symbol
+    if(empty_dt_onerror==TRUE && nrow(indta)<=0) {
+      return(data.table())
+    }
     fxquote <- data.table::dcast(indta[get("ltype")=="numeric"],symbol ~ variable,value.var="value_str")
     fxquote <- fxquote[,.(`symbol`=thissymbol,`Ask`=as.numeric(get("Ask Price")),`Bid`=as.numeric(get("Bid Price")),`QuoteTimestamp`=as.POSIXct(get("Last Refreshed")))]
     fxquote <- fxquote[,':='(`Mid`=(get("Ask")+ get("Bid"))/2)]
@@ -72,7 +76,10 @@ av_extract_fx <- function(indta,outputform="common",cols="") {
 
 #' @rdname av_extract_df
 #' @export
-av_extract_analytics <- function(indta,separate_vars=FALSE) {
+av_extract_analytics <- function(indta,separate_vars=FALSE,empty_dt_onerror=TRUE) {
+  if(empty_dt_onerror==TRUE && length(indta)<=0) {
+    return(data.table())
+  }
   dt_1 <- lapply(names(indta), \(x) data.table::data.table(unlist(indta[[x]]),keep.rownames=TRUE))
   dt_2 <- data.table::rbindlist(dt_1)
   colnames(dt_2) = c("variable","value")
@@ -85,8 +92,11 @@ av_extract_analytics <- function(indta,separate_vars=FALSE) {
 
 #' @rdname av_extract_df
 #' @export
-av_extract_divs_or_splits <- function(indta) {
+av_extract_divs_or_splits <- function(indta,empty_dt_onerror=TRUE) {
   i=value_num=NULL
+  if(empty_dt_onerror==TRUE && nrow(indta)<=0) {
+    return(data.table())
+  }
   indta<- indta[,let(i=.I-min(.I),value_date=as.Date(value_num)),by=.(variable)]
   dt_1 <- dcast(indta[grepl("date$",variable),], i ~ variable, value.var="value_date")[,i:=NULL]
   dt_2 <- dcast(indta[!grepl("date$",variable),], i ~ variable, value.var="value_num")[,i:=NULL]

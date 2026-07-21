@@ -3,6 +3,7 @@
 #' @name av_reset_defaults
 #' @param fileopts (default: TRUE)  If TRUE, then remove all files and subdirectories
 #' @param keep_apikeys (default: FALSE) Keep whatever API keys are stored
+#' @param resetgrep (default "*") Only reset grepped default variables
 #' @returns No return
 #'
 #' @details Resets [av_runShiny()] defaults to original (newly installed) state
@@ -14,9 +15,9 @@
 #' }
 #'
 #' @export
-av_reset_defaults <- function(fileopts=TRUE,keep_apikeys=FALSE) {
+av_reset_defaults <- function(fileopts=TRUE,keep_apikeys=FALSE,resetgrep="*") {
   var=NULL
-  defaultdf <-avsd$defaults
+  defaultdf <-avsd$defaults[grepl(resetgrep,var)]
   if(keep_apikeys) {
     # also keep cachedirs
     defaultdf <- defaultdf[!data.table(var=s("avapikey;avapientitlement")),on=.(var)]
@@ -186,7 +187,7 @@ av_make_dtmap <- function(yrs_ahead=5) {
 #' @importFrom usethis use_data
 av_shiny_data <- function() {
   tinputformstyle <- I("{font-size:12px; font-weight:bold; background-color: #ffff99}")
-  yellowed_inputs <- s("#dtstr_hist;#events;#ts_volparams;#ochains")
+  yellowed_inputs <- s("#dtstr_hist;#events;#ochains")
   avsd <- list(
     "defaults"=data.table::fread("./inst/extdata/av_defaults.csv"),
     "generalhelp"=data.table::fread("./inst/extdata/help_docs.csv"),
