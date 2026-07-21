@@ -159,8 +159,6 @@ gt.avtheme<- function(x,themeset="",...) {
       cols_move_to_start(s("type")) |>
       cols_merge(columns=c(beg_dt,end_dt), pattern = "{1}::{2}") |>
       add_colwidths("pxinv")
-
-
   }
   if(themeset=="mktstatus") {
     thisgt <- thisgt |> gt.basetheme() |> tab_header(title="Market Status") |> tab_footnote(paste("Retrieved as of ",Sys.time()))

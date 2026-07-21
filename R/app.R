@@ -270,7 +270,7 @@ av_make_server <- function() {
           output$inv2 <- dump_assetgroups(returngt=TRUE) |>  gt.avtheme(themeset="assetgroups") |> render_gt()
         }
         the_av$starttab <- "INVENTORY"
-        the_av$do_on_start <- NULL
+        rm("do_on_start",envir=the_av)
         message_if_green(the_av$verbose,"Inventory on way to tab")
         updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
       }
@@ -298,6 +298,7 @@ av_make_server <- function() {
 
     observeEvent(input$istr1_enter, {
       rv <- isolate(reactiveValuesToList(input))
+      the_av$cmdhist <- rbindlist(list(the_av$cmdhist,data.table(cmd=rv$istr1,ts=Sys.time())), fill=TRUE,use.names=TRUE)
       thisenv <- environment()
       if( quick_message("istr1","SET Alphavantage API key",eval=the_av$avapikey=="NOT_SET") |
           quick_message("istr1","Enter a valid command", eval=nchar(rv$istr1)<=0) ) {
@@ -323,7 +324,6 @@ av_make_server <- function() {
       rv$uselive <- av_set_defaults("uselive",grepl("useLivePx",the_av$logopts))
       avsh_set_tabtitle(makefocus=FALSE)
 
-      # General Magick here:
       #cAssign("todo;rv",silent=TRUE)
       tenv <- thisenv
       if( runfunc_set$func_src=="user" ) { tenv <-  .GlobalEnv }
@@ -331,10 +331,19 @@ av_make_server <- function() {
         quick_message("istr1",this_message=paste0("Function Code not found for ",runfunc_set$func_name),color="red")
         return()
       }
+      # ---- General Magick here:
       outres <- do.call(runfunc_set$func_name, list(todo,rv), envir=tenv)
+      # -----
       if(!quick_message("istr1","Invalid ticker or analysis, check logs",color="red", eval=length(outres)<=0)) {
         outres <- setNames(outres,av_determine_output_locs(outres))
         for(nm in names(outres)) { out[[nm]]<-outres[[nm]] } # hash w/o hash
+      }
+      # Commands returned
+      if(thiscmd<-(outres[["CMD"]] %||% FALSE)) {
+        tcmd <- s(outres[["CMD"]],":")
+        if(tcmd[[1]]=="toinput") { updateTextInput(session,"istr1", value= tcmd[[2]]) }
+        if(tcmd[[1]]=="clear") { output<-list(); the_av$outcopy<-list() }
+        return()
       }
       # Save outputs ONLY if another graph is being asked for OR persistOut is TRUE
       outcopy_grepstr <- fcase("persistOutput" %in% the_av$logopts,"*",grepl("^G",todo),"TS", default="NoMatch")

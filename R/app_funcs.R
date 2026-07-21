@@ -38,7 +38,29 @@ av_help <- function(todo,rv) {
     rtnlist=c(list(helptable),rtnlist)
   }
   return(rtnlist)
+}
+
+# -----------------------------------------------------------------------
+# FOr the following functions: av.hist
+#
+#' @importFrom utils tail
+av_misc <- function(todo,rv) {
+  todolist <- c(s(toupper(todo)," "),"1")
+  cmdhistlist <- tail(the_av$cmdhist,20)[order(desc(ts))][,let(N=.I, age=Sys.time()-ts)]
+  if(grepl("AV.HIST",todo,ignore.case=TRUE)) {
+    tortn <- cmdhistlist |> gt() |> gt.basetheme(sizepct=80) |> fmt_datetime(columns=c(ts,age),date_style="Md",time_style="iso-short")
+    return(list(tortn))
   }
+  if(grepl("AV.R",todo)) {
+    ntoget <- as.numeric(todolist[[2]])
+    return(list("CMD"=paste0("toinput:",cmdhistlist[N==ntoget,]$cmd)))
+  }
+  if(grepl("AV.CLS",todo)) {
+    ntoget <- as.numeric(todolist[[2]])
+    return(list("CMD"="clear:"))
+  }
+}
+
 # For the following functions: GP GPI GPD GPI2 GPD2
 # Good
 #' @importFrom stringr str_detect

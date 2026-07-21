@@ -42,7 +42,7 @@ av_reset_defaults <- function(fileopts=TRUE,keep_apikeys=FALSE,resetgrep="*") {
   the_av$assetgroups <- data.table(listnm=c(rep("defaultIdx",3)),ticker=c("SPY","QQQ","DIA"))
   the_av$avsh_funcs <- copy(avsd$def_avsh_funcs)
   # Data to keep track of
-  lapply(s("pxd;pxinv;earn;earnest;tickerlist"), \(x) assign(x, data.table(), envir=the_av))
+  lapply(s("pxd;pxinv;earn;earnest;tickerlist;cmdhist"), \(x) assign(x, data.table(), envir=the_av))
   # Move files if you need
   if(fileopts==TRUE) {
     file.remove(the_av$constants_fn)
