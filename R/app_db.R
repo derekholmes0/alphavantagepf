@@ -144,9 +144,7 @@ manage_epx <- function(inticker, dtstr,
     message_if_red(the_av$verbose,"Error: ",inticker, " is invalid ticker")
     return()
   }
-  if(rtnpx[[1,]]$type %in% c("Equity")) {
-    rtnearn <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
-  }
+  rtnearn <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
   thisinv <- get_inv(inticker)
   the_av$pxinv <- DTUpsert(the_av$pxinv, thisinv, c("symbol"),fill=TRUE)
   save_avs_state("px")
@@ -217,7 +215,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
   if( nrow(symset)<=0 ) { return(data.table())}
   tortn <- symset[,.(symbol,type)]
   nbdays = nrow(dtmap[between(DT_ENTRY,dtstoget[1],dtstoget[2])])
-  if(nbdays<=(the_av$maxage_px_days+1) & !force) { # Always have today (last date) in set
+  if(nbdays<=(floor(the_av$maxage_px_hrs/24)+1) & !force) { # Always have today (last date) in set
     src <- "Cached"
     tortn <- the_av$pxinv[,.(symbol,minaddt=end_dt,maxadddt=end_dt)][tortn,on=.(symbol)]
     dta <- data.table()
@@ -286,7 +284,9 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
   }
   if(nrow(dta)>0) {
     the_av$pxd <- DTUpsert(the_av$pxd,dta,c("symbol","timestamp"),fill=TRUE)
-    the_av$pxinv[dta[,.(symbol,enddt=max(timestamp)),by=.(symbol)],end_dt:=i.enddt,on=.(symbol)]
+    if(nrow(the_av$pxinv)>0) {
+      the_av$pxinv[dta[,.(symbol,enddt=max(timestamp)),by=.(symbol)],end_dt:=i.enddt,on=.(symbol)]
+    } # If not, will get created later
   }
   message_if(the_av$verbose,"av_one_px(",paste_trunc(tortn$symbol)," @ ",src,") ", outmsg)
   return(tortn)
@@ -304,12 +304,12 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
   if(nrow(the_av$earn)>0) {
     age <- as.numeric(Sys.Date()-max(the_av$earn$ts))
     if(age<=the_av$maxage_earn_days) {
-      message_if_red(the_av$verbose,paste0("Earnings data age of ",age," less than ",the_av$maxage_earn_days," maxage, skipping"))
+      message_if(the_av$verbose,paste0("Earnings data age of ",age," less than ",the_av$maxage_earn_days," maxage, skipping"))
       return()
     }
   }
   if( length( badtickers <- setdiff(tickerdt$symbol,earntickers$symbol))>0) {
-    message_if_red(TRUE,"Earnings skipping invalid tickers: ",paste_trunc(badtickers))
+    message_if_red(the_av$verbose,"Earnings skipping invalid or non-equity equity tickers: ",paste_trunc(badtickers))
   }
   if( nrow(earntickers)>0) {
     if(is.data.table(substitute_earn)) {

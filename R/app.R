@@ -1,5 +1,5 @@
 #source("./R/utilities.R")
-tver<-"0.8.206"
+tver<-"0.8.2061"
 
 # 206: Function Walkthrough. av_misc implemented
 # 205: Av_misc functions, earnings stuff
