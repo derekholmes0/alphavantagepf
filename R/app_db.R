@@ -7,7 +7,7 @@ update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
   if(reallydoingthis==FALSE) { return() }
   if(reset==TRUE) {
     the_av$tickerlist <- data.table()
-    message_if_red(the_av$verbose,"Resetting ticker lists  at ",Sys.time())
+    message_if_red(the_av$verbose,"Resetting ticker lists  at ",format(Sys.time(),"%d-%H:%M%:S"))
   }
   # Tickers
   indexlist <- av_get_pf("","INDEX_CATALOG",delay=1)[,type:="Index"][]
@@ -19,7 +19,7 @@ update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
   setkeyv(listings,c("symbol"))
   the_av$listings <- listings
   message_if_red(the_av$verbose,"Reconstructed index (",nrow(indexlist),"), crypto (",nrow(cryptolist),
-            "), and listing status (",nrow(the_av$listings),") lists at ",Sys.time())
+            "), and listing status (",nrow(the_av$listings),") lists at ",format(Sys.time(),"%d-%H:%M%:S"))
   save_avs_state("all",msg="updatetickers") # must use all with any inventory data
 }
 
@@ -102,7 +102,7 @@ form_symset <- function(tickers, force=FALSE, delay=0) {
                                   .(symbol,type=fifelse(assetType=="Stock","Equity",assetType),name,currency="USD",matchScore=1,list_ts)]
   newtickers <-setdiff(newtickers,symnew_eq_inlistings$symbol)
   symnew_eq <- rbindlist(lapply(newtickers, \(x) {
-    message("NOTE: Trying symbolsearch")
+    message_if_red(the_av$verbose, "NOTE: Cannot find symbol anywhere.  Trying av('SYMBOL_SEARCH')")
     z1 <- av_get_pf("","SYMBOL_SEARCH",keywords=x,delay=delay)
     if(nrow(z1)<=0) {
       #message_if_red(TRUE,"Alphavantage cannot find  ",x,": May be a user data series")
@@ -144,7 +144,9 @@ manage_epx <- function(inticker, dtstr,
     message_if_red(the_av$verbose,"Error: ",inticker, " is invalid ticker")
     return()
   }
-  rtnearn <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
+  if(rtnpx[[1,]]$type %in% c("Equity")) {
+    rtnearn <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
+  }
   thisinv <- get_inv(inticker)
   the_av$pxinv <- DTUpsert(the_av$pxinv, thisinv, c("symbol"),fill=TRUE)
   save_avs_state("px")
@@ -173,12 +175,14 @@ get_inv <- function(tickerlist=NULL,override_symset=NULL) {
                            medgap=median(diff(as.numeric(timestamp)))),by=.(symbol,type)]
 
   earn_past <- data.table(symbol=tickerlist)[,let(lastearn_dt=Sys.Date(), lastearn_eps=NA_real_)]
-  if(nrow(the_av$earn)>0) {
-    earn_past <- the_av$earn[rtnpx,on=.(symbol)][,.SD[which.max(reportedDate)],by=.(symbol)][,.(symbol,lastearn_dt=reportedDate,lastearn_eps=reportedEPS)]
-  }
   earn_fwd <- data.table(symbol=tickerlist)[,let(earnf_ts=Sys.Date(),earnf_nextdt=Sys.Date(),earnf_next=NA_real_)]
-  if(nrow(the_av$earnest)>0) {
-    earn_fwd <- the_av$earnest[rtnpx,on=.(symbol)][horizon=="fiscal quarter",.SD[which.max(date)],by=.(symbol)][,                                                                .(symbol,earnf_ts=ts,earnf_nextdt=date,earnf_next=eps_estimate_average)]
+  rtnpx_eqonly <- rtnpx[type %in% c("Equity","ETF")]
+  if(nrow(the_av$earn)>0 & nrow(rtnpx_eqonly)>0) {
+    earn_past <- the_av$earn[rtnpx_eqonly,on=.(symbol)][,.SD[which.max(reportedDate)],by=.(symbol)][,.(symbol,lastearn_dt=reportedDate,lastearn_eps=reportedEPS)]
+  }
+  if(nrow(the_av$earnest)>0 & nrow(rtnpx_eqonly)>0) {
+    earn_fwd <- the_av$earnest[rtnpx_eqonly,on=.(symbol)][horizon=="fiscal quarter",.SD[which.max(date)],by=.(symbol)][,
+                      .(symbol,earnf_ts=ts,earnf_nextdt=date,earnf_next=eps_estimate_average)]
   }
   thisinv_id <- rtnpx[,.(symbol,currency,name,matchScore,list_ts)] # Tricky
   thisinv <- Reduce(function(x,y) merge(x,y,by="symbol",all=TRUE),list(thisinv_div,thisinv_px,earn_past,earn_fwd,thisinv_id))
@@ -206,7 +210,9 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
   }
   # If exists, then check if data is up to date
   #   if it doesn't exist or is too old, use full download
-  # Note that downloads will occur anyway if narket has not opened yet
+  # Note that downloads will occur anyway if market has not opened yet, as history only returns up to yeasterday, but we always want up to today
+  # ** Could reduce this by adding 1 to max_age_days before market opens
+
   symset <- form_symset(inticker,force=force)[,let(loadts=Sys.time())][!is.na(type),]
   if( nrow(symset)<=0 ) { return(data.table())}
   tortn <- symset[,.(symbol,type)]
@@ -265,6 +271,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
   } # DOwnloaded or external
   # Add Live if requested
   if(addlive==TRUE) {
+    # Live date does not change until market opens
     for(ttype in unique(tortn$type)) {
       if(!(avfun_live <- epx_get_avfn(ttype,live=TRUE)) =="NOTAVAIL") {
         intickers <- tortn[type==ttype,]
@@ -272,7 +279,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
             av_get_pf(x,avfun_live,outputsize="compact",verbose=FALSE) |> epx_fmt_to_hist(ttype,live=TRUE) })
         livedta <- rbindlist(livedta,fill=TRUE)[,let(ts=Sys.time())]
         src <- paste0(src,"+live")
-        outmsg <- paste0(outmsg, " w/ Live px @ ",Sys.time())
+        outmsg <- paste0(outmsg, " w/ Live px @ ",format(Sys.time(),"%d-%H:%M%:S"))
         dta <- DTUpsert(dta,livedta,c("symbol","timestamp"),fill=TRUE)
       }
     }
@@ -297,7 +304,7 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
   if(nrow(the_av$earn)>0) {
     age <- as.numeric(Sys.Date()-max(the_av$earn$ts))
     if(age<=the_av$maxage_earn_days) {
-      message_if_red(TRUE,paste0("Earnings data age of ",age," less than ",the_av$maxage_earn_days," maxage, skipping"))
+      message_if_red(the_av$verbose,paste0("Earnings data age of ",age," less than ",the_av$maxage_earn_days," maxage, skipping"))
       return()
     }
   }
@@ -404,7 +411,7 @@ save_avs_state <- function(todo="all",msg="") {
     save(list=unames,envir=the_av,file=the_av$constants_fn)
     shortmsg <- paste(shortmsg,"const")
   }
-  message_if_green(the_av$verbose & the_av$dbglvl>=1,"Save State (",todo,") or (",shortmsg,") from '",msg,"' at ",Sys.time())
+  message_if_green(the_av$verbose & the_av$dbglvl>=1,"Save State (",todo,") or (",shortmsg,") from '",msg,"' at ",format(Sys.time(),"%d-%H:%M%:S"))
 }
 
 

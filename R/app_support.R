@@ -30,11 +30,12 @@ symbol_grep_by_type <- function(eqlist,grepstr="Equity",check_vs_inv=TRUE, rtn="
 # REturns command, then assets
 #' @importFrom utils tail
 parse_inpline <- function(istr1,envir=parent.frame()) {
-  istrs <- s(toupper(istr1),sep=" ")
+  istrs <- s(toupper(istr1),sep="[ ]+",pad=2)
   tcmd <- targs <- tasset <- ""
   if(length(istrs)>0) {
     if(grepl("^AV.",toupper(istrs)[[1]]) | length(istrs)==1) {  # No asset list or some sort of error
-      tcmd <- stringr::str_squish(istr1)
+      tcmd <- stringr::str_squish(istrs[[1]])
+      targs <- stringr::str_squish(paste(tail(istrs,-1),collapse=" "))
     }
     else {
       tasset <- stringr::str_squish(istrs[[1]])
@@ -98,7 +99,7 @@ find_arg <- function(x,argnm,altno=2) {
 #' @importFrom stringr str_sub
 find_rebasecode <- function(todo,default_window=the_av$dtstr_hist) {
   # SCAT, GP <- Need to figure out how better to generalize
-  todolist <- grepv("\\w+|\\d+",s(toupper(todo)," "))
+  todolist <- grepv("\\w+|\\d+",s(toupper(todo),"[ ]+"))
   actual_func <- gsub("\\d$","",todolist[[1]])
   ts_rebase <- switch(stringr::str_sub(actual_func, -1), "I"="start","D"="focus") %||% "none"
   dtstr_window <- default_window
@@ -122,7 +123,7 @@ data_from_list <-function(inlist,datestring,ts_rebase,dtstr_window,msg_inputID="
   inlist=unique(inlist)
   toplot <- sapply(inlist, \(x) manage_epx(x,datestring,addlive=the_av$uselive))
   if(length(badtickers <- names(toplot)[grep("ERROR",toplot)])>0) {
-      quick_message(msg_inputID,paste("Invalid tickers:", paste0(badtickers,sep=" ")))
+      quick_message(msg_inputID,paste("Invalid tickers:", paste(badtickers)))
   }
   inlist <- inlist[!grepl("ERROR",toplot)]
   #quick_message(msg_inputID,"Data retrived:", paste0(inlist,collapse=" "))
@@ -216,7 +217,6 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_wind
   xstepcols = the_av$pxinv[data.table(symbol=unique(fgdt$variable)),on=.(symbol)][fcoalesce(as.numeric(medgap),1)>4,]
   if(nrow(xstepcols)>0) { stepcols=xstepcols$symbol } else { stepcols<- FALSE }
   # Eartnings or dividends
-  cAssign("toplot;fgdt;events")
   eventset <- data.table()
   eventlist <- s(tolower(events))
   symb_dt <- data.table(symbol=unique(fgdt$variable))

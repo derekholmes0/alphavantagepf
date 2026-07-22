@@ -14,7 +14,7 @@ av_inventory <- function(todo,rv) {
   else {
     outcols <- s("symbol;name;type;currency;lastpx;end_dt;beg_dt;list_ts")
     invout <- the_av$pxinv[,.SD,.SDcols=outcols][,age:=Sys.Date()-end_dt]
-    gtout <- invout |>  gt.avtheme(themeset="pxinv",sizepct=9)
+    gtout <- invout |>  gt.avtheme(themeset="pxinv",sizepct=90)
 
   }
   out<-list("GT1"=gtout ,"DGT1"=the_av$assetgroups |> gt() |> gt.basetheme(interactive="filter"))
@@ -27,9 +27,10 @@ av_inventory <- function(todo,rv) {
 # Good
 av_help <- function(todo,rv) {
   func_reqinput=func_opts=helpstr=helpexample=func_src=HelpComment=NULL
-  grepstr <-  s(c(todo,"*")," ")[[2]]
+  grepstr <-  s(c(todo,"*"),"[ ]+",rtn=2)
   tortn <- the_av$avsh_funcs[,.(category,runcode,func_reqinput,func_opts,helpstr,helpexample,func_src)][order(category,runcode)][!grepl("tblhelp",category)]
   tortn <- tortn[grepl(grepstr,category,ignore.case=TRUE) | grepl(grepstr,runcode,ignore.case=TRUE)]
+  tortn <- tortn[!grepl("tblhelp",category)]
   rtnlist <- list(tortn |> gt() |> gt.basetheme(interactive="filter"))
   if(grepl("showGeneralHelp",the_av$logopts)) {
     helptable <- avsd$generalhelp |> gt() |> gt.basetheme(sizepct=80) |> decorate_table() |>
@@ -45,10 +46,13 @@ av_help <- function(todo,rv) {
 #
 #' @importFrom utils tail
 av_misc <- function(todo,rv) {
-  todolist <- c(s(toupper(todo)," "),"1")
-  cmdhistlist <- tail(the_av$cmdhist,20)[order(desc(ts))][,let(N=.I, age=Sys.time()-ts)]
+  todolist <- c(s(toupper(todo),"[ ]+"),"1")
+  cmdhistlist <- tail(the_av$cmdhist,20)[order(-ts)][,let(N=.I)]
+  setcolorder(cmdhistlist,s("N;cmd;ts"))
   if(grepl("AV.HIST",todo,ignore.case=TRUE)) {
-    tortn <- cmdhistlist |> gt() |> gt.basetheme(sizepct=80) |> fmt_datetime(columns=c(ts,age),date_style="Md",time_style="iso-short")
+    tortn <- cmdhistlist |> gt() |> gt.basetheme(sizepct=80) |>
+        fmt_datetime(columns=c(ts),date_style="Md",time_style="iso-short") |>
+        fmt_number(columns=c(N),decimals=0)
     return(list(tortn))
   }
   if(grepl("AV.R",todo)) {
@@ -65,7 +69,7 @@ av_misc <- function(todo,rv) {
 # Good
 #' @importFrom stringr str_detect
 av_gp <- function(todo,rv) {
-  todolist <- c(s(toupper(todo)," ")," ")
+  todolist <- s(toupper(todo),"[ ]+",pad=1)
   func_details <- the_av$avsh_funcs[runcode==todolist[[1]],]
   wherefrom <- 1 # Still keep open possibility of line 2 direct
   wheretoput <- fifelse(stringr::str_detect(todolist[[1]],"2$"), "TS2" , "TS1")
@@ -83,7 +87,7 @@ av_gp <- function(todo,rv) {
 #' @importFrom stringr str_detect
 av_gearn <- function(todo,rv) {
   horizon=i.enddt=labs=lpx=estimatedEPS=ra_estimatedEPS=ra_reportedEPS=rb=reportedEPS=NULL
-  todolist <- c(s(toupper(todo)," ")," ")
+  todolist <- s(toupper(todo),"[ ]+",pad=1)
   func_details <- the_av$avsh_funcs[runcode==todolist[[1]],]
   inplist <- s(rv[["istr1"]])
   wheretoput <- fifelse(stringr::str_detect(todolist[[1]],"2$"), "TS2" , "TS1")
@@ -112,7 +116,7 @@ av_gearn <- function(todo,rv) {
 av_earnest <- function(todo,rv) {
   date1=date2=eps_est=eps_est.hi=eps_est.lo=eps_est_30d=eps_est_90d=eps_estimate_analyst_count=ts=horizon=NULL
   eps_estimate_revision_down_trailing_30_days=eps_estimate_revision_up_trailing_30_days=epse1=epse2=estimatedEPS=NULL
-  todolist <- c(s(toupper(todo),"invalidate")," ")
+  todolist <- c(s(toupper(todo),"[ ]+"),"invalidate")
   this_dthist <- rv$dtstr_hist
   if(!grepl("NA",gendtstr(todolist[[2]]))) { this_dtstr <- gendtstr(todolist[[2]]) }
   earnset <- data.table(symbol=s(rv[["istr1"]]))[,horizon:="fiscal quarter"]
@@ -139,7 +143,7 @@ av_earnest <- function(todo,rv) {
 # Good
 av_scat <- function(todo,rv) {
   x_close=y_close=NULL
-  todolist <- c(s(toupper(todo)," ")," ")
+  todolist <- s(toupper(todo),"[ ]+",pad=1)
   func_details <- the_av$avsh_funcs[runcode==todolist[[1]],]
   rb <- find_rebasecode(todolist[[1]],rv$dtstr_hist)
   toplot1<-data_from_list(s(rv$istr1),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID="istr1",copytable=FALSE)
@@ -167,7 +171,7 @@ av_scat <- function(todo,rv) {
 # Good
 av_vol <-function(todo,rv) {
   out<- list()
-  todolist <- c(s(toupper(todo)," ")," ")
+  todolist <- s(toupper(todo),"[ ]+",pad=1)
   func_details <- the_av$avsh_funcs[runcode==todolist[[1]],]
   rb <- find_rebasecode(gsub("GV","GP",todolist[[1]]),rv$dtstr_hist)
   toplot<-data_from_list(s(rv$istr1),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID="istr1",copytable=FALSE)
@@ -184,7 +188,7 @@ av_vol <-function(todo,rv) {
 # Good
 av_livepx <- function(todo,rv) {
   inlist=NULL
-  todolist <- s(toupper(todo)," ")
+  todolist <- s(toupper(todo),"[ ]+")
   assetlist <- s(rv$istr1)
   df_live <- data.table()
   tmp_syms  <-symbol_grep_by_type(NULL,"Equity|ETF")
@@ -266,7 +270,7 @@ av_des <- function(todo,rv) {
 # For the following functions: RV RVI
 # Good
 av_active <- function(todo,rv) {
-  todolist <- c(s(toupper(todo)," ")," ")
+  todolist <- s(toupper(todo),"[ ]+",pad=1)
   rb <- find_rebasecode(gsub("RV","GP",todolist[[1]]),rv$dtstr_hist)
   eqlist1 <- s(rv$istr1)
   eqlist2 <- s(rv$istr2)

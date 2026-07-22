@@ -14,9 +14,10 @@ message_if_red <- function(reallydothis,...) {  if(reallydothis) { message("\033
 message_if_green <- function(reallydothis,...) {  if(reallydothis) { message("\033[32m",...,"\033[0m") } }
 
 #' @noRd
-s<-function(x,sep=";",fixed=TRUE,rtn=NULL) {
+s<-function(x,sep=";",fixed=NULL,rtn=NULL,pad=0) {
     if(is.null(x) || is.logical(x)) { return(x) }
-    y=unlist(strsplit(x,sep,fixed=fixed))
+    y=unlist(strsplit(x,sep,fixed=fixed %||% nchar(sep)==1))
+    if(pad>0) { y<-c(y,rep("",pad)) }
     if(is.numeric(rtn)) { if(length(y)>=rtn) { y=y[rtn] } }
     return(y)
 }
