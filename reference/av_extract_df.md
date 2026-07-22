@@ -16,11 +16,11 @@ returns melted data.table from calls to `av_get_pf("DIVIDENDS")` or
 ``` r
 av_extract_df(indta, grepstring = "", melt = FALSE, empty_dt_onerror = TRUE)
 
-av_extract_fx(indta, outputform = "common", cols = "")
+av_extract_fx(indta, outputform = "common", cols = "", empty_dt_onerror = TRUE)
 
-av_extract_analytics(indta, separate_vars = FALSE)
+av_extract_analytics(indta, separate_vars = FALSE, empty_dt_onerror = TRUE)
 
-av_extract_divs_or_splits(indta)
+av_extract_divs_or_splits(indta, empty_dt_onerror = TRUE)
 ```
 
 ## Arguments
@@ -51,7 +51,7 @@ av_extract_divs_or_splits(indta)
 - cols:
 
   (default : all columns: `av_extract_fx()` only): String or List of
-  columns to return \`
+  columns to return
 
 - separate_vars:
 
@@ -70,7 +70,10 @@ If `grepstring` is not specified, first nested table is returned.
 [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
 frequently returns a nested data.table, or a structure with nested
 data.frames. These are utilities functions to extract, filter and
-summarize returned values.
+summarize returned values. if
+[`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
+returns a valid response, but empty extracted `data.tables`, am empty
+`data.table()` will be returned
 
 ## See also
 

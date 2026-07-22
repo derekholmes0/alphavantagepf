@@ -5,11 +5,13 @@
 - [`alphavantagepf`](https://derekholmes0.github.io/alphavantagepf/reference/alphavantagepf.md)
   : alphavantagepf: A lightweight R interface to the Alpha Vantage API
 - [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_analytic.md)
-  : App database functions
+  : App database functions: New analytics
 - [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.md)
-  : App database functions
+  : App database functions: assetgroups
+- [`av_add_earn()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.md)
+  : App database functions: Earnings
 - [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.md)
-  : App database functions
+  : App database functions: Price
 - [`av_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/av_api_key.md)
   : Set the Alpha Vantage API Key
 - [`av_extract_df()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md)
@@ -23,6 +25,8 @@
   : Get financial data from the Alpha Vantage API
 - [`av_grep_opts()`](https://derekholmes0.github.io/alphavantagepf/reference/av_grep_opts.md)
   : Extract data from Alpha Vantage returned data
+- [`av_shinydata()`](https://derekholmes0.github.io/alphavantagepf/reference/av_load_shinydata.md)
+  : App database functions
 - [`av_make_funcmap()`](https://derekholmes0.github.io/alphavantagepf/reference/av_make_funcmap.md)
   : Extract data from Alpha Vantage retuned data
 - [`av_opt_helper_cols()`](https://derekholmes0.github.io/alphavantagepf/reference/av_opt_helper_cols.md)

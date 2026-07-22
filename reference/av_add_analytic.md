@@ -1,4 +1,4 @@
-# App database functions
+# App database functions: New analytics
 
 Adds a user-defined function to the av Shiny app
 

@@ -5,7 +5,7 @@ Extract data from Alpha Vantage retuned data
 ## Usage
 
 ``` r
-av_reset_defaults(fileopts = TRUE, keep_apikeys = FALSE)
+av_reset_defaults(fileopts = TRUE, keep_apikeys = FALSE, resetgrep = "*")
 ```
 
 ## Arguments
@@ -17,6 +17,10 @@ av_reset_defaults(fileopts = TRUE, keep_apikeys = FALSE)
 - keep_apikeys:
 
   (default: FALSE) Keep whatever API keys are stored
+
+- resetgrep:
+
+  (default "\*") Only reset grepped default variables
 
 ## Value
 
