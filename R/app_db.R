@@ -14,6 +14,7 @@ update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
   cryptolist <- avsd$crypto_list[,.(symbol=paste0(from_currency,"/",to_currency),type="Crypto")][,name:=symbol]
   indexlist <- rbindlist(list(indexlist,cryptolist),use.names=TRUE,fill=TRUE)[,list_ts:=Sys.Date()][]
   the_av$tickerlist <- DTUpsert(the_av$tickerlist,indexlist,c("symbol"))
+
   # Names
   listings <- av_get_pf("","LISTING_STATUS")[,list_ts:=Sys.Date()]
   setkeyv(listings,c("symbol"))
@@ -225,7 +226,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
     if(is.data.table(substitute_data)) {
       dta <- data.table::copy(substitute_data)
       if("low" %notin% colnames(dta)) {   dta <- dta[,let(open=close,high=close,low=close)]  }
-      src <- "userdata"
+      src <- outmsg <-"userdata"
       tickers <- unique(substitute_data$symbol)
       if(is.data.table(substitute_symset)) {
         check_min_colset(substitute_symset,s("symbol;type;currency;name"))
@@ -302,10 +303,12 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
   src<-""; rtniv<-data.table()
   earntickers <- the_av$listings[tickerdt,on=.(symbol),nomatch=NULL][assetType=="Stock",]
   if(nrow(the_av$earn)>0) {
-    age <- as.numeric(Sys.Date()-max(the_av$earn$ts))
-    if(age<=the_av$maxage_earn_days) {
-      message_if(the_av$verbose,paste0("Earnings data age of ",age," less than ",the_av$maxage_earn_days," maxage, skipping"))
-      return()
+    whatwehave <- the_av$earn[earntickers[,.(symbol)],on=.(symbol),nomatch=NULL]
+    if(nrow(whatwehave)>0) {
+      if((age <- as.numeric(Sys.Date()-max(whatwehave$ts)))<=the_av$maxage_earn_days) {
+        message_if(the_av$verbose,paste0("Earnings data age of ",age," less than ",the_av$maxage_earn_days," maxage, skipping"))
+        return()
+      }
     }
   }
   if( length( badtickers <- setdiff(tickerdt$symbol,earntickers$symbol))>0) {

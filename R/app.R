@@ -139,7 +139,7 @@ av_make_ui <- function() {
                   ),
                   column(width=2,
                     numericInput(inputId="maxage_earn_days", label="Max Earnings Age (Days)", value=the_av$maxage_earn_days,min=0),
-                    numericInput(inputId="maxage_px_hrs", label="Max Price Age (Hours)", value=the_av$maxage_px_days,min=0),
+                    numericInput(inputId="maxage_px_hrs", label="Max Price Age (Hours)", value=the_av$maxage_px_hrs,min=0),
                     textInput(inputId="ts_volparams", label="Histvolparams", value=the_av$ts_volparams),
                     selectInput(inputId="sigpct","Regr Significance", c("0.05","0.025","0.1"),selected=c("0.025"),multiple=FALSE),
                     checkboxGroupInput(inputId="logopts",label="Options",choices=s(avsd$defaults[var=="avsh_logopts",]$value_str),
@@ -272,7 +272,7 @@ av_make_server <- function() {
           output$inv2 <- dump_assetgroups(returngt=TRUE) |>  gt.avtheme(themeset="assetgroups") |> render_gt()
         }
         the_av$starttab <- "INVENTORY"
-        rm("do_on_start",envir=the_av)
+        if( exists("do_on_start",envir=the_av) ) { rm("do_on_start",envir=the_av) }
         message_if_green(the_av$verbose,"Inventory on way to tab")
         updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
       }

@@ -43,7 +43,7 @@ parse_inpline <- function(istr1,envir=parent.frame()) {
       targs <- stringr::str_squish(paste(tail(istrs,-2),collapse=" "))
     }
   }
-  outlist = list("todo"=paste(tcmd,targs),"todofunc"=tcmd,"todoargs"=targs,"assetline"=tasset)
+  outlist = list("todo"=stringr::str_squish(paste(tcmd,targs)),"todofunc"=tcmd,"todoargs"=targs,"assetline"=tasset)
   if(is.environment(envir)) { list2env(outlist,envir=envir)  }
   else{   return(outlist)  }
 }
@@ -153,13 +153,16 @@ oneticker_earns <- function(thisticker,fwddts,datestring) {
   earnf <- data.table()
   if(fwddts[2]>Sys.Date()) {
     earnf <- av_get_pf(thisticker,"EARNINGS_ESTIMATES") |> save_av_data("EARNINGS_ESTIMATES")
-    earnf <- earnf |> av_extract_df("estimates") |> narrowbydtstr(paste0(fwddts,collapse="::"))
-    earnf <- earnf[,.(symbol,fiscalDateEnding=date,reportTime=horizon,
+    earnf <- earnf |> av_extract_df("estimates")
+    if(nrow(earnf)>0) {
+      earnf <- earnf |> narrowbydtstr(paste0(fwddts,collapse="::"))
+      earnf <- earnf[,.(symbol,fiscalDateEnding=date,reportTime=horizon,
                       estimatedEPS= eps_estimate_average, est_high=eps_estimate_high, est_low=eps_estimate_low,
                       est_30dpchg=(eps_estimate_average/eps_estimate_average_30_days_ago-1),
                       est_90dpchg=(eps_estimate_average/eps_estimate_average_90_days_ago-1),
                       est_n=eps_estimate_analyst_count)]
     earnf <- earnf[order(symbol,reportTime,fiscalDateEnding)]
+    }
   }
   earna <- rbindlist(list(earnb,earnf),fill=TRUE,use.names=TRUE)
   earna <- earna[,EPpct:=100*estimatedEPS/inspot]
@@ -223,25 +226,28 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_wind
   eventdtrange <- paste(range(fgdt$timestamp),collapse="::")
   if("earn" %in% eventlist) {
     teventset <- the_av$earn[symb_dt,on=.(symbol)] |> narrowbydtstr(eventdtrange)
-    eventset <- rbindlist(list(eventset, teventset[,.(timestamp =reportedDate,text=paste0("EPS:",format(reportedEPS,digits=3)),loc="top")]))
+    teventset <- teventset[,.(timestamp =reportedDate,color="darkgreen",text=paste0("EPS(",symbol,") ",format(reportedEPS,digits=3)),loc="top")]
+    eventset <- rbindlist(list(eventset, teventset))
   }
   if("surp" %in% eventlist) {
     teventset <- the_av$earn[symb_dt,on=.(symbol)] |> narrowbydtstr(eventdtrange)
-    eventset <- rbindlist(list(eventset, teventset[,.(timestamp =reportedDate,text=paste0("Surp:",format(surprise,digits=)),loc="top")]))
+    teventset <- teventset[,.(timestamp =reportedDate,color=fifelse(surprisePercentage>0,"blue","red"),
+                              text=paste0("Surp(",symbol,") ",format(surprisePercentage,digits=1)),loc="bottom")]
+    eventset <- rbindlist(list(eventset, teventset))
   }
   if("div" %in% eventlist | "divpct" %in% eventlist) {
     teventset <- the_av$pxd[symb_dt,on=.(symbol)][,lpx:=shift(close,1,0,"lag"),by=.(symbol)][ abs(dividend_amount)>0,] |> narrowbydtstr(eventdtrange)
     if("divpct" %in% eventlist) {
-      teventset <- teventset[,.(timestamp,text=paste0("DivPct:",format(100*dividend_amount/lpx,digits=2)))]
+      teventset <- teventset[,.(timestamp,color="gray40",text=paste0("Div%(",symbol,") ",format(100*dividend_amount/lpx,digits=2)))]
     } else {
-      teventset <- teventset[,.(timestamp,text=paste0("Div:",format(dividend_amount,digits=3)))]
+      teventset <- teventset[,.(timestamp,color="gray40",text=paste0("Div(",symbol,") ",format(dividend_amount,digits=3)))]
     }
-    eventset <- rbindlist(list(eventset, teventset))
+    eventset <- rbindlist(list(eventset, teventset),fill=TRUE,use.names=TRUE)
   }
   outdyg <- fgts_dygraph(fgdt,title=title,events=events, dtwindow=dt_window,
                          annotations=paste0(c(tanno,extra_anno),collapse=";"), colorset=the_av$ts_colorset,
                          splitcols=("splitts" %in% rv$gropts),roller=1,
-                         stepcols=stepcols,
+                         stepcols=stepcols,event_ds=eventset,
                          hilightcols=fifelse("hilightfirst" %in% rv$gropts,fgdt[,.SD[1]]$variable,""),
                          rebase=trebase)
   return(outdyg)

@@ -60,6 +60,7 @@ av_runShiny <- function() {
   if(file.exists(the_av$constants_fn)) {
     restore_avs_state(msg="Startup")
     the_av$outcopy<-list()
+    the_av$avsh_funcs <- DTUpsert(the_av$avsh_funcs,avsd$def_avsh_funcs,keys=c("runcode"),fill=TRUE) # WHile under development
     options(av_api_key = the_av$avapikey)
     options(av_api_entitlement = the_av$avapientitlement)
   }

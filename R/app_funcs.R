@@ -11,6 +11,15 @@ av_inventory <- function(todo,rv) {
     invout <- the_av$pxinv[grepl("ETF|Equity",type),][,age:=Sys.Date()-end_dt][,.SD,.SDcols=outcols]
     gtout <-invout |> gt() |> gt.basetheme(interactive="all") |> add_colwidths("pxinv")
   }
+  else if(grepl("tickers",todo,ignore.case=TRUE)) {
+    toprint <- data.table(type=s("Crypto;Index"),prio=c(2,1))[the_av$tickerlist,on=.(type)]
+    toprint <- toprint[,symbol:=s(symbol,"/")[[1]], by=.I][,ntickers:=.N,by=.(symbol)]
+    toprint <- toprint[,.SD[1][,name:=paste0(fifelse(ntickers>1,"e.g.",""),name)],by=.(symbol)]
+    gtout <- toprint[order(prio,symbol)] |> gt() |>  gt.basetheme(interactive="all",sizepct=85) |> cols_hide(columns=c(prio)) |>
+        cols_move_to_start(columns=c(symbol,name)) |>
+                  fmt_number(columns=c(ntickers),decimals=0) |> add_colwidths("tickers")
+
+  }
   else {
     outcols <- s("symbol;name;type;currency;lastpx;end_dt;beg_dt;list_ts")
     invout <- the_av$pxinv[,.SD,.SDcols=outcols][,age:=Sys.Date()-end_dt]
@@ -30,10 +39,15 @@ av_help <- function(todo,rv) {
   grepstr <-  s(c(todo,"*"),"[ ]+",rtn=2)
   tortn <- the_av$avsh_funcs[,.(category,runcode,func_reqinput,func_opts,helpstr,helpexample,func_src)][order(category,runcode)][!grepl("tblhelp",category)]
   tortn <- tortn[grepl(grepstr,category,ignore.case=TRUE) | grepl(grepstr,runcode,ignore.case=TRUE)]
-  tortn <- tortn[!grepl("tblhelp",category)]
-  rtnlist <- list(tortn |> gt() |> gt.basetheme(interactive="filter"))
+  tortn <- tortn[!grepl("tblhlp",category)]
+  # does this take too long?
+  thistm <- system.time({
+    rtnlist <- list(tortn |> gt(groupname_col="category") |> gt.basetheme(interactive="filter") |> cols_move_to_start(columns=c(runcode,helpstr)) |>
+                    cols_merge(columns=c(func_reqinput,func_opts), pattern = "{1}, {2}"))
+  })["elapsed"]
+  message(" av_help rendered in ",thistm)
   if(grepl("showGeneralHelp",the_av$logopts)) {
-    helptable <- avsd$generalhelp |> gt() |> gt.basetheme(sizepct=80) |> decorate_table() |>
+    helptable <- avsd$generalhelp |> gt() |> gt.basetheme(sizepct=90) |> decorate_table() |>
                   tab_style(style=cell_text(font="Courier"),locations=cells_body(columns=c("Example/Choice"))) |>
                   fmt_url(columns=HelpComment,rows=grepl("http",HelpComment),label="FinanceGraphs Parameters and Events",color="blue")
     rtnlist=c(list(helptable),rtnlist)
@@ -77,6 +91,7 @@ av_gp <- function(todo,rv) {
   toplot <- data_from_list(s(rv[["istr1"]]),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID="istr1")
   out=list()
   if( nrow(toplot[[1]])>0) {
+    cAssign("toplot;rv;rb")
     out[[wheretoput]] <- one_px_ts(toplot,rv,events=rv$ts_events,dt_window=rb$rebase_window,title=rb$grtitle)
   }
   return(out)
@@ -338,7 +353,7 @@ av_divs <- function(todo,rv) {
 av_earn <- function(todo,rv) {
   out<-list()
   fwddts <- extenddtstr(rv$dtstr_hist,rtn="list",endchg=2*360)
-  if(length(alleqs <- symbol_grep_by_type(s(rv$istr1),"Equity"))>0) {
+  if(length(alleqs <- symbol_grep_by_type(s(rv$istr1,"[ ]+"),"Equity"))>0) {
     allearn <- rbindlist(lapply(alleqs,\(x) oneticker_earns(x,fwddts,rv$dtstr_hist)))
     lastqtr <- max(allearn[symbol==alleqs[[1]] & !is.na(reportedDate)]$fiscalDateEnding)
     lastqtr <- paste0(lubridate::year(lastqtr),"Q",lubridate::quarter(lastqtr))
@@ -388,13 +403,24 @@ av_movers <- function(todo,rv) {
 # For the following functions: SEARCH
 #
 av_search <- function(todo,rv) {
-  eqdta <- av_get_pf("","SYMBOL_SEARCH",keywords=rv$istr1) |> save_av_data("SYMBOL_SEARCH")
-  eqdta[,let(format=fcase(type=="Equity" & region=="United States","bold",default=""))]
-  setcolorder(eqdta,neworder="matchScore")
-  idxsearch <- the_av$tickerlist[grepl(istr1,name,ignore.case=TRUE) | grepl(istr1,symbol,ignore.case=TRUE),][,.(symbol,name,type="Index")]
-  eqdta <- rbindlist(list(idxsearch[,format:="green"],eqdta),fill=TRUE,use.names=TRUE)
-  avsh_clipboard(eqdta,"eq search")
-  out <- list( eqdta |> gt.avtheme(themeset="namesearch",istr1) )
+  # options: checkav
+  # options: type=<greptype>
+  src_str <- rv[["istr1"]]
+  src_list <- the_av$listings[grepl(src_str,symbol,ignore.case=TRUE) | grepl(src_str,name,ignore.case=TRUE)][,.(src="Listings",symbol,name,assetType,exchange,currency="USD")]
+  src_tickerlist <- the_av$tickerlist[grepl(src_str,symbol,ignore.case=TRUE) | grepl(src_str,name,ignore.case=TRUE)][,.(src="IdxCryp",symbol,name,assetType=type,currency="N/A")]
+  src_inv <-  the_av$pxinv[grepl(src_str,symbol,ignore.case=TRUE) | grepl(src_str,name,ignore.case=TRUE)][,.(src="Inv",symbol,name,assetType=type,currency)]
+  src_results<-rbindlist(list(src_list,src_tickerlist,src_inv),fill=TRUE,use.names=TRUE)
+  if(nrow(src_results)<=0 | grepl("checkav",todo,ignore.case=TRUE)) {
+    message_if_red(TRUE,"Search for '",src,str,"' found nothing yet, going to Av SYMBOL_SEARCG")
+    src_av <- av_get_pf("","SYMBOL_SEARCH",keywords=src_str) |> save_av_data("SYMBOL_SEARCH")
+    src_av <- src_av[,.(symbol,name,type,region,currency,matchscore)]
+    src_results<-rbindlist(list(src_results,src_results),fill=TRUE,use.names=TRUE)
+  }
+  subsearches <- c(stringr::str_extract(todo,"TYPE=([A-Za-z]*)",group=1), stringr::str_extract(todo,"NAME=([A-Za-z]*)",group=1))
+  if( !is.na(subsearches[[1]]) )  { src_results <- src_results[ grepl(subsearches[[1]],assetType,ignore.case=TRUE),] }
+  if( !is.na(subsearches[[2]]) )  { src_results <- src_results[ grepl(subsearches[[2]],name,ignore.case=TRUE),] }
+  avsh_clipboard(src_results,"eq search")
+  out <- list( src_results  |> gt(groupname_col="src") |> gt.basetheme() )
   return(out)
 }
 

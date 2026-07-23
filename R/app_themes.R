@@ -194,14 +194,6 @@ gt.avtheme<- function(x,themeset="",...) {
               fmt_number(suffixing=TRUE) |>
               tab_header(title="ETF Holdings") |> tab_footnote(paste("retrieved as of",Sys.time()))
   }
-  # Gen:NameSearch ============================================================= Gen:NameSearch
-  if(themeset=="namesearch") {
-    thisgt <- thisgt |> gt.basetheme() |> fmt_percent(columns=matchScore,decimals=1)  |>
-              decorate_table() |> tab_header(title=paste0("Search for ",ldots[[1]]))
-    if(ntable_len>40) {
-      thisgt <- thisgt |> opt_interactive(use_search=TRUE,use_resizers=TRUE, page_size_default=70,use_compact_mode=TRUE)
-    }
-  }
   # EQ:OptSearch=============================================================EQ:OptSearch
   if(themeset=="filteredopts") {
     thisgt <- thisgt  |>
@@ -214,14 +206,14 @@ gt.avtheme<- function(x,themeset="",...) {
         add_colwidths("filteredopts")
   }
   if(themeset=="earnings") {
-    thisgt <- thisgt  |> gt.basetheme(digits=2,interactive="search") |>
-    cols_merge(columns=c(estimatedEPS,est_low,est_high), pattern = "<<{2}: >>{1}<<: {3}>>") |>
+    thisgt <- thisgt  |> gt.basetheme(digits=2) |>
+    # where did these go? cols_merge(columns=c(estimatedEPS,est_low,est_high), pattern = "<<{2}: >>{1}<<: {3}>>") |>
     tab_style(style=cell_text(align="center"),locations=cells_body(columns=estimatedEPS)) |>
-    fmt_number(columns=est_n,decimals=0) |> fmt_percent(columns=c(est_30dpchg,est_90dpchg),decimals=1) |>
+    # fmt_number(columns=est_n,decimals=0) |>
+    # fmt_percent(columns=c(est_30dpchg,est_90dpchg),decimals=1) |>
     add_colwidths("earnings") |>
     tab_header(title=paste0("Earnings")) |>
-    fmt_number(suffixing=TRUE) |>
-    gt.basetheme()
+    fmt_number(suffixing=TRUE)
   }
   if(themeset=="earningstranscript") {
     thisgt <- thisgt  |> gt.basetheme(size="wide") |>
