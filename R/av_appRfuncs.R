@@ -73,18 +73,14 @@ av_add_px <- function(indta,assettypes=NULL,delay=0) {
 #' av_add_earn(assettypes=data.table(symbol=c("AAPL","QQQ"))
 #' }
 #' @export
-av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,assettypes=NULL,delay=0,maxage=0) {
-  if(nrow(the_av$earn)>0 & as.numeric(Sys.Date()-max(the_av$earn$ts))<=maxage) {
-    message_if_red(TRUE,"av_add_earn skipping earning addition with maxage ",maxage," at ",Sys.time())
-  }
-  else {
+av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,assettypes=NULL,delay=0) {
+  # Age taken care of by manage_earn
     symset = if (is.null(substitute_earn)) unique(assettypes$symbol) else unique(substitute_earn$symbol)
     rtnpx <- the_av$pxinv[data.table(symbol=symset),on=.(symbol)][,.(symbol,type)][type=="Equity",]
     rtniv <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
     the_av$pxinv <- DTUpsert(the_av$pxinv, get_inv(symset), c("symbol"),fill=TRUE)
     save_avs_state("px",msg="av_add_earn")
     return(rtniv)
-  }
 }
 
 # =======================================================================================================

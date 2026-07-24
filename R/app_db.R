@@ -302,17 +302,19 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
   ts=horizon=eps_estimate_average=assetType=NULL
   src<-""; rtniv<-data.table()
   earntickers <- the_av$listings[tickerdt,on=.(symbol),nomatch=NULL][assetType=="Stock",]
-  if(nrow(the_av$earn)>0) {
-    whatwehave <- the_av$earn[earntickers[,.(symbol)],on=.(symbol),nomatch=NULL]
-    if(nrow(whatwehave)>0) {
-      if((age <- as.numeric(Sys.Date()-max(whatwehave$ts)))<=the_av$maxage_earn_days) {
-        message_if(the_av$verbose,paste0("Earnings data age of ",age," less than ",the_av$maxage_earn_days," maxage, skipping"))
-        return()
-      }
-    }
-  }
   if( length( badtickers <- setdiff(tickerdt$symbol,earntickers$symbol))>0) {
-    message_if_red(the_av$verbose,"Earnings skipping invalid or non-equity equity tickers: ",paste_trunc(badtickers))
+    message_if_red(the_av$verbose,"Earnings skipping invalid or non-equity tickers: ",paste_trunc(badtickers))
+    earntickers <- earntickers[!data.table(symbol=badtickers),on=.(symbol)]
+  }
+  if(nrow(the_av$earn)>0) {
+    alreadyhave <-the_av$earn[,.(age=as.numeric(Sys.Date()-max(ts))),by=.(symbol)]
+    toget <- alreadyhave[earntickers[,.(symbol,assetType)],on=.(symbol)][,todo:=fcase(age<=the_av$maxage_earn_days,"skip",default="get")]
+    if(nrow(toget[todo=="get"])<=0) {
+        message_if(the_av$verbose,paste0("Earnings data age of ",age," less than ",the_av$maxage_earn_days," maxage for all tickers, skipping"))
+        return()
+    }
+    earntickers <- toget[todo=="get",]
+    message_if(the_av$verbose & nrow(toget[todo=="skip"])>0,"Earnings: Getting ",nrow(earntickers)," symbols and skipping:",paste_trunc(toget[todo=="skip"]$symbol))
   }
   if( nrow(earntickers)>0) {
     if(is.data.table(substitute_earn)) {
