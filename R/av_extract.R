@@ -17,6 +17,7 @@
 #' @returns Extracted data.tables for nested data returned from [av_get_pf()], If `grepstring` is not specified, first nested table is returned. [av_extract_fx()] returns a shortened data.table with FX quotes.
 #' @details [av_get_pf()] frequently returns a nested data.table, or a structure with nested data.frames.  These are utilities functions to extract, filter and summarize returned values.
 #' if [av_get_pf()] returns a valid response, but empty extracted `data.tables`, am empty `data.table()` will be returned
+#' NOTE: (Change 20260724:  Timestamp is returned in POSIXct form in local `Sys.timezone()` time)
 #' @seealso [av_get_pf()], [av_grep_opts()]
 #'
 #' @examples
@@ -56,6 +57,7 @@ av_extract_df <- function(indta,grepstring="",melt=FALSE,empty_dt_onerror=TRUE) 
 }
 
 #' @rdname av_extract_df
+#' @importFrom lubridate with_tz
 #' @export
 av_extract_fx <- function(indta,outputform="common",cols="",empty_dt_onerror=TRUE) {
     thissymbol <- indta[1,]$symbol
@@ -63,7 +65,8 @@ av_extract_fx <- function(indta,outputform="common",cols="",empty_dt_onerror=TRU
       return(data.table())
     }
     fxquote <- data.table::dcast(indta[get("ltype")=="numeric"],symbol ~ variable,value.var="value_str")
-    fxquote <- fxquote[,.(`symbol`=thissymbol,`Ask`=as.numeric(get("Ask Price")),`Bid`=as.numeric(get("Bid Price")),`QuoteTimestamp`=as.POSIXct(get("Last Refreshed")))]
+    fxquote <- fxquote[,.(`symbol`=thissymbol,`Ask`=as.numeric(get("Ask Price")),`Bid`=as.numeric(get("Bid Price")),
+                            `QuoteTimestamp`=lubridate::with_tz(as.POSIXct(get("Last Refreshed"),tz="UTC"),Sys.timezone()))]
     fxquote <- fxquote[,':='(`Mid`=(get("Ask")+ get("Bid"))/2)]
     if(outputform=="common") {
       setnames(fxquote,c("QuoteTimestamp","Mid"),c("timestamp","close"))

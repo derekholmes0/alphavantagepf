@@ -93,7 +93,7 @@ av_make_ui <- function() {
               tabPanel("OPTIONS",value="options",
                 fluidRow(
                   column(width=2,textInput(inputId="ochains", label="Default Chains",value=the_av$ochains)),
-                  column(width=2,numericInput(inputId="mindelta", label="mindelta", value=5,min=0,max=100)),
+                  column(width=2,numericInput(inputId="omindelta", label="omindelta", value=the_av$omindelta,min=0,max=100)),
                   column(width=2,selectInput(inputId="otodisplay", label="Output",
                                                  c("reduced","trading","all"),selected=the_av$otodisplay,multiple=FALSE)),
                   column(width=2,selectInput(inputId="oscaling", label="Scaling",
@@ -162,7 +162,7 @@ av_make_ui <- function() {
 #' @importFrom stats quantile formula
 
 av_make_server <- function() {
-  ts_rebase=ts_events=ts_volparams=imp=x_close=y_close=ui_out=outname=displayed=inclass=displayheight=NULL
+  ts_rebase=ts_events=ts_volparams=imp=x_close=y_close=ui_out=outname=displayed=inclass=displayheight=todoargs=NULL
   out <- list()
   av_server<-function(input, output,session) {
     inlist=list_ts=vartype=todofunc=todo=assetline=NULL
@@ -173,7 +173,6 @@ av_make_server <- function() {
             (max(the_av$tickerlist$list_ts)<=Sys.Date()-4) )
     FinanceGraphs::fg_sync_group("avshiny")
     if("CleanOnStart" %in% the_av$capture_av_save) {  save_av_data(data.table(),"KILL") }
-
    # height_from_obs <- reactive({ the_av$out1h })
     need_index_asset <- reactive({
       is_in_list <- s(input$istr2)[1] %in% the_av$pxinv$symbol
@@ -271,7 +270,7 @@ av_make_server <- function() {
           output$inv1 <- invtosend[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv") |> render_gt() #  gt.avtheme(themeset="pxinv") |>
           output$inv2 <- dump_assetgroups(returngt=TRUE) |>  gt.avtheme(themeset="assetgroups") |> render_gt()
         }
-        the_av$starttab <- "INVENTORY"
+        the_av$starttab <- "inventory"
         if( exists("do_on_start",envir=the_av) ) { rm("do_on_start",envir=the_av) }
         message_if_green(the_av$verbose,"Inventory on way to tab")
         updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
@@ -308,12 +307,15 @@ av_make_server <- function() {
           quick_message("istr1","Enter a valid command", eval=nchar(rv$istr1)<=0) ) {
         return()
       }
+      quick_message("istr1","Working..")
       message_if(the_av$verbose,"avrs(",tver,") >>>> input(",rv$istr1,") Line2:",rv$istr2)
       # Clear all but TS graphs
       out <- list()
       outcopy <- the_av$outcopy %||% list()
       # ----------------
-      parse_inpline(toupper(rv$istr1)) # New variables created:  todo todofunc todoargs assetline
+      # New variables created and added to rv:  todo todofunc todoargs assetline
+      parse_inpline(toupper(rv$istr1))
+      rv <- c(rv,setNames(list(todo,todofunc,todoargs,assetline), s("todo;todofunc;todoargs;assetline"))) # Augment rv
       cAssign("todo;todofunc;rv;todoargs;assetline",silent=TRUE)
       runfunc_set <-  the_av$avsh_funcs[runcode==todofunc,]
 
@@ -360,12 +362,13 @@ av_make_server <- function() {
       torend <- torend[outname %in% names(out),displayed:=TRUE][inclass=="dygraphs",displayheight:=fifelse(displayed,"400px","0px")]
       av_set_defaults("outcopy",out)
       av_set_defaults("renderset",torend)
+
       mapply( \(outnm,innm,intype) {
         local({
           output[[outnm]]<-switch(gsub("::","",intype),
                                   gt_tbl = render_gt(out[[innm]]),
                                   dygraphs = renderDygraph(out[[innm]]),
-                                  ggplot2ggplot = renderPlot({ out[[innm]] },execOnResize=TRUE),
+                                  ggplot2ggplot = renderPlot({ suppressWarnings(out[[innm]]) },execOnResize=TRUE),
                                   text = renderText( out[[innm]] ))
         })},
         torend$ui_out, torend$outname, torend$inclass   )
@@ -373,8 +376,8 @@ av_make_server <- function() {
       # Dygraph heights tricky.
       output$dy1_container <- renderUI({ dygraphOutput("dy1", height= torend[ui_out=="dy1",]$displayheight) })
       output$dy2_container <- renderUI({ dygraphOutput("dy2", height= torend[ui_out=="dy2",]$displayheight) })
-
       updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
+      if(the_av$last_feedback=="Working..") { message("here... "); quick_message("istr1","done")}
       save_avs_state("all",msg="RUNLN")
     })
   } # Server

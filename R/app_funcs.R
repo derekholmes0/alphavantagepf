@@ -2,6 +2,7 @@
 # FOr the following functions: AV.INV AV.EQINV
 # Good
 av_inventory <- function(todo,rv) {
+  ntickers=NULL
   if(nrow(the_av$pxd)<=0) {
     quick_message("istr1","No Inventory, Run a GP graph to start",color="red")
     return()
@@ -35,15 +36,20 @@ av_inventory <- function(todo,rv) {
 # FOr the following functions: AV.H
 # Good
 av_help <- function(todo,rv) {
-  func_reqinput=func_opts=helpstr=helpexample=func_src=HelpComment=NULL
+  func_reqinput=func_opts=helpstr=helpexample=func_src=HelpComment=runcode2=NULL
   grepstr <-  s(c(todo,"*"),"[ ]+",rtn=2)
   tortn <- the_av$avsh_funcs[,.(category,runcode,func_reqinput,func_opts,helpstr,helpexample,func_src)][order(category,runcode)][!grepl("tblhelp",category)]
   tortn <- tortn[grepl(grepstr,category,ignore.case=TRUE) | grepl(grepstr,runcode,ignore.case=TRUE)]
   tortn <- tortn[!grepl("tblhlp",category)]
+  avail_on_2 <- tortn[grepl("2$",runcode ),.(runcode2=paste0(" (",runcode,")") ,runcode =gsub("2$","",runcode))]
+  tortn <- avail_on_2[tortn,on=.(runcode)][!grepl("2$",runcode)][, runcode:=paste0(runcode,fcoalesce(runcode2,"")), by=.I]
   # does this take too long?
   thistm <- system.time({
-    rtnlist <- list(tortn |> gt(groupname_col="category") |> gt.basetheme(interactive="filter") |> cols_move_to_start(columns=c(runcode,helpstr)) |>
-                    cols_merge(columns=c(func_reqinput,func_opts), pattern = "{1}, {2}"))
+    rtnlist <- list(
+      tortn |> gt(groupname_col="category") |> gt.basetheme(interactive="filter") |> cols_move_to_start(columns=c(runcode,helpstr)) |>
+                    cols_merge(columns=c(func_reqinput,func_opts), pattern = "{1}, {2}") |> cols_hide(columns=c(runcode2))
+
+      )
   })["elapsed"]
   message(" av_help rendered in ",thistm)
   if(grepl("showGeneralHelp",the_av$logopts)) {
@@ -60,6 +66,7 @@ av_help <- function(todo,rv) {
 #
 #' @importFrom utils tail
 av_misc <- function(todo,rv) {
+  ts=N=NULL
   todolist <- c(s(toupper(todo),"[ ]+"),"1")
   cmdhistlist <- tail(the_av$cmdhist,20)[order(-ts)][,let(N=.I)]
   setcolorder(cmdhistlist,s("N;cmd;ts"))
@@ -88,10 +95,9 @@ av_gp <- function(todo,rv) {
   wherefrom <- 1 # Still keep open possibility of line 2 direct
   wheretoput <- fifelse(stringr::str_detect(todolist[[1]],"2$"), "TS2" , "TS1")
   rb <- find_rebasecode(todolist,rv$dtstr_hist)
-  toplot <- data_from_list(s(rv[["istr1"]]),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID="istr1")
+  toplot <- data_from_list(s(rv$assetlist),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID="istr1")
   out=list()
   if( nrow(toplot[[1]])>0) {
-    cAssign("toplot;rv;rb")
     out[[wheretoput]] <- one_px_ts(toplot,rv,events=rv$ts_events,dt_window=rb$rebase_window,title=rb$grtitle)
   }
   return(out)
@@ -101,25 +107,34 @@ av_gp <- function(todo,rv) {
 # Good
 #' @importFrom stringr str_detect
 av_gearn <- function(todo,rv) {
-  horizon=i.enddt=labs=lpx=estimatedEPS=ra_estimatedEPS=ra_reportedEPS=rb=reportedEPS=NULL
+  horizon=i.enddt=labs=lpx=estimatedEPS=ra_estimatedEPS=ra_reportedEPS=reportedEPS=eps_estimate_average=c_code=NULL
   todolist <- s(toupper(todo),"[ ]+",pad=1)
   func_details <- the_av$avsh_funcs[runcode==todolist[[1]],]
-  inplist <- s(rv[["istr1"]])
+  eqset <- symbol_grep_by_type(s(rv$assetline),"Equity")
+  if(length(eqset)<=0) { quick_message("istr1","No equities in set"); return() }
   wheretoput <- fifelse(stringr::str_detect(todolist[[1]],"2$"), "TS2" , "TS1")
   calccode <- toupper(substr(todolist[[1]],1,3))
   bigdtstr <- extenddtstr(rv$dtstr_hist,begchg=-365)
-  toplot <- data_from_list(inplist,bigdtstr ,"none",bigdtstr ,msg_inputID="istr1")
+  toplot <- data_from_list(eqset,bigdtstr ,"none",bigdtstr ,msg_inputID="istr1")
   tdtmap <- narrowbydtstr(dtmap[,.(timestamp=DT_ENTRY,isday)],bigdtstr)
-  earnset <- the_av$earn[data.table(symbol=inplist),on=.(symbol)][,.(symbol,timestamp=reportedDate,reportedEPS,estimatedEPS)]
-  withearn <- earnset[toplot[[1]],on=.(symbol,timestamp)][,let(reportedEPS=nafill(reportedEPS,type="locf"), estimatedEPS=nafill(estimatedEPS,type="locf")), by=.(symbol)]
-  withearn <- withearn[,let(  ra_reportedEPS=4*frollmean(reportedEPS,260), ra_estimatedEPS=4*frollmean(estimatedEPS,260))]
-  toplot_x <- withearn[,.(timestamp,variable=symbol,
-                          value=fcase(calccode=="GPE",close/ra_reportedEPS, calccode=="GEP",100*ra_reportedEPS/close,
-                                      calccode=="GPF",close/ra_estimatedEPS, calccode=="GFP",100*ra_estimatedEPS/close))]
+  earnset <- the_av$earn[data.table(symbol=eqset),on=.(symbol)][,.(symbol,timestamp=reportedDate,reportedEPS,estimatedEPS)]
+  # Use next estimate for dates between last estimate and now
+  next_earnfwd <- the_av$earnest[data.table(symbol=eqset,horizon="fiscal quarter"),on=.(symbol,horizon)][date>=Sys.Date(),.SD[1],by=.(symbol)]
+  next_earnfwd <- next_earnfwd[,.(symbol,timestamp=max(toplot[[1]]$timestamp),reportedEPS=eps_estimate_average,estimatedEPS=eps_estimate_average)]
+  earnset <- rbindlist(list(earnset,next_earnfwd))[order(symbol,timestamp)]
+  withearn <- earnset[toplot[[1]][,.(symbol,timestamp,close=get(the_av$seriesnm))],on=.(symbol,timestamp)][,
+                      let(reportedEPS=nafill(reportedEPS,type="nocb"), estimatedEPS=nafill(estimatedEPS,type="nocb")), by=.(symbol)]
+  withearn <- withearn[,let(ra_reportedEPS=4*frollmean(reportedEPS,252,na.rm=T,align="right"),
+                             ra_estimatedEPS=4*frollmean(estimatedEPS,252,na.rm=T,align="right"),
+                            c_code=calccode
+                             ),by=.(symbol)]
+  toplot_x <- withearn[,.(timestamp,symbol,value=fcase(c_code=="GPE",close/ra_reportedEPS, c_code=="GEP",100*ra_reportedEPS/close,
+                                      c_code=="GPF",close/ra_estimatedEPS, c_code=="GFP",100*ra_estimatedEPS/close))]
+  toplot_x <- toplot_x |> narrowbydtstr(rv$dtstr_hist)
   out=list()
   if( nrow(toplot_x)>0) {
-    toplot[[1]] <- toplot_x
-    out[[wheretoput]] <- one_px_ts(toplot,rv,events=rv$ts_events,dt_window=rb$rebase_window,title=rb$grtitle)
+    toplot[[1]] <- setnames(toplot_x,"value",the_av$seriesnm)
+    out[[wheretoput]] <- one_px_ts(toplot,rv,events=rv$ts_events,dt_window=rv$dtstr_hist)
   }
   return(out)
 }
@@ -128,14 +143,16 @@ av_gearn <- function(todo,rv) {
 # todo="GPEE"; rv<-list(istr1="IBM;GS",dtstr_hist="-2y::")
 #' @importFrom stringr str_detect
 #' @importFrom ggplot2 ggplot aes geom_errorbar geom_line geom_segment scale_color_manual geom_crossbar labs theme
+#' @importFrom ggplot2 geom_vline
 av_earnest <- function(todo,rv) {
   date1=date2=eps_est=eps_est.hi=eps_est.lo=eps_est_30d=eps_est_90d=eps_estimate_analyst_count=ts=horizon=NULL
   eps_estimate_revision_down_trailing_30_days=eps_estimate_revision_up_trailing_30_days=epse1=epse2=estimatedEPS=NULL
   todolist <- c(s(toupper(todo),"[ ]+"),"invalidate")
   this_dthist <- rv$dtstr_hist
+  begdt <- gendtstr(rv$dtstr_hist,rtn="list")[[1]]
   if(!grepl("NA",gendtstr(todolist[[2]]))) { this_dtstr <- gendtstr(todolist[[2]]) }
-  earnset <- data.table(symbol=s(rv[["istr1"]]))[,horizon:="fiscal quarter"]
-  earnset <- the_av$earnest[earnset,on=.(symbol,horizon)][,.SD[ts==max(ts)], by=.(symbol)]|> narrowbydtstr(rv$dtstr_hist)
+  earnset <- data.table(symbol=s(rv$assetline))[,horizon:="fiscal quarter"]
+  earnset <- the_av$earnest[earnset,on=.(symbol,horizon)][,.SD[ts==max(ts)], by=.(symbol)][date>=begdt,]
   earnset <- earnset[,let(analystdisp30d=100*(fcoalesce(eps_estimate_revision_up_trailing_30_days,0)-fcoalesce(eps_estimate_revision_down_trailing_30_days,0))
                           /eps_estimate_analyst_count)]
   colstokeep <- s("eps_est;eps_est.lo;eps_est.hi;eps_est_30d;eps_est_90d")
@@ -147,10 +164,11 @@ av_earnest <- function(todo,rv) {
   # Sometimes just do it the old fashioned way
   g1 <- ggplot2::ggplot(toplot,aes(x=date,color=variable))+geom_line(aes(y=eps_est),linewidth=2)
   g1 <- g1+ geom_crossbar(aes(y=eps_est,ymin=eps_est.lo,ymax=eps_est.hi),width=10)
-  g1 <- g1 + labs(x="Date",y="EPS",title="Earnings Estimates")
+  g1 <- g1 + labs(x="Date",y="EPS",title="Earnings Estimates",caption="Red Line: Today")
   g1 <- g1 + scale_color_manual(values=fg_get_aesstring("lines")) + fg_current_theme() + theme(legend.position = "top",legend.justification = "left")
   g1 <- g1 + geom_segment(aes(x=date1,y=epse1,xend=date2,yend=epse2,color=variable),linewidth=1,data=toplot2a)
   g1 <- g1 + geom_segment(aes(x=date1,y=epse1,xend=date2,yend=epse2,color=variable),linewidth=1,data=toplot2b)
+  g1 <- g1 + ggplot2::geom_vline(xintercept=Sys.Date(), color="red")
   return(list(g1))
 }
 
@@ -226,7 +244,7 @@ av_livepx <- function(todo,rv) {
     df_live_fx <- rbindlist(df_live_fx)[,let(open=close,low=close,high=close,volume=NA_integer_)]
     df_live_fx[, (required_numcols):=NA_real_]
     df_live <- rbindlist(list(df_live,df_live_fx),use.names=TRUE,fill=TRUE)
-    }
+  }
   avsh_clipboard(df_live,"liveprice")
   if(nrow(df_live)<=0) {
     quick_message("istr1","Need to make sure all tickers are in inventory by having history retrieved")
@@ -239,23 +257,24 @@ av_livepx <- function(todo,rv) {
 # good
 av_des <- function(todo,rv) {
   imp=NULL
-  eqlist1 <- s(rv$istr1)
   out<-list()
   #toplot<-data_from_list(eqlist1,dtstr_hist,ts_rebase,dtstr_window,msg_inputID="istr1") # Just to get the asset type.
   #tickerset = the_av$pxinv[data.table(symbol=eqlist1),on=.(symbol)][,.(symbol,type,currency)]
-  if( length(eqset <- symbol_grep_by_type(eqlist1,"Equity"))>0 ) {
+  if( length(eqset <- symbol_grep_by_type(s(rv$assetline),"Equity"))>0 ) {
     eqdt <- rbindlist(lapply(eqset, \(x) av_get_pf(x,"OVERVIEW")))
     eqdt <- eqdt |> save_av_data("OVERVIEW")
     olist <- avsd$overviewlist[,variable:=EquityName][]
     eqdta <- olist[eqdt,on=.(variable)][source=="av",]
     eqdta <- eqdta[order(catprio,prio)][,.(category,symbol,catprio,prio,variable,ltype,value_str,format ,value_num)]
-    toplot <- dcast(eqdta[order(catprio,prio)], catprio+prio+category + variable+format ~ symbol, value.var="value_str")
+    eqdta_2 <- copy(eqdta)[variable=="Description",value_str:="See Below"]
+    toplot <- dcast(eqdta_2[order(catprio,prio)], catprio+prio+category + variable+format ~ symbol, value.var="value_str")
     toplot <- toplot[,imp:=fifelse(grepl("green|yellow|bold",format),"imp","")]
     setcolorder(toplot,"imp",after="category")
     out[["GT1"]] <-  toplot |> gt.avtheme(themeset="eqdesc1")
+    out[["GT2"]] <-  eqdta[variable=="Description",.(symbol,desc=value_str)] |> gt() |> gt.basetheme(sizepct=70)
   }
   # tab_style(eval(parse(text=fm31)),eval(parse(text=fm32)))
-  if( length(eqset <- symbol_grep_by_type(eqlist1,"ETF"))>0 ) {
+  if( length(eqset <- symbol_grep_by_type(s(rv$assetline),"ETF"))>0 ) {
     eqdt <- rbindlist(lapply(eqset, \(x) av_get_pf(x,"ETF_PROFILE")))
     eqdt <- eqdt |> save_av_data("ETF_PROFILE")
     olist <- avsd$overviewlist[,variable:=ETFName][]
@@ -338,7 +357,7 @@ av_active <- function(todo,rv) {
 # Good
 av_divs <- function(todo,rv) {
   out=list()
-  if( length(eqset <- symbol_grep_by_type(s(rv$istr1),"Equity|ETF"))>0 ) {
+  if( length(eqset <- symbol_grep_by_type(s(rv$assetline),"Equity|ETF"))>0 ) {
     alldivs <- rbindlist(lapply(eqset, \(x) oneticker_divs(x,rv$dtstr_hist)),fill=TRUE,use.names=TRUE)
     out<- list(alldivs |> gt.avtheme(themeset="dividends"))
   }
@@ -353,7 +372,7 @@ av_divs <- function(todo,rv) {
 av_earn <- function(todo,rv) {
   out<-list()
   fwddts <- extenddtstr(rv$dtstr_hist,rtn="list",endchg=2*360)
-  if(length(alleqs <- symbol_grep_by_type(s(rv$istr1,"[ ]+"),"Equity"))>0) {
+  if(length(alleqs <- symbol_grep_by_type(s(rv$assetline),"Equity"))>0) {
     allearn <- rbindlist(lapply(alleqs,\(x) oneticker_earns(x,fwddts,rv$dtstr_hist)))
     lastqtr <- max(allearn[symbol==alleqs[[1]] & !is.na(reportedDate)]$fiscalDateEnding)
     lastqtr <- paste0(lubridate::year(lastqtr),"Q",lubridate::quarter(lastqtr))
@@ -378,7 +397,7 @@ av_news <- function(todo,rv) {
   av_set_default_set("news",rv)
   out<-list("NEWSGT"=get_allNews(s(rv$istr1),rv) |> gt.avtheme(themeset="news",rv$istr1))
   av_set_defaults("NEWSGT",out[["NEWSGT"]])
-  av_set_defaults("starttab","NEWS")
+  av_set_defaults("starttab","news")
   return(out)
 }
 
@@ -403,6 +422,7 @@ av_movers <- function(todo,rv) {
 # For the following functions: SEARCH
 #
 av_search <- function(todo,rv) {
+  assetType=exchange=src=matchScore=NULL
   # options: checkav
   # options: type=<greptype>
   src_str <- rv[["istr1"]]
@@ -411,7 +431,7 @@ av_search <- function(todo,rv) {
   src_inv <-  the_av$pxinv[grepl(src_str,symbol,ignore.case=TRUE) | grepl(src_str,name,ignore.case=TRUE)][,.(src="Inv",symbol,name,assetType=type,currency)]
   src_results<-rbindlist(list(src_list,src_tickerlist,src_inv),fill=TRUE,use.names=TRUE)
   if(nrow(src_results)<=0 | grepl("checkav",todo,ignore.case=TRUE)) {
-    message_if_red(TRUE,"Search for '",src,str,"' found nothing yet, going to Av SYMBOL_SEARCG")
+    message_if_red(TRUE,"Search for '",src_str,"' found nothing yet, going to Av SYMBOL_SEARCG")
     src_av <- av_get_pf("","SYMBOL_SEARCH",keywords=src_str) |> save_av_data("SYMBOL_SEARCH")
     src_av <- src_av[,.(symbol,name,type,region,currency,matchscore)]
     src_results<-rbindlist(list(src_results,src_results),fill=TRUE,use.names=TRUE)
@@ -433,8 +453,8 @@ av_optsearch <- function(todo,rv) {
   indta <- data.table()
   eqlist1 <- s(rv$istr1)
   ochains <- find_arg(todo,"f") %||% rv$ochains
-  mindelta <- find_arg(todo,"d") %||% "0"
-  message_if_red(TRUE," av_optsearch ochains:: ",ochains)
+  mindelta <- find_arg(todo,"d",altno=-1) %||% rv$omindelta
+  message_if_red(the_av$verbose," av_optsearch ochains:: ",ochains, " mindelta: ",mindelta)
   for (x in eqlist1) {
     theseopts <- av_get_pf(x,"HISTORICAL_OPTIONS")
     if("variable" %in% names(theseopts)) {

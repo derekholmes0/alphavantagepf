@@ -86,11 +86,11 @@ av_determine_output_locs <- function(inlist,location="MAIN") {
   }
 }
 
-find_arg <- function(x,argnm,altno=2) {
+find_arg <- function(x,argnm,altno=2) { # altno<0 : don't use
   sepx <- s(x," ")
   argnm1 <- s(grepv(paste0(argnm,"="),sepx,ignore.case=T),"=")[[2]]
   argnm2 <- NULL
-  if(length(sepx)>=altno) {
+  if(length(sepx)>=altno && altno>=2) { # A little hacky
     if( !grepl("=",sepx[altno]) ) argnm2 <- sepx[altno]
   }
   return(argnm1 %||% argnm2)
@@ -196,7 +196,7 @@ oneticker_divs <- function(thisticker,datestring) {
 }
 
 one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_window=NULL) {
-  symbol=low=high=medgap=reportedEPS=surprise=lpx=dividend_amount=NULL
+  symbol=low=high=medgap=reportedEPS=surprise=lpx=dividend_amount=surprisePercentage=NULL
   seriesnm <- the_av$seriesnm
   if(is.data.table(toplot[[1]])) {
     trebase <- toplot[[2]]

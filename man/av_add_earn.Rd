@@ -8,8 +8,7 @@ av_add_earn(
   substitute_earn = NULL,
   substitute_earnest = NULL,
   assettypes = NULL,
-  delay = 0,
-  maxage = 0
+  delay = 0
 )
 }
 \arguments{
@@ -25,8 +24,6 @@ NOTE THAT assettypes cannot be NULL if substitute_earn and substitute_earnest ar
 
 \item{delay}{(default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
 unused if \code{assettypes} is given.}
-
-\item{maxage}{(default 0) Maxium age of data before downloaded from Alphavantage}
 }
 \value{
 Data.table with downloaded or added earnings
@@ -35,7 +32,9 @@ Data.table with downloaded or added earnings
 Adds earnings data to \code{\link[=av_runShiny]{av_runShiny()}} internal data, either by download or with user data
 }
 \details{
-Entire set of columns from \code{\link[=av_get_pf]{av_get_pf()}} can be added. First date column renamed to \code{timestamp}
+Entire set of columns from \code{\link[=av_get_pf]{av_get_pf()}} can be added. First date column renamed to \code{timestamp}.
+If just assetypes is given, the function downloads earnings as needed (respecting maximum age parameters defined
+in the app's \code{AVOPTS} tab.)
 }
 \examples{
 \dontrun{

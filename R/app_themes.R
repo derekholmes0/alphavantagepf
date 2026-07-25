@@ -68,6 +68,7 @@ decorate_table <- function(gtx) {
 add_colwidths <- function(gtx,xtablenm) {
   tablenm=aesnm=colname=NULL
   colset <- avsd$table_aes[tablenm==xtablenm & aesnm=="width",]
+  if(is.null(gtx)) { return(colset)}
   if(nrow(colset)<=0) {
     return(gtx)
   }
@@ -150,7 +151,8 @@ gt.avtheme<- function(x,themeset="",...) {
     thisgt <- thisgt |> gt.basetheme() |> tab_header(title="Asset lists")
   }
   if(themeset=="pxinv") {
-    thisgt <- thisgt |> tab_header(title="Data Inventory") |> gt.basetheme(interactive="all",sizepct=70) |>
+    thisgt <- thisgt |> tab_header(title="Data Inventory") |>
+      gt.basetheme(interactive="all",sizepct=70) |>
       fmt_datetime(columns=loadts,date_style="Md",time_style="iso-short") |>
       tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,name,type,currency,age), rows=(as.numeric(age)>=3))) |>
       tab_style(style = cell_text(size = px(10)),locations = cells_body(columns = c(loadts))) |>
@@ -207,11 +209,9 @@ gt.avtheme<- function(x,themeset="",...) {
   }
   if(themeset=="earnings") {
     thisgt <- thisgt  |> gt.basetheme(digits=2) |>
-    # where did these go? cols_merge(columns=c(estimatedEPS,est_low,est_high), pattern = "<<{2}: >>{1}<<: {3}>>") |>
     tab_style(style=cell_text(align="center"),locations=cells_body(columns=estimatedEPS)) |>
-    # fmt_number(columns=est_n,decimals=0) |>
-    # fmt_percent(columns=c(est_30dpchg,est_90dpchg),decimals=1) |>
     add_colwidths("earnings") |>
+    tab_style(style=cell_text(size="x-small"),locations=cells_body(columns=reportTime,rows=everything())) |>
     tab_header(title=paste0("Earnings")) |>
     fmt_number(suffixing=TRUE)
   }

@@ -299,18 +299,19 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
 # todo:  only download earnings when you think you might need to
 #' @importFrom purrr map
 manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL, delay=0.05) {
-  ts=horizon=eps_estimate_average=assetType=NULL
+  todo=ts=horizon=eps_estimate_average=assetType=NULL
   src<-""; rtniv<-data.table()
   earntickers <- the_av$listings[tickerdt,on=.(symbol),nomatch=NULL][assetType=="Stock",]
+  if(nrow(earntickers)<=0) { return() }
   if( length( badtickers <- setdiff(tickerdt$symbol,earntickers$symbol))>0) {
     message_if_red(the_av$verbose,"Earnings skipping invalid or non-equity tickers: ",paste_trunc(badtickers))
     earntickers <- earntickers[!data.table(symbol=badtickers),on=.(symbol)]
   }
   if(nrow(the_av$earn)>0) {
     alreadyhave <-the_av$earn[,.(age=as.numeric(Sys.Date()-max(ts))),by=.(symbol)]
-    toget <- alreadyhave[earntickers[,.(symbol,assetType)],on=.(symbol)][,todo:=fcase(age<=the_av$maxage_earn_days,"skip",default="get")]
+    toget <- alreadyhave[earntickers[,.(symbol,assetType)],on=.(symbol)][,todo:=fcase(age<=the_av$maxage_earn_days,"skip",default="get")][]
     if(nrow(toget[todo=="get"])<=0) {
-        message_if(the_av$verbose,paste0("Earnings data age of ",age," less than ",the_av$maxage_earn_days," maxage for all tickers, skipping"))
+        message_if(the_av$verbose,paste0("Earnings data less than ",the_av$maxage_earn_days," maxage for all tickers, skipping"))
         return()
     }
     earntickers <- toget[todo=="get",]

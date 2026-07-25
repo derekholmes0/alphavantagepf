@@ -63,10 +63,11 @@ av_add_px <- function(indta,assettypes=NULL,delay=0) {
 #' NOTE THAT assettypes cannot be NULL if substitute_earn and substitute_earnest are NULL.
 #' @param delay (default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
 #' unused if `assettypes` is given.
-#' @param maxage (default 0) Maxium age of data before downloaded from Alphavantage
 #' @returns Data.table with downloaded or added earnings
 #' @seealso [av_runShiny()]
-#' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`
+#' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`.
+#' If just assetypes is given, the function downloads earnings as needed (respecting maximum age parameters defined
+#' in the app's `AVOPTS` tab.)
 #' @examples
 #' \dontrun{
 #' # To add earnings for a set of tickers
@@ -206,6 +207,7 @@ quick_message <- function(wh,this_message="",eval=TRUE,color="#1f78b4") {
   if(nchar(this_message)>0 & eval==TRUE) {
     this_message <- paste0("<small>",this_message,"</small>")
     shinyFeedback::showFeedback(inputId=wh, text=this_message,color=color)
+    the_av$last_feedback <- this_message
   }
   return(eval)
 }
