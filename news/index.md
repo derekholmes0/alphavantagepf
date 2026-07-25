@@ -2,40 +2,19 @@
 
 ## alphavantagepf (development version)
 
-## alphavantagepf 0.8.2: in Progress
+## alphavantagepf 0.8.3: in Progress
 
-CUrrent: 0.8.136: Adding tickerlists.
+New feature todo \* calendars
 
-New feature todo
+### Major Changes
 
-- Redo:
+The Shiny interface has been completely redesigned (and recoded) to have
+an extendable command line interface for all analytics. New functions
+have been added for adding and managing data outside the app. Users can
+now add their own analytics, posssibly with the help of with several
+“helper” functions to interface with the GUI. See vignettes for details.
 
-- Search tickerlist using internal data
-
-- Add dividends and earnings events to price graph
-
-- Replace symbol_search with search of listings data.table. Will make
-  MUCH faster
-
-- Total return and basic statistics with graphed prices.
-
-- Saving dividends and Earnings into database.
-
-- Dividends and earnings into px graph
-
-- P/E and P/D graphs
-
-- Hooks for external functions
-
-- Statistics
-
-- calendars
-
-## alphavantagepf 0.8.15: Redesign of interface
-
-## alphavantagepf 0.8.14: Baked in
-
-New Features
+### New Features in API interface
 
 - [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
   returns a date column for melted data.
@@ -44,31 +23,15 @@ New Features
 - All helper functions (e.g. `av_extract_df`) now return an empty
   data.table if there is nothing to extract. Set
   `empty_dt_onerror=FALSE` to throw an error.
-- Scatter plot added to ActiveTS, with piecewise linear regression,
-  accessed via “tailhedge” scatter plot option
-- Scatter plots added to PriceTS line 1 vs PriceTS line 2 when line 2 is
-  plotted.
-
-GUI Changes
-
-- Separate tab for Inventory, which is searchable and loaded (slowly) on
-  app startup.
-- Moved volatility parameters to AVOPTS
-- Slider for date windows now replaced with date string
-
-Small Changes
-
-- Improved filtering and search acrosss tables.
-- Option sets and parameters are now persistent
-- Copy Table just copies results from actions taken on Line 1
-
-Bug todo: ——————————————
+- [`av_extract_fx()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md)
+  timestamps always returned in
+  [`Sys.timezone()`](https://rdrr.io/r/base/timezones.html) time zone.
 
 Bug fixes
 
 - Fixed app crash if no earnings transcript available.
 - Fixed graphing so that stepPlots are chosen appropriately, not always.
-- splitfirst ignored for AcriveTS
+- splitfirst ignored for single name plots.
 
 ## alphavantagepf 0.8.1 (RELEASE)
 

@@ -73,7 +73,9 @@ data.frames. These are utilities functions to extract, filter and
 summarize returned values. if
 [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
 returns a valid response, but empty extracted `data.tables`, am empty
-`data.table()` will be returned
+`data.table()` will be returned NOTE: (Change 20260724: Timestamp is
+returned in POSIXct form in local
+[`Sys.timezone()`](https://rdrr.io/r/base/timezones.html) time)
 
 ## See also
 

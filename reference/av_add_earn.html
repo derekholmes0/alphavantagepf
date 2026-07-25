@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.2061</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,8 +48,7 @@
 <span>  substitute_earn <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  substitute_earnest <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  assettypes <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  delay <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  maxage <span class="op">=</span> <span class="fl">0</span></span>
+<span>  delay <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -77,10 +76,6 @@ NOTE THAT assettypes cannot be NULL if substitute_earn and substitute_earnest ar
 <dd><p>(default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
 unused if <code>assettypes</code> is given.</p></dd>
 
-
-<dt id="arg-maxage">maxage<a class="anchor" aria-label="anchor" href="#arg-maxage"></a></dt>
-<dd><p>(default 0) Maxium age of data before downloaded from Alphavantage</p></dd>
-
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -88,7 +83,9 @@ unused if <code>assettypes</code> is given.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Entire set of columns from <code><a href="av_get_pf.html">av_get_pf()</a></code> can be added. First date column renamed to <code>timestamp</code></p>
+    <p>Entire set of columns from <code><a href="av_get_pf.html">av_get_pf()</a></code> can be added. First date column renamed to <code>timestamp</code>.
+If just assetypes is given, the function downloads earnings as needed (respecting maximum age parameters defined
+in the app's <code>AVOPTS</code> tab.)</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
