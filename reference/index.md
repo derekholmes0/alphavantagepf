@@ -35,6 +35,10 @@
   : Extract data from Alpha Vantage retuned data
 - [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
   : RShiny App
+- [`avsh_clipboard()`](https://derekholmes0.github.io/alphavantagepf/reference/avsh_clipboard.md)
+  : Helper functions for analytics
+- [`avsh_set_tabtitle()`](https://derekholmes0.github.io/alphavantagepf/reference/avsh_set_tabtitle.md)
+  : Helper functions for analytics
 - [`dump_state()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)
   [`inv_rv()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)
   [`dump_inv()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)
@@ -46,3 +50,5 @@
   : App formatting functions
 - [`message_if()`](https://derekholmes0.github.io/alphavantagepf/reference/message_if.md)
   : Date Utilities
+- [`quick_message()`](https://derekholmes0.github.io/alphavantagepf/reference/quick_message.md)
+  : ———————– Exported Shiny Functions

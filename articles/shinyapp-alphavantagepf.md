@@ -1,4 +1,4 @@
-# shinyapp-alphavantagepf
+# shinyapp-basicusage-alphavantagepf
 
 The **Alphavantagepf** package also contains a Shiny Application which
 can be used to query, save, and visualize basic market information
