@@ -42,6 +42,7 @@ Extracted data.tables for nested data returned from \code{\link[=av_get_pf]{av_g
 \details{
 \code{\link[=av_get_pf]{av_get_pf()}} frequently returns a nested data.table, or a structure with nested data.frames.  These are utilities functions to extract, filter and summarize returned values.
 if \code{\link[=av_get_pf]{av_get_pf()}} returns a valid response, but empty extracted \code{data.tables}, am empty \code{data.table()} will be returned
+NOTE: (Change 20260724:  Timestamp is returned in POSIXct form in local \code{Sys.timezone()} time)
 }
 \examples{
 \dontrun{

@@ -1,8 +1,8 @@
 ---
-title: "shinyapp-alphavantagepf"
+title: "shinyapp-basicusage-alphavantagepf"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{shinyapp-alphavantagepf}
+  %\VignetteIndexEntry{shinyapp-basicusage-alphavantagepf}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -13,7 +13,7 @@ av_extract_divs_or_splits() returns melted data.table from calls to av_get_pf("D
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.204</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,7 +24,7 @@ av_extract_divs_or_splits() returns melted data.table from calls to av_get_pf("D
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/shinyapp-alphavantagepf.html">shinyapp-alphavantagepf</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/shinyapp-alphavantagepf.html">shinyapp-basicusage-alphavantagepf</a></li>
     <li><a class="dropdown-item" href="../articles/usage-alphvantagepf.html">usage-alphavantagepf</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -101,7 +101,8 @@ av_extract_divs_or_splits() returns melted data.table from calls to av_get_pf("D
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code><a href="av_get_pf.html">av_get_pf()</a></code> frequently returns a nested data.table, or a structure with nested data.frames.  These are utilities functions to extract, filter and summarize returned values.
-if <code><a href="av_get_pf.html">av_get_pf()</a></code> returns a valid response, but empty extracted <code>data.tables</code>, am empty <code>data.table()</code> will be returned</p>
+if <code><a href="av_get_pf.html">av_get_pf()</a></code> returns a valid response, but empty extracted <code>data.tables</code>, am empty <code>data.table()</code> will be returned
+NOTE: (Change 20260724:  Timestamp is returned in POSIXct form in local <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">Sys.timezone()</a></code> time)</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

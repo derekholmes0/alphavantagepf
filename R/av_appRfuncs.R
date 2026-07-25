@@ -63,10 +63,11 @@ av_add_px <- function(indta,assettypes=NULL,delay=0) {
 #' NOTE THAT assettypes cannot be NULL if substitute_earn and substitute_earnest are NULL.
 #' @param delay (default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
 #' unused if `assettypes` is given.
-#' @param maxage (default 0) Maxium age of data before downloaded from Alphavantage
 #' @returns Data.table with downloaded or added earnings
 #' @seealso [av_runShiny()]
-#' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`
+#' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`.
+#' If just assetypes is given, the function downloads earnings as needed (respecting maximum age parameters defined
+#' in the app's `AVOPTS` tab.)
 #' @examples
 #' \dontrun{
 #' # To add earnings for a set of tickers
@@ -84,7 +85,6 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,assettypes=
 }
 
 # =======================================================================================================
-#' App database functions: assetgroups
 #'
 #' @name av_add_assetgroups
 #' @description Adds asset lists to [av_runShiny()] internal data.
@@ -111,7 +111,6 @@ av_add_assetgroups <- function(indta) {
 
 
 # =======================================================================================================
-#' App database functions: New analytics
 #'
 #' @name av_add_analytic
 #' @description Adds a user-defined function to the av Shiny app
@@ -170,14 +169,12 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
 }
 
 # =======================================================================================================
-#' App database functions
 #'
 #' @name av_load_shinydata
 #' @description Loads internal data (prices, earnings, etc.
 #' @param item Any data name as seen by running [dump_state()].  **If blank, loads database**
 #' @returns Data item specified by `item` or a nothing (but a message) if left blank
 #' @seealso [av_runShiny()]
-
 #' @export
 av_shinydata <- function(item=NULL) {
   if(is.null(item)) {
@@ -193,7 +190,7 @@ av_shinydata <- function(item=NULL) {
 }
 
 # =======================================================================================================
-# ----------------------- Exported Shiny Functions
+#'
 #' @name quick_message
 #' @description Displays a message underneath an input box
 #' @param wh inputID for shiny element to put a message underneath of.  See Documentation and/or Code
@@ -201,21 +198,27 @@ av_shinydata <- function(item=NULL) {
 #' @param eval (default TRUE) OPtional parameter to suppress execution.
 #' @param color Optional text color
 #' @returns logical value of `eval`
+#'
+#' @export
 quick_message <- function(wh,this_message="",eval=TRUE,color="#1f78b4") {
   shinyFeedback::hideFeedback(inputId=wh)
   if(nchar(this_message)>0 & eval==TRUE) {
     this_message <- paste0("<small>",this_message,"</small>")
     shinyFeedback::showFeedback(inputId=wh, text=this_message,color=color)
+    the_av$last_feedback <- this_message
   }
   return(eval)
 }
 
+# =======================================================================================================
+#'
 #' @name avsh_clipboard
 #' @description Copies a data.frame to the clipboard, with a status message if relevant
 #' @param x A `data.frame` or equivalent.
 #' @param title String to add to a message printed if relevant
 #' @returns Nothing
 #' @import clipr
+#' @export
 avsh_clipboard <- function(x,title="") {
   if(the_av$autocopy) {
     write_clip(as.data.frame(x))
@@ -224,12 +227,17 @@ avsh_clipboard <- function(x,title="") {
   }
 }
 
+# =======================================================================================================
+#' Helper functions for analytics
+#'
 #' @name avsh_set_tabtitle
 #' @description Sets the title for the Details tab
 #' @param newtext (default"DETAIL") What to name the tab as
 #' @param tabnm (default "detail") inputID of relevant tab
+#' @param makefocus (default: TRUE) Upon setting the tab title, select the tab.
 #' @returns Nothing
 #' @importFrom shinyjs runjs
+#' @export
 avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail",makefocus=TRUE) {
   shpf <- sprintf('$(\'#inTabset li a[data-value="%s"]\').text("%s");',tabnm,newtext)
   if(makefocus==TRUE) av_set_defaults("starttab",tabnm)
