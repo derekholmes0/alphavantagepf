@@ -298,6 +298,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
 #   -- ao call this second!
 # todo:  only download earnings when you think you might need to
 #' @importFrom purrr map
+#' @importFrom lubridate NA_Date_
 manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL, delay=0.05) {
   todo=ts=horizon=eps_estimate_average=assetType=NULL
   src<-""; rtniv<-data.table()
@@ -338,6 +339,9 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
       earn_past <- earn_past[,ts:=Sys.Date()]
       rtninv_past = earn_past[,.(lastearndt=max(reportedDate)),by=.(symbol)]
       the_av$earn <- DTUpsert(the_av$earn,earn_past,key(earn_past))
+    }
+    else {
+      rtninv_past <- earntickers[,.(symbol,lastearndt=lubridate::NA_Date_)]
     }
     if(nrow(earn_fwd)>0) {
       earn_fwd <- earn_fwd[,ts:=Sys.Date()]
