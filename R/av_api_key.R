@@ -21,7 +21,7 @@
 #' av_get_pf("IBM", "TIME_SERIES_INTRADAY")
 #' }
 #'
-#' @rdname av_api_key
+#' @rdname avpf_api_key
 #' @export
 avpf_api_key <- function(api_key,entitlement=NULL) {
     if (!missing(api_key)) {

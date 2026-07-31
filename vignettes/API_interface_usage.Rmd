@@ -13,24 +13,17 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-**Alphavantagepf** interfaces the Alphavantage API to R in a way most compatible with normalized data stores.  It returns data in `data.table` format, which is really
-the best choice for financial time series analysis.
-
-
-```{r setup}
-library(alphavantagepf)
-```
-
-There is one main function to call to access all of the API functionality provided by Alphavantage.
-
-# Start with API keys
+**Alphavantagepf** interfaces the Alphavantage API to R in a way most compatible with normalized data stores.  It returns data in `data.table()` format, which is really
+the best choice for financial time series analysis.  This package uses just one call to access multiple functions available from the service.  As with all APIs, we start
+by providing a user key:
 
 ```{r}
+require(alphavatangepf)
 avpf_api_key("YOUR_API_KEY","delayed")
 print(avpf_api_key())
 ```
 
-## Finding Functions and their defaults
+# Finding Functions and their defaults
 
 To find parameters and defaults provided by the `alphavantagepf` package, use `av_funhelp()`
 
@@ -41,7 +34,7 @@ av_funhelp("SERIES_INTRADAY")
 Required parameters are listed with "R" and optional parameters (and any default provided by this package) are listed with "O"
 
 
-## Getting Data from Alpha Vantage
+# Getting Data from Alpha Vantage
 
 Once the API key has been set, use the function `av_get_pf()` which requires at minimum two arguments, a `symbol` (put first to facilitate usage in pipes) and an Alphavantage "function" `av_fun`.
 
@@ -61,7 +54,7 @@ The output will always include the `symbol` requested or the name of the `av_fun
 4. `ltype` is the inferred data-type, helpful for selecting the correct columns.
 
 
-### Using defaults and overrides
+## Using defaults and overrides
 
 The `alphavantagepf` package includes a few default overrides to the defaults chosen in [Alphavantage API documentation](https://www.alphavantage.co/documentation/).  Those defaults can be seen using the 
 [av_funhelp()](https://derekholmes0.github.io/alphavantagepf/reference/av_funhelp.html) function, or can be seen by calling [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html) with `verbose=TRUE`.  Any overrides to those parameters can be specified as additional arguments to [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html).  For example, to get SMA using multiple
@@ -83,9 +76,9 @@ datatype                                     csv
 ```
 
 
-## More complex data and helpful data extractors
+# More complex data and helpful data extractors
 
-### Extracting embedded data.frames
+## Extracting embedded data.frames
 
 Some API calls return more complex data, i.e. data with strings, numbers, and nested data.frames collected together.  The [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html)
 returns data in as natural a format as possible.  For example, time series are not melted, but single name quotes are. 
@@ -127,7 +120,7 @@ av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
  5:  LVROW  0.0122       -0.0079         -39.3035%     10967 TOP_GAINERS_LOSERS
 ```
 
-### Foreign exchange
+## Foreign exchange
 
 The returned data from the `CURRENCY_EXCHANGE_RATE` is a bit complex, and can be simplified with 
 
@@ -141,7 +134,7 @@ Key: <symbol>
 1: USD/BRL  5.37  5.37 2026-01-06 15:47:46  5.37
 ```
 
-### Options
+## Options
 
 The `HISTORICAL_OPTIONS` function returns a large set of options for any given ticker, many of which are long dated or have no opent interest.
 The `av_grep_opts()` helper can be used to narrow those down using a comma-separated string specifying 
@@ -162,7 +155,7 @@ av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
 3:    IBM IBM260116P00282500 2026-01-16    282    put  1.32  1.29  1.17      213  1.41      158     14      ...
 ```
 
-### Analytics requests
+## Analytics requests
 
 Analytics requests using the Alphavantage function `ANALYTICS_FIXED_WINDOW` are complicated enough that they are returned in *raw form*, which includes meta-data.  These can be untangled using the extracting function `av_extract_analytics`.
 
@@ -182,7 +175,7 @@ Analytics requests using the Alphavantage function `ANALYTICS_FIXED_WINDOW` are 
 9: RETURNS_CALCULATIONS STDDEV(ANNUALIZED=TRUE)        IBM   0.171846694713282
 ```
 
-## Helpers: `av_extract_df`
+# Helpers: `av_extract_df`
 
 Extracting the nested data.frames can be a tedious task, so the helper function `av_extract_df()` can be used to filter for the correct variable and extract the data.frame
 
@@ -199,18 +192,19 @@ Key: <variable>
 5: TOP_GAINERS_LOSERS           top_losers      list <data.frame[20x5]>                                     NULL        NA
 ```
 
-## Important Notes: av_get_pf()
+# Important Notes: av_get_pf()
 
 1. Three parameters `apikey`, `datatype` and `outputsize` are filled into the API call from the package.  `outputsize` defaults to the full dataset, 
-and can be overridden as a named parameter to the `av_get_pf()` call.
-2. An additional parameter `entitlement` is added to the url if specified in the `avpf_api_key()` call and relevant.
+and can be overridden as a named parameter to the `av_get_pf()` call. An additional parameter `entitlement` is added to the url if specified in the `avpf_api_key()` call and relevant.
+2. `av_get_pf()` has an optional `delay` parameter, which may be needed if several short API calls are called sequentially  (e.g. within another function).
 3. `symbol` is always returned in the output dataset, and defaults to the name of the `av_fun` call if no symbol is relevant.
-4. There is no need to specify the `datatype` parameter as an argument to [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html). The function will return a data.table
+4. There is no need to specify the `datatype` parameter as an argument to [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html). The function will return a data.table.
 5. Some output above has been truncated to adhere to licensing rules.
+6. 
 
-## Examples
+# Examples
 
-### Time series data
+## Time series data
 
 ```{r, eval=F}
 av_get_pf("IBM","TIME_SERIES_INTRADAY") |> head()
@@ -221,7 +215,7 @@ av_get_pf("IBM","TIME_SERIES_INTRADAY") |> head()
 2:    IBM 1999-11-02  96.8  96.8  93.7  94.8 11105400
 ```
 
-### Mixed use data
+## Mixed use data
 
 ```{r, eval=F}
 av_get_pf("","TOP_GAINERS_LOSERS")
