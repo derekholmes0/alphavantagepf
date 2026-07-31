@@ -8,7 +8,7 @@ New feature todo
 ## Major Changes
 
 The Shiny interface has been completely redesigned (and recoded) to have an extendable command line interface
-for all analytics.  New functions have been added for adding and managing data outside the app. Users can now add their
+for all analytics.  New functions have been added for adding and managing data  outside the app. Users can also add their
 own analytics, posssibly with the help of with several "helper" functions to interface with the GUI.  See vignettes
 for details.
 
@@ -24,6 +24,12 @@ Bug fixes
 * Fixed app crash if no earnings transcript available.
 * Fixed graphing so that stepPlots are chosen appropriately, not always.
 * splitfirst ignored for single name plots.
+
+## Breaking changes
+
+* `av_api_key()` has been renamed to `avpf_api_key()` which has an additional parameter `entitlement`.  `av_api_key()`
+is also in the `alphavantager` package.  Usage of that function is still compatible with this package, but an additional
+step to set entitlement status is necessary.
 
 # alphavantagepf 0.8.1 (RELEASE)
 

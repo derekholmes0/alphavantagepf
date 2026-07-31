@@ -1,5 +1,5 @@
 Package: alphavantagepf
-Title: Comprehensive R Wrapper and Shiny Interface for 'Alphavantage Financial Data' API
+Title: 'Alphavantage Financial Data' API R Wrapper and Shiny Interface
 Version: 0.8.3
 Authors@R: c(
     person("Derek", "Holmes", email = "derek@derekholmes.com", role = c("aut", "cre", "cph"))

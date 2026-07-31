@@ -98,34 +98,32 @@ form_symset <- function(tickers, force=FALSE, delay=0) {
   symnew_inferable <-  rbindlist(list(symnew_ix,symnew_fx,symnew_cryp),fill=TRUE,use.names=TRUE)
   newtickers=setdiff(newtickers,symnew_inferable$symbol)
   # -----------------------------------------Downloadable assets: Need a search
-  # New equities/ETS
-  symnew_eq_inlistings <- the_av$listings[data.table(symbol=sort(newtickers)),on=.(symbol)][,
+  # New equities/ETFs (US)
+  symnew_eq_inlistings <- the_av$listings[data.table(symbol=sort(newtickers)),on=.(symbol),nomatch=NULL][,
                                   .(symbol,type=fifelse(assetType=="Stock","Equity",assetType),name,currency="USD",matchScore=1,list_ts)]
   newtickers <-setdiff(newtickers,symnew_eq_inlistings$symbol)
-  symnew_eq <- rbindlist(lapply(newtickers, \(x) {
-    message_if_red(the_av$verbose, "NOTE: Cannot find symbol anywhere.  Trying av('SYMBOL_SEARCH')")
-    z1 <- av_get_pf("","SYMBOL_SEARCH",keywords=x,delay=delay)
-    if(nrow(z1)<=0) {
-      #message_if_red(TRUE,"Alphavantage cannot find  ",x,": May be a user data series")
+  symnew_eq_nonus <- rbindlist(lapply(grepv("\\.([A-Z]{3})$",newtickers), \(x) {
+    message_if_green(the_av$verbose, "Checking for international equities: trying av('SYMBOL_SEARCH')")
+    if(nrow(z1 <- av_get_pf("","SYMBOL_SEARCH",keywords=x,delay=delay))<=0) {
+      message_if_red(TRUE,"Alphavantage cannot find  ",x,", so assuming to be a user series.  Please reconsider renaming")
       return(data.table(symbol=x,matchScore=0))
     }
     else {
-      return(z1[matchScore>=0.99,.(symbol=x,type,currency,name,matchScore,list_ts=Sys.Date())])
+      return(z1[matchScore>=0.95,.(symbol=x,type,currency,name,matchScore,list_ts=Sys.Date())])
     }
   }))
-  if(nrow(symnew_eq)>0)  {
-      newtickers <- setdiff(newtickers,symnew_eq[matchScore>=0.5,]$symbol)
-      symnew_eq <- symnew_eq[matchScore>=0.5,]
+  if(nrow(symnew_eq_nonus)>0)  {
+      newtickers <- setdiff(newtickers,symnew_eq_nonus$symbol)
   }
   # -----------------------------------------Un Downloadable assets/ User Data
   symnew_user <- data.table()
   if( length(newtickers)>0 ) {
     symnew_user <- data.table(symbol=newtickers,type="user",currency="USD",matchScore=1,list_ts=Sys.Date())
     the_av$tickerlist <- DTUpsert(the_av$tickerlist,symnew_user[,.(symbol,name=symbol,type,list_ts)],c("symbol"))
-    #todo: Figure out how to get a proper name in user data.
+    cAssign("symnew_user")
   }
-  # Collect all together
-  symset <- rbindlist(list(symset,symnew_inferable,symnew_eq,symnew_eq_inlistings,symnew_user),fill=TRUE,use.names=TRUE)
+  # Collect all together, inferable = ix,crpt,fx
+  symset <- rbindlist(list(symset,symnew_inferable,symnew_eq_inlistings,symnew_eq_nonus,symnew_user),fill=TRUE,use.names=TRUE)
   return(symset[])
 }
 
@@ -141,8 +139,7 @@ manage_epx <- function(inticker, dtstr,
   # rtnpx returns list (messge,dta_downloaded)
   # rtnpx <- manage_px(inticker,dtstr); rtn_earn<-manage_earn(rtnpx)
   rtnpx   <- manage_px(inticker,dtstr,substitute_data=substitute_data,substitute_symset=substitute_symset,addlive=addlive,force=force,delay=delay)
-  if(nrow(rtnpx)<=0) {
-    message_if_red(the_av$verbose,"Error: ",inticker, " is invalid ticker")
+  if(is.character(rtnpx)) { # Already kicked a message
     return()
   }
   rtnearn <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
@@ -198,7 +195,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
   if(nrow(the_av$pxinv)>0 & is.null(substitute_data) & is.null(substitute_symset)) {
     #TO do: IUmplement max age and integrate market hours
     edates <- the_av$pxinv[data.table(symbol=s(inticker)),on=.(symbol),nomatch=NULL]
-    if(nrow(edates)>0) {
+    if(nrow(edates[!is.na(end_dt),])>0) {  # Some tickers may be added externally without price data.
       earlystarts <- edates[beg_dt>dtstoget[1],]
       if(nrow(earlystarts)>0) {
         force <- TRUE
@@ -233,6 +230,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
         symset <- copy(substitute_symset)
       }
       else {
+        cAssign("tickers;force;delay")
         symset <- form_symset(tickers,force=force,delay=delay)
       }
       symset = symset[data.table(symbol=unique(dta$symbol)), on=.(symbol)] # If subst is a superset
@@ -246,7 +244,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
       tickertype <- symset[1,]$type
       if(tickertype=="user") {
         message_if(the_av$verbose,"avs_update(",inticker,") is User data w/ last day ",the_av$pxinv[symbol==inticker,]$end_dt,
-                        "and must be updated outside of ShinyApp")
+                        " and must be updated outside of ShinyApp")
       }
       else {
         avfun <- epx_get_avfn(tickertype,live=FALSE)

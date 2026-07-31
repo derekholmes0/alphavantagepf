@@ -237,7 +237,7 @@ av_make_server <- function() {
       rv <- isolate(reactiveValuesToList(input))
       th1<- dump_state()
       oldcache <- th1[nm=="cachedir",]$toget
-      av_api_key(rv$avapikey,rv$avapientitlement)
+      avpf_api_key(rv$avapikey,rv$avapientitlement)
       av_set_default_set("setopts",rv)
       if( nchar(newcache<-av_validate_directory(rv$cachedir,"cachedir"))>0 ) {
         if(!(newcache==oldcache)) {

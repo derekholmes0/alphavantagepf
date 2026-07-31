@@ -1,8 +1,8 @@
 ---
-title: "shinyapp-basicusage-alphavantagepf"
+title: "ShinyApp_Data_Management"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{shinyapp-basicusage-alphavantagepf}
+  %\VignetteIndexEntry{ShinyApp_Data_Management}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

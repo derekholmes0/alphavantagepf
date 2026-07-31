@@ -6,16 +6,18 @@
 #' @import data.table
 #' @importFrom stats setNames
 #'
-#' @name av_add_px
+#' @name av_runShiny_userthings
 #' @description Adds price data to [av_runShiny()] internal data.
-#' @param indta A data.frame with the following minimal columns: `c(symbol,timestamp,close,adjusted_close)`.
-#' Other variables added could be `c(open,high,low,volume,dividend_amount,split_coefficient)`
+#' @param indta A data.frame with the following minimal columns: `c(symbol,timestamp,close)`.
+#' Other variables added could be `c(adjusted_close,open,high,low,volume,dividend_amount,split_coefficient)`
+#' If `adjusted_close` is not in the dataset, it will be set to `close`
 #' @param assettypes (default NULL)  An optional data.frame with minimal columns `c(symbol,type,currency,name)` with
 #' descriptive data for the assets given in `indta`.  If not specified, a call to `av_get_pf(.,"SYMBOL_SEARCH")`
 #' is necessary to determine the asset type (one of `c("Equity","ETF","FX","Index","Crypto")`) for subsequent
 #' calls to [av_get_pf()]
 #' @param delay (default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
 #' unused if `assettypes` is given.
+#'
 #' @returns Nothing
 #' @seealso [av_runShiny()]
 #' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`
@@ -40,9 +42,13 @@ av_add_px <- function(indta,assettypes=NULL,delay=0) {
   }
   indta <- data.table(indta)
   setnames(indta,firstdate,"timestamp")
-  check_min_colset(indta,s("symbol;timestamp;close;adjusted_close"))
-  #manage_epx(unique(indta$symbol),"-30y::",substitute_data=indta,substitute_symset=assettypes,force=TRUE,delay=delay)
+  check_min_colset(indta,s("symbol;timestamp;close"))
+  if(!"adjusted_close" %in% names(indta)) {
+    indta <- indta[,adjusted_close:=close][]
+  }
+  cAssign("indta;assettypes")
   manage_px(unique(indta$symbol),"-30y::",substitute_data=indta,substitute_symset=assettypes,delay=delay)
+  message("here 10")
   # need (symbol=TICKER,type="user",currency="USD",name=TICKER)
   newinv <- get_inv(unique(indta$symbol),override_symset=assettypes)
   the_av$pxinv <- DTUpsert(the_av$pxinv, newinv, c("symbol"),fill=TRUE)
@@ -52,7 +58,7 @@ av_add_px <- function(indta,assettypes=NULL,delay=0) {
 # =======================================================================================================
 #' App database functions: Earnings
 #'
-#' @name av_add_earn
+#' @rdname av_runShiny_userthings
 #' @description Adds earnings data to [av_runShiny()] internal data, either by download or with user data
 #' @param substitute_earn A (default NULL)  data.frame with past earnings
 #' @param substitute_earnest  (default NULL)  A data.frame with  earnings estimates
@@ -63,6 +69,7 @@ av_add_px <- function(indta,assettypes=NULL,delay=0) {
 #' NOTE THAT assettypes cannot be NULL if substitute_earn and substitute_earnest are NULL.
 #' @param delay (default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
 #' unused if `assettypes` is given.
+#'
 #' @returns Data.table with downloaded or added earnings
 #' @seealso [av_runShiny()]
 #' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`.
@@ -73,6 +80,8 @@ av_add_px <- function(indta,assettypes=NULL,delay=0) {
 #' # To add earnings for a set of tickers
 #' av_add_earn(assettypes=data.table(symbol=c("AAPL","QQQ"))
 #' }
+#'
+#'
 #' @export
 av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,assettypes=NULL,delay=0) {
   # Age taken care of by manage_earn
@@ -86,10 +95,11 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,assettypes=
 
 # =======================================================================================================
 #'
-#' @name av_add_assetgroups
+#' @rdname av_runShiny_userthings
 #' @description Adds asset lists to [av_runShiny()] internal data.
 #' @param indta A data.frame with two columns `c("listnm","ticker")` with one or more lines for each `"listnm"`
 #' @returns Nothing
+#'
 #' @seealso [av_runShiny()]
 #' @details Lists are specified in normalized form.  Duplicate list names with those currently in use are replaced.
 #' @examples
@@ -99,6 +109,7 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,assettypes=
 #' # To remove an asset list, just use an empty string for the ticker
 #' av_add_assetgroups(data.table(listnm=c("new"),ticker=c("")))
 #' }
+#'
 #' @export
 av_add_assetgroups <- function(indta) {
   indta <- as.data.table(indta)
@@ -112,13 +123,14 @@ av_add_assetgroups <- function(indta) {
 
 # =======================================================================================================
 #'
-#' @name av_add_analytic
+#' @rdname av_runShiny_userthings
 #' @description Adds a user-defined function to the av Shiny app
 #' @param runcode Code string user must run to call the function.
 #' @param func_name Name of function run when analytic is called.  If an empty string is supplied, the runcode will be de-registered.
 #' @param helpstr (default: "user function"): A string comment to ad to the av.h (help) command
 #' @param focus (default: "MAIN")  String with tab name to set focus to when command is run
 #' @param category (default "USER") A string with a category used to sort function when help is called.
+#'
 #' @returns String message with success or failure of function addition.
 #' @seealso [av_runShiny()]
 #' @details When the [av_runShiny()] app is run, users can call functions to provide analytics based on asset strings in the command line.
@@ -170,7 +182,7 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
 
 # =======================================================================================================
 #'
-#' @name av_load_shinydata
+#' @rdname av_runShiny_userthings
 #' @description Loads internal data (prices, earnings, etc.
 #' @param item Any data name as seen by running [dump_state()].  **If blank, loads database**
 #' @returns Data item specified by `item` or a nothing (but a message) if left blank
@@ -191,7 +203,7 @@ av_shinydata <- function(item=NULL) {
 
 # =======================================================================================================
 #'
-#' @name quick_message
+#' @name av_runShiny_interface
 #' @description Displays a message underneath an input box
 #' @param wh inputID for shiny element to put a message underneath of.  See Documentation and/or Code
 #' @param this_message (default "")  A text message to  be used. If empty string, the current message is cleared.
@@ -212,7 +224,7 @@ quick_message <- function(wh,this_message="",eval=TRUE,color="#1f78b4") {
 
 # =======================================================================================================
 #'
-#' @name avsh_clipboard
+#' @rdname av_runShiny_interface
 #' @description Copies a data.frame to the clipboard, with a status message if relevant
 #' @param x A `data.frame` or equivalent.
 #' @param title String to add to a message printed if relevant
@@ -230,7 +242,7 @@ avsh_clipboard <- function(x,title="") {
 # =======================================================================================================
 #' Helper functions for analytics
 #'
-#' @name avsh_set_tabtitle
+#' @rdname av_runShiny_interface
 #' @description Sets the title for the Details tab
 #' @param newtext (default"DETAIL") What to name the tab as
 #' @param tabnm (default "detail") inputID of relevant tab

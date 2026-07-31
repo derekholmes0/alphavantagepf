@@ -1,4 +1,10 @@
 tablenm,colname,aesnm,val_num,val_str
+avh,category,width,100,
+avh,runcode,width,100,
+avh,helpstr,width,240,
+avh,func_src,width,70,
+avh,func_reqinput,width,160,
+avh,helpexample,width,160,
 live,age,width,90,
 live,default,width,60,
 pxinv,symbol,width,180,

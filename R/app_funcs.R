@@ -47,8 +47,8 @@ av_help <- function(todo,rv) {
   thistm <- system.time({
     rtnlist <- list(
       tortn |> gt(groupname_col="category") |> gt.basetheme(interactive="filter") |> cols_move_to_start(columns=c(runcode,helpstr)) |>
-                    cols_merge(columns=c(func_reqinput,func_opts), pattern = "{1}, {2}") |> cols_hide(columns=c(runcode2))
-
+                    cols_merge(columns=c(func_reqinput,func_opts), pattern = "{1}, {2}") |> cols_hide(columns=c(runcode2)) |>
+                  add_colwidths("avh")
       )
   })["elapsed"]
   message(" av_help rendered in ",thistm)
@@ -95,7 +95,7 @@ av_gp <- function(todo,rv) {
   wherefrom <- 1 # Still keep open possibility of line 2 direct
   wheretoput <- fifelse(stringr::str_detect(todolist[[1]],"2$"), "TS2" , "TS1")
   rb <- find_rebasecode(todolist,rv$dtstr_hist)
-  toplot <- data_from_list(s(rv$assetlist),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID="istr1")
+  toplot <- data_from_list(s(rv$assetline),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID="istr1")
   out=list()
   if( nrow(toplot[[1]])>0) {
     out[[wheretoput]] <- one_px_ts(toplot,rv,events=rv$ts_events,dt_window=rb$rebase_window,title=rb$grtitle)
@@ -258,8 +258,6 @@ av_livepx <- function(todo,rv) {
 av_des <- function(todo,rv) {
   imp=NULL
   out<-list()
-  #toplot<-data_from_list(eqlist1,dtstr_hist,ts_rebase,dtstr_window,msg_inputID="istr1") # Just to get the asset type.
-  #tickerset = the_av$pxinv[data.table(symbol=eqlist1),on=.(symbol)][,.(symbol,type,currency)]
   if( length(eqset <- symbol_grep_by_type(s(rv$assetline),"Equity"))>0 ) {
     eqdt <- rbindlist(lapply(eqset, \(x) av_get_pf(x,"OVERVIEW")))
     eqdt <- eqdt |> save_av_data("OVERVIEW")
@@ -306,15 +304,14 @@ av_des <- function(todo,rv) {
 av_active <- function(todo,rv) {
   todolist <- s(toupper(todo),"[ ]+",pad=1)
   rb <- find_rebasecode(gsub("RV","GP",todolist[[1]]),rv$dtstr_hist)
-  eqlist1 <- s(rv$istr1)
-  eqlist2 <- s(rv$istr2)
+  combassetlist <- c(s(rv$istr2)[1],s(rv$assetline))
   out<- list()
-  is_in_list <- eqlist2[1] %in% the_av$pxinv$symbol
+  is_in_list <- combassetlist[1] %in% the_av$pxinv$symbol
   shinyFeedback::feedbackDanger("istr2", !is_in_list, "2. Need a previously downloaded hedge/index")
   req(is_in_list, cancelOutput = TRUE)
   toplot<-data_from_list(c(s(rv$istr),s(rv$istr2)),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID="istr1")
   if( nrow(toplot[[1]])>0) {
-    t_toget <- data.table(symbol=c(eqlist2[1],eqlist1),catg=c("idx",rep("act",length(eqlist1))))
+    t_toget <- data.table(symbol=combassetlist,catg=c("idx",rep("act",length(combassetlist)-1)))
     t_toget <- t_toget[,.SD[1],by=.(symbol)] # Weed out duplicates
     toplot <- the_av$pxd[t_toget,on=.(symbol)]  |> narrowbydtstr(rv$dtstr_hist)
     toplot <- toplot[,.(timestamp,adjusted_close,cumrtn=log(adjusted_close)-log(first(adjusted_close))),by=.(catg,symbol)]
@@ -324,7 +321,7 @@ av_active <- function(todo,rv) {
     toplot_tridx <- toplot_idx[,.(timestamp,variable=symbol,value=100*exp(cumrtn-cummktrtn))]
     avsh_clipboard(toplot_tridx,todo)
     rv$gropts <- setdiff(rv$gropts,"splitts")  # Takee out splitts
-    out[["TS1"]] <-  one_px_ts(toplot_tridx,rv,title=paste0("Excess Returns over ",eqlist2[1]),extra_anno="hline,100",
+    out[["TS1"]] <-  one_px_ts(toplot_tridx,rv,title=paste0("Excess Returns over ",combassetlist[1]),extra_anno="hline,100",
                                events=rv$ts_events,dt_window=rb$rebase_window)
     toplot_idx <- toplot_idx[,let(rtn=100*rtn,mktrtn=100*mktrtn)][!is.na(mktrtn)]
     volp_n <- as.integer(s(rv$ts_volparams)[[2]])
@@ -341,10 +338,10 @@ av_active <- function(todo,rv) {
     }
     rtnscatall <- fg_scatplot(toplot_idx,"rtn ~ mktrtn + color:symbol +  point:label", "lm",datecuts=c(7),
                               tformula=formula(ffor),n_hex_switch=260*4,
-                              title=paste0("Asset Daily returns vs ",eqlist2[1], "Daily rtn"),
+                              title=paste0("Asset Daily returns vs ",combassetlist[1], "Daily rtn"),
                               subtitle="Assumes zero intercept",
-                              axislabels=paste0("Asset TR;",eqlist2[1]," TR"),returnregresults=TRUE)
-    out[["GT1"]]<- rtnscatall[[2]] |> gt.avtheme(themeset="activeregression",eqlist2[1], rv$sigpct)
+                              axislabels=paste0("Asset TR;",combassetlist[1]," TR"),returnregresults=TRUE)
+    out[["GT1"]]<- rtnscatall[[2]] |> gt.avtheme(themeset="activeregression",combassetlist[1], rv$sigpct)
     toplot_idx <- toplot_idx[,let(rtnidx=100*exp(cumrtn), mktrtnidx=100*exp(cummktrtn))]
     o2 <- fg_scatplot(toplot_idx,"rtnidx ~ mktrtnidx + color:symbol + point:label", "lm",datecuts=c(7),
                       title=paste0("TR Level vs Level ",rv$dtstr_hist),axislabels="Asset TR Index;Index TR Index")

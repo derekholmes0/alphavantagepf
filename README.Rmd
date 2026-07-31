@@ -18,13 +18,13 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-A [data.table](https://github.com/Rdatatable/data.table) centric R and Shiny interface to the Alpha Vantage API, geared towards personal finance applications.  Data is typically returned in "melted" or normalized forms
-and several helper functions are included to extract data from more complex API calls.  
+A comprehensive R and Shiny interface for using, visualizing, and analyzing financial data based on the [Alpha Vantage API](https://www.alphavantage.co/).  A functional interface and
+several associated helper functions extracts data directly from API calls, and can be used as a stand-alone source to build a finance data stores.  Those calls are integrated into
+a Shiny (and functional) interface which seamlessly downloads and manages data across multiple asset classes, including Equities, FX, indices, options or any other user-specified data.
+The Shiny app is modeled after modern professional tools with a simple one-line interface to display, visualize and analyze downloaded data. Both user data and user analytics can be added
+easily.
 
-A Shiny interface is also provided to download, visualize and manage data for sets of assets, including ETFs and FX.  While this is a rusty abacus relative to Bloomberg,
-it allows users to plot, summarize and compare sets of assets easily.
-
-## Installation
+## Installation and First Steps
 
 You can install the development version of alphavantagepf from Github, or the production version from CRAN using either of the following.
 I'm continually improving the shiny app, so if you are a frequent user, you may want to install the development version.
@@ -39,35 +39,26 @@ Load the package.
 ```{r}
 library(alphavantagepf)
 ```
-## Functional API interface
 
-Set your API key obtained from [Alpha Vantage](https://www.alphavantage.co/). If you have paid access, include an additional argument with your entitlement status, which is one of
-two strings "delayed" or "realtime". "delayed" may be needed for some historical quotes.
+Set your API key obtained from [Alpha Vantage](https://www.alphavantage.co/). If you have paid access, include an additional argument with your entitlement status, which is one of two strings "delayed" or "realtime". "delayed" may be needed for some historical quotes.
 
 ```{r}
-av_api_key("YOUR_API_KEY")
-print(av_api_key())
-
-av_api_key("YOUR_API_KEY","delayed")
-print(av_api_key())
+avpf_api_key("YOUR_API_KEY","delayed")
+print(avpf_api_key())
 ```
 
-### Finding Functions and their defaults
+If you want to use the Shiny interface, you can launch it using the command `av_runShiny()`, which will fill in the API keys if they have been set, or direct you to set them if not.
 
-To find parameters and defaults provided by the `alphavantagepf` package, use `av_funhelp()` and refer to the Alphavantage API calling conventions in [Alphavantage API documentation](https://www.alphavantage.co/documentation/)
+## Functional Interface Example
 
-```{r}
-av_funhelp("SERIES_INTRADAY")
-```
+Once the API key has been set, use the function `av_get_pf()` which requires at minimum two arguments, a `symbol` (put first to facilitate usage in pipes) and an Alphavantage "function" `av_fun`.  
+The `symbol` parameter is required, but can be a simple empty string for functions that don't require a symbol, e.g. `TOP_GAINERS_LOSERS`, or a list of symbols for bulk data, e.g. `REALTIME_BULK_QUOTES`. 
+Data is turned as a `data.table()`, with a `symbol` column if relevant.  (Data can be cast into other forms, e.g. `tibble`s or `xts` from there.)
 
-Required parameters are listed with "R" and optional parameters (and any default provided by this package) are listed with "O"
-
-### Getting Data from Alpha Vantage
-
-Once the API key has been set, use the function `av_get_pf()` which requires at minimum two arguments, a `symbol` (put first to facilitate usage in pipes) and an Alphavantage "function" `av_fun`. 
-Note that data is returned in a `data.table`, which can be cast as tibbles as necessary.  
+Parameters for each call follow exactly the conventions as on the API web`av_funhelp()`.
 
 ```{r, eval=F}
+av_funhelp("TIME_SERIES_INTRADAY")
 av_get_pf("IBM","TIME_SERIES_INTRADAY") |> head()
 
    symbol           timestamp  open  high   low close volume
@@ -76,72 +67,23 @@ av_get_pf("IBM","TIME_SERIES_INTRADAY") |> head()
 2:    IBM 2026-01-02 11:15:00   293   293   292   292 117760
 ```
 
-The `symbol` parameter is required, but can be a simple empty string for functions that don't require a symbol, e.g. `TOP_GAINERS_LOSERS`, or a list of symbols for bulk data, e.g. `REALTIME_BULK_QUOTES`.
-Symbols are attached if relevant, as in
+Additional parameters can be passed both to the API itself (e.g. parameters for technical indicators, or download windows)
+and to the `av_get_pf()` function (e.g. verbosity, delays in calls, etc.)  See vignette for details.
 
-```{r, eval=F}
-av_get_pf(c("ORCL","Q","IBM","EWZ"),"REALTIME_BULK_QUOTES")
-   symbol     timestamp  open  high   low close   volume previous_close change change_percent extended_hours_quote
-   <char>      <POSc> <num> <num> <num> <num>    <int>          <num>  <num>          <num>               <lgcl>
-1:      Q 2026-01-07 15:43:06  ...
-2:    EWZ 2026-01-07 15:43:08  ...
-3:    IBM 2026-01-07 15:43:08  ...
-4:   ORCL 2026-01-07 15:43:08  ...
-```
+### Extracting data from API calls.
 
-### Using defaults and overrides
+Calls to the API frequently return complex data structures, such as embedded data.frames (for earnings,
+lists, etc.).  Data may be in a format that may not be as useful (e.g. FX) or quite large (e.g. Options).
+Several helper functions are available to get to the actual data desired.   A partial list is
 
-The `alphavantagepf` package includes a few default overrides to the defaults chosen in [Alphavantage API documentation](https://www.alphavantage.co/documentation/).  Those defaults can be seen using the 
-[av_funhelp()](https://derekholmes0.github.io/alphavantagepf/reference/av_funhelp.html) function, or can be seen by calling [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html) with `verbose=TRUE`.  Any overrides to those parameters can be specified as additional arguments to [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html).  For example, to get SMA using multiple
-horizon lengths can be seen below:
+|Function|Description|
+|:------:|:------------------|
+|[av_extract_df()](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.html)| Extract an embedded `data.table()`|
+|[av_extract_fx()](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.html)| Extract FX quotes|
+|[av_extract_av_extract_divs_or_splits()](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.html)| Extract Dividends or Splits|
+|[av_grep_opts()](https://derekholmes0.github.io/alphavantagepf/reference/av_grep_opts.html)|Filter an option list|
 
-```{r, eval=F}
-> av_get_pf("IBM","SMA",verbose=T,time_period=30)
-https://www.alphavantage.co/query?function   SMA                                          
-symbol                                       IBM                                          
-interval                                     daily                                        
-time_period                                  30    # << Normally 60
-series_type                                  close                                        
-datatype                                     csv                                          
-> response: 200 type: application/x-download... url copied to clipboard
-      symbol       time   SMA
-      <char>     <IDat> <num>
-   1:    IBM 2026-01-06 304.1
-   2:    IBM 2026-01-05 303.7
-```
-
-## More complex data and helpful data extractors
-
-### Extracting embedded data.frames
-
-Some API calls return more complex data, i.e. data with strings, numbers, and nested data.frames collected together.  The [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html)
-returns data in as natural a format as possible.  For example, time series are not melted, but single name quotes are. 
-The parameter to control this is `melted` with a default value of "melted".  `melted` can be set to TRUE (for example) to force or suppress melting into longer data.tables.
-As an example where the melted form makes more sense is the `TOP_GAINERS_LOSERS` function, which returns separate data.frames for each category.  The natural output is
-
-```{r, eval=F}
-av_get_pf("","TOP_GAINERS_LOSERS")
-
-Key: <variable>
-               symbol             variable     ltype           value_df                                value_str value_num
-               <char>               <char>    <char>             <list>                                   <char>     <num>
-1: TOP_GAINERS_LOSERS         last_updated   numeric             [NULL]           2026-01-05 16:15:59 US/Eastern      2026
-2: TOP_GAINERS_LOSERS             metadata character             [NULL] Top gainers, losers, and most actively t        NA
-3: TOP_GAINERS_LOSERS most_actively_traded      list <data.frame[20x5]>                                     NULL        NA
-4: TOP_GAINERS_LOSERS          top_gainers      list <data.frame[20x5]>                                     NULL        NA
-5: TOP_GAINERS_LOSERS           top_losers      list <data.frame[20x5]>                                     NULL        NA
-```
-
-* Note that symbol for `TOP_GAINERS_LOSERS` isn't used, but still needs to be specified.
-* Note that the data returned is in long form, and always has at least three columns, `symbol` (which cna be changed in 
-[av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html) optional parameters). `variable` which is the name of the 
-data item returned, and (e.g.) `value_str` or `value_df` with appropriate data components.
-The data is separated out by type so further delisting doesn't have to be done after the call.
-
-If you want to just get, e.g. the top losers, the returned data can be piped into the 
-[av_extract_df()](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.html) function
-
-`av_extract_df()` function:
+For example, market movers can be extracted in the following way:
 
 ```{r, eval=F}
 av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
@@ -149,17 +91,10 @@ av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
     <char>   <num>         <num>            <char>     <num>             <char>
  1:    OCG  0.0378       -0.0654         -63.3721% 216078762 TOP_GAINERS_LOSERS
  2:   ZBIO 16.6100      -17.8900         -51.8551%   8034469 TOP_GAINERS_LOSERS
- 3:    SGN  0.4627       -0.4873         -51.2947%   2115079 TOP_GAINERS_LOSERS
- 4:  HYT^#  0.0186       -0.0164         -46.8571%    126059 TOP_GAINERS_LOSERS
- 5:  LVROW  0.0122       -0.0079         -39.3035%     10967 TOP_GAINERS_LOSERS
 ```
-
-### Foreign exchange
-
-The returned data from the `CURRENCY_EXCHANGE_RATE` is a bit complex, and can be simplified with 
+or Currencies quotes using
 
 ```{r, eval=F}
-# REAL-TIME QUOTE
 av_get_pf("USD/BRL","CURRENCY_EXCHANGE_RATE") |> av_extract_fx()
 
 Key: <symbol>
@@ -168,99 +103,144 @@ Key: <symbol>
 1: USD/BRL  5.37  5.37 2026-01-06 15:47:46  5.37
 ```
 
-### Options
+More examples and notes are in the accompanying vignette.
 
-The `HISTORICAL_OPTIONS` function returns a large set of options for any given ticker, many of which are long dated or have no opent interest.
-The `av_grep_opts()` helper can be used to narrow those down using a comma-separated string specifying 
+# A powerful interactive interface 
 
-  1. How far out maturities should be returned, e.g. Front Month (F) or Back month (B) or all (A)
-  2. What expiration schedules should be used, e.g. (Q) for Quarterly or (M) for monthlies.
-  3. "Call", "Put" or "all"
+An interactive Shiny interface is included in the package to manage, analyze and visualize data.  Some key features of the interface are:
 
-So, for example, to get the closest monthly puts with at least 2 days to maturity, use the string "F,M,put".  The default is "F,M,call" and (partial) results are shown below:
+* **The app abstracts out the asset-specific bias of the Alphavantage data.**  You can analyze a stock, a crypto, and an FX pair
+all in one line.  All price data is collected, cached, and maintained in one data set, which can easily be accessed outside of the app.
+* **The app utlizes a single command line to do everything.**  For example, to plot total returns for four asset classes, just type 
+`NDX;IBM;BTC/USD;USD/BRL GPI`.  If the data isn't there, the app gets it from [Alpha Vantage API](https://www.alphavantage.co/) and saves it. 
+If realtime quotes are necessary (and you have the right permissionings), the app gets them automatically.
+See vignette (<span style="background-color: #003366; color: #FFFFFF;">LINK_usage</span>) for further details.
+* **Typing and mousing are minimized.** by using a command lines sets of assets which can be saved and recalled at any time, or added as a `data.frame()` externally.
+* **The app is expandable.**  User time series data can be added using one function, which is then accessible just like any other data.  Users
+can code and add their own analytics, as long as the function returns a list of tables ([gt](https://gt.rstudio.com/reference/index.html) objects),
+[dygraphs](https://rstudio.github.io/dygraphs/), or [ggplots](https://ggplot2.tidyverse.org/reference/index.html).  The vignette 
+<span style="background-color: #003366; color: #FFFFFF;">LINK_extensions</span> provides details.
 
-```{r, eval=F}
-av_get_pf("IBM","HISTORICAL_OPTIONS") |> av_grep_opts("F,M,put",mindays=2)
+To launch the app, run [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html),
+and start with the first step of setting your API key.  (See [Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_setup_and_usage.html) for other items you can set) 
+Once the API key is set, it's easy to start building a data set and analyzing it in real time.
 
-   symbol         contractID expiration strike   type  last  mark   bid bid_size   ask ask_size volume open_interest ...
-   <char>             <char>     <IDat>  <num> <char> <num> <num> <num>    <int> <num>    <int>  <int>      ...
-1:    IBM IBM260116P00277500 2026-01-16    278    put  0.00  0.80  0.67      158  0.94      254      0      ...
-2:    IBM IBM260116P00280000 2026-01-16    280    put  0.98  0.96  0.90      180  1.02       10    111      ...
-3:    IBM IBM260116P00282500 2026-01-16    282    put  1.32  1.29  1.17      213  1.41      158     14      ...
+## Initial setup
+
+The first time [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html) is run, a temporary data directory is created and a
+setup/options tab is displayed.  At a minimum, fill in your API key and permissionings status (unless already saved with  `avpf_api_key()`).  Unless
+you want to keep the data in a default caching directory, I would also recommend creating a location for data to be saved.  Hit 
+<span style="background-color: #003366; color: #FFFFFF;">Set Opts</span> and a table showing those selections (along with all other saved internal data)
+will be shown.  A full description of the options available is given in the setup vignette <span style="background-color: #003366; color: #FFFFFF;">LINK_setup</span>.
+
+![Initial Setup](man/figures/InitialSetup.jpg)
+
+## Finding and running commands
+
+Not much can be done without a little data, so the first step is to start with a list of commands and doing a few analyses (e.g. graphs) for a set of assets.
+
+While a few options are set outside the "command line", all analyses are typed into the top (yellowed) line.  Commands have one of two forms:
+
+* **Single name commands** do not need any particular set of assets, and all start with the prefix `AV.`.  The first command you should run is `AV.H` to
+show what commands are available. (Note that more explanatory notes are given unless the `showGeneralHelp` option is 
+deselected in the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab.)
+
+![Set opts](man/figures/av1.jpg)
+
+* **Commands on asset groups** are applied to a semi-colon delimited set of assets, and is of the form
+
+>Symbol_11;Symbol_2;...;Symbol_n Command Options
+
+If an asset or commmand is invalid, the app will tell you, otherwise it will download what it needs using [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html),
+save the data and and run the analysis.  For example, to get a simple total return graph of a set of ETFs, just enter `QQQ;SPY;DIA;EEM GPI` in the yellow line, and get
+a dygraph (created with [fgts_dygraph()](https://derekholmes0.github.io/FinanceGraphs/reference/fgts_dygraph.html)):
+
+![ETF Example](man/figures/av1.jpg)
+
+A brief outline of what can be done is shown in the table below.  Note that
+
+* Some commands compare the assets in the main line with a *counterasset* specified in a different box.  
+* Commands that end in `2` put their graphs (etc) below any main graph.  This allows two independent time series to be visualized.
+* Neither commands nor symbols are case sensitive.
+
+|Category|Example(s)|Functionality|
+|:------:|:-------:|:-------------------|
+|Time Series|`QQQ GPI`,`SPY GPI2`|Asset prices or rebased indices, possibly in the middle of the time series|
+|           |`QQQ GV`|Rolling volatilities|
+|Scatter|`QQQ SCATI`|Scatter plot of assets against counterasset|
+|Relative Value |`QQQ RV`|Active return indices and statistics against counterasset|
+|Financials|`IBM EA`|Dividends, earnings/transcripts,  Descriptions|
+|Historical Financials|`IBM GEP`|Time series of (e.g.) Earnings Yield|
+|News|`IBM;MU CN`|Table of news stories, with links|
+|Ticker Search|`mining S`|Search on symbol or name|
+|Options|`QQQ OS`|Table of options, implied Vols, etc|
+|Miscellaneous|`av.mov`,`av.inv`|Market movers, data inventory, help|
+
+This app seeks to facilitate quick ad-hoc analyses by minimizing typing and providing command persistence. 
+
+* **Asset Lists** are groups of assets saved or recalled by name. To do so, type in your list name in the box to the right of the yellow asset
+line, and click <span style="background-color: #003366; color: #FFFFFF;">save</span>.   To recall the items in a list, select the name from the
+dropdown and click <span style="background-color: #003366; color: #FFFFFF;">get</span>.  The assets in that list will then be pasted into the 
+command line (keeping the currently chosen command)
+
+* **Command persistence** is availble using the `AV.HIST` commands and `AV.R <n>` commands, which list the last several commands used and recalls them by
+number.
+
+## Data management and adding new commands
+
+Price, dividend and earnings data are all stored internally in `data.table()` format[^1], with columns coming directly from relevant the relevant `av_get_pf()`
+calls.  One of the key contributions of this package is to standardize different [Alpha Vantage API](https://www.alphavantage.co/) output forms into
+one common format.  That effort requires knowing what asset class each ticker belongs to, since there are differnt API calls for each.  Asset classes are determined
+by comparing them with pre-downloaded[^2] symbol lists, or asssumed to be currencies if they are of the standard `[[:alpha:]]*3/[[:alpha:]]*3` format.
+
+### Adding data
+
+Those files can be read (*and written to*) outside the shiny app, so the data can be used for other analyses (e.g. RMarkdown runs) or
+added to externally as user data or indices.  Time series data (kept in a file called `avpf_px.fst`) can be added using the 
+[av_add_px()](https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.html)
+function.  Historical earnings (kept in `avpf_earn.fst`) or forecasts (kept in `avpf_earnest.fst`) are managed separately using 
+[av_add_earn()](https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.html). 
+See <span style="background-color: #003366; color: #FFFFFF;">LINK_data</span> for details.
+
+As an example, suppose we wish to plot two fixed income ETFs against Fed Funds.  We can use e.g. `quantmod` to download and add the data. All we need to do is ensure that
+we have the symbol, a `Date`-classed field and a `close` field.
+
+```{r, eval=FALSE, echo=TRUE, out.width="100%"}
+suppressMessages(require(quantmod))
+ffdta <- as.data.table(quantmod::getSymbols("FEDFUNDS",src="FRED",auto.assign=FALSE))
+ffdta <- ffdta[,.(DT_ENTRY=index,close=FEDFUNDS,symbol="FEDFUNDS")]
+av_add_px(ffdta)
 ```
 
-### Analytics requests
+** PICTURE **
 
-Analytics requests using the Alphavantage function `ANALYTICS_FIXED_WINDOW` are complicated enough that they are returned in *raw form*, which includes meta-data.  These can be untangled using the extracting function `av_extract_analytics`.
+Historical earnings and estimates can be added or downloaded using [av_add_earn()](https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.html),
+If the data itself is not given, then a simple `data.frame()` of equities can be given to download the relevant data.  Asset lists
+can also be added using [av_add_assetgroups()](https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.html)
 
-```{r, eval=F}
- av_get_pf(c("ORCL","IBM"),"ANALYTICS_FIXED_WINDOW") |> av_extract_analytics(separate_vars=TRUE)
- av_get_pf: Reurning raw output; send to appropriate helper ---------------------------- 
-             variable_1              variable_2 variable_3               value
-                 <char>                  <char>     <char>              <char>
-1:              symbols                    <NA>       <NA>            ORCL,IBM
-2:               min_dt                    <NA>       <NA>          2025-12-09
-3:               max_dt                    <NA>       <NA>          2026-01-06
-4:                 ohlc                    <NA>       <NA>               Close
-5:             interval                    <NA>       <NA>               DAILY
-6: RETURNS_CALCULATIONS       CUMULATIVE_RETURN       ORCL   -0.12540062294046
-7: RETURNS_CALCULATIONS       CUMULATIVE_RETURN        IBM -0.0257987632053596
-8: RETURNS_CALCULATIONS STDDEV(ANNUALIZED=TRUE)       ORCL   0.575380551599422
-9: RETURNS_CALCULATIONS STDDEV(ANNUALIZED=TRUE)        IBM   0.171846694713282
-```
+### Getting data
 
-## Important Notes: av_get_pf()
+In addition to reading the price files directly, data can be captured for use in other apps or ad-hoc analyses in in two ways:
+* **Copy to cliboard:** Any data that goes into a graph or table is automatically copied to the clipboard if the **data2clipboard** option is set.
+* **Function call capture:** Each individual call to  `av_get_pf()` can be cached to the `AV dump Directory` which *optionally* can be
+set also in  <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span>.  Data is saved in a named (by Alphavantage function) 
+list of data.tables, and can be keyed (and upserted) or appended to a saved `.Rd` file. 
+See <span style="background-color: #003366; color: #FFFFFF;">LINK_setup</span> for details.
 
-1. Three parameters `apikey`, `datatype` and `outputsize` are filled into the API call from the package.  `outputsize` defaults to the full dataset, 
-and can be overridden as a named parameter to the `av_get_pf()` call.
-2. An additional parameter `entitlement` is added to the url if specified in the `av_api_key()` call and relevant.
-3. `symbol` is always returned in the output dataset, and defaults to the name of the `av_fun` call if no symbol is relevant.
-4. There is no need to specify the `datatype` parameter as an argument to [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html). The function will return a data.table
-5. Some output above has been truncated to adhere to licensing rules.
+## Adding new Functionality
 
-# Shiny interface
+New commands can be added by writing yur own functions and "registering" them with the app.  New functions have two arguments: (1)
+a string with the command and any subsequent options, and (2) A list of all current (de-reactive'd) values of the input fields.
+They must return a (possibly named) list of  `gt()` tables, `dygraphs()`, or `ggplots()` to be displayed when the command is run.
+See <span style="background-color: #003366; color: #FFFFFF;">LINK_newfunc</span> for details.
 
-A Shiny interface is included in the package to manage and visualize data.  To launch the app, use [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html),
-and start with the first step of setting your API key.  (See [Vignette](https://derekholmes0.github.io/alphavantagepf/articles/shinyapp-alphavantagepf.html) for other items you can set) 
-Once the API key is set, type in a set of symbols you ae interested in (separated by semicolons) and select an analysis to make.
-For example, to show a normalized total return chart for 3 common ETS, select "start" to rebase at the start of the requested period (`"-2y::"`in `dts`) select `TS:PriceTS` to get a time series graph,
-and press <span style="background-color: #003366; color: #FFFFFF;">RUN</span>.  The result will be as below.
+[^1]: Larger data sets (e.g. price data) is stored in a [fst](https://www.fstpackage.org/) file.  Smaller data is kept in standard `.Rd` files.  A database interface is planned at some point.
+[^2]: Lists of equities, ETFs and available indices (see `av.tickers`) are downloaded each time the `av_runShiny()` is run.  Cryptocurrencies tickers are hard-coded
+into the package. 
 
-![ShinyPic](man/figures/av_shiny_1.jpg)
 
-The analytics all follow the same outline.  For example, when `TS:PriceTS` is run, `av_runShiny()` will 
 
-1. Call [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html) with 
-parameters appropriate to the asset (e.g. `TIME_SERIES_DAILY` for stocks, `FX_DAILY` for FX), 
-2. **Save** the data in an internal data store, or update existing data as necessary, and 
-3. Plot an interactive graph using the [fgts_dygraph()](https://derekholmes0.github.io/FinanceGraphs/reference/fgts_dygraph.html) function.
+To do: 
 
-A few key features of the app include:
-
-* The app will download any data needed that is not already cached.  The function `av_add_data()` can be used to add price data from other sources.
-* If at any point the user wants to make sure the last observation is live, check `useLive` in the app.
-* Groups of assets can be saved as "asset lists" and save or recalled by name. To do so, type in your list name in the box to the right of the yellow asset
-line, and click <span style="background-color: #003366; color: #FFFFFF;">save</span>.  
-To recall the items in a list, select the name from the dropdown and click <span style="background-color: #003366; color: #FFFFFF;">get</span>. 
-The assets in that list will then be pasted into the relevant line.
-* Each individual call to  `av_get_pf()` can be cached to a directory of the users' choice.  Data is saved in a named (by Alphavantage function) 
-list of data.tables, and can be keyed (and upserted) or appended to a saved `.Rd` file. See Vignette.
-
-Other Analyses that are currently implemented include:
-
-|Analysis|Description|
-|:-----|:--------------------------|
-|Inventory|Shows the current inventory of price data and current asset lists|
-|NameSearch|Search for asset names matching a string|
-|LivePx|Get live prices for all assets|
-|PriceTS|Plot asset prices (actual or normalized relative to a referernce date)|
-|PriceTS (Line 2)|Stacks a second time series onto the top and creates scatterplot|
-|ActiveTS|Plot asset prices relative to first asset in lower yellow bar|
-|HistVolTS|Plot historical volatility and correlation of asset prices|
-|DES|Descriptive data|
-|News|News headlines and links for the assets specified|
-|DivEarn|Dividends and earnings data for the assets specified|
-|OptSearch|Search for options matching a string, e.g. "F,M,put" for front month monthly puts|
-|Movers|US Movers taken from `TOP_GAINERS_LOSERS`|
-
-Future plans include the ability to plug in bespoke analyses and tick data manipulation.
+1. Make sure commands are instantaly recognizable on addition
+2. LLMs?

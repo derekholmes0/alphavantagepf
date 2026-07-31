@@ -18,7 +18,7 @@
 #' @returns Returns a data.table with results dependent on the function called.
 #' Mixed data is returned as a melted data.table, possibly with nested data.frames.  Time series are returned as data.tables.
 #'
-#' @seealso [av_api_key()], [av_extract_df()], [av_extract_fx()], [av_grep_opts()],[av_funhelp()]
+#' @seealso [avpf_api_key()], [av_extract_df()], [av_extract_fx()], [av_grep_opts()],[av_funhelp()]
 #'
 #' @details
 #'
@@ -40,8 +40,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' av_api_key("YOUR_API_KEY")
-#' av_api_key("YOUR_API_KEY","delayed") # if you have such access
+#' avpf_api_key("YOUR_API_KEY","delayed") # or "realtime" if you have such access
 #'
 #' # example code
 #'
@@ -103,8 +102,8 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
       return(data.table())
     }
     # Checks
-    if (is.null(av_api_key())) {
-        stop("Set API key using av_api_key(). If you do not have an API key, please claim your free API key on (https://www.alphavantage.co/support/#api-key). It should take less than 20 seconds, and is free permanently.",
+    if (is.null(avpf_api_key())) {
+        stop("Set API key using avpf_api_key(). If you do not have an API key, please claim your free API key on (https://www.alphavantage.co/support/#api-key). It should take less than 20 seconds, and is free permanently.",
              call. = FALSE)
     }
     ua   <- httr::user_agent("http://httpbin.org/user-agent")
@@ -112,7 +111,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     # parameterss
     dots          <- list(...)
     dots$symbol   <- symbol
-    dots$apikey   <- av_api_key()[1]
+    dots$apikey   <- avpf_api_key()[1]
 
     # New: DIstinction betweebn FX and Crypto
     # Forex
@@ -134,7 +133,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
 
     # Generate URL
     pset <- av_funcmap[get("av_fn")==av_fun,]
-    url_params <-  av_form_param_url(av_fun,dots,t_entitlement=av_api_key()[2])
+    url_params <-  av_form_param_url(av_fun,dots,t_entitlement=avpf_api_key()[2])
 
     if(is.null(url_params)) { # Missing something required
         stop("av_get_pf cannot create url; are you missing a required parameter?")

@@ -2,52 +2,58 @@
 #'
 #' @name av_runShiny
 #' @description
-#' `av_runShiny()` runs an interactive RShiny app with a professional command line  iterface to download, manage, and visualize data from the [Alpha Vantage](https://www.alphavantage.co/documentation/) data service.
+#' `av_runShiny()` runs an interactive RShiny app with a professional command line interface to download, manage, and visualize data from
+#' the [Alpha Vantage](https://www.alphavantage.co/documentation/) data service.
 #' The app treats equities, ETFs, indices, and FX equally, so users do not need to know specific API calls to integrate data.  Downloaded data is cached to reduce
-#' API calls, all data can be saved for external use, and external data can be added to the app.  Sets of securities can be easily added and managed.
+#' API calls, all data can be saved for external use, and both external data and external commands (that call user functions) can be added to the app.
+#' Sets of securities can be easily added and managed.
 #'
 #' @returns Nothing
 #'
 #' @details
-#' Invocation starts Shiny application.  See vignette for full details.
-#' **On first use**, click on `AVOPTS` tab, fill in the following fields, and  hit the "Set Opts" button.
+#' Invocation starts Shiny application.  See vignettes for full details.
+#' **On first use**, In the `AVOPTS` tab, fill in the following fields, and  hit the "Set Opts" button.
 #' * **AV API Key**: API key obtained from  [Alpha Vantage](https://www.alphavantage.co/documentation/)
 #' * **Entitlement** Entitlement status (either `delayed` or `realtime`)
 #' Other options that can be set are given below.
 #'
-#' **To run analysis**, Enter a semicolon delimited set of securities (e.g. `SPY;QQQ;DIA`), select a runtime option from
-#' the adjacent dropdown, and press the `RUN button.  Options include:
-#' |Option|Description|
+#' **To get data and run analyses**:
+#'
+#' Enter in the top yellowed line a semicolon delimited set of securities (Equity, ETF, FX, Crypto, indices) followed
+#' by a command to run analytics on those securities.  Commands without securities are always prefixed by `"AV.". THe results are shown as
+#' tables, plots, or dygraphs below the command line, and possibly in an additional tab to the right of the main tab.  Some commands may
+#' change the focus to specialized tabs (e.g.`NEWS` or `OPTIONS`).
+#' Commands are not case sensitive, and may refer to a counterasset in the second yellowed line. A few examples include:
+#' |Command|Description|
 #' |:-------:|:-------------------------------------|
-#' |`Inventory`|Table of what asset lists and price data is available|
-#' |`LivePx`|Live prices of all tickers|
-#' |`NameSearch`|Search for tickers|
-#' |`PriceTS`|Time Series of prices or Total Return indices|
-#' |`ActiveTS`|Active returns of tickers in top row relative to first ticker in bottom row|
-#' |`HistVolTS`|Historic vol and rolling correlations of tickers in top row.|
-#' |`DES`,`News`|Descriptions and News for tickers in top row.|
-#' |`DivEarn`|Dividends, earnings, and earnings estimates for tickers in top row.|
-#' |`OptSearch`|Search for options for tickers in top row. (`OPTS` tab)|
+#' |`AV.H`|List all available functions|
+#' |`AV.INV`|Inventory of all available data|
+#' |`AV.TICKERS`|Inventory of indices and crypto pairs available from [Alpha Vantage](https://www.alphavantage.co/documentation/)|
+#' |`SPACE S`|Search for all tickers with `SPACE` in their names|
+#' |`IBM;QQQ;NDX;USD/MXN GPI`|Produce a rebased time series graph of the securities|
+#' |`IBM;QQQ GV`|Time series graph of rolling volatiliies|
+#' |`IBM;QQQ GV`|Time series graph of rolling volatiliies|
+#' |`IBM;AAPL;USD/MXN Q`|Table of latest prices for each instrument|
+#' |`USD/BRL;USD/MXN SCATI`|Scatterplot of rebased levels and returns|
+#' |`IBM;AAPL EA`|Table of Earnings data for each instrument|
+#' |`IBM;AAPL CN`|Table of recent news items for each asset, with links|
+#' |`IBM;AAPL RV`|Graph of excess returns over counterasset (`SPY` by default)|
+#' |`IBM OS F,M,P,otm`|Search for (e.g.) Out of the money front month puts|
 #'
-#' **Options that can be set**. click on `AVOPTS` tab, fill in the following fields, and  hit the "Set Opts" button.
+#' If an analysis requires price, dividend or earnings data that is not in the app's internal store, then it will download it as necessary from
+#' [Alpha Vantage](https://www.alphavantage.co/documentation/). Other data (e.g. News, options) are downloaded freshly each time.
+#' One of the key contributions of this app is to abstract out the asset-specific functions calls that are necessary to do cross-asset analyses.
 #'
-#' * __fgts colorset__: A named list of colors which can be set using the  [FinanceGraphs::fg_update_aes()] function.
-#' * __Regr Significance__: p-level to highlight significant regressions. (Used in the `HistVolTS` function above.)
-#' * __Cache Directory__: A directory where internal App data can be stored (and added to). If not filled in, a temporary
-#' directory is created and used.
+#' **Other niceties**:
+#' * Groups of assets can be named, saved, and recalled easily. See Basic Usage <V2> vignette
+#' * Internal data can be stored and used (as `data.table()`s) in a directory of the users' choosing.  See setup <V1> vignette.
+#' * Events and other plotting options can be specified in the app.  See functions vignette and e.g. [FinanceGraphs](https://derekholmes0.github.io/FinanceGraphs/reference/index.html)
+#' * Data within each produced graph or table can be copied to the clipboard (option in  `AVOPTS` page), See setup <V1> vignette.
+#' * Raw downloaded data can be saved into a "dump directory" (option in  `AVOPTS` page)
+#' * A current inventory list is always kept in a separate tab, avoiding having to run `AV.INV` repeatedly.
+#' * User price data, earnings data, and asset groups can be added using helper functions  [alphavantagepf::av_add_px()], [alphavantagepf::av_add_earn()], [alphavantagepf::av_add_assetgroups()].  See Extensions vignette <v3>
+#' * User analytics can be added using [alphavantagepf::av_add_analytic()].  See examples in the Extensions vignette <v3>
 #'
-#' The app allows all downloaded data to be saved.  If used, data is saved in one file, and is stored as a named (by API call function)
-#' list of `data.table`s.  Options to control this behavior are
-#'
-#' * __AV dump Directory__: A directory where individual API requests can be cached.  Data is saved in one file as a named
-#' (by API call function) list of `data.table`s.
-#' * __Capture AV Data__: Save Price data, non-price data, all or none.
-#' * __Update or Cumulative__: If `update` is selected, data is keyed relevantly, so for example there will only be one set of dividend data stored.
-#' If `cumulative` then all API data (including a timestamp) is saved sequentially.  The latter will lead to much larger files.
-#' * __Other options__:
-#'  - `CleanOnStart` : cleans out the cache file every time the app is started.
-#'  - `SaveEveryAVCall` : Saves cache file after every call.
-#'  - `SaveNow` : Save cache file when this is selected.
 #' @returns
 #' A `ShinyAppHandle` object.
 #' @examples
@@ -55,6 +61,7 @@
 #' av_runShiny()
 #' }
 #' @rdname av_runShiny
+#'
 #' @export
 av_runShiny <- function() {
   if(file.exists(the_av$constants_fn)) {
@@ -66,6 +73,8 @@ av_runShiny <- function() {
   }
   else {
     av_reset_defaults(fileopts=FALSE) # Only use true if reinstalling entire package
+    the_av$avapikey <- options()$av_api_key %||%  the_av$avapikey
+    the_av$avapientitlement <- options()$av_api_entitlement %||%  the_av$avapientitlement
     the_av$avsh_funcs <- copy(avsd$def_avsh_funcs)
     save_avs_state("all",msg="I N I T")
   }

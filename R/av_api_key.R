@@ -1,11 +1,11 @@
 #' Set the Alpha Vantage API Key
 #'
-#' @name av_api_key
+#' @name avpf_api_key
 #' @description
-#' `av_api_key()` sets Alphavantage API key and entitlement code
+#' `avpf_api_key()` sets Alphavantage API key and entitlement code
 #'
 #' @param api_key A character string with your Alpha Vantage API Key.
-#' @param entitlement A character string with your Alpha Vantage entitlement status.  If not "delayed" or "realtime" entitlement not added to API string.
+#' @param entitlement An optional character string with your Alpha Vantage entitlement status.  If not "delayed" or "realtime" entitlement not added to API string.
 #'
 #' @returns Invisibly returns two item list with API key and entitlement string once set). Use print method to view.
 #'
@@ -17,13 +17,13 @@
 #'
 #' @examples
 #' \dontrun{
-#' av_api_key("YOUR_API_KEY",entitlement="delayed")
+#' avpf_api_key("YOUR_API_KEY",entitlement="delayed")
 #' av_get_pf("IBM", "TIME_SERIES_INTRADAY")
 #' }
 #'
 #' @rdname av_api_key
 #' @export
-av_api_key <- function(api_key,entitlement=NULL) {
+avpf_api_key <- function(api_key,entitlement=NULL) {
     if (!missing(api_key)) {
         options(av_api_key = api_key)
         the_av$avapikey = api_key

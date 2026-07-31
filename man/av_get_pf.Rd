@@ -60,8 +60,7 @@ into \code{from_currency} and \code{to_currency} API parameters. Usage example:
 }
 \examples{
 \dontrun{
-av_api_key("YOUR_API_KEY")
-av_api_key("YOUR_API_KEY","delayed") # if you have such access
+avpf_api_key("YOUR_API_KEY","delayed") # or "realtime" if you have such access
 
 # example code
 
@@ -116,5 +115,5 @@ av_get_pf(c("ORCL","IBM","EWZ","ARGT"),"ANALYTICS_FIXED_WINDOW",verbose=TRUE) |>
 
 }
 \seealso{
-\code{\link[=av_api_key]{av_api_key()}}, \code{\link[=av_extract_df]{av_extract_df()}}, \code{\link[=av_extract_fx]{av_extract_fx()}}, \code{\link[=av_grep_opts]{av_grep_opts()}},\code{\link[=av_funhelp]{av_funhelp()}}
+\code{\link[=avpf_api_key]{avpf_api_key()}}, \code{\link[=av_extract_df]{av_extract_df()}}, \code{\link[=av_extract_fx]{av_extract_fx()}}, \code{\link[=av_grep_opts]{av_grep_opts()}},\code{\link[=av_funhelp]{av_funhelp()}}
 }

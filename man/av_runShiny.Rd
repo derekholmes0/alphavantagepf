@@ -12,56 +12,57 @@ Nothing
 A \code{ShinyAppHandle} object.
 }
 \description{
-\code{av_runShiny()} runs an interactive RShiny app with a professional command line  iterface to download, manage, and visualize data from the \href{https://www.alphavantage.co/documentation/}{Alpha Vantage} data service.
+\code{av_runShiny()} runs an interactive RShiny app with a professional command line interface to download, manage, and visualize data from
+the \href{https://www.alphavantage.co/documentation/}{Alpha Vantage} data service.
 The app treats equities, ETFs, indices, and FX equally, so users do not need to know specific API calls to integrate data.  Downloaded data is cached to reduce
-API calls, all data can be saved for external use, and external data can be added to the app.  Sets of securities can be easily added and managed.
+API calls, all data can be saved for external use, and both external data and external commands (that call user functions) can be added to the app.
+Sets of securities can be easily added and managed.
 }
 \details{
-Invocation starts Shiny application.  See vignette for full details.
-\strong{On first use}, click on \code{AVOPTS} tab, fill in the following fields, and  hit the "Set Opts" button.
+Invocation starts Shiny application.  See vignettes for full details.
+\strong{On first use}, In the \code{AVOPTS} tab, fill in the following fields, and  hit the "Set Opts" button.
 \itemize{
 \item \strong{AV API Key}: API key obtained from  \href{https://www.alphavantage.co/documentation/}{Alpha Vantage}
 \item \strong{Entitlement} Entitlement status (either \code{delayed} or \code{realtime})
 Other options that can be set are given below.
 }
 
-\strong{To run analysis}, Enter a semicolon delimited set of securities (e.g. \verb{SPY;QQQ;DIA}), select a runtime option from
-the adjacent dropdown, and press the `RUN button.  Options include:\tabular{cl}{
-   Option \tab Description \cr
-   \code{Inventory} \tab Table of what asset lists and price data is available \cr
-   \code{LivePx} \tab Live prices of all tickers \cr
-   \code{NameSearch} \tab Search for tickers \cr
-   \code{PriceTS} \tab Time Series of prices or Total Return indices \cr
-   \code{ActiveTS} \tab Active returns of tickers in top row relative to first ticker in bottom row \cr
-   \code{HistVolTS} \tab Historic vol and rolling correlations of tickers in top row. \cr
-   \code{DES},\code{News} \tab Descriptions and News for tickers in top row. \cr
-   \code{DivEarn} \tab Dividends, earnings, and earnings estimates for tickers in top row. \cr
-   \code{OptSearch} \tab Search for options for tickers in top row. (\code{OPTS} tab) \cr
+\strong{To get data and run analyses}:
+
+Enter in the top yellowed line a semicolon delimited set of securities (Equity, ETF, FX, Crypto, indices) followed
+by a command to run analytics on those securities.  Commands without securities are always prefixed by \verb{"AV.". THe results are shown as tables, plots, or dygraphs below the command line, and possibly in an additional tab to the right of the main tab.  Some commands may change the focus to specialized tabs (e.g.}NEWS\code{or}OPTIONS`).
+Commands are not case sensitive, and may refer to a counterasset in the second yellowed line. A few examples include:\tabular{cl}{
+   Command \tab Description \cr
+   \code{AV.H} \tab List all available functions \cr
+   \code{AV.INV} \tab Inventory of all available data \cr
+   \code{AV.TICKERS} \tab Inventory of indices and crypto pairs available from \href{https://www.alphavantage.co/documentation/}{Alpha Vantage} \cr
+   \verb{SPACE S} \tab Search for all tickers with \code{SPACE} in their names \cr
+   \verb{IBM;QQQ;NDX;USD/MXN GPI} \tab Produce a rebased time series graph of the securities \cr
+   \verb{IBM;QQQ GV} \tab Time series graph of rolling volatiliies \cr
+   \verb{IBM;QQQ GV} \tab Time series graph of rolling volatiliies \cr
+   \verb{IBM;AAPL;USD/MXN Q} \tab Table of latest prices for each instrument \cr
+   \verb{USD/BRL;USD/MXN SCATI} \tab Scatterplot of rebased levels and returns \cr
+   \verb{IBM;AAPL EA} \tab Table of Earnings data for each instrument \cr
+   \verb{IBM;AAPL CN} \tab Table of recent news items for each asset, with links \cr
+   \verb{IBM;AAPL RV} \tab Graph of excess returns over counterasset (\code{SPY} by default) \cr
+   \verb{IBM OS F,M,P,otm} \tab Search for (e.g.) Out of the money front month puts \cr
 }
 
 
-\strong{Options that can be set}. click on \code{AVOPTS} tab, fill in the following fields, and  hit the "Set Opts" button.
-\itemize{
-\item \strong{fgts colorset}: A named list of colors which can be set using the  \code{\link[FinanceGraphs:fg_update_aes]{FinanceGraphs::fg_update_aes()}} function.
-\item \strong{Regr Significance}: p-level to highlight significant regressions. (Used in the \code{HistVolTS} function above.)
-\item \strong{Cache Directory}: A directory where internal App data can be stored (and added to). If not filled in, a temporary
-directory is created and used.
-}
+If an analysis requires price, dividend or earnings data that is not in the app's internal store, then it will download it as necessary from
+\href{https://www.alphavantage.co/documentation/}{Alpha Vantage}. Other data (e.g. News, options) are downloaded freshly each time.
+One of the key contributions of this app is to abstract out the asset-specific functions calls that are necessary to do cross-asset analyses.
 
-The app allows all downloaded data to be saved.  If used, data is saved in one file, and is stored as a named (by API call function)
-list of \code{data.table}s.  Options to control this behavior are
+\strong{Other niceties}:
 \itemize{
-\item \strong{AV dump Directory}: A directory where individual API requests can be cached.  Data is saved in one file as a named
-(by API call function) list of \code{data.table}s.
-\item \strong{Capture AV Data}: Save Price data, non-price data, all or none.
-\item \strong{Update or Cumulative}: If \code{update} is selected, data is keyed relevantly, so for example there will only be one set of dividend data stored.
-If \code{cumulative} then all API data (including a timestamp) is saved sequentially.  The latter will lead to much larger files.
-\item \strong{Other options}:
-}
-\itemize{
-\item \code{CleanOnStart} : cleans out the cache file every time the app is started.
-\item \code{SaveEveryAVCall} : Saves cache file after every call.
-\item \code{SaveNow} : Save cache file when this is selected.
+\item Groups of assets can be named, saved, and recalled easily. See Basic Usage \if{html}{\out{<V2>}} vignette
+\item Internal data can be stored and used (as \code{data.table()}s) in a directory of the users' choosing.  See setup \if{html}{\out{<V1>}} vignette.
+\item Events and other plotting options can be specified in the app.  See functions vignette and e.g. \href{https://derekholmes0.github.io/FinanceGraphs/reference/index.html}{FinanceGraphs}
+\item Data within each produced graph or table can be copied to the clipboard (option in  \code{AVOPTS} page), See setup \if{html}{\out{<V1>}} vignette.
+\item Raw downloaded data can be saved into a "dump directory" (option in  \code{AVOPTS} page)
+\item A current inventory list is always kept in a separate tab, avoiding having to run \code{AV.INV} repeatedly.
+\item User price data, earnings data, and asset groups can be added using helper functions  \code{\link[=av_add_px]{av_add_px()}}, \code{\link[=av_add_earn]{av_add_earn()}}, \code{\link[=av_add_assetgroups]{av_add_assetgroups()}}.  See Extensions vignette \if{html}{\out{<v3>}}
+\item User analytics can be added using \code{\link[=av_add_analytic]{av_add_analytic()}}.  See examples in the Extensions vignette \if{html}{\out{<v3>}}
 }
 }
 \examples{
