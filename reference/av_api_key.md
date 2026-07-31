@@ -1,11 +1,11 @@
 # Set the Alpha Vantage API Key
 
-`av_api_key()` sets Alphavantage API key and entitlement code
+`avpf_api_key()` sets Alphavantage API key and entitlement code
 
 ## Usage
 
 ``` r
-av_api_key(api_key, entitlement = NULL)
+avpf_api_key(api_key, entitlement = NULL)
 ```
 
 ## Arguments
@@ -16,8 +16,9 @@ av_api_key(api_key, entitlement = NULL)
 
 - entitlement:
 
-  A character string with your Alpha Vantage entitlement status. If not
-  "delayed" or "realtime" entitlement not added to API string.
+  An optional character string with your Alpha Vantage entitlement
+  status. If not "delayed" or "realtime" entitlement not added to API
+  string.
 
 ## Value
 
@@ -39,7 +40,7 @@ Website](https://www.alphavantage.co/).
 
 ``` r
 if (FALSE) { # \dontrun{
-av_api_key("YOUR_API_KEY",entitlement="delayed")
+avpf_api_key("YOUR_API_KEY",entitlement="delayed")
 av_get_pf("IBM", "TIME_SERIES_INTRADAY")
 } # }
 ```

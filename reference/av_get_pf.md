@@ -96,7 +96,7 @@ parameters. Usage example: `av_get_pf("USD/BRL", "FX_DAILY")`
 
 ## See also
 
-[`av_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/av_api_key.md),
+[`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/av_api_key.md),
 [`av_extract_df()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md),
 [`av_extract_fx()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md),
 [`av_grep_opts()`](https://derekholmes0.github.io/alphavantagepf/reference/av_grep_opts.md),[`av_funhelp()`](https://derekholmes0.github.io/alphavantagepf/reference/av_funhelp.md)
@@ -105,8 +105,7 @@ parameters. Usage example: `av_get_pf("USD/BRL", "FX_DAILY")`
 
 ``` r
 if (FALSE) { # \dontrun{
-av_api_key("YOUR_API_KEY")
-av_api_key("YOUR_API_KEY","delayed") # if you have such access
+avpf_api_key("YOUR_API_KEY","delayed") # or "realtime" if you have such access
 
 # example code
 
