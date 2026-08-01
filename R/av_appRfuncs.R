@@ -46,7 +46,6 @@ av_add_px <- function(indta,assettypes=NULL,delay=0) {
   if(!"adjusted_close" %in% names(indta)) {
     indta <- indta[,adjusted_close:=close][]
   }
-  cAssign("indta;assettypes")
   manage_px(unique(indta$symbol),"-30y::",substitute_data=indta,substitute_symset=assettypes,delay=delay)
   message("here 10")
   # need (symbol=TICKER,type="user",currency="USD",name=TICKER)

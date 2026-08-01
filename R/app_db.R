@@ -120,7 +120,6 @@ form_symset <- function(tickers, force=FALSE, delay=0) {
   if( length(newtickers)>0 ) {
     symnew_user <- data.table(symbol=newtickers,type="user",currency="USD",matchScore=1,list_ts=Sys.Date())
     the_av$tickerlist <- DTUpsert(the_av$tickerlist,symnew_user[,.(symbol,name=symbol,type,list_ts)],c("symbol"))
-    cAssign("symnew_user")
   }
   # Collect all together, inferable = ix,crpt,fx
   symset <- rbindlist(list(symset,symnew_inferable,symnew_eq_inlistings,symnew_eq_nonus,symnew_user),fill=TRUE,use.names=TRUE)
@@ -230,7 +229,6 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
         symset <- copy(substitute_symset)
       }
       else {
-        cAssign("tickers;force;delay")
         symset <- form_symset(tickers,force=force,delay=delay)
       }
       symset = symset[data.table(symbol=unique(dta$symbol)), on=.(symbol)] # If subst is a superset
@@ -243,8 +241,10 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
       }
       tickertype <- symset[1,]$type
       if(tickertype=="user") {
+        src <- "userdata"
         message_if(the_av$verbose,"avs_update(",inticker,") is User data w/ last day ",the_av$pxinv[symbol==inticker,]$end_dt,
                         " and must be updated outside of ShinyApp")
+        return()
       }
       else {
         avfun <- epx_get_avfn(tickertype,live=FALSE)

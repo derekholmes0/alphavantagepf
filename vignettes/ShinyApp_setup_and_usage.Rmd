@@ -38,7 +38,7 @@ A few conventions which are helpful to know before using the app are [^1]
 
 |Item|Convention|Example|
 |:-------:|:-----------------------------|:-------|
-|Asset Sets|Semicolon `;` delimited|`"IBM;NDX;USD/MXN"`|
+|Asset Sets|Semicolon `;` delimited tickers|`"IBM;NDX;USD/MXN"`|
 |Relative Dates|(Signed) integers followed by `[m|d|y]`, relative to today|`"-4m"`|
 |Date Ranges|Relative dates separated by `"::"`|`"-4m::"`, `"-1y::+1y"`|
 

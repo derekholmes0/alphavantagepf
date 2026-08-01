@@ -68,8 +68,13 @@ av_help <- function(todo,rv) {
 av_misc <- function(todo,rv) {
   ts=N=NULL
   todolist <- c(s(toupper(todo),"[ ]+"),"1")
-  cmdhistlist <- tail(the_av$cmdhist,20)[order(-ts)][,let(N=.I)]
+  cmdhistlist <- tail(the_av$cmdhist,40)[order(-ts)][,let(N=.I)]
   setcolorder(cmdhistlist,s("N;cmd;ts"))
+  if(grepl("^RM",todo,ignore.case=TRUE)) {
+    ts <- lapply(s(rv$assetline), \(x) kill_symbol(x))
+    message_if_red(TRUE,"Removed tickers ",rv$assetline," from price history")
+    return( list() )
+  }
   if(grepl("AV.HIST",todo,ignore.case=TRUE)) {
     tortn <- cmdhistlist |> gt() |> gt.basetheme(sizepct=80) |>
         fmt_datetime(columns=c(ts),date_style="Md",time_style="iso-short") |>

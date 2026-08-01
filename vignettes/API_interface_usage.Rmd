@@ -18,7 +18,7 @@ the best choice for financial time series analysis.  This package uses just one 
 by providing a user key:
 
 ```{r}
-require(alphavatangepf)
+require(alphavantagepf)
 avpf_api_key("YOUR_API_KEY","delayed")
 print(avpf_api_key())
 ```
@@ -175,23 +175,6 @@ Analytics requests using the Alphavantage function `ANALYTICS_FIXED_WINDOW` are 
 9: RETURNS_CALCULATIONS STDDEV(ANNUALIZED=TRUE)        IBM   0.171846694713282
 ```
 
-# Helpers: `av_extract_df`
-
-Extracting the nested data.frames can be a tedious task, so the helper function `av_extract_df()` can be used to filter for the correct variable and extract the data.frame
-
-```{r, eval=F}
-av_get_pf("","TOP_GAINERS_LOSERS")  |> av_extract_df("top_losers")
-
-Key: <variable>
-               symbol             variable     ltype           value_df                                value_str value_num
-               <char>               <char>    <char>             <list>                                   <char>     <num>
-1: TOP_GAINERS_LOSERS         last_updated   numeric             [NULL]           2026-01-05 16:15:59 US/Eastern      2026
-2: TOP_GAINERS_LOSERS             metadata character             [NULL] Top gainers, losers, and most actively t        NA
-3: TOP_GAINERS_LOSERS most_actively_traded      list <data.frame[20x5]>                                     NULL        NA
-4: TOP_GAINERS_LOSERS          top_gainers      list <data.frame[20x5]>                                     NULL        NA
-5: TOP_GAINERS_LOSERS           top_losers      list <data.frame[20x5]>                                     NULL        NA
-```
-
 # Important Notes: av_get_pf()
 
 1. Three parameters `apikey`, `datatype` and `outputsize` are filled into the API call from the package.  `outputsize` defaults to the full dataset, 
@@ -200,7 +183,6 @@ and can be overridden as a named parameter to the `av_get_pf()` call. An additio
 3. `symbol` is always returned in the output dataset, and defaults to the name of the `av_fun` call if no symbol is relevant.
 4. There is no need to specify the `datatype` parameter as an argument to [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html). The function will return a data.table.
 5. Some output above has been truncated to adhere to licensing rules.
-6. 
 
 # Examples
 

@@ -53,7 +53,7 @@ av_runShiny()
 ```
 When the app is first run, the following screen will be shown, with the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab selected.
 The first order of business will be to set the Alphavantage API keys.  To do so, just type or copy in both your API key and 
-your entitlement status (Either `delayed` or `realtime`), and hit the blue <span style="background-color: #003366; color: #FFFFFF;">Set Opts</span> button.
+your entitlement status (Either `delayed` or `realtime`), and hit the blue <span style="background-color: #337AB7; color: #FFFFFF;">Set Opts</span> button.
 
 
 ```{r, echo=FALSE, out.width="100%"}
@@ -85,9 +85,9 @@ can then use that file to integrate search histories into other analytics, such 
 Securities are seldom analyzed in isolation.  It is easy to create and use ad-hoc groups of securities in this app. 
 
 * **To create a list**, First, type in a new name for the list in the list box as shown below, and Hit Enter. Second,
-type in the components (separated by semi-colons) and hit the <span style="background-color: #003366; color: #FFFFFF;">set</span> button.
+type in the components (separated by semi-colons) and hit the <span style="background-color: #337AB7; color: #FFFFFF;">set</span> button.
 
-* **To get the assets in a list**, select the desired list from the dropdown and hit <span style="background-color: #003366; color: #FFFFFF;">get</span> button.
+* **To get the assets in a list**, select the desired list from the dropdown and hit <span style="background-color: #337AB7; color: #FFFFFF;">get</span> button.
 
 ```{r, echo=FALSE, out.width="100%"}
 knitr::include_graphics("img/assetlist.gif")
@@ -99,7 +99,7 @@ You can see a table of current asset lists by running the "Gen:Inventory" comman
 # Running Basic Analyses
 
 To run analyses, select the desired item from the dropdowns and press the blue 
-<span style="background-color: #003366; color: #FFFFFF;">RUN</span> button.  One of more graphs or tables
+<span style="background-color: #337AB7; color: #FFFFFF;">RUN</span> button.  One of more graphs or tables
 will be shown in the  <span style="border: 1px solid #000000; padding: 2px 6px;">MAIN</span> tab, with additional data
 possible in the  <span style="border: 1px solid #000000; padding: 2px 6px;">DETAIL</span> tab.  That tab (the
 one to the right of <span style="border: 1px solid #000000; padding: 2px 6px;">MAIN</span>) will change headings when
@@ -139,7 +139,7 @@ be evident.
 
 ## Analyses that can be run
 
-The table below shows the current analyses that can be run.  Select what you wish and hit the <span style="background-color: #003366; color: #FFFFFF;">RUN</span> button.
+The table below shows the current analyses that can be run.  Select what you wish and hit the <span style="background-color: #337AB7; color: #FFFFFF;">RUN</span> button.
 
 |Analysis|Explanation/Notes|
 |:----------------|:-----------------------|
