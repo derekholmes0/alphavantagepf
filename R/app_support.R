@@ -3,28 +3,70 @@
 # =======================================================================================================
 #' Unexported App Support functions" Data and interface
 #'
+# form_symset Finds or downloads the asset type for a given ticker or list.  Sucks that Alphavantage can't unify these
+
+# form_symset(c("JBL","EEMA","NDX","USD/BRL","BTC/USD","FEDFUNDS"))
+#'
 #' @noRd
-symbol_grep_by_type <- function(eqlist,grepstr="Equity",check_vs_inv=TRUE, rtn="list") {
-  symbol=NULL
-  if( check_vs_inv==FALSE ) { # --- -So Many exceptions..  I'm getting tired of this
-    if(grepl("Equity|ETF",grepstr,ignore.case=TRUE)) {
-      tickerset <-data.table(symbol=grepv("[A-Z]/[A-Z]",eqlist,invert=TRUE))
-    }
+#' @importFrom stringr str_extract
+form_symset <- function(tickers, force=FALSE, typegrep="*",delay=0) {
+  symbol=name=matchScore=list_ts=assetType=NULL
+  alltickers=s(toupper(tickers))
+  if(force==TRUE || nrow(the_av$pxinv)<=0) {
+    newtickers <- alltickers
+    symset <- data.table()
   }
   else {
-    if(nrow(the_av$pxinv)<=0) { return("NOPXINV")}
-    if(is.null(eqlist)) { tickerset <- the_av$pxinv[,.(symbol,type,currency)] }
+    # Symbols we already  have
+    symset<- data.table(symbol=alltickers)[the_av$pxinv,on=.(symbol),nomatch=NULL]
+    symset<- symset[,.(symbol,type,currency,name,matchScore,list_ts)]
+    newtickers <- setdiff(alltickers,symset$symbol)
+  }
+  # -----------------------------------------Downloadable assets: KNown from ticker
+  # Known Indices
+  symnew_ix <- the_av$tickerlist[type=="Index",][data.table(symbol=newtickers),on=.(symbol),nomatch=NULL]
+  if(nrow(symnew_ix)>0) {
+    symnew_ix <- symnew_ix[,.(symbol,type,currency="USD",name,matchScore=1,list_ts)]
+  }
+  # New Crypto
+  possible_fxcr <- grepv("[A-Z]/[A-Z]",newtickers)
+  symnew_cryp <- the_av$tickerlist[type=="Crypto",][data.table(symbol=possible_fxcr),on=.(symbol),nomatch=NULL]
+  if(nrow(symnew_cryp)>0) {
+    symnew_cryp <- symnew_cryp[,.(symbol,type,currency=stringr::str_extract(symbol,"([A-Z]*)/",group=1),name,matchScore=1)]
+    possible_fxcr <- setdiff(possible_fxcr,symnew_cryp$symbol)
+  }
+  # New currency Pairs
+  possible_fxcr <- grepv("([A-Z]{3})/([A-Z]{3})",possible_fxcr,ignore.case=TRUE)
+  symnew_fx <- data.table(symbol=possible_fxcr)[,.(symbol,type="FX",currency=substr(symbol,1,3),name=symbol,matchScore=1)]
+  symnew_inferable <-  rbindlist(list(symnew_ix,symnew_fx,symnew_cryp),fill=TRUE,use.names=TRUE)
+  newtickers=setdiff(newtickers,symnew_inferable$symbol)
+  # -----------------------------------------Downloadable assets: Need a search
+  # New equities/ETFs (US)
+  symnew_eq_inlistings <- the_av$listings[data.table(symbol=sort(newtickers)),on=.(symbol),nomatch=NULL][,
+                                                                                                         .(symbol,type=fifelse(assetType=="Stock","Equity",assetType),name,currency="USD",matchScore=1,list_ts)]
+  newtickers <-setdiff(newtickers,symnew_eq_inlistings$symbol)
+  symnew_eq_nonus <- rbindlist(lapply(grepv("\\.([A-Z]{3})$",newtickers), \(x) {
+    message_if_green(the_av$verbose, "Checking for international equities: trying av('SYMBOL_SEARCH')")
+    if(nrow(z1 <- av_get_pf("","SYMBOL_SEARCH",keywords=x,delay=delay))<=0) {
+      message_if_red(TRUE,"Alphavantage cannot find  ",x,", so assuming to be a user series.  Please reconsider renaming")
+      return(data.table(symbol=x,matchScore=0))
+    }
     else {
-      tickerset <- the_av$pxinv[data.table(symbol=eqlist),on=.(symbol)][,.(symbol,type,currency)]
+      return(z1[matchScore>=0.95,.(symbol=x,type,currency,name,matchScore,list_ts=Sys.Date())])
     }
-    tickerset <- tickerset[grepl(grepstr,type,ignore.case=TRUE),]
+  }))
+  if(nrow(symnew_eq_nonus)>0)  {
+    newtickers <- setdiff(newtickers,symnew_eq_nonus$symbol)
   }
-  if(rtn=="list") {
-    return(tickerset$symbol)
+  # -----------------------------------------Un Downloadable assets/ User Data
+  symnew_user <- data.table()
+  if( length(newtickers)>0 ) {
+    symnew_user <- data.table(symbol=newtickers,type="user",currency="USD",matchScore=1,list_ts=Sys.Date())
+    the_av$tickerlist <- DTUpsert(the_av$tickerlist,symnew_user[,.(symbol,name=symbol,type,list_ts)],c("symbol"))
   }
-  else {
-    return(tickerset)
-  }
+  # Collect all together, inferable = ix,crpt,fx
+  symset <- rbindlist(list(symset,symnew_inferable,symnew_eq_inlistings,symnew_eq_nonus,symnew_user),fill=TRUE,use.names=TRUE)
+  return(symset[grepl(typegrep,type),][])
 }
 
 # REturns command, then assets
@@ -268,7 +310,7 @@ ts_vol <- function(toplot,ts_volparams) {
 get_allNews <- function(eqlist,rv) {
   symbol=sntmt=time_published=NULL
   allnews=data.table()
-  eqset <- symbol_grep_by_type(eqlist,"Equity|ETF",check_vs_inv=FALSE)
+  eqset <- form_symset(eqlist)[grepl("Equity|ETF",type),]$symbol
   allnews <- rbindlist(lapply(eqset,\(x)
                               getNews(x,nArticles=rv$nArticles,minabssent=rv$minabssent,newsfilter=rv$newsfilter,
                                       newsagrep=rv$newsgrep,maxage=rv$maxagedays)))

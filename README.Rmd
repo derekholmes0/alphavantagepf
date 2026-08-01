@@ -120,8 +120,8 @@ See vignette (<span style="background-color: #003366; color: #FFFFFF;">LINK_usag
 * **Typing and mousing are minimized.** by using a command lines sets of assets which can be saved and recalled at any time, or added as a `data.frame()` externally.
 * **The app is expandable.**  User time series data can be added using one function, which is then accessible just like any other data.  Users
 can code and add their own analytics, as long as the function returns a list of tables ([gt](https://gt.rstudio.com/reference/index.html) objects),
-[dygraphs](https://rstudio.github.io/dygraphs/), or [ggplots](https://ggplot2.tidyverse.org/reference/index.html).  The vignette 
-<span style="background-color: #003366; color: #FFFFFF;">LINK_extensions</span> provides details.
+[dygraphs](https://rstudio.github.io/dygraphs/), or [ggplots](https://ggplot2.tidyverse.org/reference/index.html).  Details are in 
+[New Functionality Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_New_Functionality.html).
 
 To launch the app, run [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html),
 and start with the first step of setting your API key.  (See [Setup Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_setup_and_usage.html) for other items you can set) 
@@ -138,7 +138,7 @@ and used by the app is kept in a default caching directory.  I would highly reco
 below is set to a temp directory `c:/t/avsh`.  To change any of the options, set them as needed and hit the <span style="background-color: #003366; color: #FFFFFF;">Set Opts</span>
 button. A table showing those selections (along with all other saved internal data) will be shown, with changed options highlighted. 
 
-A full description of the options available is given in the options ignette [Options Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Graphs_and_Options.html)
+A full description of the options available is given in the options vignette [Options Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Graphs_and_Options.html)
 
 ![Initial Setup](man/figures/InitialSetup.jpg)
 
@@ -189,7 +189,6 @@ As an example, suppose we wish to find simple excess returns (over `SPY`) and be
 `HYG;EEM RV` to get:
 
 ![Help Screen](man/figures/eemhygrv.jpg)
-
 
 This app seeks to facilitate quick ad-hoc analyses by minimizing typing and providing command persistence. 
 

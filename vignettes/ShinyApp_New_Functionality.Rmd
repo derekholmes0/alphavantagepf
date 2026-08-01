@@ -44,11 +44,8 @@ A few conventions which are helpful to know before using the app are
 
 The app requires a very modest amount of setup before using.  It can be run with 
 
-```{r, eval=TRUE}
-require(alphavantagepf)
-```
-
 ```{r, eval=FALSE}
+require(alphavantagepf)
 av_runShiny()
 ```
 When the app is first run, the following screen will be shown, with the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab selected.
@@ -60,7 +57,9 @@ your entitlement status (Either `delayed` or `realtime`), and hit the blue <span
 knitr::include_graphics("img/av_opts.jpg")
 ```
 
-Other optional items that can be set are
+Other optional items that can be set are described in 
+
+
 
 |Item|Description|
 |:---------:|:------------------------------------|

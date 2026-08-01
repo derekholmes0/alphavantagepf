@@ -115,11 +115,12 @@ av_gearn <- function(todo,rv) {
   horizon=i.enddt=labs=lpx=estimatedEPS=ra_estimatedEPS=ra_reportedEPS=reportedEPS=eps_estimate_average=c_code=NULL
   todolist <- s(toupper(todo),"[ ]+",pad=1)
   func_details <- the_av$avsh_funcs[runcode==todolist[[1]],]
-  eqset <- symbol_grep_by_type(s(rv$assetline),"Equity")
+  eqset <- form_symset(s(rv$assetline),typegrep="Equity")$symbol
   if(length(eqset)<=0) { quick_message("istr1","No equities in set"); return() }
   wheretoput <- fifelse(stringr::str_detect(todolist[[1]],"2$"), "TS2" , "TS1")
   calccode <- toupper(substr(todolist[[1]],1,3))
   bigdtstr <- extenddtstr(rv$dtstr_hist,begchg=-365)
+  cAssign("eqset;bigdtstr;rv;todo")
   toplot <- data_from_list(eqset,bigdtstr ,"none",bigdtstr ,msg_inputID="istr1")
   tdtmap <- narrowbydtstr(dtmap[,.(timestamp=DT_ENTRY,isday)],bigdtstr)
   earnset <- the_av$earn[data.table(symbol=eqset),on=.(symbol)][,.(symbol,timestamp=reportedDate,reportedEPS,estimatedEPS)]
@@ -229,8 +230,12 @@ av_livepx <- function(todo,rv) {
   todolist <- s(toupper(todo),"[ ]+")
   assetlist <- s(rv$istr1)
   df_live <- data.table()
-  tmp_syms  <-symbol_grep_by_type(NULL,"Equity|ETF")
-  fxsymbols <-symbol_grep_by_type(NULL,"FX")
+  if(nrow(the_av$pxinv)<=0) {
+    quick_message("istr1","No inventory to price")
+    return()
+  }
+  tmp_syms  <- the_av$pxinv[grepl("Equity|ETF",type),]$symbol
+  fxsymbols <- the_av$pxinv[grepl("FX",type),]$symbol
   if(tmp_syms[[1]]=="NOPXINV") {
       quick_message("istr1","Run some Price History first..")
       return()
@@ -263,7 +268,8 @@ av_livepx <- function(todo,rv) {
 av_des <- function(todo,rv) {
   imp=NULL
   out<-list()
-  if( length(eqset <- symbol_grep_by_type(s(rv$assetline),"Equity"))>0 ) {
+  this_symset <- form_symset(s(rv$assetline))
+  if( length(eqset <- this_symset[type=="Equity",]$symbol)>0 ) {
     eqdt <- rbindlist(lapply(eqset, \(x) av_get_pf(x,"OVERVIEW")))
     eqdt <- eqdt |> save_av_data("OVERVIEW")
     olist <- avsd$overviewlist[,variable:=EquityName][]
@@ -277,7 +283,7 @@ av_des <- function(todo,rv) {
     out[["GT2"]] <-  eqdta[variable=="Description",.(symbol,desc=value_str)] |> gt() |> gt.basetheme(sizepct=70)
   }
   # tab_style(eval(parse(text=fm31)),eval(parse(text=fm32)))
-  if( length(eqset <- symbol_grep_by_type(s(rv$assetline),"ETF"))>0 ) {
+  if( length(eqset <- this_symset[type=="ETF",]$symbol)>0 ) {
     eqdt <- rbindlist(lapply(eqset, \(x) av_get_pf(x,"ETF_PROFILE")))
     eqdt <- eqdt |> save_av_data("ETF_PROFILE")
     olist <- avsd$overviewlist[,variable:=ETFName][]
@@ -359,7 +365,8 @@ av_active <- function(todo,rv) {
 # Good
 av_divs <- function(todo,rv) {
   out=list()
-  if( length(eqset <- symbol_grep_by_type(s(rv$assetline),"Equity|ETF"))>0 ) {
+  this_symset <- form_symset(s(rv$assetline))
+  if( length(eqset <- this_symset[grepl("Equity|ETF",asset),]$symbol)>0 ) {
     alldivs <- rbindlist(lapply(eqset, \(x) oneticker_divs(x,rv$dtstr_hist)),fill=TRUE,use.names=TRUE)
     out<- list(alldivs |> gt.avtheme(themeset="dividends"))
   }
@@ -374,7 +381,8 @@ av_divs <- function(todo,rv) {
 av_earn <- function(todo,rv) {
   out<-list()
   fwddts <- extenddtstr(rv$dtstr_hist,rtn="list",endchg=2*360)
-  if(length(alleqs <- symbol_grep_by_type(s(rv$assetline),"Equity"))>0) {
+  this_symset <- form_symset(s(rv$assetline))
+  if(length(alleqs <- this_symset[type=="Equity",]$symbol)>0) {
     allearn <- rbindlist(lapply(alleqs,\(x) oneticker_earns(x,fwddts,rv$dtstr_hist)))
     lastqtr <- max(allearn[symbol==alleqs[[1]] & !is.na(reportedDate)]$fiscalDateEnding)
     lastqtr <- paste0(lubridate::year(lastqtr),"Q",lubridate::quarter(lastqtr))
