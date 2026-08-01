@@ -1,4 +1,4 @@
-# ShinyApp_setup_and_usage
+# ShinyApp_1_setup_and_usage
 
 The **Alphavantagepf** package contains a Shiny Application which can be
 used to query, save, and visualize basic market information without
@@ -41,6 +41,10 @@ A few conventions which are helpful to know before using the app are
 | Relative Dates | (Signed) integers followed by `[m|d|y]`, relative to today | `"-4m"` |
 | Date Ranges | Relative dates separated by `"::"` | `"-4m::"`, `"-1y::+1y"` |
 
+“Assets” can be any (common) symbol for an Equity, ETF, Currency (in the
+usual form of an alphabetic string of the form (`countercurrency` /
+`currency`), cryptocurrency[^2], index, or user defined time series.
+
 ## App invocation and initial setup.
 
 The app requires a very modest amount of setup before using. It can be
@@ -57,40 +61,72 @@ require(alphavantagepf)
 av_runShiny()
 ```
 
-When the app is first run, the following screen will be shown, with the
-AVOPTS tab selected. The first order of business will be to set the
-Alphavantage API keys and (optionally) set data directories. To do so,
-just type or copy in both your API key and your entitlement status
-(`delayed` or `realtime`), and hit the blue Set Opts button.
+When
+[av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html)
+is first run, the following screen will be shown, with the AVOPTS tab
+selected. The first order of business will be to set the Alphavantage
+API keys and (optionally) set data directories. To do so, just type or
+copy in both your API key and your entitlement status (`delayed` or
+`realtime`), and hit the blue Set Opts button.
+
+![avopts](img/av_opts.jpg)
+
+avopts
+
+When the Set Opts button is pressed, a table of internal state variables
+is shown, with any changes highlighted. There are several options which
+can be set, all described in the [Options
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Graphs_and_Options.html),
+but one in particular is worth changing up front.
 
 The app fills in a default data cache location determined by
 \[tools::R_user_dir()\]. Since that directory is a cache directory
 typically buried in long paths, you may find it helpful to set an
-alternative location, as shown below.
+alternative location in the `Cache Data Directory` field as has been
+done above. This will provide a consistent and easily accessable portal
+between the data used by the app and any external analyses or data
+collection mechanisms already in place.
 
-![](img/av_opts.jpg) When the Set Opts button is pressed, a table of
-internal state variables is shown, with any changes highlighted.
+After the first invocation, the app will start on the INVENTORY tab, so
+a user can immediately see what’s been updated and search for tickers.
 
-Other optional items that can be set are
+## General Usage
 
-| Item | Description |
+Analyses are all done by invoking “functions” or commands on a set of
+assets in the yellow line shown above. As described in the README file,
+commands which start with `AV.` are asset-less commands. Just type in
+what you want and hit “Enter”. The command will get any data it needs
+and then produce any combination of tables, time series graphs, or other
+plots. The app responds as follows:
+
+- Most results will appear in the MAIN tab, but some results may appear
+  in function specific tabs. For example, the OPTIONS tab has specific
+  fields to search for Equity options, and the NEWS tab has specific
+  fields to narrow search results. Note that there is also a separate
+  INVENTORY tab to always have a searcable ticker list available.
+
+- Some commands may produce some auxilliary information in a separate
+  tab. That tab is typically called DETAIL but can change names to
+  highlight existance of results in the tab.
+
+- Feedback (i.e.an error message) is placed below the command line, but
+  can appear elsewhere. Progress messages will show in the R command
+  line unless the `verbose` option is deselected in the AVOPTS tab.
+
+### Examples
+
+You might want to start with `AV.H` which describes all the commands
+available. Some examples of commands that can be run are
+
+| Command | Description |
 |:--:|:---|
-| Cache Data Directory | Directory to store cached price data. If not specified, a temporary directory be created and used. |
-|  | Cached time series are in the file `av(in [fst](https://www.fstpackage.org/) format), and| |fgts colorset|A named aesthetic set for time series line colors, See [fg_update_aes()](https://derekholmes0.github.io/FinanceGraphs/reference/set_constants.html)| |Regr Significance|p-values below which regression terms will be highlighted| |AV dump directory|A directory in which to create a file with each downloaded function call. See below for details.| |Capture AV Data|What Alphavantage calls to capture (e.g. Prices, non-prices, or all data)| |Update or Cumulative|If`Update`, then captured data will be keyed and updated only if new, otherwise all data captured| ||For example,`Update\` will only store the latest price for a particular symbol and date |
-| Data Saving Options | Control how often the captured data file is cleared or saved |
-|  |  |
+| `EEM;HEEM GP` | Graph raw time series of the `EEM` ETF and it’s hedged counterpart. |
+| `QQQ;SPY GPI` | Graph total return indices of the two ETFs rebased to 100 at the start |
+| `IBM;ORCL EA` | Give table of earnings and estimates for `IBM` and `ORCL` [^3] |
 
-.. to finish..
+## Asset Lists
 
-When capturing is turned on, a file called `av_download.RD` will be
-created and updated in the specified dump directory. This file will be a
-named list of [data.tables](https://github.com/Rdatatable/data.table),
-with a data.table containing all downloaded data corresponding to an
-Alphavantage function (e.g. `TIME_SERIES_DAILY`). If “cumulative” is
-selected, all data will time-stamped and added to the relevant
-data.table. If not, then data will be replaced for each relevant key
-(usually `SYMBOL`). The user can then use that file to integrate search
-histories into other analytics, such as a rolling Markdown file.
+## Specific command notes
 
 ## Asset List management
 
@@ -326,3 +362,11 @@ actual Fed Meetings.
 
 [^1]: A “cheatsheet” with these conventions is displayed when `AV.H` is
     run, unless the `showGeneralHelp` option is deselected.
+
+[^2]: See `AV.TICKERS` for a list of cryptocurrencies available. Not all
+    are available as symmetric pairs, so please use only those on the
+    list.
+
+[^3]: See `AV.TICKERS` for a list of cryptocurrencies available. Not all
+    are available as symmetric pairs, so please use only those on the
+    list.

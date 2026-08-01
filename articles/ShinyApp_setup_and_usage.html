@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>ShinyApp_setup_and_usage • alphavantagepf</title>
+<title>ShinyApp_1_setup_and_usage • alphavantagepf</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="ShinyApp_setup_and_usage">
+<meta property="og:title" content="ShinyApp_1_setup_and_usage">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -36,9 +36,9 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/API_interface_usage.html">API_interface_usage</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_Data_Management.html">ShinyApp_Data_Management</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_Graphs_and_Options.html">ShinyApp_Graphs_and_Options</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_Graphs_and_Options.html">ShinyApp_2_Graphs_and_Options</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_New_Functionality.html">ShinyApp_New_Functionality</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_setup_and_usage.html">ShinyApp_setup_and_usage</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_setup_and_usage.html">ShinyApp_1_setup_and_usage</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -61,7 +61,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>ShinyApp_setup_and_usage</h1>
+      <h1>ShinyApp_1_setup_and_usage</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/derekholmes0/alphavantagepf/blob/master/vignettes/ShinyApp_setup_and_usage.Rmd" class="external-link"><code>vignettes/ShinyApp_setup_and_usage.Rmd</code></a></small>
@@ -105,9 +105,9 @@ latter is used via a “sister” package <a href="https://derekholmes0.github.i
 is deselected.&lt;/p&gt;"><sup>1</sup></a></p>
 <table class="table">
 <colgroup>
-<col width="19%">
-<col width="63%">
-<col width="17%">
+<col width="21%">
+<col width="48%">
+<col width="29%">
 </colgroup>
 <thead><tr class="header">
 <th align="center">Item</th>
@@ -136,6 +136,12 @@ relative to today</td>
 </tr>
 </tbody>
 </table>
+<p>“Assets” can be any (common) symbol for an Equity, ETF, Currency (in
+the usual form of an alphabetic string of the form
+(<code>countercurrency</code> / <code>currency</code>), cryptocurrency<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;See &lt;code&gt;AV.TICKERS&lt;/code&gt; for a list of
+cryptocurrencies available. Not all are available as symmetric pairs, so
+please use only those on the list.&lt;/p&gt;"><sup>2</sup></a>, index, or
+user defined time series.</p>
 </div>
 <div class="section level2">
 <h2 id="app-invocation-and-initial-setup-">App invocation and initial setup.<a class="anchor" aria-label="anchor" href="#app-invocation-and-initial-setup-"></a>
@@ -147,65 +153,102 @@ be run with</p>
 <span><span class="co">#&gt; Loading required package: alphavantagepf</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/av_runShiny.html">av_runShiny</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>When the app is first run, the following screen will be shown, with
-the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab
+<p>When <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html">av_runShiny()</a>
+is first run, the following screen will be shown, with the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab
 selected. The first order of business will be to set the Alphavantage
 API keys and (optionally) set data directories. To do so, just type or
 copy in both your API key and your entitlement status
 (<code>delayed</code> or <code>realtime</code>), and hit the blue <span style="background-color: #003366; color: #FFFFFF;">Set Opts</span>
 button.</p>
+<div class="float">
+<img src="img/av_opts.jpg" alt="avopts"><div class="figcaption">avopts</div>
+</div>
+<p>When the <span style="background-color: #003366; color: #FFFFFF;">Set
+Opts</span> button is pressed, a table of internal state variables is
+shown, with any changes highlighted. There are several options which can
+be set, all described in the <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Graphs_and_Options.html">Options
+Vignette</a>, but one in particular is worth changing up front.</p>
 <p>The app fills in a default data cache location determined by
 [tools::R_user_dir()]. Since that directory is a cache directory
 typically buried in long paths, you may find it helpful to set an
-alternative location, as shown below.</p>
-<p><img src="img/av_opts.jpg" class="r-plt" alt="" width="100%"> When
-the <span style="background-color: #003366; color: #FFFFFF;">Set
-Opts</span> button is pressed, a table of internal state variables is
-shown, with any changes highlighted.</p>
-<p>Other optional items that can be set are</p>
+alternative location in the <code>Cache Data Directory</code> field as
+has been done above. This will provide a consistent and easily
+accessable portal between the data used by the app and any external
+analyses or data collection mechanisms already in place.</p>
+<p>After the first invocation, the app will start on the <span style="border: 1px solid #000000; padding: 2px 6px;">INVENTORY</span>
+tab, so a user can immediately see what’s been updated and search for
+tickers.</p>
+</div>
+<div class="section level2">
+<h2 id="general-usage">General Usage<a class="anchor" aria-label="anchor" href="#general-usage"></a>
+</h2>
+<p>Analyses are all done by invoking “functions” or commands on a set of
+assets in the yellow line shown above. As described in the README file,
+commands which start with <code>AV.</code> are asset-less commands. Just
+type in what you want and hit “Enter”. The command will get any data it
+needs and then produce any combination of tables, time series graphs, or
+other plots. The app responds as follows:</p>
+<ul>
+<li><p>Most results will appear in the <span style="border: 1px solid #000000; padding: 1px 5px;">MAIN</span> tab,
+but some results may appear in function specific tabs. For example, the
+<span style="border: 1px solid #000000; padding: 1px 5px;">OPTIONS</span> tab
+has specific fields to search for Equity options, and the <span style="border: 1px solid #000000; padding: 1px 5px;">NEWS</span> tab has
+specific fields to narrow search results. Note that there is also a
+separate <span style="border: 1px solid #000000; padding: 1px 5px;">INVENTORY</span>
+tab to always have a searcable ticker list available.</p></li>
+<li><p>Some commands may produce some auxilliary information in a
+separate tab. That tab is typically called <span style="border: 1px solid #000000; padding: 1px 5px;">DETAIL</span> but
+can change names to highlight existance of results in the tab.</p></li>
+<li><p>Feedback (i.e.an error message) is placed below the command line,
+but can appear elsewhere. Progress messages will show in the R command
+line unless the <code>verbose</code> option is deselected in the <span style="border: 1px solid #000000; padding: 1px 5px;">AVOPTS</span>
+tab.</p></li>
+</ul>
+<div class="section level3">
+<h3 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
+</h3>
+<p>You might want to start with <code>AV.H</code> which describes all
+the commands available. Some examples of commands that can be run
+are</p>
 <table class="table">
 <colgroup>
-<col width="22%">
-<col width="77%">
+<col width="31%">
+<col width="68%">
 </colgroup>
 <thead><tr class="header">
-<th align="center">Item</th>
+<th align="center">Command</th>
 <th align="left">Description</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="center">Cache Data Directory</td>
-<td align="left">Directory to store cached price data. If not specified,
-a temporary directory be created and used.</td>
+<td align="center"><code>EEM;HEEM GP</code></td>
+<td align="left">Graph raw time series of the <code>EEM</code> ETF and
+it’s hedged counterpart.</td>
 </tr>
 <tr class="even">
-<td align="center"></td>
-<td align="left">Cached time series are in the file
-<code>av(in [fst](https://www.fstpackage.org/) format), and| |fgts colorset|A named aesthetic set for time series line colors, See [fg_update_aes()](https://derekholmes0.github.io/FinanceGraphs/reference/set_constants.html)| |Regr Significance|p-values below which regression terms will be highlighted| |AV dump directory|A directory in which to create a file with each downloaded function call.  See below for details.| |Capture AV Data|What Alphavantage calls to capture (e.g. Prices, non-prices, or all data)| |Update or Cumulative|If</code>Update<code>, then captured data will be keyed and updated only if new, otherwise all data captured| ||For example,</code>Update`
-will only store the latest price for a particular symbol and date</td>
+<td align="center"><code>QQQ;SPY GPI</code></td>
+<td align="left">Graph total return indices of the two ETFs rebased to
+100 at the start</td>
 </tr>
 <tr class="odd">
-<td align="center">Data Saving Options</td>
-<td align="left">Control how often the captured data file is cleared or
-saved</td>
-</tr>
-<tr class="even">
-<td align="center"></td>
-<td align="left"></td>
+<td align="center"><code>IBM;ORCL EA</code></td>
+<td align="left">Give table of earnings and estimates for
+<code>IBM</code> and <code>ORCL</code> <a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;See &lt;code&gt;AV.TICKERS&lt;/code&gt; for a list of
+cryptocurrencies available. Not all are available as symmetric pairs, so
+please use only those on the list.&lt;/p&gt;"><sup>3</sup></a>
+</td>
 </tr>
 </tbody>
 </table>
-<p>.. to finish..</p>
-<p>When capturing is turned on, a file called
-<code>av_download.RD</code> will be created and updated in the specified
-dump directory. This file will be a named list of <a href="https://github.com/Rdatatable/data.table" class="external-link">data.tables</a>, with a
-data.table containing all downloaded data corresponding to an
-Alphavantage function (e.g. <code>TIME_SERIES_DAILY</code>). If
-“cumulative” is selected, all data will time-stamped and added to the
-relevant data.table. If not, then data will be replaced for each
-relevant key (usually <code>SYMBOL</code>). The user can then use that
-file to integrate search histories into other analytics, such as a
-rolling Markdown file.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="asset-lists">Asset Lists<a class="anchor" aria-label="anchor" href="#asset-lists"></a>
+</h2>
+</div>
+<div class="section level2">
+<h2 id="specific-command-notes">Specific command notes<a class="anchor" aria-label="anchor" href="#specific-command-notes"></a>
+</h2>
 </div>
 <div class="section level2">
 <h2 id="asset-list-management">Asset List management<a class="anchor" aria-label="anchor" href="#asset-list-management"></a>

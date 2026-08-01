@@ -38,9 +38,9 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/API_interface_usage.html">API_interface_usage</a></li>
     <li><a class="dropdown-item" href="articles/ShinyApp_Data_Management.html">ShinyApp_Data_Management</a></li>
-    <li><a class="dropdown-item" href="articles/ShinyApp_Graphs_and_Options.html">ShinyApp_Graphs_and_Options</a></li>
+    <li><a class="dropdown-item" href="articles/ShinyApp_Graphs_and_Options.html">ShinyApp_2_Graphs_and_Options</a></li>
     <li><a class="dropdown-item" href="articles/ShinyApp_New_Functionality.html">ShinyApp_New_Functionality</a></li>
-    <li><a class="dropdown-item" href="articles/ShinyApp_setup_and_usage.html">ShinyApp_setup_and_usage</a></li>
+    <li><a class="dropdown-item" href="articles/ShinyApp_setup_and_usage.html">ShinyApp_1_setup_and_usage</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -157,7 +157,7 @@ The <code>symbol</code> parameter is required, but can be a simple empty string 
 <li>
 <strong>Typing and mousing are minimized.</strong> by using a command lines sets of assets which can be saved and recalled at any time, or added as a <code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame()</a></code> externally.</li>
 <li>
-<strong>The app is expandable.</strong> User time series data can be added using one function, which is then accessible just like any other data. Users can code and add their own analytics, as long as the function returns a list of tables (<a href="https://gt.rstudio.com/reference/index.html" class="external-link">gt</a> objects), <a href="https://rstudio.github.io/dygraphs/" class="external-link">dygraphs</a>, or <a href="https://ggplot2.tidyverse.org/reference/index.html" class="external-link">ggplots</a>. The vignette <span style="background-color: #003366; color: #FFFFFF;">LINK_extensions</span> provides details.</li>
+<strong>The app is expandable.</strong> User time series data can be added using one function, which is then accessible just like any other data. Users can code and add their own analytics, as long as the function returns a list of tables (<a href="https://gt.rstudio.com/reference/index.html" class="external-link">gt</a> objects), <a href="https://rstudio.github.io/dygraphs/" class="external-link">dygraphs</a>, or <a href="https://ggplot2.tidyverse.org/reference/index.html" class="external-link">ggplots</a>. Details are in <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_New_Functionality.html">New Functionality Vignette</a>.</li>
 </ul>
 <p>To launch the app, run <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html">av_runShiny()</a>, and start with the first step of setting your API key. (See <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_setup_and_usage.html">Setup Vignette</a> for other items you can set) Once the API key is set, it’s easy to start building a data set and analyzing it in real time.</p>
 <div class="section level2">
@@ -165,7 +165,7 @@ The <code>symbol</code> parameter is required, but can be a simple empty string 
 </h2>
 <p>The first time <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html">av_runShiny()</a> is run, a temporary data directory is created and a local copy of applications defaults (and other data) is created. The app will start in the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab, where you can set up and maintain all aspects of the app behavior.</p>
 <p><strong>At a minimum</strong>, fill in your API key and permissionings status, unless already saved with <code><a href="reference/avpf_api_key.html">avpf_api_key()</a></code>. By default, all of the data downloaded and used by the app is kept in a default caching directory. I would highly recommend creating a more friendly location for data to be saved, which in the example below is set to a temp directory <code>c:/t/avsh</code>. To change any of the options, set them as needed and hit the <span style="background-color: #003366; color: #FFFFFF;">Set Opts</span> button. A table showing those selections (along with all other saved internal data) will be shown, with changed options highlighted.</p>
-<p>A full description of the options available is given in the options ignette <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Graphs_and_Options.html">Options Vignette</a></p>
+<p>A full description of the options available is given in the options vignette <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Graphs_and_Options.html">Options Vignette</a></p>
 <figure><img src="reference/figures/InitialSetup.jpg" alt="Initial Setup"><figcaption aria-hidden="true">
 Initial Setup
 </figcaption></figure><p>Now you have the ability to get data form AlphaVantage and can get started with analyses.</p>

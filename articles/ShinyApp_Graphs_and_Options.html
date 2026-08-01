@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>ShinyApp_Graphs_and_Options • alphavantagepf</title>
+<title>ShinyApp_2_Graphs_and_Options • alphavantagepf</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="ShinyApp_Graphs_and_Options">
+<meta property="og:title" content="ShinyApp_2_Graphs_and_Options">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -36,9 +36,9 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/API_interface_usage.html">API_interface_usage</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_Data_Management.html">ShinyApp_Data_Management</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_Graphs_and_Options.html">ShinyApp_Graphs_and_Options</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_Graphs_and_Options.html">ShinyApp_2_Graphs_and_Options</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_New_Functionality.html">ShinyApp_New_Functionality</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_setup_and_usage.html">ShinyApp_setup_and_usage</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_setup_and_usage.html">ShinyApp_1_setup_and_usage</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -61,7 +61,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>ShinyApp_Graphs_and_Options</h1>
+      <h1>ShinyApp_2_Graphs_and_Options</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/derekholmes0/alphavantagepf/blob/master/vignettes/ShinyApp_Graphs_and_Options.Rmd" class="external-link"><code>vignettes/ShinyApp_Graphs_and_Options.Rmd</code></a></small>
@@ -70,474 +70,409 @@
 
     
     
-<p>The <strong>Alphavantagepf</strong> package also contains a Shiny
-Application which can be used to query, save, and visualize basic market
-information without having to navigate the asset-specific functions
-provided by the Alphavantage API. The app provides an intuitive way to
-compare small baskets of assets both technically and fundamentally.</p>
-<p>This vignette will first go through some overall design goals and
-conventions before providing an overview of how to start and configure
-the application. Once it is running, we then give a brief overview of
-list management and individual analysis components. Augmenting the data
-is also described. Future plans are discussed in an appendix.</p>
+<p>This vignette describes in detail graphing and data options available
+in <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html">av_runShiny()</a>.
+Graphing options are typically set within the boxes to the side of the
+main screen, while all other options are set in the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span>
+tab.</p>
 <div class="section level2">
-<h2 id="overall-design-goals-and-conventions">Overall design goals and conventions<a class="anchor" aria-label="anchor" href="#overall-design-goals-and-conventions"></a>
+<h2 id="application-options">Application Options<a class="anchor" aria-label="anchor" href="#application-options"></a>
 </h2>
-<p>The app is designed to</p>
-<ul>
-<li>Integrate four of the main asset classes into the analysis. For
-example, an equity, an index and FX exchange rate can all be plotted
-together.</li>
-<li>Minimize the amount of price information downloaded by caching (to
-the degree possible) older price data.</li>
-<li>Provide interfaces for capturing any data requested and adding
-external data to the internal cache.</li>
-<li>Provide easy ways to create and retrieve baskets of assets.</li>
-<li>Use modern design elements as much as possible, in particular the <a href="https://gt.rstudio.com/" class="external-link">gt</a> package and the <a href="https://rstudio.github.io/dygraphs/" class="external-link">dygraphs</a> package. The
-latter is used via a “sister” package <a href="https://derekholmes0.github.io/FinanceGraphs/reference/index.html" class="external-link">FinanceGraphs</a>
-</li>
-</ul>
-<p>A few conventions which are helpful to know before using the app
-are</p>
-<table class="table">
-<colgroup>
-<col width="19%">
-<col width="63%">
-<col width="17%">
-</colgroup>
-<thead><tr class="header">
-<th align="center">Item</th>
-<th align="left">Convention</th>
-<th align="left">Example</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="center">Asset Sets</td>
-<td align="left">Semicolon <code>;</code> delimited</td>
-<td align="left"><code>"IBM;NDX;USD/MXN"</code></td>
-</tr>
-<tr class="even">
-<td align="center">Relative Dates</td>
-<td align="left">(Signed) integers followed by <code>[m|d|y]</code>,
-relative to today</td>
-<td align="left"><code>"-4m"</code></td>
-</tr>
-<tr class="odd">
-<td align="center">Date Ranges</td>
-<td align="left">Relative dates separated by <code>"::"</code>
-</td>
-<td align="left">
-<code>"-4m::"</code>, <code>"-1y::+1y"</code>
-</td>
-</tr>
-</tbody>
-</table>
+<p>Application defaults are initialized upon setup, and are saved
+persistently in a file ()<code>avpf_constants.RD</code>) within a cache
+directory chosen by
+<code>tools::R_user_dir("alphavantagepf", which = "cache")</code>. Data
+itself is stored in the same directory unless a <strong>Cache data
+directory</strong> is set up. The options can be categorized within
+three groups: required API options, data management options, and
+others.</p>
+<div class="float">
+<img src="reference/figures/av_opts_detail.jpg" alt="AV Options Detail"><div class="figcaption">AV Options Detail</div>
 </div>
-<div class="section level2">
-<h2 id="app-invocation-and-initial-setup-">App invocation and initial setup.<a class="anchor" aria-label="anchor" href="#app-invocation-and-initial-setup-"></a>
-</h2>
-<p>The app requires a very modest amount of setup before using. It can
-be run with</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/derekholmes0/alphavantagepf" class="external-link">alphavantagepf</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: alphavantagepf</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/av_runShiny.html">av_runShiny</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>When the app is first run, the following screen will be shown, with
-the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab
-selected. The first order of business will be to set the Alphavantage
-API keys. To do so, just type or copy in both your API key and your
-entitlement status (Either <code>delayed</code> or
-<code>realtime</code>), and hit the blue <span style="background-color: #337AB7; color: #FFFFFF;">Set Opts</span>
-button.</p>
-<p><img src="img/av_opts.jpg" class="r-plt" alt="" width="100%"></p>
-<p>Other optional items that can be set are</p>
+<div class="section level3">
+<h3 id="required-api-options">Required API Options<a class="anchor" aria-label="anchor" href="#required-api-options"></a>
+</h3>
+<p>This app is centered around the Alphavantage API, and requires a
+valid API key and entitlement status to function.</p>
 <table class="table">
 <colgroup>
-<col width="22%">
-<col width="77%">
+<col width="17%">
+<col width="82%">
 </colgroup>
 <thead><tr class="header">
-<th align="center">Item</th>
+<th align="center">Field</th>
 <th align="left">Description</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="center">Cache Data Directory</td>
-<td align="left">Directory to store cached price data. If not specified,
-a temporary directory will be created and used.</td>
+<td align="center">
+<span style="color:blue">A</span> av api key</td>
+<td align="left">API key obtained form Alphavantage.</td>
+</tr>
+<tr class="even">
+<td align="center">
+<span style="color:blue">B</span> av entitlement</td>
+<td align="left">Entitlement status, either <code>delayed</code> or
+<code>realtime</code>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="data-management-options">Data Management Options<a class="anchor" aria-label="anchor" href="#data-management-options"></a>
+</h3>
+<p>Data is stored in one or two directories, depending on whether a
+<strong>Dump directory</strong> is set.</p>
+<ul>
+<li>Price series and user time series are kept in a cache directory
+which defaults to the temporary directory created for the package, but
+can be set in the <span style="color:blue">C: Cache Data
+Directory.</span>. Earnings data is stored in the same directory.</li>
+<li>The results of each call to the Alphavantage API can optionally be
+stored in a <strong>Dump directory</strong>. The purpose of this is to
+allow users to “scrape” their thoughts, analyses, etc. on a per-call
+basis. Please be aware that this does increase the time spent on each
+command issued. That directory is set in <span style="color:blue">D:
+Dump Directory.</span> and data is stored as a named (by function call
+name) list of <code>data.tables()</code>.</li>
+</ul>
+<p>The options associated with the dumping are given below:</p>
+<table class="table">
+<colgroup>
+<col width="17%">
+<col width="82%">
+</colgroup>
+<thead><tr class="header">
+<th align="center">Field</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="center">
+<span style="color:blue">C</span> Cache
+Data</td>
+<td align="left">Directory to store time series, earnings, and earnings
+estimates</td>
+</tr>
+<tr class="even">
+<td align="center">
+<span style="color:blue">D</span> AV dump
+directory</td>
+<td align="left">Directory to store API call results. Must be set for
+dumping to occur.</td>
+</tr>
+<tr class="odd">
+<td align="center">
+<span style="color:blue">E</span> Capture AV
+Data</td>
+<td align="left">What to capture</td>
 </tr>
 <tr class="even">
 <td align="center"></td>
-<td align="left">Cached data is in a price file (in <a href="https://www.fstpackage.org/" class="external-link">fst</a> format), and an inventory
-file</td>
+<td align="left">
+<code>None</code> (default): Turn capture off, even if
+the directory is set.</td>
 </tr>
 <tr class="odd">
-<td align="center">fgts colorset</td>
-<td align="left">A named aesthetic set for time series line colors, See
-<a href="https://derekholmes0.github.io/FinanceGraphs/reference/set_constants.html" class="external-link">fg_update_aes()</a>
+<td align="center"></td>
+<td align="left">
+<code>nopricesonly</code>: Capture anything
+<em>but</em> time series data.</td>
+</tr>
+<tr class="even">
+<td align="center"></td>
+<td align="left">‘all’ Capture all calls</td>
+</tr>
+<tr class="odd">
+<td align="center">
+<span style="color:blue">F</span> Update or
+Cumulative</td>
+<td align="left">
+<code>update</code> data captured by symbol, or
+(<code>cum</code>) capture every time with a timestamp.</td>
+</tr>
+<tr class="even">
+<td align="center">
+<span style="color:blue">G</span> Data Saving
+Options</td>
+<td align="left">Other options</td>
+</tr>
+<tr class="odd">
+<td align="center"></td>
+<td align="left">
+<code>SaveEveryAVCall</code>: Save all calls
+cumulatively when the call is made.</td>
+</tr>
+<tr class="even">
+<td align="center"></td>
+<td align="left">
+<code>CleanOnStart</code>: Delete dump data on every
+startup of the app.</td>
+</tr>
+<tr class="odd">
+<td align="center"></td>
+<td align="left">
+<code>None</code>: Keep dumped data in memory, avoiding
+I/O overhead.</td>
+</tr>
+<tr class="even">
+<td align="center"></td>
+<td align="left"><code>SaveNowonOptUpdate</code></td>
+</tr>
+<tr class="odd">
+<td align="center">
+<span style="color:blue">H</span> Max Earnings
+Age</td>
+<td align="left">Number of days to go before reloading earnings
+data.</td>
+</tr>
+<tr class="even">
+<td align="center">
+<span style="color:blue">G</span> Max Price Age</td>
+<td align="left">Number of hours to go before refreshing price
+data.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="non-analytic-options">Non-analytic Options<a class="anchor" aria-label="anchor" href="#non-analytic-options"></a>
+</h3>
+<p>Non analytic features are set as check boxes, and are described in
+the following table. Note that they only change “officially” when the
+<span style="background-color: #003366; color: #FFFFFF;">Set Opts</span>
+button is pressed.</p>
+<table class="table">
+<colgroup>
+<col width="17%">
+<col width="82%">
+</colgroup>
+<thead><tr class="header">
+<th align="center">Field</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="center">:UseTotRtn</td>
+<td align="left">Use total return data (i.e. adjusted for splits and
+dividends in price series)</td>
+</tr>
+<tr class="even">
+<td align="center">:UseLivePx</td>
+<td align="left">Use separate Alphavantage calls to always have the most
+recent price point.</td>
+</tr>
+<tr class="odd">
+<td align="center">:verbose</td>
+<td align="left">Display (or not) informative messages in the
+console.</td>
+</tr>
+<tr class="even">
+<td align="center">:data2clipboard</td>
+<td align="left">Copy select data from each analysis to the clipboard
+for pasting into other applications.</td>
+</tr>
+<tr class="odd">
+<td align="center"></td>
+<td align="left">This is useful for other ad-hoc analysis without going
+through download boxes or extra buttons</td>
+</tr>
+<tr class="even">
+<td align="center">:persistOuput</td>
+<td align="left">Keep analyses output (graphs, tables, etc) until
+replaced by new ones</td>
+</tr>
+<tr class="odd">
+<td align="center">:showGeneralHelp</td>
+<td align="left">Show (or not) a general help screen when
+<code>AV.H</code> is run.</td>
+</tr>
+<tr class="even">
+<td align="center">:showWarnings</td>
+<td align="left">Suppress warnings from other packages
+(e.g. ggplot2)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="analytics-options">Analytics Options<a class="anchor" aria-label="anchor" href="#analytics-options"></a>
+</h3>
+<p>These are default statistical parameters:</p>
+<table class="table">
+<colgroup>
+<col width="17%">
+<col width="82%">
+</colgroup>
+<thead><tr class="header">
+<th align="center">Field</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="center">
+<span style="color:green">J</span>
+HistVolParams</td>
+<td align="left">Historical volatility parameters, see <a href="https://www.rdocumentation.org/packages/TTR/versions/0.24.4/topics/volatility" class="external-link">TTR::volatility</a>
 </td>
 </tr>
 <tr class="even">
-<td align="center">Regr Significance</td>
-<td align="left">p-values below which regression terms will be
+<td align="center">
+<span style="color:green">K</span> Regr
+Significance</td>
+<td align="left">Significance level below which regression results are
 highlighted</td>
 </tr>
-<tr class="odd">
-<td align="center">AV dump directory</td>
-<td align="left">A directory in which to create a file with each
-downloaded function call. See below for details.</td>
-</tr>
-<tr class="even">
-<td align="center">Capture AV Data</td>
-<td align="left">What Alphavantage calls to capture (e.g. Prices,
-non-prices, or all data)</td>
-</tr>
-<tr class="odd">
-<td align="center">Update or Cumulative</td>
-<td align="left">If <code>Update</code>, then captured data will be
-keyed and updated only if new, otherwise all data captured</td>
-</tr>
-<tr class="even">
-<td align="center"></td>
-<td align="left">For example, <code>Update</code> will only store the
-latest price for a particular symbol and date</td>
-</tr>
-<tr class="odd">
-<td align="center">Data Saving Options</td>
-<td align="left">Control how often the captured data file is cleared or
-saved</td>
-</tr>
 </tbody>
 </table>
-<p>When capturing is turned on, a file called
-<code>av_download.RD</code> will be created and updated in the specified
-dump directory. This file will be a named list of <a href="https://github.com/Rdatatable/data.table" class="external-link">data.tables</a>, with a
-data.table containing all downloaded data corresponding to an
-Alphavantage function (e.g. <code>TIME_SERIES_DAILY</code>). If
-“cumulative” is selected, all data will time-stamped and added to the
-relevant data.table. If not, then data will be replaced for each
-relevant key (usually <code>SYMBOL</code>). The user can then use that
-file to integrate search histories into other analytics, such as a
-rolling Markdown file.</p>
+</div>
 </div>
 <div class="section level2">
-<h2 id="asset-list-management">Asset List management<a class="anchor" aria-label="anchor" href="#asset-list-management"></a>
+<h2 id="graphing-options">Graphing Options<a class="anchor" aria-label="anchor" href="#graphing-options"></a>
 </h2>
-<p>Securities are seldom analyzed in isolation. It is easy to create and
-use ad-hoc groups of securities in this app.</p>
+<p>The default graphing package used is <a href="https://derekholmes0.github.io/FinanceGraphs/" class="external-link">FinanceGraphs</a>
+which provides finance-specific graphing functions based on <a href="https://rstudio.github.io/dygraphs/" class="external-link">dygraphs</a> and <a href="https://ggplot2.tidyverse.org/reference/index.html" class="external-link">ggplot2</a>.
+Any of the features described there can be used, most notably:</p>
 <ul>
-<li><p><strong>To create a list</strong>, First, type in a new name for
-the list in the list box as shown below, and Hit Enter. Second, type in
-the components (separated by semi-colons) and hit the <span style="background-color: #337AB7; color: #FFFFFF;">set</span>
-button.</p></li>
-<li><p><strong>To get the assets in a list</strong>, select the desired
-list from the dropdown and hit <span style="background-color: #337AB7; color: #FFFFFF;">get</span>
-button.</p></li>
-</ul>
-<p><img src="img/assetlist.gif" class="r-plt" alt="" width="100%"></p>
-<p>You can see a table of current asset lists by running the
-“Gen:Inventory” command, and can add asset lists outside of the app
-using <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.html">av_add_assetgroups()</a></p>
-</div>
-<div class="section level2">
-<h2 id="running-basic-analyses">Running Basic Analyses<a class="anchor" aria-label="anchor" href="#running-basic-analyses"></a>
-</h2>
-<p>To run analyses, select the desired item from the dropdowns and press
-the blue <span style="background-color: #337AB7; color: #FFFFFF;">RUN</span> button.
-One of more graphs or tables will be shown in the <span style="border: 1px solid #000000; padding: 2px 6px;">MAIN</span> tab,
-with additional data possible in the <span style="border: 1px solid #000000; padding: 2px 6px;">DETAIL</span> tab.
-That tab (the one to the right of <span style="border: 1px solid #000000; padding: 2px 6px;">MAIN</span>) will
-change headings when relevant.</p>
-<p>Graph events and decorations can be specified in the first two boxes,
-with annotations for the last level and 5 turning points used as
-defaults. The options possible are detailed in the <a href="https://derekholmes0.github.io/FinanceGraphs/reference/fgts_dygraph.html" class="external-link">fgts_dygraph()</a>
-documentation. Empty out the boxes for clean graphs. The date ranges
-plotted come from the “dts” box (see above for conventions), and more
-recent data can be focused in on using the <span style="color:blue">FocusPct</span> slider. For example, if the slider is
-set to 50pct, and the date string is <code>"-2y::"</code> then the graph
-will only show the last year of data, but can be slid back to see the
-entire 2 year period.</p>
-<p>Note that status messages are sent to the console if the “Status
-Msgs” box is checked and output data for each analysis is copied to the
-clipboad if the “copyTable” box is checked.</p>
-<div class="section level3">
-<h3 id="plotting-options">Plotting options<a class="anchor" aria-label="anchor" href="#plotting-options"></a>
-</h3>
-<p>Data is plotted in raw form unless the <span style="color:blue">Rebase options</span> are used. Rebasing at the start
-will normalize all series to 100 at the start of the window. (In the the
-example above, the rebase would occur at the first point plotted 2 years
-prior to today). If Rebasing is set to the focus point, the rebasing
-occurs at that point set by the slider.</p>
-<p>An alternative to rebasing is to plot the first asset on its own
-axis, which can be done by selecting <code>"splitts"</code> in the
-<code>"TSGraphOpts"</code> box. Other options that can be selected in
-that box are</p>
-<ul>
-<li>Highlighting the first series with a thicker line</li>
-<li>Adding Labels showing the last value or series title</li>
-<li>Adding hi-low shading, if the data is available.</li>
-<li>Changing the line colors (via the <code>"fgts colorset"</code>
-setting in the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span>
-tab.)</li>
-</ul>
-<p>Event codes can also be specified in the <code>"events"</code> box.
-See <a href="https://derekholmes0.github.io/FinanceGraphs/reference/fg_get_dates_of_interest.html" class="external-link">fg_get_dates_of_interest()</a>
-and <a href="https://derekholmes0.github.io/FinanceGraphs/articles/Time-Series-dygraph.html" class="external-link">Dygraphs
-vignette</a> These can be single day events or highlighted ranges of
-dates. (An example is below.)</p>
-<p>Time series graphs are harder to interpret when muitple time series
-frequencies or missing data is plotted together.<br>
-When time series do not appear to be daily, they will be plotted with
-step functions. When data is missing (as would be the case when plotting
-equities with assets such as FX or Crypto that trade over weekends),
-gaps in the time series will be evident.</p>
-</div>
-<div class="section level3">
-<h3 id="analyses-that-can-be-run">Analyses that can be run<a class="anchor" aria-label="anchor" href="#analyses-that-can-be-run"></a>
-</h3>
-<p>The table below shows the current analyses that can be run. Select
-what you wish and hit the <span style="background-color: #337AB7; color: #FFFFFF;">RUN</span>
-button.</p>
-<table class="table">
-<colgroup>
-<col width="41%">
-<col width="58%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">Analysis</th>
-<th align="left">Explanation/Notes</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">Gen:Inventory</td>
-<td align="left">Price inventory and Asset Lists</td>
-</tr>
-<tr class="even">
-<td align="left">Gen:LivePx</td>
-<td align="left">Live Price Table</td>
-</tr>
-<tr class="odd">
-<td align="left">Gen:NameSearch</td>
-<td align="left">Search for an Equity or Index [1]</td>
-</tr>
-<tr class="even">
-<td align="left">TS:PriceTS</td>
-<td align="left">Time Series of Prices [2],[3]</td>
-</tr>
-<tr class="odd">
-<td align="left">TS:ActiveTS</td>
-<td align="left">Time Series of Total Return of Line 1 Assets less Line
-2 [4]</td>
-</tr>
-<tr class="even">
-<td align="left">TS:HistVolTS</td>
-<td align="left">Time series of Rolling volatilities and correlations
-[5]</td>
-</tr>
-<tr class="odd">
-<td align="left">EQ:DES</td>
-<td align="left">Table of descriptive data for Line 1 Assets</td>
-</tr>
-<tr class="even">
-<td align="left">EQ:News</td>
-<td align="left">Table of recent news items for Line 1 Assets [6]</td>
-</tr>
-<tr class="odd">
-<td align="left">EQ:DivEarn</td>
-<td align="left">Table of Dividends and Earnings for Line 1 Assets</td>
-</tr>
-<tr class="even">
-<td align="left">EQ:OptSearch</td>
-<td align="left">Option Lookup and Search [7] (See Section Below)</td>
-</tr>
-<tr class="odd">
-<td align="left">Gen:Movers</td>
-<td align="left">US Market Movers</td>
-</tr>
-</tbody>
-</table>
-<p>Notes</p>
-<p>1 Due to Alphavantage limitations, the search returns tickers that
-begin with the search term.</p>
-<ol start="2" style="list-style-type: decimal">
-<li><p>Graphing options are described above. THe graph can interactively
-be zoomed in on and reset with a double click.<br>
-Two synchronized graphs can be used by selecting this option for both
-Line 1 and Line 2.</p></li>
-<li><p>Total return data is used unless the box is unchecked. The data
-is augmented by live data if the box is checked.</p></li>
-<li><p>Graphs show active returns, i.e. Total return of each asset in
-Line 1 less the first asset (typically a benchmark index) in Line 2.
-Rolling correlations and full period betas are also shown.</p></li>
-<li><p>Volatilitity parameters in the <span style="color:blue">Histvolparams</span> box are passed to the
-[TTR::volatility()] function.</p></li>
-<li><p>Results will be displayed in the <span style="border: 1px solid #000000; padding: 2px 6px;">OPTIONS</span>
-tab.</p></li>
-<li><p>Results will be displayed in the <span style="border: 1px solid #000000; padding: 2px 6px;">NEWS</span>
-tab.</p></li>
-</ol>
-<p>As an example, suppose we wish to look at active returns of three
-popular chip manufacturers against the Nasdaq 100 broad index. Put the
-tickers of interest in Line 1, and an index in Line 2. (If there are
-more than one tickers in Line 2, only the first is used.) Select
-<code>TS:ActiveTS</code> and hit run. The app will get whatever data it
-needs, typically from the cache, but augmented with most recent (live)
-data and produce the following output:</p>
-<p><img src="img/activets.jpg" class="r-plt" alt="" width="100%"> Here
-is another example which highlights both the comprehensive abilities to
-combine assets in the app with graphing abilities. Suppose we wish to
-plot the fair value history of the crypto ETF <code>IBIT</code>, and add
-some visual indication of overall market direction. Using the
-<code>TS:ActiveTS</code> analysis with <code>IBIT</code> on line 1,
-<code>BTC/USD</code> on line 2, and <code>doi:regm</code> in Events, we
-would see</p>
-<p><img src="img/ibit_fv.jpg" class="r-plt" alt="" width="100%"></p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="option-search">Option Search<a class="anchor" aria-label="anchor" href="#option-search"></a>
-</h2>
-<p>To find options for a given set of tickers, Run “EQ:Optsearch” which
-will take you to the <span style="border: 1px solid #000000; padding: 2px 6px;">OPTIONS</span> tab.
-A few fields on that page which will help narrow down the options
-are:</p>
-<table class="table">
-<colgroup>
-<col width="38%">
-<col width="61%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">Field</th>
-<th align="left">Detail</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">Chains</td>
-<td align="left">Comma delimited string of four items to narrow
-downloaded options.</td>
-</tr>
-<tr class="even">
-<td align="left"></td>
-<td align="left">1. <code>[F|B]</code> first contract or second
-contract</td>
-</tr>
-<tr class="odd">
-<td align="left"></td>
-<td align="left">2. <code>[M|Q]</code> Monthly expiration or Quarterly
-expiration</td>
-</tr>
-<tr class="even">
-<td align="left"></td>
-<td align="left">3. <code>[C|P|A]</code> Calls, Puts or Both</td>
-</tr>
-<tr class="odd">
-<td align="left"></td>
-<td align="left">4. <code>[itm|otm|all]</code> In or out of the
-money</td>
-</tr>
-<tr class="even">
-<td align="left">Mindelta</td>
-<td align="left">Minimum absolute delta of option</td>
-</tr>
-<tr class="odd">
-<td align="left">Output</td>
-<td align="left">Subset of columns to show, relevant to Trading or
-Valuation</td>
-</tr>
-<tr class="even">
-<td align="left">Scaling</td>
-<td align="left">Values and Greeks for 10 contracts or 10kUSD
-premium</td>
-</tr>
-</tbody>
-</table>
-<p>The app looks up the current spot to determine moneyness. A skew
-graph is plotted after the table.</p>
-<p><img src="img/optsearch.jpg" class="r-plt" alt="" width="100%"></p>
-</div>
-<div class="section level2">
-<h2 id="managing-data-outside-of-the-app-">Managing data outside of the app.<a class="anchor" aria-label="anchor" href="#managing-data-outside-of-the-app-"></a>
-</h2>
-<p>The Shiny App also has facilities for adding and retrieving time
-series data externally using other R scripts or documents. All of the
-downloaded price history, as well as an inventory of prices are stored
-either in a temporary directory created when the app is first run, or a
-directory specified in the <span style="color:red"><code>"AVOPTS"</code></span> tab. The price data is
-stored in <a href="https://www.fstpackage.org/" class="external-link">fst</a> format, which
-has been the performance winner for several years. Time series data
-stored in that cache augments that returned by (e.g.)
-<code>av_get_pf("IBM","TIME_SERIES_DAILY")</code> function wih split and
-dividend data returned by other <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a>
-calls. The full set is shown below. Note that a timestamp for each data
-retrieval is also kept.</p>
-<pre><code>symbol timestamp  open  high   low close adjusted_close dividend_amount split_coefficient                  ts origclose
-&lt;char&gt;  &lt;IDat&gt;    &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;          &lt;num&gt;      &lt;num&gt;             &lt;num&gt;              &lt;POSc&gt;     &lt;num&gt;
-ABBNY 2001-04-06  7.37  7.37  7.27  7.29           7.29          0             0.433 2026-05-31 08:06:48      16.8
-ABBNY 2001-04-09  7.32  7.50  7.32  7.50           7.50          0             0.433 2026-05-31 08:06:48      17.3</code></pre>
-<div class="section level3">
-<h3 id="adding-data-and-integrating-different-asset-classes-">Adding data and integrating different asset classes.<a class="anchor" aria-label="anchor" href="#adding-data-and-integrating-different-asset-classes-"></a>
-</h3>
-<p>The data can also be added to externally using the [av_add_data()]
-function. Any time series can be added, but not all time series can be
-guaranteed to be updated by Alphavantage calls. One difficulty with
-Alphavantages’ API platform is that there are different function calls
-(and returned data sets) for each major asset class. This app integrates
-them into one price table, but at the expense of <em>having to know each
-asset type</em> for the data added.</p>
-<p>The app tries to determine what asset class a symbol is to update it
-using <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a>
-calls as best as it can. Specifically, each new ticker is checked
-against current Index lists, cryptocurrency lists, and then with
-Alphavantage’s <code>"SYMBOL_SEARCH"</code>. <strong>If several tickers
-are passed at once</strong>, this can be quite expensive, as
-Alphavantage tends to limit data usage if too many calls are made in
-succession. If possible, it’s much better to predetermine the asset type
-(one of <code>c("Equity","ETF","Index","FX","Crypto")</code>) in advance
-and pass it to [av_add_data()] call at runtime.</p>
-<p>Data which is completely exogenous to Alphavantage can also be added
-to the cached data set. If the asset type isn’t specified or cannot be
-determined, it’s assumed to be a <code>"user"</code> asset type which
-isn’t updated, but can still be plotted or used. As an example, suppose
-we wish to plot the prices of a common credit ETF against FRED’s
-FEDFUNDS data. We will download both and add them programmatically.
-Generic data needs to be manipulated into the form the app expects, but
-data downloaded from Alphavantage is already in that form.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># av_add_data can be used simply, but</span></span>
-<span><span class="fu">av_add_data</span><span class="op">(</span><span class="fu"><a href="../reference/av_get_pf.html">av_get_pf</a></span><span class="op">(</span><span class="st">"IBM"</span>,<span class="st">"TIME_SERIES_DAILY_ADJUSTED"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># For many assets, use this</span></span>
-<span><span class="va">asset_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>symbol<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HYG"</span><span class="op">)</span>,type<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ETF"</span><span class="op">)</span>,currency<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"USD"</span><span class="op">)</span>, name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HY ETF"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">av_add_data</span><span class="op">(</span><span class="fu"><a href="../reference/av_get_pf.html">av_get_pf</a></span><span class="op">(</span><span class="st">"HYG"</span>,<span class="st">"TIME_SERIES_DAILY_ADJUSTED"</span><span class="op">)</span>, assettypes<span class="op">=</span><span class="va">asset_df</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># External Data</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://www.quantmod.com/" class="external-link">quantmod</a></span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">ffdta</span> <span class="op">&lt;-</span> <span class="fu">as.data.table</span><span class="op">(</span><span class="fu">quantmod</span><span class="fu">::</span><span class="fu">getSymbols</span><span class="op">(</span><span class="st">"FEDFUNDS"</span>,src<span class="op">=</span><span class="st">"FRED"</span>,auto.assign<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">ffdta</span> <span class="op">&lt;-</span> <span class="va">ffdta</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span>DT_ENTRY<span class="op">=</span><span class="va">index</span>,close<span class="op">=</span><span class="va">FEDFUNDS</span>,adjusted_close<span class="op">=</span><span class="va">FEDFUNDS</span>,symbol<span class="op">=</span><span class="st">"FEDFUNDS"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="fu">av_add_data</span><span class="op">(</span><span class="va">ffdta</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/dump_state.html">dump_inv</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">gt</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="img/data.jpeg" class="r-plt" alt="" width="100%"> The
-data added can be plotted using the <code>"TS:PriceTS"</code> analytic,
-as seen below. Note that the monthly time series needs to be used with
-care, since it doesn’t correspond to the actual Fed Meetings.</p>
-<p><img src="img/wFedFunds.jpg" class="r-plt" alt="" width="100%"></p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="future-plans">Future plans<a class="anchor" aria-label="anchor" href="#future-plans"></a>
-</h2>
-<p>Planned improvements currently include</p>
-<ul>
-<li>Earnings and dividends incorporated into plots</li>
-<li>Ability to plug in user-defined functions which have access to the
-internal data store.</li>
-<li>Correlation and hedging analyses.</li>
-<li>Calendars</li>
-<li>Interface to events and aesthetics sets relevant to <a href="https://derekholmes0.github.io/FinanceGraphs/reference/index.html" class="external-link">FinanceGraphs</a>
+<li>
+<strong>Event Sets</strong> which can be used to highlight events or
+regimes in a time series.</li>
+<li>
+<strong>Automated rescaling</strong> of data to put in total return
+(index) terms.</li>
+<li>
+<strong>Annotations</strong> to highlight levels on a graph,
+e.g. last values.</li>
+<li>
+<strong>Full aesthetic control</strong> of the graphing output,
+including colors, line types, and point types. For example, to change
+color sets for timeseries lines, use an aesthtic set
+(e.g. <code>lines</code> or <code>altlines_6</code>, specified in
+<strong>L</strong> above. See <a href="https://derekholmes0.github.io/FinanceGraphs/articles/Time-Series-dygraph.html#customization-colors" class="external-link">Color
+customization</a>
 </li>
 </ul>
+<p>Specific options for this app are described below, referencing this
+example:</p>
+<div class="float">
+<img src="reference/figures/GraphOpts.jpg" alt="GraphOptions"><div class="figcaption">GraphOptions</div>
+</div>
+<ul>
+<li><p><strong>Historical timeframes</strong> are given by date strings
+in ther <code>HistDates</code> box. For example, time series for the
+past 4 years from <code><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date()</a></code> are specified as
+<code>"-4y::"</code>. <strong>is parameter is used for all historical
+analyses and requests, not just graphs.</strong> For example,
+<code>IBM EA</code> would only report 4 years of data given the
+configuration described here.</p></li>
+<li><p><strong>Time Series Opts</strong> are options that can be used to
+decorate or modify a time series graph. Choices are</p></li>
+</ul>
+<table class="table">
+<thead><tr class="header">
+<th align="center">TS Choice</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="center"><code>last</code></td>
+<td align="left">Add last value for each series at last point</td>
+</tr>
+<tr class="even">
+<td align="center"><code>splitts</code></td>
+<td align="left">Split first series into separate axis</td>
+</tr>
+<tr class="odd">
+<td align="center"><code>lastlabel</code></td>
+<td align="left">Add label for series at last point</td>
+</tr>
+<tr class="even">
+<td align="center"><code>highlightfirst</code></td>
+<td align="left">Make first series bolder</td>
+</tr>
+<tr class="odd">
+<td align="center"><code>hilow</code></td>
+<td align="left">Add high-low ranges if available</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>*Scatter Options** apply to scatterplots, and are:</li>
+</ul>
+<table class="table">
+<colgroup>
+<col width="17%">
+<col width="82%">
+</colgroup>
+<thead><tr class="header">
+<th align="center">Scatter Choice</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="center"><code>last</code></td>
+<td align="left">Show last value as large point</td>
+</tr>
+<tr class="even">
+<td align="center"><code>tailhedge</code></td>
+<td align="left">Split return scatter plot regressions into three
+piecewise regressions, one each for big negative</td>
+</tr>
+<tr class="odd">
+<td align="center">returns, big positive returns, and everything
+else</td>
+<td align="left"></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>
+<strong>Events</strong> are dates or date ranges highlighted in the
+graph. Any valid event string can be used. For example,
+<code>tp,5</code> finds 5 turning points for the first series plotted,
+as seen in the picture above.</li>
+</ul>
+<div class="section level3">
+<h3 id="enhancements-for-this-app-">Enhancements for this app.<a class="anchor" aria-label="anchor" href="#enhancements-for-this-app-"></a>
+</h3>
+<p>A few enhancements have been added to the <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html">av_runShiny()</a>
+set of options.</p>
+<ul>
+<li>
+<strong>Tail Hedge regressions</strong> (see above) separate out
+large moves from smaller moves in asset regressions.</li>
+<li>
+<strong>Extra events</strong>. Im addition to any events defined or
+created from the <a href="https://derekholmes0.github.io/FinanceGraphs/" class="external-link">FinanceGraphs</a>
+package, you can also add to timeseries:</li>
+</ul>
+<table class="table">
+<thead><tr class="header">
+<th align="center">Event</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="center"><code>earn</code></td>
+<td align="left">Show EPS at report dates</td>
+</tr>
+<tr class="even">
+<td align="center"><code>surp</code></td>
+<td align="left">Show earnings suprises at report dates, color coded by
+sign.</td>
+</tr>
+<tr class="odd">
+<td align="center"><code>div</code></td>
+<td align="left">Show dividends at ex-dates</td>
+</tr>
+<tr class="even">
+<td align="center"><code>divpct</code></td>
+<td align="left">Show dividends as percent of close at ex-dates</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

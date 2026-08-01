@@ -46,11 +46,6 @@ run with
 ``` r
 
 require(alphavantagepf)
-#> Loading required package: alphavantagepf
-```
-
-``` r
-
 av_runShiny()
 ```
 
@@ -62,7 +57,7 @@ the blue Set Opts button.
 
 ![](img/av_opts.jpg)
 
-Other optional items that can be set are
+Other optional items that can be set are described in
 
 | Item | Description |
 |:--:|:---|

@@ -144,8 +144,9 @@ analyze and visualize data. Some key features of the interface are:
   can code and add their own analytics, as long as the function returns
   a list of tables ([gt](https://gt.rstudio.com/reference/index.html)
   objects), [dygraphs](https://rstudio.github.io/dygraphs/), or
-  [ggplots](https://ggplot2.tidyverse.org/reference/index.html). The
-  vignette LINK_extensions provides details.
+  [ggplots](https://ggplot2.tidyverse.org/reference/index.html). Details
+  are in [New Functionality
+  Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_New_Functionality.html).
 
 To launch the app, run
 [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html),
@@ -175,7 +176,7 @@ selections (along with all other saved internal data) will be shown,
 with changed options highlighted.
 
 A full description of the options available is given in the options
-ignette [Options
+vignette [Options
 Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Graphs_and_Options.html)
 
 ![Initial Setup](reference/figures/InitialSetup.jpg)

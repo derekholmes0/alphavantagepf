@@ -36,9 +36,9 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/API_interface_usage.html">API_interface_usage</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_Data_Management.html">ShinyApp_Data_Management</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_Graphs_and_Options.html">ShinyApp_Graphs_and_Options</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_Graphs_and_Options.html">ShinyApp_2_Graphs_and_Options</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_New_Functionality.html">ShinyApp_New_Functionality</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_setup_and_usage.html">ShinyApp_setup_and_usage</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_setup_and_usage.html">ShinyApp_1_setup_and_usage</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -140,9 +140,7 @@ relative to today</td>
 be run with</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/derekholmes0/alphavantagepf" class="external-link">alphavantagepf</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: alphavantagepf</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/av_runShiny.html">av_runShiny</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/av_runShiny.html">av_runShiny</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>When the app is first run, the following screen will be shown, with
 the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab
 selected. The first order of business will be to set the Alphavantage
@@ -151,7 +149,7 @@ entitlement status (Either <code>delayed</code> or
 <code>realtime</code>), and hit the blue <span style="background-color: #337AB7; color: #FFFFFF;">Set Opts</span>
 button.</p>
 <p><img src="img/av_opts.jpg" class="r-plt" alt="" width="100%"></p>
-<p>Other optional items that can be set are</p>
+<p>Other optional items that can be set are described in</p>
 <table class="table">
 <colgroup>
 <col width="22%">
@@ -503,7 +501,7 @@ we wish to plot the prices of a common credit ETF against FRED’s
 FEDFUNDS data. We will download both and add them programmatically.
 Generic data needs to be manipulated into the form the app expects, but
 data downloaded from Alphavantage is already in that form.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># av_add_data can be used simply, but</span></span>
 <span><span class="fu">av_add_data</span><span class="op">(</span><span class="fu"><a href="../reference/av_get_pf.html">av_get_pf</a></span><span class="op">(</span><span class="st">"IBM"</span>,<span class="st">"TIME_SERIES_DAILY_ADJUSTED"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
