@@ -4,8 +4,6 @@
 
 - [`alphavantagepf`](https://derekholmes0.github.io/alphavantagepf/reference/alphavantagepf.md)
   : alphavantagepf: A lightweight R interface to the Alpha Vantage API
-- [`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/av_api_key.md)
-  : Set the Alpha Vantage API Key
 - [`av_extract_df()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md)
   [`av_extract_fx()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md)
   [`av_extract_analytics()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md)
@@ -35,6 +33,8 @@
   [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.md)
   [`av_shinydata()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.md)
   : App database functions: Price
+- [`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_api_key.md)
+  : Set the Alpha Vantage API Key
 - [`dump_state()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)
   [`inv_rv()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)
   [`dump_inv()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)

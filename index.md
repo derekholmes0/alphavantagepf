@@ -46,14 +46,14 @@ print(avpf_api_key())
 
 If you want to use the Shiny interface, you can launch it using the
 command
-[`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md),
+[av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html),
 which will fill in the API keys if they have been set, or direct you to
 set them if not.
 
 ## Functional Interface Example
 
 Once the API key has been set, use the function
-[`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
+[av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html)
 which requires at minimum two arguments, a `symbol` (put first to
 facilitate usage in pipes) and an Alphavantage “function” `av_fun`.  
 The `symbol` parameter is required, but can be a simple empty string for
@@ -107,7 +107,7 @@ av_get_pf("","TOP_GAINERS_LOSERS") |> av_extract_df("top_losers")
  2:   ZBIO 16.6100      -17.8900         -51.8551%   8034469 TOP_GAINERS_LOSERS
 ```
 
-or Currencies quotes using
+or currency quotes using
 
 ``` r
 av_get_pf("USD/BRL","CURRENCY_EXCHANGE_RATE") |> av_extract_fx()
@@ -149,8 +149,8 @@ analyze and visualize data. Some key features of the interface are:
 
 To launch the app, run
 [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html),
-and start with the first step of setting your API key. (See
-[Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_setup_and_usage.html)
+and start with the first step of setting your API key. (See [Setup
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_setup_and_usage.html)
 for other items you can set) Once the API key is set, it’s easy to start
 building a data set and analyzing it in real time.
 
@@ -158,41 +158,54 @@ building a data set and analyzing it in real time.
 
 The first time
 [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html)
-is run, a temporary data directory is created and a setup/options tab is
-displayed. At a minimum, fill in your API key and permissionings status
-(unless already saved with
-[`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/av_api_key.md)).
-Unless you want to keep the data in a default caching directory, I would
-also recommend creating a location for data to be saved. Hit Set Opts
-and a table showing those selections (along with all other saved
-internal data) will be shown. A full description of the options
-available is given in the setup vignette LINK_setup.
+is run, a temporary data directory is created and a local copy of
+applications defaults (and other data) is created. The app will start in
+the AVOPTS tab, where you can set up and maintain all aspects of the app
+behavior.
+
+**At a minimum**, fill in your API key and permissionings status, unless
+already saved with
+[`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_api_key.md).
+By default, all of the data downloaded and used by the app is kept in a
+default caching directory. I would highly recommend creating a more
+friendly location for data to be saved, which in the example below is
+set to a temp directory `c:/t/avsh`. To change any of the options, set
+them as needed and hit the Set Opts button. A table showing those
+selections (along with all other saved internal data) will be shown,
+with changed options highlighted.
+
+A full description of the options available is given in the options
+ignette [Options
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Graphs_and_Options.html)
 
 ![Initial Setup](reference/figures/InitialSetup.jpg)
 
 Initial Setup
 
+Now you have the ability to get data form AlphaVantage and can get
+started with analyses.
+
 ## Finding and running commands
 
-Not much can be done without a little data, so the first step is to
-start with a list of commands and doing a few analyses (e.g. graphs) for
-a set of assets.
-
-While a few options are set outside the “command line”, all analyses are
-typed into the top (yellowed) line. Commands have one of two forms:
+The app seeks to minimize the amount of typing or mousework to get
+analyses done by using short commands, with options, that operate on
+sets of symbols. Critical options are set outside the command line, but
+overrides after the commands are possible. Commands have one of two
+forms:
 
 - **Single name commands** do not need any particular set of assets, and
   all start with the prefix `AV.`. The first command you should run is
-  `AV.H` to show what commands are available. (Note that more
-  explanatory notes are given unless the `showGeneralHelp` option is
-  deselected in the AVOPTS tab.)
+  `AV.H` to show what commands are available[^1].
 
 ![Set opts](reference/figures/av1.jpg)
 
 Set opts
 
+Single name commands are used mostly to query the internal state of the
+app or to remember and recall previous commands.
+
 - **Commands on asset groups** are applied to a semi-colon delimited set
-  of assets, and is of the form
+  of assets, and are of the form
 
 > Symbol_11;Symbol_2;…;Symbol_n Command Options
 
@@ -204,9 +217,9 @@ total return graph of a set of ETFs, just enter `QQQ;SPY;DIA;EEM GPI` in
 the yellow line, and get a dygraph (created with
 [fgts_dygraph()](https://derekholmes0.github.io/FinanceGraphs/reference/fgts_dygraph.html)):
 
-![ETF Example](reference/figures/av1.jpg)
+![Help Screen](reference/figures/avh.jpg)
 
-ETF Example
+Help Screen
 
 A brief outline of what can be done is shown in the table below. Note
 that
@@ -219,7 +232,7 @@ that
 
 | Category | Example(s) | Functionality |
 |:--:|:--:|:---|
-| Time Series | `QQQ GPI`,`SPY GPI2` | Asset prices or rebased indices, possibly in the middle of the time series |
+| Time Series | `QQQ;DIA GPI`,`SPY GPI2` | Asset prices or rebased indices, possibly in the middle of the time series |
 |  | `QQQ GV` | Rolling volatilities |
 | Scatter | `QQQ SCATI` | Scatter plot of assets against counterasset |
 | Relative Value | `QQQ RV` | Active return indices and statistics against counterasset |
@@ -229,6 +242,14 @@ that
 | Ticker Search | `mining S` | Search on symbol or name |
 | Options | `QQQ OS` | Table of options, implied Vols, etc |
 | Miscellaneous | `av.mov`,`av.inv` | Market movers, data inventory, help |
+
+As an example, suppose we wish to find simple excess returns (over
+`SPY`) and betas for two asset classes proxied by `HYG` and `EEM`. Just
+type in `HYG;EEM RV` to get:
+
+![Help Screen](reference/figures/eemhygrv.jpg)
+
+Help Screen
 
 This app seeks to facilitate quick ad-hoc analyses by minimizing typing
 and providing command persistence.
@@ -246,14 +267,14 @@ and providing command persistence.
 ## Data management and adding new commands
 
 Price, dividend and earnings data are all stored internally in
-`data.table()` format[^1], with columns coming directly from relevant
+`data.table()` format[^2], with columns coming directly from relevant
 the relevant
-[`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
+[av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html)
 calls. One of the key contributions of this package is to standardize
 different [Alpha Vantage API](https://www.alphavantage.co/) output forms
 into one common format. That effort requires knowing what asset class
 each ticker belongs to, since there are differnt API calls for each.
-Asset classes are determined by comparing them with pre-downloaded[^2]
+Asset classes are determined by comparing them with pre-downloaded[^3]
 symbol lists, or asssumed to be currencies if they are of the standard
 `[[:alpha:]]*3/[[:alpha:]]*3` format.
 
@@ -267,7 +288,10 @@ called `avpf_px.fst`) can be added using the
 function. Historical earnings (kept in `avpf_earn.fst`) or forecasts
 (kept in `avpf_earnest.fst`) are managed separately using
 [av_add_earn()](https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.html).
-See LINK_data for details.
+Those functions can be called independently without user data to source
+the data from Alphavantage. See [Data Management
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Data_Management.html)
+for further details.
 
 As an example, suppose we wish to plot two fixed income ETFs against Fed
 Funds. We can use e.g. `quantmod` to download and add the data. All we
@@ -282,15 +306,9 @@ ffdta <- ffdta[,.(DT_ENTRY=index,close=FEDFUNDS,symbol="FEDFUNDS")]
 av_add_px(ffdta)
 ```
 
-\*\* PICTURE \*\*
+![FIwFF](reference/figures/FIwFEDFUNDS.jpg)
 
-Historical earnings and estimates can be added or downloaded using
-[av_add_earn()](https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.html),
-If the data itself is not given, then a simple
-[`data.frame()`](https://rdrr.io/r/base/data.frame.html) of equities can
-be given to download the relevant data. Asset lists can also be added
-using
-[av_add_assetgroups()](https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.html)
+FIwFF
 
 ### Getting data
 
@@ -303,7 +321,8 @@ copied to the clipboard if the **data2clipboard** option is set. \*
 can be cached to the `AV dump Directory` which *optionally* can be set
 also in AVOPTS. Data is saved in a named (by Alphavantage function) list
 of data.tables, and can be keyed (and upserted) or appended to a saved
-`.Rd` file. See LINK_setup for details.
+`.Rd` file. See [Data Management
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Data_Management.html)
 
 ## Adding new Functionality
 
@@ -312,18 +331,17 @@ them with the app. New functions have two arguments: (1) a string with
 the command and any subsequent options, and (2) A list of all current
 (de-reactive’d) values of the input fields. They must return a (possibly
 named) list of `gt()` tables, `dygraphs()`, or `ggplots()` to be
-displayed when the command is run. See LINK_newfunc for details.
+displayed when the command is run. See [New Functionality
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_New_Functionality.html)
 
-To do:
+[^1]: Note that more explanatory notes are given unless the
+    `showGeneralHelp` option is deselected in the AVOPTS tab.
 
-1.  Make sure commands are instantaly recognizable on addition
-2.  LLMs?
-
-[^1]: Larger data sets (e.g. price data) is stored in a
+[^2]: Larger data sets (e.g. price data) is stored in a
     [fst](https://www.fstpackage.org/) file. Smaller data is kept in
     standard `.Rd` files. A database interface is planned at some point.
 
-[^2]: Lists of equities, ETFs and available indices (see `av.tickers`)
+[^3]: Lists of equities, ETFs and available indices (see `av.tickers`)
     are downloaded each time the
     [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
     is run. Cryptocurrencies tickers are hard-coded into the package.

@@ -72,25 +72,22 @@
     
 <p><strong>Alphavantagepf</strong> interfaces the Alphavantage API to R
 in a way most compatible with normalized data stores. It returns data in
-<code>data.table</code> format, which is really the best choice for
-financial time series analysis.</p>
+<code>data.table()</code> format, which is really the best choice for
+financial time series analysis. This package uses just one call to
+access multiple functions available from the service. As with all APIs,
+we start by providing a user key:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/derekholmes0/alphavantagepf" class="external-link">alphavantagepf</a></span><span class="op">)</span></span></code></pre></div>
-<p>There is one main function to call to access all of the API
-functionality provided by Alphavantage.</p>
-<div class="section level2">
-<h2 id="start-with-api-keys">Start with API keys<a class="anchor" aria-label="anchor" href="#start-with-api-keys"></a>
-</h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/av_api_key.html">avpf_api_key</a></span><span class="op">(</span><span class="st">"YOUR_API_KEY"</span>,<span class="st">"delayed"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="../reference/av_api_key.html">avpf_api_key</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/derekholmes0/alphavantagepf" class="external-link">alphavantagepf</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: alphavantagepf</span></span>
+<span><span class="fu"><a href="../reference/avpf_api_key.html">avpf_api_key</a></span><span class="op">(</span><span class="st">"YOUR_API_KEY"</span>,<span class="st">"delayed"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="../reference/avpf_api_key.html">avpf_api_key</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "YOUR_API_KEY" "delayed"</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="finding-functions-and-their-defaults">Finding Functions and their defaults<a class="anchor" aria-label="anchor" href="#finding-functions-and-their-defaults"></a>
-</h3>
+<div class="section level2">
+<h2 id="finding-functions-and-their-defaults">Finding Functions and their defaults<a class="anchor" aria-label="anchor" href="#finding-functions-and-their-defaults"></a>
+</h2>
 <p>To find parameters and defaults provided by the
 <code>alphavantagepf</code> package, use <code><a href="../reference/av_funhelp.html">av_funhelp()</a></code></p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/av_funhelp.html">av_funhelp</a></span><span class="op">(</span><span class="st">"SERIES_INTRADAY"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Function: TIME_SERIES_INTRADAY</span></span>
 <span><span class="co">#&gt; Category: equity</span></span>
@@ -107,9 +104,9 @@ functionality provided by Alphavantage.</p>
 <p>Required parameters are listed with “R” and optional parameters (and
 any default provided by this package) are listed with “O”</p>
 </div>
-<div class="section level3">
-<h3 id="getting-data-from-alpha-vantage">Getting Data from Alpha Vantage<a class="anchor" aria-label="anchor" href="#getting-data-from-alpha-vantage"></a>
-</h3>
+<div class="section level2">
+<h2 id="getting-data-from-alpha-vantage">Getting Data from Alpha Vantage<a class="anchor" aria-label="anchor" href="#getting-data-from-alpha-vantage"></a>
+</h2>
 <p>Once the API key has been set, use the function
 <code><a href="../reference/av_get_pf.html">av_get_pf()</a></code> which requires at minimum two arguments, a
 <code>symbol</code> (put first to facilitate usage in pipes) and an
@@ -139,9 +136,9 @@ data.frame.</p></li>
 <li><p><code>ltype</code> is the inferred data-type, helpful for
 selecting the correct columns.</p></li>
 </ol>
-<div class="section level4">
-<h4 id="using-defaults-and-overrides">Using defaults and overrides<a class="anchor" aria-label="anchor" href="#using-defaults-and-overrides"></a>
-</h4>
+<div class="section level3">
+<h3 id="using-defaults-and-overrides">Using defaults and overrides<a class="anchor" aria-label="anchor" href="#using-defaults-and-overrides"></a>
+</h3>
 <p>The <code>alphavantagepf</code> package includes a few default
 overrides to the defaults chosen in <a href="https://www.alphavantage.co/documentation/" class="external-link">Alphavantage API
 documentation</a>. Those defaults can be seen using the <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_funhelp.html">av_funhelp()</a>
@@ -150,26 +147,26 @@ with <code>verbose=TRUE</code>. Any overrides to those parameters can be
 specified as additional arguments to <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a>.
 For example, to get SMA using multiple horizon lengths can be seen
 below:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="sc">&gt;</span> <span class="fu">av_get_pf</span>(<span class="st">"IBM"</span>,<span class="st">"SMA"</span>,<span class="at">verbose=</span>T,<span class="at">time_period=</span><span class="dv">30</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>https<span class="sc">:</span><span class="er">//</span>www.alphavantage.co<span class="sc">/</span>query?<span class="cf">function</span>   SMA                                          </span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>symbol                                       IBM                                          </span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>interval                                     daily                                        </span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>time_period                                  <span class="dv">30</span>    <span class="co"># &lt;&lt; Normally 60</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>series_type                                  close                                        </span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>datatype                                     csv                                          </span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="sc">&gt;</span> response<span class="sc">:</span> <span class="dv">200</span> type<span class="sc">:</span> application<span class="sc">/</span>x<span class="sc">-</span>download... url copied to clipboard</span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>      symbol       time   SMA</span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>      <span class="sc">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>IDat<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span></span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>   <span class="dv">1</span><span class="sc">:</span>    IBM <span class="dv">2026-01-06</span> <span class="fl">304.1</span></span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>   <span class="dv">2</span><span class="sc">:</span>    IBM <span class="dv">2026-01-05</span> <span class="fl">303.7</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="sc">&gt;</span> <span class="fu">av_get_pf</span>(<span class="st">"IBM"</span>,<span class="st">"SMA"</span>,<span class="at">verbose=</span>T,<span class="at">time_period=</span><span class="dv">30</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>https<span class="sc">:</span><span class="er">//</span>www.alphavantage.co<span class="sc">/</span>query?<span class="cf">function</span>   SMA                                          </span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>symbol                                       IBM                                          </span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>interval                                     daily                                        </span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>time_period                                  <span class="dv">30</span>    <span class="co"># &lt;&lt; Normally 60</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>series_type                                  close                                        </span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>datatype                                     csv                                          </span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="sc">&gt;</span> response<span class="sc">:</span> <span class="dv">200</span> type<span class="sc">:</span> application<span class="sc">/</span>x<span class="sc">-</span>download... url copied to clipboard</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>      symbol       time   SMA</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>      <span class="sc">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>IDat<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>   <span class="dv">1</span><span class="sc">:</span>    IBM <span class="dv">2026-01-06</span> <span class="fl">304.1</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>   <span class="dv">2</span><span class="sc">:</span>    IBM <span class="dv">2026-01-05</span> <span class="fl">303.7</span></span></code></pre></div>
 </div>
 </div>
+<div class="section level2">
+<h2 id="more-complex-data-and-helpful-data-extractors">More complex data and helpful data extractors<a class="anchor" aria-label="anchor" href="#more-complex-data-and-helpful-data-extractors"></a>
+</h2>
 <div class="section level3">
-<h3 id="more-complex-data-and-helpful-data-extractors">More complex data and helpful data extractors<a class="anchor" aria-label="anchor" href="#more-complex-data-and-helpful-data-extractors"></a>
+<h3 id="extracting-embedded-data-frames">Extracting embedded data.frames<a class="anchor" aria-label="anchor" href="#extracting-embedded-data-frames"></a>
 </h3>
-<div class="section level4">
-<h4 id="extracting-embedded-data-frames">Extracting embedded data.frames<a class="anchor" aria-label="anchor" href="#extracting-embedded-data-frames"></a>
-</h4>
 <p>Some API calls return more complex data, i.e. data with strings,
 numbers, and nested data.frames collected together. The <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a>
 returns data in as natural a format as possible. For example, time
@@ -180,16 +177,16 @@ suppress melting into longer data.tables. As an example where the melted
 form makes more sense is the <code>TOP_GAINERS_LOSERS</code> function,
 which returns separate data.frames for each category. The natural output
 is</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">""</span>,<span class="st">"TOP_GAINERS_LOSERS"</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>Key<span class="sc">:</span> <span class="er">&lt;</span>variable<span class="sc">&gt;</span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>               symbol             variable     ltype           value_df                                value_str value_num</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>               <span class="sc">&lt;</span>char<span class="sc">&gt;</span>               <span class="er">&lt;</span>char<span class="sc">&gt;</span>    <span class="er">&lt;</span>char<span class="sc">&gt;</span>             <span class="er">&lt;</span>list<span class="sc">&gt;</span>                                   <span class="er">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>num<span class="sc">&gt;</span></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span> TOP_GAINERS_LOSERS         last_updated   numeric             [<span class="cn">NULL</span>]           <span class="dv">2026-01-05</span> <span class="dv">16</span><span class="sc">:</span><span class="dv">15</span><span class="sc">:</span><span class="dv">59</span> US<span class="sc">/</span>Eastern      <span class="dv">2026</span></span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="dv">2</span><span class="sc">:</span> TOP_GAINERS_LOSERS             metadata character             [<span class="cn">NULL</span>] Top gainers, losers, and most actively t        <span class="cn">NA</span></span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="dv">3</span><span class="sc">:</span> TOP_GAINERS_LOSERS most_actively_traded      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="dv">4</span><span class="sc">:</span> TOP_GAINERS_LOSERS          top_gainers      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="dv">5</span><span class="sc">:</span> TOP_GAINERS_LOSERS           top_losers      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">""</span>,<span class="st">"TOP_GAINERS_LOSERS"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>Key<span class="sc">:</span> <span class="er">&lt;</span>variable<span class="sc">&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>               symbol             variable     ltype           value_df                                value_str value_num</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>               <span class="sc">&lt;</span>char<span class="sc">&gt;</span>               <span class="er">&lt;</span>char<span class="sc">&gt;</span>    <span class="er">&lt;</span>char<span class="sc">&gt;</span>             <span class="er">&lt;</span>list<span class="sc">&gt;</span>                                   <span class="er">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>num<span class="sc">&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span> TOP_GAINERS_LOSERS         last_updated   numeric             [<span class="cn">NULL</span>]           <span class="dv">2026-01-05</span> <span class="dv">16</span><span class="sc">:</span><span class="dv">15</span><span class="sc">:</span><span class="dv">59</span> US<span class="sc">/</span>Eastern      <span class="dv">2026</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="dv">2</span><span class="sc">:</span> TOP_GAINERS_LOSERS             metadata character             [<span class="cn">NULL</span>] Top gainers, losers, and most actively t        <span class="cn">NA</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="dv">3</span><span class="sc">:</span> TOP_GAINERS_LOSERS most_actively_traded      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="dv">4</span><span class="sc">:</span> TOP_GAINERS_LOSERS          top_gainers      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="dv">5</span><span class="sc">:</span> TOP_GAINERS_LOSERS           top_losers      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span></code></pre></div>
 <ul>
 <li>Note that symbol for <code>TOP_GAINERS_LOSERS</code> isn’t used, but
 still needs to be specified.</li>
@@ -205,31 +202,31 @@ the call.</li>
 be piped into the <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.html">av_extract_df()</a>
 function</p>
 <p><code><a href="../reference/av_extract_df.html">av_extract_df()</a></code> function:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">""</span>,<span class="st">"TOP_GAINERS_LOSERS"</span>) <span class="sc">|&gt;</span> <span class="fu">av_extract_df</span>(<span class="st">"top_losers"</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>    <span class="sc">&lt;</span>char<span class="sc">&gt;</span>   <span class="er">&lt;</span>num<span class="sc">&gt;</span>         <span class="er">&lt;</span>num<span class="sc">&gt;</span>            <span class="er">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>num<span class="sc">&gt;</span>             <span class="er">&lt;</span>char<span class="sc">&gt;</span></span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a> <span class="dv">1</span><span class="sc">:</span>    OCG  <span class="fl">0.0378</span>       <span class="sc">-</span><span class="fl">0.0654</span>         <span class="sc">-</span><span class="fl">63.3721</span>% <span class="dv">216078762</span> TOP_GAINERS_LOSERS</span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a> <span class="dv">2</span><span class="sc">:</span>   ZBIO <span class="fl">16.6100</span>      <span class="sc">-</span><span class="fl">17.8900</span>         <span class="sc">-</span><span class="fl">51.8551</span>%   <span class="dv">8034469</span> TOP_GAINERS_LOSERS</span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a> <span class="dv">3</span><span class="sc">:</span>    SGN  <span class="fl">0.4627</span>       <span class="sc">-</span><span class="fl">0.4873</span>         <span class="sc">-</span><span class="fl">51.2947</span>%   <span class="dv">2115079</span> TOP_GAINERS_LOSERS</span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a> <span class="dv">4</span><span class="sc">:</span>  HYT<span class="sc">^</span><span class="co">#  0.0186       -0.0164         -46.8571%    126059 TOP_GAINERS_LOSERS</span></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a> <span class="dv">5</span><span class="sc">:</span>  LVROW  <span class="fl">0.0122</span>       <span class="sc">-</span><span class="fl">0.0079</span>         <span class="sc">-</span><span class="fl">39.3035</span>%     <span class="dv">10967</span> TOP_GAINERS_LOSERS</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">""</span>,<span class="st">"TOP_GAINERS_LOSERS"</span>) <span class="sc">|&gt;</span> <span class="fu">av_extract_df</span>(<span class="st">"top_losers"</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    <span class="sc">&lt;</span>char<span class="sc">&gt;</span>   <span class="er">&lt;</span>num<span class="sc">&gt;</span>         <span class="er">&lt;</span>num<span class="sc">&gt;</span>            <span class="er">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>num<span class="sc">&gt;</span>             <span class="er">&lt;</span>char<span class="sc">&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a> <span class="dv">1</span><span class="sc">:</span>    OCG  <span class="fl">0.0378</span>       <span class="sc">-</span><span class="fl">0.0654</span>         <span class="sc">-</span><span class="fl">63.3721</span>% <span class="dv">216078762</span> TOP_GAINERS_LOSERS</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a> <span class="dv">2</span><span class="sc">:</span>   ZBIO <span class="fl">16.6100</span>      <span class="sc">-</span><span class="fl">17.8900</span>         <span class="sc">-</span><span class="fl">51.8551</span>%   <span class="dv">8034469</span> TOP_GAINERS_LOSERS</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a> <span class="dv">3</span><span class="sc">:</span>    SGN  <span class="fl">0.4627</span>       <span class="sc">-</span><span class="fl">0.4873</span>         <span class="sc">-</span><span class="fl">51.2947</span>%   <span class="dv">2115079</span> TOP_GAINERS_LOSERS</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a> <span class="dv">4</span><span class="sc">:</span>  HYT<span class="sc">^</span><span class="co">#  0.0186       -0.0164         -46.8571%    126059 TOP_GAINERS_LOSERS</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a> <span class="dv">5</span><span class="sc">:</span>  LVROW  <span class="fl">0.0122</span>       <span class="sc">-</span><span class="fl">0.0079</span>         <span class="sc">-</span><span class="fl">39.3035</span>%     <span class="dv">10967</span> TOP_GAINERS_LOSERS</span></code></pre></div>
 </div>
-<div class="section level4">
-<h4 id="foreign-exchange">Foreign exchange<a class="anchor" aria-label="anchor" href="#foreign-exchange"></a>
-</h4>
+<div class="section level3">
+<h3 id="foreign-exchange">Foreign exchange<a class="anchor" aria-label="anchor" href="#foreign-exchange"></a>
+</h3>
 <p>The returned data from the <code>CURRENCY_EXCHANGE_RATE</code> is a
 bit complex, and can be simplified with</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># REAL-TIME QUOTE</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">"USD/BRL"</span>,<span class="st">"CURRENCY_EXCHANGE_RATE"</span>) <span class="sc">|&gt;</span> <span class="fu">av_extract_fx</span>()</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>Key<span class="sc">:</span> <span class="er">&lt;</span>symbol<span class="sc">&gt;</span></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>    symbol   Ask   Bid      QuoteTimestamp   Mid</span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>    <span class="sc">&lt;</span>char<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span>              <span class="er">&lt;</span>POSc<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span></span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span> USD<span class="sc">/</span>BRL  <span class="fl">5.37</span>  <span class="fl">5.37</span> <span class="dv">2026-01-06</span> <span class="dv">15</span><span class="sc">:</span><span class="dv">47</span><span class="sc">:</span><span class="dv">46</span>  <span class="fl">5.37</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># REAL-TIME QUOTE</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">"USD/BRL"</span>,<span class="st">"CURRENCY_EXCHANGE_RATE"</span>) <span class="sc">|&gt;</span> <span class="fu">av_extract_fx</span>()</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>Key<span class="sc">:</span> <span class="er">&lt;</span>symbol<span class="sc">&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>    symbol   Ask   Bid      QuoteTimestamp   Mid</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>    <span class="sc">&lt;</span>char<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span>              <span class="er">&lt;</span>POSc<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span> USD<span class="sc">/</span>BRL  <span class="fl">5.37</span>  <span class="fl">5.37</span> <span class="dv">2026-01-06</span> <span class="dv">15</span><span class="sc">:</span><span class="dv">47</span><span class="sc">:</span><span class="dv">46</span>  <span class="fl">5.37</span></span></code></pre></div>
 </div>
-<div class="section level4">
-<h4 id="options">Options<a class="anchor" aria-label="anchor" href="#options"></a>
-</h4>
+<div class="section level3">
+<h3 id="options">Options<a class="anchor" aria-label="anchor" href="#options"></a>
+</h3>
 <p>The <code>HISTORICAL_OPTIONS</code> function returns a large set of
 options for any given ticker, many of which are long dated or have no
 opent interest. The <code><a href="../reference/av_grep_opts.html">av_grep_opts()</a></code> helper can be used to
@@ -244,44 +241,79 @@ Back month (B) or all (A)</li>
 <p>So, for example, to get the closest monthly puts with at least 2 days
 to maturity, use the string “F,M,put”. The default is “F,M,call” and
 (partial) results are shown below:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">"IBM"</span>,<span class="st">"HISTORICAL_OPTIONS"</span>) <span class="sc">|&gt;</span> <span class="fu">av_grep_opts</span>(<span class="st">"F,M,put"</span>,<span class="at">mindays=</span><span class="dv">2</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>   symbol         contractID expiration strike   type  last  mark   bid bid_size   ask ask_size volume open_interest ...</span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>   <span class="sc">&lt;</span>char<span class="sc">&gt;</span>             <span class="er">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>IDat<span class="sc">&gt;</span>  <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>char<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span>    <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span>    <span class="er">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>int<span class="sc">&gt;</span>      ...</span>
-<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span>    IBM IBM260116P00277500 <span class="dv">2026-01-16</span>    <span class="dv">278</span>    put  <span class="fl">0.00</span>  <span class="fl">0.80</span>  <span class="fl">0.67</span>      <span class="dv">158</span>  <span class="fl">0.94</span>      <span class="dv">254</span>      <span class="dv">0</span>      ...</span>
-<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="dv">2</span><span class="sc">:</span>    IBM IBM260116P00280000 <span class="dv">2026-01-16</span>    <span class="dv">280</span>    put  <span class="fl">0.98</span>  <span class="fl">0.96</span>  <span class="fl">0.90</span>      <span class="dv">180</span>  <span class="fl">1.02</span>       <span class="dv">10</span>    <span class="dv">111</span>      ...</span>
-<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="dv">3</span><span class="sc">:</span>    IBM IBM260116P00282500 <span class="dv">2026-01-16</span>    <span class="dv">282</span>    put  <span class="fl">1.32</span>  <span class="fl">1.29</span>  <span class="fl">1.17</span>      <span class="dv">213</span>  <span class="fl">1.41</span>      <span class="dv">158</span>     <span class="dv">14</span>      ...</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">"IBM"</span>,<span class="st">"HISTORICAL_OPTIONS"</span>) <span class="sc">|&gt;</span> <span class="fu">av_grep_opts</span>(<span class="st">"F,M,put"</span>,<span class="at">mindays=</span><span class="dv">2</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>   symbol         contractID expiration strike   type  last  mark   bid bid_size   ask ask_size volume open_interest ...</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>   <span class="sc">&lt;</span>char<span class="sc">&gt;</span>             <span class="er">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>IDat<span class="sc">&gt;</span>  <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>char<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span>    <span class="er">&lt;</span>int<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span>    <span class="er">&lt;</span>int<span class="sc">&gt;</span>  <span class="er">&lt;</span>int<span class="sc">&gt;</span>      ...</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span>    IBM IBM260116P00277500 <span class="dv">2026-01-16</span>    <span class="dv">278</span>    put  <span class="fl">0.00</span>  <span class="fl">0.80</span>  <span class="fl">0.67</span>      <span class="dv">158</span>  <span class="fl">0.94</span>      <span class="dv">254</span>      <span class="dv">0</span>      ...</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="dv">2</span><span class="sc">:</span>    IBM IBM260116P00280000 <span class="dv">2026-01-16</span>    <span class="dv">280</span>    put  <span class="fl">0.98</span>  <span class="fl">0.96</span>  <span class="fl">0.90</span>      <span class="dv">180</span>  <span class="fl">1.02</span>       <span class="dv">10</span>    <span class="dv">111</span>      ...</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="dv">3</span><span class="sc">:</span>    IBM IBM260116P00282500 <span class="dv">2026-01-16</span>    <span class="dv">282</span>    put  <span class="fl">1.32</span>  <span class="fl">1.29</span>  <span class="fl">1.17</span>      <span class="dv">213</span>  <span class="fl">1.41</span>      <span class="dv">158</span>     <span class="dv">14</span>      ...</span></code></pre></div>
 </div>
-<div class="section level4">
-<h4 id="analytics-requests">Analytics requests<a class="anchor" aria-label="anchor" href="#analytics-requests"></a>
-</h4>
+<div class="section level3">
+<h3 id="analytics-requests">Analytics requests<a class="anchor" aria-label="anchor" href="#analytics-requests"></a>
+</h3>
 <p>Analytics requests using the Alphavantage function
 <code>ANALYTICS_FIXED_WINDOW</code> are complicated enough that they are
 returned in <em>raw form</em>, which includes meta-data. These can be
 untangled using the extracting function
 <code>av_extract_analytics</code>.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a> <span class="fu">av_get_pf</span>(<span class="fu">c</span>(<span class="st">"ORCL"</span>,<span class="st">"IBM"</span>),<span class="st">"ANALYTICS_FIXED_WINDOW"</span>) <span class="sc">|&gt;</span> <span class="fu">av_extract_analytics</span>(<span class="at">separate_vars=</span><span class="cn">TRUE</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a> av_get_pf<span class="sc">:</span> Reurning raw output; send to appropriate helper <span class="sc">----------------------------</span> </span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>             variable_1              variable_2 variable_3               value</span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>                 <span class="sc">&lt;</span>char<span class="sc">&gt;</span>                  <span class="er">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>char<span class="sc">&gt;</span>              <span class="er">&lt;</span>char<span class="sc">&gt;</span></span>
-<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span>              symbols                    <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>       <span class="er">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>            ORCL,IBM</span>
-<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="dv">2</span><span class="sc">:</span>               min_dt                    <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>       <span class="er">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>          <span class="dv">2025-12-09</span></span>
-<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="dv">3</span><span class="sc">:</span>               max_dt                    <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>       <span class="er">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>          <span class="dv">2026-01-06</span></span>
-<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="dv">4</span><span class="sc">:</span>                 ohlc                    <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>       <span class="er">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>               Close</span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="dv">5</span><span class="sc">:</span>             interval                    <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>       <span class="er">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>               DAILY</span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="dv">6</span><span class="sc">:</span> RETURNS_CALCULATIONS       CUMULATIVE_RETURN       ORCL   <span class="sc">-</span><span class="fl">0.12540062294046</span></span>
-<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="dv">7</span><span class="sc">:</span> RETURNS_CALCULATIONS       CUMULATIVE_RETURN        IBM <span class="sc">-</span><span class="fl">0.0257987632053596</span></span>
-<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="dv">8</span><span class="sc">:</span> RETURNS_CALCULATIONS <span class="fu">STDDEV</span>(<span class="at">ANNUALIZED=</span><span class="cn">TRUE</span>)       ORCL   <span class="fl">0.575380551599422</span></span>
-<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="dv">9</span><span class="sc">:</span> RETURNS_CALCULATIONS <span class="fu">STDDEV</span>(<span class="at">ANNUALIZED=</span><span class="cn">TRUE</span>)        IBM   <span class="fl">0.171846694713282</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a> <span class="fu">av_get_pf</span>(<span class="fu">c</span>(<span class="st">"ORCL"</span>,<span class="st">"IBM"</span>),<span class="st">"ANALYTICS_FIXED_WINDOW"</span>) <span class="sc">|&gt;</span> <span class="fu">av_extract_analytics</span>(<span class="at">separate_vars=</span><span class="cn">TRUE</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a> av_get_pf<span class="sc">:</span> Reurning raw output; send to appropriate helper <span class="sc">----------------------------</span> </span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>             variable_1              variable_2 variable_3               value</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>                 <span class="sc">&lt;</span>char<span class="sc">&gt;</span>                  <span class="er">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>char<span class="sc">&gt;</span>              <span class="er">&lt;</span>char<span class="sc">&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span>              symbols                    <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>       <span class="er">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>            ORCL,IBM</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="dv">2</span><span class="sc">:</span>               min_dt                    <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>       <span class="er">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>          <span class="dv">2025-12-09</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="dv">3</span><span class="sc">:</span>               max_dt                    <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>       <span class="er">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>          <span class="dv">2026-01-06</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="dv">4</span><span class="sc">:</span>                 ohlc                    <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>       <span class="er">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>               Close</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="dv">5</span><span class="sc">:</span>             interval                    <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>       <span class="er">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span>               DAILY</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="dv">6</span><span class="sc">:</span> RETURNS_CALCULATIONS       CUMULATIVE_RETURN       ORCL   <span class="sc">-</span><span class="fl">0.12540062294046</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="dv">7</span><span class="sc">:</span> RETURNS_CALCULATIONS       CUMULATIVE_RETURN        IBM <span class="sc">-</span><span class="fl">0.0257987632053596</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="dv">8</span><span class="sc">:</span> RETURNS_CALCULATIONS <span class="fu">STDDEV</span>(<span class="at">ANNUALIZED=</span><span class="cn">TRUE</span>)       ORCL   <span class="fl">0.575380551599422</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="dv">9</span><span class="sc">:</span> RETURNS_CALCULATIONS <span class="fu">STDDEV</span>(<span class="at">ANNUALIZED=</span><span class="cn">TRUE</span>)        IBM   <span class="fl">0.171846694713282</span></span></code></pre></div>
 </div>
+</div>
+<div class="section level2">
+<h2 id="important-notes-av_get_pf">Important Notes: av_get_pf()<a class="anchor" aria-label="anchor" href="#important-notes-av_get_pf"></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li>Three parameters <code>apikey</code>, <code>datatype</code> and
+<code>outputsize</code> are filled into the API call from the package.
+<code>outputsize</code> defaults to the full dataset, and can be
+overridden as a named parameter to the <code><a href="../reference/av_get_pf.html">av_get_pf()</a></code> call. An
+additional parameter <code>entitlement</code> is added to the url if
+specified in the <code><a href="../reference/avpf_api_key.html">avpf_api_key()</a></code> call and relevant.</li>
+<li>
+<code><a href="../reference/av_get_pf.html">av_get_pf()</a></code> has an optional <code>delay</code>
+parameter, which may be needed if several short API calls are called
+sequentially (e.g. within another function).</li>
+<li>
+<code>symbol</code> is always returned in the output dataset, and
+defaults to the name of the <code>av_fun</code> call if no symbol is
+relevant.</li>
+<li>There is no need to specify the <code>datatype</code> parameter as
+an argument to <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a>.
+The function will return a data.table.</li>
+<li>Some output above has been truncated to adhere to licensing
+rules.</li>
+</ol>
+</div>
+<div class="section level2">
+<h2 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
+</h2>
+<div class="section level3">
+<h3 id="time-series-data">Time series data<a class="anchor" aria-label="anchor" href="#time-series-data"></a>
+</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">"IBM"</span>,<span class="st">"TIME_SERIES_INTRADAY"</span>) <span class="sc">|&gt;</span> <span class="fu">head</span>()</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>   symbol  timestamp  open  high   low close   volume</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>   <span class="sc">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>IDat<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span>    <span class="er">&lt;</span>int<span class="sc">&gt;</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span>    IBM <span class="dv">1999-11-01</span>  <span class="fl">98.5</span>  <span class="fl">98.8</span>  <span class="fl">96.4</span>  <span class="fl">96.8</span>  <span class="dv">9551800</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="dv">2</span><span class="sc">:</span>    IBM <span class="dv">1999-11-02</span>  <span class="fl">96.8</span>  <span class="fl">96.8</span>  <span class="fl">93.7</span>  <span class="fl">94.8</span> <span class="dv">11105400</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="helpers-av_extract_df">Helpers: <code>av_extract_df</code><a class="anchor" aria-label="anchor" href="#helpers-av_extract_df"></a>
+<h3 id="mixed-use-data">Mixed use data<a class="anchor" aria-label="anchor" href="#mixed-use-data"></a>
 </h3>
-<p>Extracting the nested data.frames can be a tedious task, so the
-helper function <code><a href="../reference/av_extract_df.html">av_extract_df()</a></code> can be used to filter for
-the correct variable and extract the data.frame</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">""</span>,<span class="st">"TOP_GAINERS_LOSERS"</span>)  <span class="sc">|&gt;</span> <span class="fu">av_extract_df</span>(<span class="st">"top_losers"</span>)</span>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">""</span>,<span class="st">"TOP_GAINERS_LOSERS"</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>Key<span class="sc">:</span> <span class="er">&lt;</span>variable<span class="sc">&gt;</span></span>
 <span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>               symbol             variable     ltype           value_df                                value_str value_num</span>
@@ -291,56 +323,6 @@ the correct variable and extract the data.frame</p>
 <span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="dv">3</span><span class="sc">:</span> TOP_GAINERS_LOSERS most_actively_traded      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span>
 <span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="dv">4</span><span class="sc">:</span> TOP_GAINERS_LOSERS          top_gainers      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span>
 <span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="dv">5</span><span class="sc">:</span> TOP_GAINERS_LOSERS           top_losers      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="important-notes-av_get_pf">Important Notes: av_get_pf()<a class="anchor" aria-label="anchor" href="#important-notes-av_get_pf"></a>
-</h3>
-<ol style="list-style-type: decimal">
-<li>Three parameters <code>apikey</code>, <code>datatype</code> and
-<code>outputsize</code> are filled into the API call from the package.
-<code>outputsize</code> defaults to the full dataset, and can be
-overridden as a named parameter to the <code><a href="../reference/av_get_pf.html">av_get_pf()</a></code>
-call.</li>
-<li>An additional parameter <code>entitlement</code> is added to the url
-if specified in the <code><a href="../reference/av_api_key.html">avpf_api_key()</a></code> call and relevant.</li>
-<li>
-<code>symbol</code> is always returned in the output dataset, and
-defaults to the name of the <code>av_fun</code> call if no symbol is
-relevant.</li>
-<li>There is no need to specify the <code>datatype</code> parameter as
-an argument to <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a>.
-The function will return a data.table</li>
-<li>Some output above has been truncated to adhere to licensing
-rules.</li>
-</ol>
-</div>
-<div class="section level3">
-<h3 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
-</h3>
-<div class="section level4">
-<h4 id="time-series-data">Time series data<a class="anchor" aria-label="anchor" href="#time-series-data"></a>
-</h4>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">"IBM"</span>,<span class="st">"TIME_SERIES_INTRADAY"</span>) <span class="sc">|&gt;</span> <span class="fu">head</span>()</span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a></span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>   symbol  timestamp  open  high   low close   volume</span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>   <span class="sc">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>IDat<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span> <span class="er">&lt;</span>num<span class="sc">&gt;</span>    <span class="er">&lt;</span>int<span class="sc">&gt;</span></span>
-<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span>    IBM <span class="dv">1999-11-01</span>  <span class="fl">98.5</span>  <span class="fl">98.8</span>  <span class="fl">96.4</span>  <span class="fl">96.8</span>  <span class="dv">9551800</span></span>
-<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="dv">2</span><span class="sc">:</span>    IBM <span class="dv">1999-11-02</span>  <span class="fl">96.8</span>  <span class="fl">96.8</span>  <span class="fl">93.7</span>  <span class="fl">94.8</span> <span class="dv">11105400</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="mixed-use-data">Mixed use data<a class="anchor" aria-label="anchor" href="#mixed-use-data"></a>
-</h4>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">av_get_pf</span>(<span class="st">""</span>,<span class="st">"TOP_GAINERS_LOSERS"</span>)</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a></span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>Key<span class="sc">:</span> <span class="er">&lt;</span>variable<span class="sc">&gt;</span></span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>               symbol             variable     ltype           value_df                                value_str value_num</span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>               <span class="sc">&lt;</span>char<span class="sc">&gt;</span>               <span class="er">&lt;</span>char<span class="sc">&gt;</span>    <span class="er">&lt;</span>char<span class="sc">&gt;</span>             <span class="er">&lt;</span>list<span class="sc">&gt;</span>                                   <span class="er">&lt;</span>char<span class="sc">&gt;</span>     <span class="er">&lt;</span>num<span class="sc">&gt;</span></span>
-<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span> TOP_GAINERS_LOSERS         last_updated   numeric             [<span class="cn">NULL</span>]           <span class="dv">2026-01-05</span> <span class="dv">16</span><span class="sc">:</span><span class="dv">15</span><span class="sc">:</span><span class="dv">59</span> US<span class="sc">/</span>Eastern      <span class="dv">2026</span></span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="dv">2</span><span class="sc">:</span> TOP_GAINERS_LOSERS             metadata character             [<span class="cn">NULL</span>] Top gainers, losers, and most actively t        <span class="cn">NA</span></span>
-<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="dv">3</span><span class="sc">:</span> TOP_GAINERS_LOSERS most_actively_traded      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span>
-<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="dv">4</span><span class="sc">:</span> TOP_GAINERS_LOSERS          top_gainers      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span>
-<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="dv">5</span><span class="sc">:</span> TOP_GAINERS_LOSERS           top_losers      list <span class="sc">&lt;</span>data.frame[<span class="dv">20</span>x5]<span class="sc">&gt;</span>                                     <span class="cn">NULL</span>        <span class="cn">NA</span></span></code></pre></div>
-</div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -96,7 +96,7 @@ parameters. Usage example: `av_get_pf("USD/BRL", "FX_DAILY")`
 
 ## See also
 
-[`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/av_api_key.md),
+[`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_api_key.md),
 [`av_extract_df()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md),
 [`av_extract_fx()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md),
 [`av_grep_opts()`](https://derekholmes0.github.io/alphavantagepf/reference/av_grep_opts.md),[`av_funhelp()`](https://derekholmes0.github.io/alphavantagepf/reference/av_funhelp.md)

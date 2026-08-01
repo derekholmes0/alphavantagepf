@@ -36,7 +36,7 @@ Bug fixes
 ### Breaking changes
 
 - `av_api_key()` has been renamed to
-  [`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/av_api_key.md)
+  [`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_api_key.md)
   which has an additional parameter `entitlement`. `av_api_key()` is
   also in the `alphavantager` package. Usage of that function is still
   compatible with this package, but an additional step to set
