@@ -176,6 +176,9 @@ returned.
 
 ![Options Search](img/optsearch.jpg)
 [^1]: A "cheatsheet" with these conventions is displayed when `AV.H` is run, unless the `showGeneralHelp` option is deselected.
+
 [^2]: See `AV.TICKERS` for a list of cryptocurrencies available.  Not all are available as symmetric pairs, so please use only those on the list.
+
 [^3]: unless the `verbose` option is deselected in the  <span style="border: 1px solid #000000; padding: 1px 5px;">AVOPTS</span> tab.
+
 [^4]: The app looks up the current spot to determine moneyness.

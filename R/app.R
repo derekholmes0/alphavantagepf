@@ -265,9 +265,12 @@ av_make_server <- function() {
           output$inv2 <- dump_assetgroups() |>  gt() |> gt.avtheme(themeset="assetgroups") |> render_gt()
         }
         the_av$starttab <- "inventory"
-        if( exists("do_on_start",envir=the_av) ) { rm("do_on_start",envir=the_av) }
-        message_if_green(the_av$verbose,"Inventory on way to tab")
-        updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
+        if( exists("do_on_start",envir=the_av) ) { 
+          rm("do_on_start",envir=the_av) }
+        else {
+          message_if_green(the_av$verbose,"Inventory on way to tab")
+          updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
+        }
       }
     })
 

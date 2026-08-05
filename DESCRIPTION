@@ -42,7 +42,7 @@ Suggests:
     knitr,
     rmarkdown
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.0.0
+RoxygenNote: 8.1.0
 LazyData: true
 VignetteBuilder: knitr
 URL: https://github.com/derekholmes0/alphavantagepf, https://derekholmes0.github.io/alphavantagepf/
