@@ -236,6 +236,8 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
 #' @importFrom lubridate NA_Date_
 manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL, delay=0.05) {
   todo=ts=horizon=eps_estimate_average=assetType=NULL
+  called_from_console <- as.character(sys.call(-1)[[1]])
+  message(" called from ",called_from_console)
   src<-outmsg<-""; rtniv<-data.table()
   earntickers <- the_av$listings[tickerdt,on=.(symbol),nomatch=NULL][assetType=="Stock",]
   if(nrow(earntickers)<=0) { return() }
@@ -273,13 +275,21 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
     if(src=="") {
       src <- "Downloaded"
 # 260805: Cant get progress to work smoothly both from within shiny app and outside it, and CRAN doesn't want me to switch handlers. FIx later
-#      progressr::with_progress({
-        earn_past <-purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"),.progress="Previous Earnings")
-#      },handlers="cli")
+      if(called_from_console=="av_add_earn") {
+        message(" adding progress bars")
+        progressr::with_progress({
+          earn_past <-purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"),.progress="Previous Earnings")
+        },handlers="cli")
+        progressr::with_progress({
+          earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress="Forecast Earnings")
+          },handlers="cli")
+      }
+      else {
+        message(" skipping progress bars")
+        earn_past <-purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"))
+        earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"))
+      }
       earn_past <- rbindlist(earn_past,fill=TRUE)
-#      progressr::with_progress({
-        earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress="Forecast Earnings")
-#      },handlers="cli")
       earn_fwd <- rbindlist(earn_fwd,fill=TRUE)
     }
     if(!is.null(earn_past) && nrow(earn_past)>0) {
