@@ -1,4 +1,4 @@
-# App database functions: Price
+# av_add_px
 
 Adds price data to
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)

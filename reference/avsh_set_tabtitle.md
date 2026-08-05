@@ -1,4 +1,4 @@
-# Helper functions for analytics
+# avsh_set_tabtitle
 
 Sets the title for the Details tab
 

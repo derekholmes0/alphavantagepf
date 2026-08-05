@@ -1,4 +1,4 @@
-# App database functions: Earnings
+# av_add_earn
 
 Adds earnings data to
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
@@ -24,6 +24,16 @@ av_add_earn(
 - substitute_earnest:
 
   (default NULL) A data.frame with earnings estimates
+
+- equitylist:
+
+  (default NULL) A list with tickers for which to retrieve earnings
+  (from AlphaVantage)
+
+- delay:
+
+  (default 0) A numeric value specifying delay between Alphavantage
+  calls (in seconds)
 
 ## Value
 

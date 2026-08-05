@@ -1,11 +1,11 @@
-# App database functions
+# av_load_shinydata
 
 Loads internal data (prices, earnings, etc.
 
 ## Usage
 
 ``` r
-av_shinydata(item = NULL)
+av_load_shinydata(item = NULL, verbose = TRUE)
 ```
 
 ## Arguments
@@ -13,8 +13,12 @@ av_shinydata(item = NULL)
 - item:
 
   Any data name as seen by running
-  [`dump_state()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md).
-  **If blank, loads database**
+  [`dump_state()`](https://derekholmes0.github.io/alphavantagepf/reference/av_state_interface.md).
+  **If blank, loads entire database**
+
+- verbose:
+
+  (default TRUE) write a status message to console
 
 ## Value
 

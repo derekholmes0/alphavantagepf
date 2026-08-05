@@ -1,4 +1,4 @@
-# App database functions: assetgroups
+# av_add_assetgroups
 
 Adds asset lists to
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)

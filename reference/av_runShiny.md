@@ -93,10 +93,12 @@ functions calls that are necessary to do cross-asset analyses.
   helper functions
   [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.md),
   [`av_add_earn()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.md),
-  `av_add_assetgroups()`. See Extensions vignette
+  [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.md).
+  See Extensions vignette
 
-- User analytics can be added using `av_add_analytic()`. See examples in
-  the Extensions vignette
+- User analytics can be added using
+  [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_analytic.md).
+  See examples in the Extensions vignette
 
 ## Examples
 

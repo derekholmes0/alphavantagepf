@@ -1,4 +1,4 @@
-# Helper functions for analytics
+# avsh_clipboard
 
 Copies a data.frame to the clipboard, with a status message if relevant
 

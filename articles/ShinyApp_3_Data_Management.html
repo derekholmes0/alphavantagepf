@@ -342,8 +342,8 @@ as in the following example:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">newtickers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"QQQ"</span>,<span class="st">"QQQE"</span>,<span class="st">"NDX"</span><span class="op">)</span></span>
 <span><span class="va">newasset_dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>ticker<span class="op">=</span><span class="va">newtickers</span>,listnm<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"nasdaq"</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">newtickers</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">av_add_assetgroups</span><span class="op">(</span><span class="va">newasset_dt</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/dump_state.html">dump_assetgroups</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/av_add_assetgroups.html">av_add_assetgroups</a></span><span class="op">(</span><span class="va">newasset_dt</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/av_state_interface.html">dump_assetgroups</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

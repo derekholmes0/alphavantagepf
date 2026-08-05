@@ -1,17 +1,11 @@
-# App database functions: New analytics
+# av_add_analytic
 
 Adds a user-defined function to the av Shiny app
 
 ## Usage
 
 ``` r
-av_add_analytic(
-  runcode,
-  func_name,
-  helpstr = "user function",
-  focus = "MAIN",
-  category = "USER"
-)
+av_add_analytic(runcode, func_name, helpstr = "user function", focus = "MAIN")
 ```
 
 ## Arguments
@@ -34,11 +28,6 @@ av_add_analytic(
 
   (default: "MAIN") String with tab name to set focus to when command is
   run
-
-- category:
-
-  (default "USER") A string with a category used to sort function when
-  help is called.
 
 ## Value
 

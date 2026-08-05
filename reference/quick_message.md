@@ -1,4 +1,4 @@
-# ———————– Exported Shiny Functions
+# quick_message
 
 Displays a message underneath an input box
 
