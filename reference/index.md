@@ -27,11 +27,11 @@
   [`avsh_clipboard()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.md)
   [`avsh_set_tabtitle()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.md)
   : Helper functions for analytics
-- [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.md)
-  [`av_add_earn()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.md)
-  [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.md)
-  [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.md)
-  [`av_shinydata()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.md)
+- [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
+  [`av_add_earn()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
+  [`av_load_shinydata()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
+  [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
+  [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
   : App database functions: Price
 - [`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_api_key.md)
   : Set the Alpha Vantage API Key

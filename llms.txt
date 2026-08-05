@@ -376,11 +376,11 @@ Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_New_Fu
   [`avsh_clipboard()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.md)
   [`avsh_set_tabtitle()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.md)
   : Helper functions for analytics
-- [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.md)
-  [`av_add_earn()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.md)
-  [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.md)
-  [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.md)
-  [`av_shinydata()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.md)
+- [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
+  [`av_add_earn()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
+  [`av_load_shinydata()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
+  [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
+  [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
   : App database functions: Price
 - [`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_api_key.md)
   : Set the Alpha Vantage API Key
@@ -401,7 +401,7 @@ Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_New_Fu
 ### All vignettes
 
 - [API_interface_usage](https://derekholmes0.github.io/alphavantagepf/articles/API_interface_usage.md):
+- [ShinyApp_2_Graphs_and_Options](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_2_Graphs_and_Options.md):
 - [ShinyApp_Data_Management](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Data_Management.md):
-- [ShinyApp_2_Graphs_and_Options](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Graphs_and_Options.md):
 - [ShinyApp_New_Functionality](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_New_Functionality.md):
 - [ShinyApp_1_setup_and_usage](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_setup_and_usage.md):
