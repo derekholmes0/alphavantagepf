@@ -1,6 +1,7 @@
 #source("./R/utilities.R")
-tver<-"0.8.301"
+tver<-"0.8.302"
 
+# 302: Handlers for Earnings.  fpos
 # 300: Vignettes done, on to Check
 # 206: Function Walkthrough. av_misc implemented
 # 205: Av_misc functions, earnings stuff

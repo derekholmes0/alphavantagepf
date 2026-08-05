@@ -276,16 +276,13 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
       src <- "Downloaded"
 # 260805: Cant get progress to work smoothly both from within shiny app and outside it, and CRAN doesn't want me to switch handlers. FIx later
       if(called_from_console=="av_add_earn") {
-        message(" adding progress bars")
-        progressr::with_progress({
-          earn_past <-purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"),.progress="Previous Earnings")
-        },handlers="cli")
-        progressr::with_progress({
-          earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress="Forecast Earnings")
-          },handlers="cli")
+        old_handlers <- progressr::handlers()
+        progressr::handlers("cli")
+        earn_past <-purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"),.progress="Previous Earnings")
+        earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress="Forecast Earnings")
+        progressr::handlers(old_handlers)
       }
       else {
-        message(" skipping progress bars")
         earn_past <-purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"))
         earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"))
       }
