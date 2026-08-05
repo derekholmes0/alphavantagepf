@@ -25,31 +25,33 @@ cache directory chosen by `tools::R_user_dir("alphavantagepf", which = "cache")`
 unless a **Cache data directory** is set up.  The options can be categorized within three groups: required API options, data management options,
 and others.
 
-![AV Options Detail](man/figures/av_opts_detail.jpg)
+```{r, echo=FALSE, out.height="40%"}
+knitr::include_graphics("img/av_opts_detail.jpg")
+```
 
 ## Required API Options
 
 This app is centered around the Alphavantage API, and requires a valid API key and entitlement status to function. 
 
 |Field|Description |
-|:--:|:------------------|
-|<span style="color:blue">A</span> av api key|API key obtained form Alphavantage.|
-|<span style="color:blue">B</span> av entitlement|Entitlement status, either `delayed` or `realtime`|
+|:-----------:|:------------------|
+|av api key (<span style="color:blue">A</span> above)|API key obtained form Alphavantage.|
+|av entitlement (<span style="color:blue">B</span> above)|Entitlement status, either `delayed` or `realtime`|
 
 ## Data Management Options
 
 Data is stored in one or two directories, depending on whether a **Dump directory** is set.  
 
 * Price series and user time series are kept in a cache directory which defaults to the temporary directory created for the package, but can be set in
-the <span style="color:blue">C: Cache Data Directory.</span>.   Earnings data is stored in the same directory.
+the Cache Data Directory (<span style="color:blue">C</span> above).   Earnings data is stored in the same directory.
 * The results of each call to the Alphavantage API can optionally be stored in a **Dump directory**.  The purpose of this is to allow
 users to "scrape" their thoughts, analyses, etc. on a per-call basis.  Please be aware that this does increase the time spent on each command issued.
-That directory is set in <span style="color:blue">D: Dump Directory.</span> and data is stored as a named (by function call name) list of `data.tables()`.  
+That directory is set in Dump Directory (<span style="color:blue">D</span> above) and data is stored as a named (by function call name) list of `data.tables()`.  
 
 The options associated with the dumping are given below:
 
 |Field|Description|
-|:--:|:------------------|
+|:----------:|:------------------------|
 |<span style="color:blue">C</span> Cache Data</span>|Directory to store time series, earnings, and earnings estimates|
 |<span style="color:blue">D</span> AV dump directory</span>|Directory to store API call results.  Must be set for dumping to occur.|
 |<span style="color:blue">E</span> Capture AV Data</span>|What to capture|
@@ -71,15 +73,15 @@ Non analytic features are set as check boxes, and are described in the following
 <span style="background-color: #003366; color: #FFFFFF;">Set Opts</span> button is pressed.  
 
 |Field|Description |
-|:--:|:------------------|
-|:UseTotRtn|Use total return data (i.e. adjusted for splits and dividends in price series)|
-|:UseLivePx|Use separate Alphavantage calls to always have the most recent price point.|
-|:verbose|Display (or not) informative messages in the console.|
-|:data2clipboard|Copy select data from each analysis to the clipboard for pasting into other applications.|
+|:-------:|:------------------|
+|UseTotRtn|Use total return data (i.e. adjusted for splits and dividends in price series)|
+|UseLivePx|Use separate Alphavantage calls to always have the most recent price point.|
+|verbose|Display (or not) informative messages in the console.|
+|data2clipboard|Copy select data from each analysis to the clipboard for pasting into other applications.|
 ||This is useful for other ad-hoc analysis without going through download boxes or extra buttons|
-|:persistOuput|Keep analyses output (graphs, tables, etc) until replaced by new ones|
-|:showGeneralHelp|Show (or not) a general help screen when `AV.H` is run.|
-|:showWarnings|Suppress warnings from other packages (e.g. ggplot2)|
+|persistOuput|Keep analyses output (graphs, tables, etc) until replaced by new ones|
+|showGeneralHelp|Show (or not) a general help screen when `AV.H` is run.|
+|showWarnings|Suppress warnings from other packages (e.g. ggplot2)|
 
 ## Analytics Options
 
@@ -105,11 +107,11 @@ timeseries lines, use an aesthtic set (e.g. `lines` or `altlines_6`, specified i
 
 Specific options for this app are described below, referencing this example:
 
-![GraphOptions](man/figures/GraphOpts.jpg)
+![GraphOptions](img/GraphOpts.jpg)
 
 * **Historical timeframes** are given by date strings in ther `HistDates` box.  For example, time series for the past 4 years
-from `Sys.Date()` are specified as `"-4y::"`.  **is parameter is used for all historical analyses and requests, not just graphs.**
-For example, `IBM EA` would only report 4 years of data given the configuration described here.
+from `Sys.Date()` are specified as `"-4y::"`.  Note this is the *parameter is used for all historical analyses and requests*,
+not just graphs. For example, `IBM EA` would only report 4 years of data given the configuration described here.
 
 * **Time Series Opts** are options that can be used to decorate or modify a time series graph.  Choices are
 
@@ -121,13 +123,12 @@ For example, `IBM EA` would only report 4 years of data given the configuration 
 |`highlightfirst`|Make first series bolder|
 |`hilow`|Add high-low ranges if available|
 
-* *Scatter Options** apply to scatterplots, and are:
+* **Scatter Options** apply to scatterplots, and are:
 
 |Scatter Choice|Description |
 |:--:|:------------------|
 |`last`|Show last value as large point|
-|`tailhedge`|Split return scatter plot regressions into three piecewise regressions, one each for big negative
-returns, big positive returns, and everything else|
+|`tailhedge`|Split return scatter plot regressions into three piecewise regressions, one each for big negative returns, big positive returns, and everything else|
 
 * **Events** are dates or date ranges highlighted in the graph.  Any valid event string can be used.  For example, `tp,5` finds 5 turning points
 for the first series plotted, as seen in the picture above.
