@@ -7,7 +7,13 @@ internal data.
 ## Usage
 
 ``` r
-av_add_px(indta, assettypes = NULL, delay = 0)
+av_add_px(
+  indta = NULL,
+  assettypes = NULL,
+  equitylist = NULL,
+  dtstr = "-30y::",
+  delay = 0
+)
 ```
 
 ## Arguments
@@ -15,8 +21,9 @@ av_add_px(indta, assettypes = NULL, delay = 0)
 - indta:
 
   A data.frame with the following minimal columns:
-  `c(symbol,timestamp,close,adjusted_close)`. Other variables added
-  could be `c(open,high,low,volume,dividend_amount,split_coefficient)`
+  `c(symbol,timestamp,close)`. Other variables added could be
+  `c(adjusted_close,open,high,low,volume,dividend_amount,split_coefficient)`
+  If `adjusted_close` is not in the dataset, it will be set to `close`
 
 - assettypes:
 
@@ -27,6 +34,15 @@ av_add_px(indta, assettypes = NULL, delay = 0)
   type (one of `c("Equity","ETF","FX","Index","Crypto")`) for subsequent
   calls to
   [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
+
+- equitylist:
+
+  (default NULL) If specified, function will get equity prices from
+  `av_get_pf`. `indta` can be null or is otherwise ignored.
+
+- dtstr:
+
+  (default `"-30y::"`). Date range to download if applicable.
 
 - delay:
 
@@ -41,7 +57,7 @@ Nothing
 
 Entire set of columns from
 [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
-can be added. First date column renamed to `timestamp`
+can be added. First date column renamed to `timestamp` internally.
 
 ## See also
 
@@ -51,10 +67,16 @@ can be added. First date column renamed to `timestamp`
 
 ``` r
 if (FALSE) { # \dontrun{
-av_add_px(av_get_pf("IBM","TIME_SERIES_DAILY_ADJUSTED"))
-asset_df <- data.frame(symbol=c("HYG"),type=c("ETF"),currency=c("USD"), name=c("HY ETF"))
-av_add_px(av_get_pf("HYG","TIME_SERIES_DAILY_ADJUSTED"), assettypes=asset_df)
+# To add known symbols outside the app
+av_add_px(equitylist=c("IBM","GS","JPM"))
 
+# To add ad-hoc data from Alphavantage (e.g. Natgas spot at Henry Hub)
+# Note that "symbol" in indta must match same in assettypes
+asset_df <- data.frame(symbol=c("GAS_HH"),type=c("user"),currency=c("USD"), name=c("GAS_HH"))
+ng_data <- av_get_pf("","NATURAL_GAS")[,.(symbol="GAS_HH",timestamp,close=value)]
+av_add_px(ng_data, assettypes=asset_df)
+
+# To data from other sources
 suppressMessages(require(quantmod))
 ffdta <- as.data.table(quantmod::getSymbols("FEDFUNDS",src="FRED",auto.assign=FALSE))
 ffdta <- ffdta[,.(DT_ENTRY=index,close=FEDFUNDS,adjusted_close=FEDFUNDS,symbol="FEDFUNDS")]

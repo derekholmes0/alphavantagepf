@@ -91,14 +91,12 @@ functions calls that are necessary to do cross-asset analyses.
 
 - User price data, earnings data, and asset groups can be added using
   helper functions
-  [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md),
-  [`av_add_earn()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md),
-  [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md).
-  See Extensions vignette
+  [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.md),
+  [`av_add_earn()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.md),
+  `av_add_assetgroups()`. See Extensions vignette
 
-- User analytics can be added using
-  [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md).
-  See examples in the Extensions vignette
+- User analytics can be added using `av_add_analytic()`. See examples in
+  the Extensions vignette
 
 ## Examples
 

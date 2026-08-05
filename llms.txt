@@ -344,6 +344,10 @@ Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_
 
 - [`alphavantagepf`](https://derekholmes0.github.io/alphavantagepf/reference/alphavantagepf.md)
   : alphavantagepf: A lightweight R interface to the Alpha Vantage API
+- [`av_add_earn()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.md)
+  : App database functions: Earnings
+- [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.md)
+  : App database functions: Price
 - [`av_extract_df()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md)
   [`av_extract_fx()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md)
   [`av_extract_analytics()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md)
@@ -367,12 +371,6 @@ Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_
   [`avsh_clipboard()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.md)
   [`avsh_set_tabtitle()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.md)
   : Helper functions for analytics
-- [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
-  [`av_add_earn()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
-  [`av_load_shinydata()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
-  [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
-  [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
-  : App database functions: Price
 - [`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_api_key.md)
   : Set the Alpha Vantage API Key
 - [`dump_state()`](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.md)

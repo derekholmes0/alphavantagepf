@@ -281,7 +281,7 @@ forward.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span><span class="va">ng_dta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/av_get_pf.html">av_get_pf</a></span><span class="op">(</span><span class="st">""</span>,<span class="st">"NATURAL_GAS"</span><span class="op">)</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span>symbol<span class="op">=</span><span class="st">"GAS_HH"</span>,<span class="va">timestamp</span>,close<span class="op">=</span><span class="va">value</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">asset_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>symbol<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GAS_HH"</span><span class="op">)</span>,type<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"user"</span><span class="op">)</span>,currency<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"USD"</span><span class="op">)</span>, name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Henry Hub Gas Spot"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/av_runShiny_userdata.html">av_add_px</a></span><span class="op">(</span><span class="va">ng_dta</span>, assettypes<span class="op">=</span><span class="va">asset_df</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/av_add_px.html">av_add_px</a></span><span class="op">(</span><span class="va">ng_dta</span>, assettypes<span class="op">=</span><span class="va">asset_df</span><span class="op">)</span></span></code></pre></div>
 <p>We can source data anywhere, really. As an example of getting data
 directly from <a href="https://fred.stlouisfed.org/" class="external-link">FRED</a>, let’s add
 FEDFUNDS as its own ticker:</p>
@@ -289,7 +289,7 @@ FEDFUNDS as its own ticker:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://www.quantmod.com/" class="external-link">quantmod</a></span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">ffdta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/as.data.table.html" class="external-link">as.data.table</a></span><span class="op">(</span><span class="fu">quantmod</span><span class="fu">::</span><span class="fu">getSymbols</span><span class="op">(</span><span class="st">"FEDFUNDS"</span>,src<span class="op">=</span><span class="st">"FRED"</span>,auto.assign<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">ffdta</span> <span class="op">&lt;-</span> <span class="va">ffdta</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span>DT_ENTRY<span class="op">=</span><span class="va">index</span>,close<span class="op">=</span><span class="va">FEDFUNDS</span>,symbol<span class="op">=</span><span class="st">"FEDFUNDS"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="fu"><a href="../reference/av_runShiny_userdata.html">av_add_px</a></span><span class="op">(</span><span class="va">ffdta</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/av_add_px.html">av_add_px</a></span><span class="op">(</span><span class="va">ffdta</span><span class="op">)</span></span></code></pre></div>
 <p>In this case where the <code>assettypes</code> argument is not used,
 the source (<code>user</code>) and symbol (<code>symbol</code>) are
 inferred from the input data.</p>
@@ -302,7 +302,7 @@ equity futures indices available as historical data, listed by running
 For example,</li>
 </ul>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/av_runShiny_userdata.html">av_add_px</a></span><span class="op">(</span>equitylist<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"IBM"</span>,<span class="st">"GS"</span>,<span class="st">"JPM"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/av_add_px.html">av_add_px</a></span><span class="op">(</span>equitylist<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"IBM"</span>,<span class="st">"GS"</span>,<span class="st">"JPM"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>will determine the asset type, download, and inventory the data as
 would be done if the data were requested by a command.</p>
 </div>
@@ -311,23 +311,23 @@ would be done if the data were requested by a command.</p>
 </h3>
 <p>Earnings and Earnings estimates are not strictly necessary for many
 of the commands, and are kept in separate files. Like the
-<code><a href="../reference/av_runShiny_userdata.html">av_add_px()</a></code> function above, either user data can be added
+<code><a href="../reference/av_add_px.html">av_add_px()</a></code> function above, either user data can be added
 or a list of tickers can be given. However, please note that
 <strong>price data must always be downloaded or added before any
 earnings or estimates data</strong>.</p>
 <p>Any of the following will work:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/av_runShiny_userdata.html">av_add_earn</a></span><span class="op">(</span>equitylist<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"IBM"</span>,<span class="st">"GS"</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/av_add_earn.html">av_add_earn</a></span><span class="op">(</span>equitylist<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"IBM"</span>,<span class="st">"GS"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">tmp_earn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/av_get_pf.html">av_get_pf</a></span><span class="op">(</span><span class="st">"JPM"</span>,<span class="st">"EARNINGS"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/av_extract_df.html">av_extract_df</a></span><span class="op">(</span><span class="st">"quarterlyEarnings"</span><span class="op">)</span></span>
 <span><span class="va">tmp_earnf</span><span class="op">&lt;-</span> <span class="fu"><a href="../reference/av_get_pf.html">av_get_pf</a></span><span class="op">(</span><span class="st">"JPM"</span>,<span class="st">"EARNINGS_ESTIMATES"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/av_extract_df.html">av_extract_df</a></span><span class="op">(</span><span class="st">"estimates"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/av_runShiny_userdata.html">av_add_earn</a></span><span class="op">(</span>substitute_earn<span class="op">=</span><span class="va">tmp_earn</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/av_runShiny_userdata.html">av_add_earn</a></span><span class="op">(</span>substitute_earnest<span class="op">=</span><span class="va">tmp_earnf</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/av_add_earn.html">av_add_earn</a></span><span class="op">(</span>substitute_earn<span class="op">=</span><span class="va">tmp_earn</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/av_add_earn.html">av_add_earn</a></span><span class="op">(</span>substitute_earnest<span class="op">=</span><span class="va">tmp_earnf</span><span class="op">)</span></span>
 <span></span>
 <span></span>
 <span><span class="va">tmp_earn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/av_get_pf.html">av_get_pf</a></span><span class="op">(</span><span class="st">"MU"</span>,<span class="st">"EARNINGS"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/av_extract_df.html">av_extract_df</a></span><span class="op">(</span><span class="st">"quarterlyEarnings"</span><span class="op">)</span></span>
 <span><span class="va">tmp_earnf</span><span class="op">&lt;-</span> <span class="fu"><a href="../reference/av_get_pf.html">av_get_pf</a></span><span class="op">(</span><span class="st">"MU"</span>,<span class="st">"EARNINGS_ESTIMATES"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/av_extract_df.html">av_extract_df</a></span><span class="op">(</span><span class="st">"estimates"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/av_runShiny_userdata.html">av_add_earn</a></span><span class="op">(</span>substitute_earn<span class="op">=</span><span class="va">tmp_earn</span>, substitute_earnest<span class="op">=</span><span class="va">tmp_earnf</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/av_add_earn.html">av_add_earn</a></span><span class="op">(</span>substitute_earn<span class="op">=</span><span class="va">tmp_earn</span>, substitute_earnest<span class="op">=</span><span class="va">tmp_earnf</span><span class="op">)</span></span></code></pre></div>
 <p>The advantage of such generality is that you can source price data
 anywhere, but not necessarily earnings data.<br>
 Likewise, you may want to do analyses with your own forecasts, instead
@@ -342,7 +342,7 @@ as in the following example:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">newtickers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"QQQ"</span>,<span class="st">"QQQE"</span>,<span class="st">"NDX"</span><span class="op">)</span></span>
 <span><span class="va">newasset_dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>ticker<span class="op">=</span><span class="va">newtickers</span>,listnm<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"nasdaq"</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">newtickers</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/av_runShiny_userdata.html">av_add_assetgroups</a></span><span class="op">(</span><span class="va">newasset_dt</span><span class="op">)</span></span>
+<span><span class="fu">av_add_assetgroups</span><span class="op">(</span><span class="va">newasset_dt</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/dump_state.html">dump_assetgroups</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>

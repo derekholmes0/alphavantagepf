@@ -137,10 +137,8 @@ For example, to get price data for a ticker string, use
         SPY 2026-07-30 736.0 742.5 734.6 741.7          741.7 66811268               0                 1 2026-08-01 19:38:06        NA
         SPY 2026-07-31 744.7 748.9 737.7 747.0          747.0 62445899               0                 1 2026-08-01 19:38:06        NA
 
-Outside of the function, use
-[`av_load_shinydata()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
-without arguments to load the data into the app without actually running
-it.
+Outside of the function, use `av_load_shinydata()` without arguments to
+load the data into the app without actually running it.
 
 The sister package
 [FinanceGraphs](https://derekholmes0.github.io/FinanceGraphs/) also

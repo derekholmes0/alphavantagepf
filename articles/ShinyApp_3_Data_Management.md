@@ -126,7 +126,7 @@ be done if the data were requested by a command.
 
 Earnings and Earnings estimates are not strictly necessary for many of
 the commands, and are kept in separate files. Like the
-[`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.md)
+[`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.md)
 function above, either user data can be added or a list of tickers can
 be given. However, please note that **price data must always be
 downloaded or added before any earnings or estimates data**.
