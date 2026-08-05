@@ -42,8 +42,8 @@ Suggests:
     knitr,
     rmarkdown
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.1.0
 LazyData: true
 VignetteBuilder: knitr
 URL: https://github.com/derekholmes0/alphavantagepf, https://derekholmes0.github.io/alphavantagepf/
 BugReports: https://github.com/derekholmes0/alphavantagepf/issues
+Config/roxygen2/version: 8.1.0
