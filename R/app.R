@@ -1,5 +1,5 @@
 #source("./R/utilities.R")
-tver<-"0.8.300"
+tver<-"0.8.301"
 
 # 300: Vignettes done, on to Check
 # 206: Function Walkthrough. av_misc implemented
@@ -265,7 +265,7 @@ av_make_server <- function() {
           output$inv2 <- dump_assetgroups() |>  gt() |> gt.avtheme(themeset="assetgroups") |> render_gt()
         }
         the_av$starttab <- "inventory"
-        if( exists("do_on_start",envir=the_av) ) { 
+        if( exists("do_on_start",envir=the_av) ) {
           rm("do_on_start",envir=the_av) }
         else {
           message_if_green(the_av$verbose,"Inventory on way to tab")
