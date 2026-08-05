@@ -1,12 +1,5 @@
-# =======================================================================================================
-#' App database functions: Price
 #'
-#' @importFrom fst read_fst write_fst
-#' @importFrom lubridate is.instant
-#' @import data.table
-#' @importFrom stats setNames
-#'
-#' @name av_add_px
+#' @title av_add_px
 #' @description Adds price data to [av_runShiny()] internal data.
 #' @param indta A data.frame with the following minimal columns: `c(symbol,timestamp,close)`.
 #' Other variables added could be `c(adjusted_close,open,high,low,volume,dividend_amount,split_coefficient)`
@@ -40,9 +33,13 @@
 #' ffdta <- ffdta[,.(DT_ENTRY=index,close=FEDFUNDS,adjusted_close=FEDFUNDS,symbol="FEDFUNDS")]
 #' av_add_px(ffdta)
 #' }
+#' @importFrom fst read_fst write_fst
+#' @importFrom lubridate is.instant
+#' @import data.table
+#' @importFrom stats setNames
 #' @export
 av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",delay=0) {
-  av_load_shinydata()
+  av_load_shinydata(verbose=FALSE)
   if(!is.null(assettypes)) { assettypes <- as.data.table(assettypes) }
   if(!is.null(indta)) {
     indta <- as.data.table(indta)
@@ -74,13 +71,13 @@ av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",
   save_avs_state("px",msg="av_add_px")
 }
 
-# =======================================================================================================
-#' App database functions: Earnings
 #'
-#' @import data.table
+#' @title av_add_earn
 #' @description Adds earnings data to [av_runShiny()] internal data, either by download or with user data
 #' @param substitute_earn A (default NULL)  data.frame with past earnings
 #' @param substitute_earnest  (default NULL)  A data.frame with  earnings estimates
+#' @param equitylist (default NULL)  A list with tickers for which to retrieve earnings (from AlphaVantage)
+#' @param delay (default 0)  A numeric value specifying delay between Alphavantage calls (in seconds)
 #' @returns Data.table with summary of downloaded or added earnings
 #' @seealso [av_runShiny()]
 #' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`.
@@ -95,7 +92,7 @@ av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",
 #' @export
 av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=NULL,delay=0) {
   # Age taken care of by manage_earn
-  av_load_shinydata()
+  av_load_shinydata(verbose=FALSE)
   symset <- list()
   if(!is.null(substitute_earn) && length(symset)<=0) { symset <- unique(substitute_earn$symbol) }
   if(!is.null(substitute_earnest) && length(symset)<=0) { symset <- unique(substitute_earnest$symbol) }
@@ -111,34 +108,32 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=
   return(rtniv)
 }
 
-# =======================================================================================================
 #'
-#' @name av_load_shinydata
+#' @title av_load_shinydata
 #' @description Loads internal data (prices, earnings, etc.
 #' @param item Any data name as seen by running [dump_state()].  **If blank, loads entire database**
+#' @param verbose (default TRUE) write a status message to console
 #' @returns Data item specified by `item` or a nothing (but a message) if left blank
 #' @seealso [av_runShiny()]
 #' @export
-av_load_shinydata <- function(item=NULL) {
+av_load_shinydata <- function(item=NULL,verbose=TRUE) {
   if(is.null(item)) {
     restore_avs_state("all");
     the_av$outcopy<-list()
     options(av_api_key = the_av$avapikey)
     options(av_api_entitlement = the_av$avapientitlement)
-    message_if(the_av$verbose,"Loading avShiny Internal data.  Use dump_state() to see what's available")
+    message_if(the_av$verbose && verbose,"Loading avShiny Internal data.  Use dump_state() to see what's available")
   }
   else {
     return(get(item,envir=the_av))
   }
 }
 
-# =======================================================================================================
 #'
-#' @name av_add_assetgroups
+#' @title av_add_assetgroups
 #' @description Adds asset lists to [av_runShiny()] internal data.
 #' @param indta A data.frame with two columns `c("listnm","ticker")` with one or more lines for each `"listnm"`
 #' @returns Nothing
-#'
 #' @seealso [av_runShiny()]
 #' @details Lists are specified in normalized form.  Duplicate list names with those currently in use are replaced.
 #' @examples
@@ -148,9 +143,9 @@ av_load_shinydata <- function(item=NULL) {
 #' # To remove an asset list, just use an empty string for the ticker
 #' av_add_assetgroups(data.table(listnm=c("new"),ticker=c("")))
 #' }
-#'
 #' @export
 av_add_assetgroups <- function(indta) {
+  av_load_shinydata(verbose=FALSE)
   indta <- as.data.table(indta)
   check_min_colset(indta,s("listnm;ticker"))
   restore_avs_state("constants")
@@ -159,15 +154,13 @@ av_add_assetgroups <- function(indta) {
   save_avs_state("all",msg="add_assetgroups")
 }
 
-# =======================================================================================================
 #'
-#' @name av_add_analytic
+#' @title av_add_analytic
 #' @description Adds a user-defined function to the av Shiny app
 #' @param runcode Code string user must run to call the function.
 #' @param func_name Name of function run when analytic is called.  If an empty string is supplied, the runcode will be de-registered.
 #' @param helpstr (default: "user function"): A string comment to ad to the av.h (help) command
 #' @param focus (default: "MAIN")  String with tab name to set focus to when command is run
-#'
 #' @returns String message with success or failure of function addition.
 #' @seealso [av_runShiny()]
 #' @details When the [av_runShiny()] app is run, users can call functions to provide analytics based on asset strings in the command line.
@@ -177,7 +170,6 @@ av_add_assetgroups <- function(indta) {
 #'  prior to the command invocation.
 #' The registered function should return a (possibly named, see vignette)
 #' list containing one or more `gt()` tables, `dygraphs()`, or `ggplots()` to be displayed when the command is run.  See vignette for specfic details
-#'
 #' * The function specified must be available (i.e in `.GlobalENv()`) to the Shiny app when the command is run.  Otherwise an error message will be displayed.
 #' * If the specified command has already been registered, a message will be given and the internal data will be overridden.
 #' @examples
@@ -194,10 +186,10 @@ av_add_assetgroups <- function(indta) {
 #' # From the app; run "QQQ;SPY test 5"
 #' # From the app: run "av.h"
 #' }
-#'
 #' @export
 av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAIN") {
   runcode=toupper(runcode)
+  av_load_shinydata(verbose=FALSE)
   if( toupper(runcode) %in% the_av$avsh_funcs$runcode) {
     if( nchar(func_name)<=0) {
       message_if_red(TRUE,"av_add_analytic: ",runcode, " will be removed from function list")
@@ -217,16 +209,14 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
   save_avs_state("all",msg=paste0("Add FUnction ",runcode))
 }
 
-# =======================================================================================================
 #'
-#' @name av_runShiny_interface
+#' @title quick_message
 #' @description Displays a message underneath an input box
 #' @param wh inputID for shiny element to put a message underneath of.  See Documentation and/or Code
 #' @param this_message (default "")  A text message to  be used. If empty string, the current message is cleared.
 #' @param eval (default TRUE) OPtional parameter to suppress execution.
 #' @param color Optional text color
 #' @returns logical value of `eval`
-#'
 #' @export
 quick_message <- function(wh,this_message="",eval=TRUE,color="#1f78b4") {
   shinyFeedback::hideFeedback(inputId=wh)
@@ -238,9 +228,8 @@ quick_message <- function(wh,this_message="",eval=TRUE,color="#1f78b4") {
   return(eval)
 }
 
-# =======================================================================================================
 #'
-#' @rdname av_runShiny_interface
+#' @title avsh_clipboard
 #' @description Copies a data.frame to the clipboard, with a status message if relevant
 #' @param x A `data.frame` or equivalent.
 #' @param title String to add to a message printed if relevant
@@ -255,10 +244,8 @@ avsh_clipboard <- function(x,title="") {
   }
 }
 
-# =======================================================================================================
-#' Helper functions for analytics
 #'
-#' @rdname av_runShiny_interface
+#' @title avsh_set_tabtitle
 #' @description Sets the title for the Details tab
 #' @param newtext (default"DETAIL") What to name the tab as
 #' @param tabnm (default "detail") inputID of relevant tab
@@ -271,10 +258,10 @@ avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail",makefocus=TRUE) {
   if(makefocus==TRUE) av_set_defaults("starttab",tabnm)
   shinyjs::runjs(shpf)
 }
-# ====================================================================================================
-#' Exported Internal  internal state functions
+
 #'
 #' @name av_state_interface
+#' @title av_state_interface
 #' @description retrieves internal data state of [av_runShiny()]
 #' `dump_state(typegrep="*")`
 #' `dump_inv(invgrep="*")`
@@ -296,8 +283,6 @@ avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail",makefocus=TRUE) {
 #' `dump_captured(todo="byfunction")`
 #' `inv_rv(rv)`
 #' }
-#'
-#' @rdname dump_state
 #' @export
 dump_state <- function(typegrep="*") {
   classtype=nm=NULL
@@ -321,7 +306,8 @@ dump_state <- function(typegrep="*") {
   return(outdump[order(classtype,nm)])
 }
 
-#' @rdname dump_state
+#'
+#' @rdname av_state_interface
 #' @export
 inv_rv <- function(rv) {
   tnames <- names(rv)
@@ -331,25 +317,29 @@ inv_rv <- function(rv) {
 }
 
 
-#' @rdname dump_state
+#'
+#' @rdname av_state_interface
 #' @export
 dump_inv <- function(invgrep="*") {
   return(the_av$pxinv[grepl(invgrep,symbol,ignore.case=TRUE),])
 }
 
-#' @rdname dump_state
+#'
+#' @rdname av_state_interface
 #' @export
 dump_assetgroups <- function() {
   return(the_av$assetgroups[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)])
 }
 
-#' @rdname dump_state
+#'
+#' @rdname av_state_interface
 #' @export
 dump_av_funcs <- function() {
   return(the_av$avsh_funcs)
 }
 
-#' @rdname dump_state
+#'
+#' @rdname av_state_interface
 #' @export
 dump_captured <- function(todo="byfunction") {
   nr=fn=load_ts=NULL

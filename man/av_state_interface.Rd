@@ -8,7 +8,7 @@
 \alias{dump_assetgroups}
 \alias{dump_av_funcs}
 \alias{dump_captured}
-\title{Exported Internal  internal state functions}
+\title{av_state_interface}
 \usage{
 dump_state(typegrep = "*")
 
@@ -51,7 +51,6 @@ retrieves internal data state of \code{\link[=av_runShiny]{av_runShiny()}}
 `dump_captured(todo="byfunction")`
 `inv_rv(rv)`
 }
-
 }
 \seealso{
 \code{\link[=av_runShiny]{av_runShiny()}}

@@ -117,12 +117,12 @@ sAssign<-function(x,...) { cAssign(x,copytodisk=TRUE,pframe=4,...)}
 #' @noRd
 #' @importFrom fst write.fst
 cAssign<-function(x,dbg=TRUE,silent=FALSE,copytodisk=FALSE,copysilent=FALSE,trace=FALSE,dpath="c:\\t",dbgkey="zz",suffix="",
-                  skipsaveiftoday=FALSE, nbig=10000,title="",usefst=TRUE,pframe=3,tmp=F) {
+                  envir=.GlobalEnv, skipsaveiftoday=FALSE, nbig=10000,title="",usefst=TRUE,pframe=3,tmp=F) {
   #if(nchar(title)>1) { message("cAssign ---------------------------------------: ",title) }
   newfilename=""
   if(!is.character(x)) { stop("cAssign x must be character string for a variable name, not the actual variable..") }
   if(tmp || dpath=="t") { dpath="c:/t/" }
-  if(copytodisk | copysilent) { silent=TRUE } # eliminated reduncany
+  if(copytodisk | copysilent) { silent=TRUE } # eliminated redundancy
   reallydoingthis = (dbgkey=="zz" & dbg) | !(mget(dbgkey,envir = parent.frame(n=4),ifnotfound="notfound")=="notfound")
   if(reallydoingthis) {
     if(x=="all") { x=paste0(ls(envir=sys.frame(-1)),collapse=";") }
@@ -141,7 +141,7 @@ cAssign<-function(x,dbg=TRUE,silent=FALSE,copytodisk=FALSE,copysilent=FALSE,trac
         if(!silent) {
           thistrace=ifelse(trace,try(traceback(max.lines=1),silent=T),"--notrace--")
           message("Assigning: ",ymessage, "(",paste(dim(cadtmp),collapse=";"),") ",paste(class(cadtmp),collapse=";"), " from ",tail(thistrace,1),">",title); }
-        assign(ynew,cadtmp,envir=.GlobalEnv)}
+        assign(ynew,cadtmp,envir=envir)}
       else {
         if(!silent) { print(paste("cAssign: CANNOT FIND ",y)) } }
     } )

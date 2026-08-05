@@ -51,8 +51,8 @@
 #' * Data within each produced graph or table can be copied to the clipboard (option in  `AVOPTS` page), See setup <V1> vignette.
 #' * Raw downloaded data can be saved into a "dump directory" (option in  `AVOPTS` page)
 #' * A current inventory list is always kept in a separate tab, avoiding having to run `AV.INV` repeatedly.
-#' * User price data, earnings data, and asset groups can be added using helper functions  [alphavantagepf::av_add_px()], [alphavantagepf::av_add_earn()], [alphavantagepf::av_add_assetgroups()].  See Extensions vignette <v3>
-#' * User analytics can be added using [alphavantagepf::av_add_analytic()].  See examples in the Extensions vignette <v3>
+#' * User price data, earnings data, and asset groups can be added using helper functions  [av_add_px()], [av_add_earn()], [av_add_assetgroups()].  See Extensions vignette <v3>
+#' * User analytics can be added using [av_add_analytic()].  See examples in the Extensions vignette <v3>
 #'
 #' @returns
 #' A `ShinyAppHandle` object.

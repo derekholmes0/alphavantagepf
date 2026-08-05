@@ -244,19 +244,20 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
     message_if_red(the_av$verbose,"Earnings skipping invalid or non-equity tickers: ",paste_trunc(badtickers))
     earntickers <- earntickers[!data.table(symbol=badtickers),on=.(symbol)]
   }
+  n_beg <- nrow(earntickers)
   # Determine what we have, but replace anyway if substitutes are given
-  if(nrow(the_av$earn)>0 && !is.null(substitute_earn)) {
+  if(nrow(the_av$earn)>0 && is.null(substitute_earn) & nrow(earntickers)>0) {
     alreadyhave_earn <-the_av$earn[earntickers,on=.(symbol),nomatch=NULL][,.(age=as.numeric(Sys.Date()-max(ts,na.rm=T))),by=.(symbol)][,
                                       todo:=fcase(age<=the_av$maxage_earn_days,"skip",default="get")][]
     skipped_tickers <- alreadyhave_earn[todo=="skip",]$symbol
-    message_if(the_av$verbose && length(skipped_tickers)>0,"Earnings Skipping tickers ",skipped_tickers, " with age<=",the_av$maxage_earn_days)
+    message_if(the_av$verbose && length(skipped_tickers)>0,"Earnings Skipping ",length(skipped_tickers), " of ",n_beg," with age<=",the_av$maxage_earn_days)
     earntickers <- earntickers[!data.table(symbol=skipped_tickers),on=.(symbol)]
   }
-  if(nrow(the_av$earnest)>0 && !is.null(substitute_earnest)) {
+  if(nrow(the_av$earnest)>0 && is.null(substitute_earnest)  & nrow(earntickers)>0) {
     alreadyhave_earnest <-the_av$earnest[earntickers,on=.(symbol),nomatch=NULL][,.(age=as.numeric(Sys.Date()-max(ts,na.rm=T))),by=.(symbol)][,
                                          todo:=fcase(age<=the_av$maxage_earn_days,"skip",default="get")][]
     skipped_tickers <- alreadyhave_earnest[todo=="skip",]$symbol
-    message_if(the_av$verbose && length(skipped_tickers)>0,"Earnings Estimates Skipping tickers ",skipped_tickers, " with age<=",the_av$maxage_earn_days)
+    message_if(the_av$verbose && length(skipped_tickers)>0,"Earnings Estimates Skipping ",length(skipped_tickers), " of ",n_beg," with age<=",the_av$maxage_earn_days)
     earntickers <- earntickers[!data.table(symbol=skipped_tickers),on=.(symbol)]
   }
   if( nrow(earntickers)>0) {
@@ -271,10 +272,14 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
     }
     if(src=="") {
       src <- "Downloaded"
-      progressr::handlers("cli")
-      earn_past <-  purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"),.progress="Previous Earnings")
+# 260805: Cant get progress to work smoothly both from within shiny app and outside it, and CRAN doesn't want me to switch handlers. FIx later
+#      progressr::with_progress({
+        earn_past <-purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"),.progress="Previous Earnings")
+#      },handlers="cli")
       earn_past <- rbindlist(earn_past,fill=TRUE)
-      earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress="Forecast Earnings")
+#      progressr::with_progress({
+        earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress="Forecast Earnings")
+#      },handlers="cli")
       earn_fwd <- rbindlist(earn_fwd,fill=TRUE)
     }
     if(!is.null(earn_past) && nrow(earn_past)>0) {

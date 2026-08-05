@@ -2,7 +2,7 @@
 % Please edit documentation in R/av_appRfuncs.R
 \name{av_add_earn}
 \alias{av_add_earn}
-\title{App database functions: Earnings}
+\title{av_add_earn}
 \usage{
 av_add_earn(
   substitute_earn = NULL,
@@ -15,6 +15,10 @@ av_add_earn(
 \item{substitute_earn}{A (default NULL)  data.frame with past earnings}
 
 \item{substitute_earnest}{(default NULL)  A data.frame with  earnings estimates}
+
+\item{equitylist}{(default NULL)  A list with tickers for which to retrieve earnings (from AlphaVantage)}
+
+\item{delay}{(default 0)  A numeric value specifying delay between Alphavantage calls (in seconds)}
 }
 \value{
 Data.table with summary of downloaded or added earnings
