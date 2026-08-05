@@ -1,9 +1,9 @@
 # Exported Internal internal state functions
 
-Prints internal data state of
+retrieves internal data state of
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
-`dump_state(typegrep="*")` `dump_inv()` `dump_assetgroups()`
-`dump_captured()`
+`dump_state(typegrep="*")` `dump_inv(invgrep="*")` `dump_assetgroups()`
+`dump_captured(todo="byfunction")` `av_shiny_px()`
 
 ## Usage
 
@@ -12,9 +12,9 @@ dump_state(typegrep = "*")
 
 inv_rv(rv)
 
-dump_inv()
+dump_inv(invgrep = "*")
 
-dump_assetgroups(returngt = TRUE)
+dump_assetgroups()
 
 dump_av_funcs()
 
@@ -31,9 +31,9 @@ dump_captured(todo = "byfunction")
 
   : An isolated list of av_shiny parameters
 
-- returngt:
+- invgrep:
 
-  : Return GT table
+  : A regular expression string
 
 - todo:
 
@@ -54,7 +54,7 @@ if (FALSE) { # \dontrun{
 `dump_state()`
 `dump_inv()`
 `dump_av_funcs()`
-`dump_assetgroups(returngt=TRUE)`
+`dump_assetgroups()`
 `dump_captured(todo="byfunction")`
 `inv_rv(rv)`
 } # }

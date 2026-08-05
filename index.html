@@ -37,10 +37,10 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/API_interface_usage.html">API_interface_usage</a></li>
+    <li><a class="dropdown-item" href="articles/ShinyApp_1_setup_and_usage.html">ShinyApp_1_setup_and_usage</a></li>
     <li><a class="dropdown-item" href="articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp_2_Graphs_and_Options</a></li>
-    <li><a class="dropdown-item" href="articles/ShinyApp_Data_Management.html">ShinyApp_Data_Management</a></li>
-    <li><a class="dropdown-item" href="articles/ShinyApp_New_Functionality.html">ShinyApp_New_Functionality</a></li>
-    <li><a class="dropdown-item" href="articles/ShinyApp_setup_and_usage.html">ShinyApp_1_setup_and_usage</a></li>
+    <li><a class="dropdown-item" href="articles/ShinyApp_3_Data_Management.html">ShinyApp_3_Data_Management</a></li>
+    <li><a class="dropdown-item" href="articles/ShinyApp_4_New_Functionality.html">ShinyApp_4_New_Functionality</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -157,15 +157,15 @@ The <code>symbol</code> parameter is required, but can be a simple empty string 
 <li>
 <strong>Typing and mousing are minimized.</strong> by using a command lines sets of assets which can be saved and recalled at any time, or added as a <code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame()</a></code> externally.</li>
 <li>
-<strong>The app is expandable.</strong> User time series data can be added using one function, which is then accessible just like any other data. Users can code and add their own analytics, as long as the function returns a list of tables (<a href="https://gt.rstudio.com/reference/index.html" class="external-link">gt</a> objects), <a href="https://rstudio.github.io/dygraphs/" class="external-link">dygraphs</a>, or <a href="https://ggplot2.tidyverse.org/reference/index.html" class="external-link">ggplots</a>. Details are in <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_New_Functionality.html">New Functionality Vignette</a>.</li>
+<strong>The app is expandable.</strong> User time series data can be added using one function, which is then accessible just like any other data. Users can code and add their own analytics, as long as the function returns a list of tables (<a href="https://gt.rstudio.com/reference/index.html" class="external-link">gt</a> objects), <a href="https://rstudio.github.io/dygraphs/" class="external-link">dygraphs</a>, or <a href="https://ggplot2.tidyverse.org/reference/index.html" class="external-link">ggplots</a>. Details are in <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.html">New Functionality Vignette</a>.</li>
 </ul>
-<p>To launch the app, run <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html">av_runShiny()</a>, and start with the first step of setting your API key. (See <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_setup_and_usage.html">Setup Vignette</a> for other items you can set) Once the API key is set, it’s easy to start building a data set and analyzing it in real time.</p>
+<p>To launch the app, run <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html">av_runShiny()</a>, and start with the first step of setting your API key. (See <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html">Setup Vignette</a> for other items you can set) Once the API key is set, it’s easy to start building a data set and analyzing it in real time.</p>
 <div class="section level2">
 <h2 id="initial-setup">Initial setup<a class="anchor" aria-label="anchor" href="#initial-setup"></a>
 </h2>
 <p>The first time <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html">av_runShiny()</a> is run, a temporary data directory is created and a local copy of applications defaults (and other data) is created. The app will start in the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab, where you can set up and maintain all aspects of the app behavior.</p>
 <p><strong>At a minimum</strong>, fill in your API key and permissionings status, unless already saved with <code><a href="reference/avpf_api_key.html">avpf_api_key()</a></code>. By default, all of the data downloaded and used by the app is kept in a default caching directory. I would highly recommend creating a more friendly location for data to be saved, which in the example below is set to a temp directory <code>c:/t/avsh</code>. To change any of the options, set them as needed and hit the <span style="background-color: #003366; color: #FFFFFF;">Set Opts</span> button. A table showing those selections (along with all other saved internal data) will be shown, with changed options highlighted.</p>
-<p>A full description of the options available is given in the options vignette <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Graphs_and_Options.html">Options Vignette</a></p>
+<p>A full description of the options available is given in the options vignette <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_2_Graphs_and_Options.html">Options Vignette</a></p>
 <figure><img src="reference/figures/InitialSetup.jpg" alt="Initial Setup"><figcaption aria-hidden="true">
 Initial Setup
 </figcaption></figure><p>Now you have the ability to get data form AlphaVantage and can get started with analyses.</p>
@@ -175,23 +175,14 @@ Initial Setup
 </h2>
 <p>The app seeks to minimize the amount of typing or mousework to get analyses done by using short commands, with options, that operate on sets of symbols. Critical options are set outside the command line, but overrides after the commands are possible. Commands have one of two forms:</p>
 <ul>
-<li>
-<strong>Single name commands</strong> do not need any particular set of assets, and all start with the prefix <code>AV.</code>. The first command you should run is <code>AV.H</code> to show what commands are available<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;Note that more explanatory notes are given unless the &lt;code&gt;showGeneralHelp&lt;/code&gt; option is deselected in the &lt;span style="border: 1px solid #000000; padding: 2px 6px;"&gt;AVOPTS&lt;/span&gt; tab.&lt;/p&gt;'><sup>1</sup></a>.</li>
-</ul>
-<figure><img src="reference/figures/av1.jpg" alt="Set opts"><figcaption aria-hidden="true">
-Set opts
-</figcaption></figure><p>Single name commands are used mostly to query the internal state of the app or to remember and recall previous commands.</p>
-<ul>
-<li>
-<strong>Commands on asset groups</strong> are applied to a semi-colon delimited set of assets, and are of the form</li>
+<li><p><strong>Single name commands</strong> do not need any particular set of assets, and all start with the prefix <code>AV.</code>. The first command you should run is <code>AV.H</code> to show what commands are available<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;Note that more explanatory notes are given unless the &lt;code&gt;showGeneralHelp&lt;/code&gt; option is deselected in the &lt;span style="border: 1px solid #000000; padding: 2px 6px;"&gt;AVOPTS&lt;/span&gt; tab.&lt;/p&gt;'><sup>1</sup></a>. Single name commands are used mostly to query the internal state of the app or to remember and recall previous commands.</p></li>
+<li><p><strong>Commands on asset groups</strong> are applied to a semi-colon delimited set of assets, and are of the form</p></li>
 </ul>
 <blockquote>
 <p>Symbol_11;Symbol_2;…;Symbol_n Command Options</p>
 </blockquote>
 <p>If an asset or commmand is invalid, the app will tell you, otherwise it will download what it needs using <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html">av_get_pf()</a>, save the data and and run the analysis. For example, to get a simple total return graph of a set of ETFs, just enter <code>QQQ;SPY;DIA;EEM GPI</code> in the yellow line, and get a dygraph (created with <a href="https://derekholmes0.github.io/FinanceGraphs/reference/fgts_dygraph.html" class="external-link">fgts_dygraph()</a>):</p>
-<figure><img src="reference/figures/avh.jpg" alt="Help Screen"><figcaption aria-hidden="true">
-Help Screen
-</figcaption></figure><p>A brief outline of what can be done is shown in the table below. Note that</p>
+<p>A brief outline of what can be done is shown in the table below. Note that</p>
 <ul>
 <li>Some commands compare the assets in the main line with a <em>counterasset</em> specified in a different box.<br>
 </li>
@@ -282,7 +273,7 @@ Help Screen
 <div class="section level3">
 <h3 id="adding-data">Adding data<a class="anchor" aria-label="anchor" href="#adding-data"></a>
 </h3>
-<p>Those files can be read (<em>and written to</em>) outside the shiny app, so the data can be used for other analyses (e.g. RMarkdown runs) or added to externally as user data or indices. Time series data (kept in a file called <code>avpf_px.fst</code>) can be added using the <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.html">av_add_px()</a> function. Historical earnings (kept in <code>avpf_earn.fst</code>) or forecasts (kept in <code>avpf_earnest.fst</code>) are managed separately using <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.html">av_add_earn()</a>. Those functions can be called independently without user data to source the data from Alphavantage. See <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Data_Management.html">Data Management Vignette</a> for further details.</p>
+<p>Those files can be read (<em>and written to</em>) outside the shiny app, so the data can be used for other analyses (e.g. RMarkdown runs) or added to externally as user data or indices. Time series data (kept in a file called <code>avpf_px.fst</code>) can be added using the <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.html">av_add_px()</a> function. Historical earnings (kept in <code>avpf_earn.fst</code>) or forecasts (kept in <code>avpf_earnest.fst</code>) are managed separately using <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.html">av_add_earn()</a>. Those functions can be called independently without user data to source the data from Alphavantage. See <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html">Data Management Vignette</a> for further details.</p>
 <p>As an example, suppose we wish to plot two fixed income ETFs against Fed Funds. We can use e.g. <code>quantmod</code> to download and add the data. All we need to do is ensure that we have the symbol, a <code>Date</code>-classed field and a <code>close</code> field.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://www.quantmod.com/" class="external-link">quantmod</a></span><span class="op">)</span><span class="op">)</span></span>
@@ -296,13 +287,13 @@ FIwFF
 <div class="section level3">
 <h3 id="getting-data">Getting data<a class="anchor" aria-label="anchor" href="#getting-data"></a>
 </h3>
-<p>In addition to reading the price files directly, data can be captured for use in other apps or ad-hoc analyses in in two ways: * <strong>Copy to cliboard:</strong> Any data that goes into a graph or table is automatically copied to the clipboard if the <strong>data2clipboard</strong> option is set. * <strong>Function call capture:</strong> Each individual call to <code><a href="reference/av_get_pf.html">av_get_pf()</a></code> can be cached to the <code>AV dump Directory</code> which <em>optionally</em> can be set also in <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span>. Data is saved in a named (by Alphavantage function) list of data.tables, and can be keyed (and upserted) or appended to a saved <code>.Rd</code> file. See <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Data_Management.html">Data Management Vignette</a></p>
+<p>In addition to reading the price files directly, data can be captured for use in other apps or ad-hoc analyses in in two ways: * <strong>Copy to cliboard:</strong> Any data that goes into a graph or table is automatically copied to the clipboard if the <strong>data2clipboard</strong> option is set. * <strong>Function call capture:</strong> Each individual call to <code><a href="reference/av_get_pf.html">av_get_pf()</a></code> can be cached to the <code>AV dump Directory</code> which <em>optionally</em> can be set also in <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span>. Data is saved in a named (by Alphavantage function) list of data.tables, and can be keyed (and upserted) or appended to a saved <code>.Rd</code> file. See <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html">Data Management Vignette</a></p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="adding-new-functionality">Adding new Functionality<a class="anchor" aria-label="anchor" href="#adding-new-functionality"></a>
 </h2>
-<p>New commands can be added by writing yur own functions and “registering” them with the app. New functions have two arguments: (1) a string with the command and any subsequent options, and (2) A list of all current (de-reactive’d) values of the input fields. They must return a (possibly named) list of <code>gt()</code> tables, <code>dygraphs()</code>, or <code>ggplots()</code> to be displayed when the command is run. See <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_New_Functionality.html">New Functionality Vignette</a></p>
+<p>New commands can be added by writing yur own functions and “registering” them with the app. New functions have two arguments: (1) a string with the command and any subsequent options, and (2) A list of all current (de-reactive’d) values of the input fields. They must return a (possibly named) list of <code>gt()</code> tables, <code>dygraphs()</code>, or <code>ggplots()</code> to be displayed when the command is run. See <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.html">New Functionality Vignette</a></p>
 </div>
 </div>
 
