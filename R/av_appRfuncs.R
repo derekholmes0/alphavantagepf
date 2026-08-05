@@ -42,7 +42,7 @@
 #' }
 #' @export
 av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",delay=0) {
-  restore_avs_state("all")
+  av_load_shinydata()
   if(!is.null(assettypes)) { assettypes <- as.data.table(assettypes) }
   if(!is.null(indta)) {
     indta <- as.data.table(indta)
@@ -77,7 +77,7 @@ av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",
 # =======================================================================================================
 #' App database functions: Earnings
 #'
-#' @name av_add_earn
+#' @import data.table
 #' @description Adds earnings data to [av_runShiny()] internal data, either by download or with user data
 #' @param substitute_earn A (default NULL)  data.frame with past earnings
 #' @param substitute_earnest  (default NULL)  A data.frame with  earnings estimates
@@ -95,12 +95,14 @@ av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",
 #' @export
 av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=NULL,delay=0) {
   # Age taken care of by manage_earn
+  av_load_shinydata()
   symset <- list()
   if(!is.null(substitute_earn) && length(symset)<=0) { symset <- unique(substitute_earn$symbol) }
   if(!is.null(substitute_earnest) && length(symset)<=0) { symset <- unique(substitute_earnest$symbol) }
   if(!is.null(equitylist) && length(symset)<=0) { symset <- unique(s(equitylist)) }
   if(length(symset)<=0) {
     message_if_red(TRUE,"av_add_earn cannot find any symbols")
+    return(NULL)()
   }
   rtnpx <- the_av$pxinv[data.table(symbol=symset),on=.(symbol)][,.(symbol,type)][type=="Equity",]
   rtniv <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)

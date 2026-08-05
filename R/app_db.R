@@ -271,15 +271,10 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
     }
     if(src=="") {
       src <- "Downloaded"
-      message("here1")
-      progressr::with_progress({
-        earn_past <-  purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"),.progress="Previous Earnings")
-      }, handlers="cli")
+      progressr::handlers("cli")
+      earn_past <-  purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"),.progress="Previous Earnings")
       earn_past <- rbindlist(earn_past,fill=TRUE)
-      message("here2, earn_past rows",nrow(earn_past))
-      progressr::with_progress({
-        earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress="Forecast Earnings")
-      }, handlers="cli")
+      earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress="Forecast Earnings")
       earn_fwd <- rbindlist(earn_fwd,fill=TRUE)
     }
     if(!is.null(earn_past) && nrow(earn_past)>0) {
