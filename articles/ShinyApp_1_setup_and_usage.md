@@ -43,7 +43,7 @@ are\[^1\]
 
 “Assets” can be any (common) symbol for an Equity, ETF, Currency (in the
 usual form of an alphabetic string of the form (`countercurrency` /
-`currency`), cryptocurrency\[^2\], index, or user defined time series.
+`currency`), cryptocurrency[^1], index, or user defined time series.
 
 ## App invocation and initial setup.
 
@@ -122,7 +122,7 @@ The app responds as follows:
 
 - Feedback (i.e.an error message) is placed below the command line, but
   can appear elsewhere. Progress messages will show in the R Console
-  \[^3\]
+  [^2]
 
 ### Examples
 
@@ -206,7 +206,7 @@ help narrow down the options are:
 |  | 1\. `[F|B]` first contract or second contract |
 |  | 2\. `[M|Q]` Monthly expiration or Quarterly expiration |
 |  | 3\. `[C|P|A]` Calls, Puts or Both |
-|  | 4\. `[itm|otm|all]` In or out of the money\[^4\] |
+|  | 4\. `[itm|otm|all]` In or out of the money[^3] |
 | Mindelta | Minimum absolute delta of option |
 | Output | Subset of columns to show, relevant to Trading or Valuation |
 | Scaling | Values and Greeks for 10 contracts or 10kUSD premium |
@@ -217,8 +217,12 @@ would have been returned.
 
 ![Options Search](img/optsearch.jpg) \[^1\]: A “cheatsheet” with these
 conventions is displayed when `AV.H` is run, unless the
-`showGeneralHelp` option is deselected. \[^2\]: See `AV.TICKERS` for a
-list of cryptocurrencies available. Not all are available as symmetric
-pairs, so please use only those on the list. \[^3\]: unless the
-`verbose` option is deselected in the AVOPTS tab. \[^4\]: The app looks
-up the current spot to determine moneyness.
+`showGeneralHelp` option is deselected.
+
+[^1]: See `AV.TICKERS` for a list of cryptocurrencies available. Not all
+    are available as symmetric pairs, so please use only those on the
+    list.
+
+[^2]: unless the `verbose` option is deselected in the AVOPTS tab.
+
+[^3]: The app looks up the current spot to determine moneyness.

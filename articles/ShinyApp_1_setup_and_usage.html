@@ -136,8 +136,10 @@ relative to today</td>
 </table>
 <p>“Assets” can be any (common) symbol for an Equity, ETF, Currency (in
 the usual form of an alphabetic string of the form
-(<code>countercurrency</code> / <code>currency</code>),
-cryptocurrency[^2], index, or user defined time series.</p>
+(<code>countercurrency</code> / <code>currency</code>), cryptocurrency<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;See &lt;code&gt;AV.TICKERS&lt;/code&gt; for a list of
+cryptocurrencies available. Not all are available as symmetric pairs, so
+please use only those on the list.&lt;/p&gt;"><sup>1</sup></a>, index, or
+user defined time series.</p>
 </div>
 <div class="section level2">
 <h2 id="app-invocation-and-initial-setup-">App invocation and initial setup.<a class="anchor" aria-label="anchor" href="#app-invocation-and-initial-setup-"></a>
@@ -207,7 +209,9 @@ separate tab. That tab is typically called <span style="border: 1px solid #00000
 can change names to highlight existence of results in the tab.</p></li>
 <li><p>Feedback (i.e.an error message) is placed below the command line,
 but can appear elsewhere. Progress messages will show in the R Console
-[^3]</p></li>
+<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;unless the &lt;code&gt;verbose&lt;/code&gt; option is deselected in
+the &lt;span style="border: 1px solid #000000; padding: 1px 5px;"&gt;AVOPTS&lt;/span&gt;
+tab.&lt;/p&gt;'><sup>2</sup></a></p></li>
 </ul>
 <div class="section level3">
 <h3 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
@@ -370,8 +374,9 @@ expiration</td>
 </tr>
 <tr class="odd">
 <td align="left"></td>
-<td align="left">4. <code>[itm|otm|all]</code> In or out of the
-money[^4]</td>
+<td align="left">4. <code>[itm|otm|all]</code> In or out of the money<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;The app looks up the current spot to determine
+moneyness.&lt;/p&gt;"><sup>3</sup></a>
+</td>
 </tr>
 <tr class="even">
 <td align="left">Mindelta</td>
@@ -394,14 +399,11 @@ premium</td>
 command line, calls would have been returned.</p>
 <p><img src="img/optsearch.jpg" alt="Options Search"> [^1]: A
 “cheatsheet” with these conventions is displayed when <code>AV.H</code>
-is run, unless the <code>showGeneralHelp</code> option is deselected.
-[^2]: See <code>AV.TICKERS</code> for a list of cryptocurrencies
-available. Not all are available as symmetric pairs, so please use only
-those on the list. [^3]: unless the <code>verbose</code> option is
-deselected in the <span style="border: 1px solid #000000; padding: 1px 5px;">AVOPTS</span> tab.
-[^4]: The app looks up the current spot to determine moneyness.</p>
+is run, unless the <code>showGeneralHelp</code> option is
+deselected.</p>
 </div>
 </div>
+
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>

@@ -163,75 +163,24 @@ dumping to occur.</td>
 <td align="center">
 <span style="color:blue">E</span> Capture AV
 Data</td>
-<td align="left">What to capture</td>
-</tr>
-<tr class="even">
-<td align="center"></td>
-<td align="left">
-<code>None</code> (default): Turn capture off, even if
-the directory is set.</td>
-</tr>
-<tr class="odd">
-<td align="center"></td>
-<td align="left">
-<code>nopricesonly</code>: Capture anything
-<em>but</em> time series data.</td>
-</tr>
-<tr class="even">
-<td align="center"></td>
-<td align="left">‘all’ Capture all calls</td>
-</tr>
-<tr class="odd">
-<td align="center">
-<span style="color:blue">F</span> Update or
-Cumulative</td>
-<td align="left">
-<code>update</code> data captured by symbol, or
-(<code>cum</code>) capture every time with a timestamp.</td>
-</tr>
-<tr class="even">
-<td align="center">
-<span style="color:blue">G</span> Data Saving
-Options</td>
-<td align="left">Other options</td>
-</tr>
-<tr class="odd">
-<td align="center"></td>
-<td align="left">
-<code>SaveEveryAVCall</code>: Save all calls
-cumulatively when the call is made.</td>
-</tr>
-<tr class="even">
-<td align="center"></td>
-<td align="left">
-<code>CleanOnStart</code>: Delete dump data on every
-startup of the app.</td>
-</tr>
-<tr class="odd">
-<td align="center"></td>
-<td align="left">
-<code>None</code>: Keep dumped data in memory, avoiding
-I/O overhead.</td>
-</tr>
-<tr class="even">
-<td align="center"></td>
-<td align="left"><code>SaveNowonOptUpdate</code></td>
-</tr>
-<tr class="odd">
-<td align="center">
-<span style="color:blue">H</span> Max Earnings
-Age</td>
-<td align="left">Number of days to go before reloading earnings
-data.</td>
-</tr>
-<tr class="even">
-<td align="center">
-<span style="color:blue">G</span> Max Price Age</td>
-<td align="left">Number of hours to go before refreshing price
-data.</td>
+<td align="left">What to capture<br>
+</td>
 </tr>
 </tbody>
 </table>
+<p><code>None</code> (default): Turn capture off, even if the directory
+is set.<br><code>nopricesonly</code>: Capture anything <em>but</em>
+time series data.<br> ‘all’ Capture all calls| |<span style="color:blue">F</span> Update or Cumulative|<code>update</code>
+data captured by symbol, or (<code>cum</code>) capture every time with a
+timestamp.| |<span style="color:blue">G</span> Data Saving Options|Other
+options<br><code>SaveEveryAVCall</code>: Save all calls cumulatively
+when the call is made.<br><code>CleanOnStart</code>: Delete dump data
+on every startup of the app.<br><code>None</code>: Keep dumped data in
+memory, avoiding I/O overhead.<br><code>SaveNowonOptUpdate</code>|Save
+next time <code>Set Opts</code> is pressed, (used in conjunction with
+<code>None</code>| |<span style="color:blue">H</span> Max Earnings
+Age|Number of days to go before reloading earnings data.| |<span style="color:blue">G</span> Max Price Age| Number of hours to go before
+refreshing price data.|</p>
 </div>
 <div class="section level3">
 <h3 id="non-analytic-options">Non-analytic Options<a class="anchor" aria-label="anchor" href="#non-analytic-options"></a>

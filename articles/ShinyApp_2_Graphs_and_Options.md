@@ -44,22 +44,20 @@ directory** is set.
 
 The options associated with the dumping are given below:
 
-| Field | Description |
-|:--:|:---|
-| C Cache Data | Directory to store time series, earnings, and earnings estimates |
-| D AV dump directory | Directory to store API call results. Must be set for dumping to occur. |
-| E Capture AV Data | What to capture |
-|  | `None` (default): Turn capture off, even if the directory is set. |
-|  | `nopricesonly`: Capture anything *but* time series data. |
-|  | ‘all’ Capture all calls |
-| F Update or Cumulative | `update` data captured by symbol, or (`cum`) capture every time with a timestamp. |
-| G Data Saving Options | Other options |
-|  | `SaveEveryAVCall`: Save all calls cumulatively when the call is made. |
-|  | `CleanOnStart`: Delete dump data on every startup of the app. |
-|  | `None`: Keep dumped data in memory, avoiding I/O overhead. |
-|  | `SaveNowonOptUpdate` |
-| H Max Earnings Age | Number of days to go before reloading earnings data. |
-| G Max Price Age | Number of hours to go before refreshing price data. |
+[TABLE]
+
+`None` (default): Turn capture off, even if the directory is set.  
+`nopricesonly`: Capture anything *but* time series data.  
+‘all’ Capture all calls\| \|F Update or Cumulative\|`update` data
+captured by symbol, or (`cum`) capture every time with a timestamp.\|
+\|G Data Saving Options\|Other options  
+`SaveEveryAVCall`: Save all calls cumulatively when the call is made.  
+`CleanOnStart`: Delete dump data on every startup of the app.  
+`None`: Keep dumped data in memory, avoiding I/O overhead.  
+`SaveNowonOptUpdate`\|Save next time `Set Opts` is pressed, (used in
+conjunction with `None`\| \|H Max Earnings Age\|Number of days to go
+before reloading earnings data.\| \|G Max Price Age\| Number of hours to
+go before refreshing price data.\|
 
 ### Non-analytic Options
 
