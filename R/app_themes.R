@@ -16,6 +16,7 @@
 
 #' @import gt
 #' @import data.table
+#' @export
 gt.basetheme<-function(x,gtopts="all",sizepct=100,style=4,digits=2,interactive_mult= 1.14,
                        seps=FALSE,na_format="-",size="",interactive="") {
   if(nchar(interactive)>0) {

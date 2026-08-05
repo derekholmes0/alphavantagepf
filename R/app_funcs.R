@@ -120,7 +120,6 @@ av_gearn <- function(todo,rv) {
   wheretoput <- fifelse(stringr::str_detect(todolist[[1]],"2$"), "TS2" , "TS1")
   calccode <- toupper(substr(todolist[[1]],1,3))
   bigdtstr <- extenddtstr(rv$dtstr_hist,begchg=-365)
-  cAssign("eqset;bigdtstr;rv;todo")
   toplot <- data_from_list(eqset,bigdtstr ,"none",bigdtstr ,msg_inputID="istr1")
   tdtmap <- narrowbydtstr(dtmap[,.(timestamp=DT_ENTRY,isday)],bigdtstr)
   earnset <- the_av$earn[data.table(symbol=eqset),on=.(symbol)][,.(symbol,timestamp=reportedDate,reportedEPS,estimatedEPS)]
@@ -137,10 +136,11 @@ av_gearn <- function(todo,rv) {
   toplot_x <- withearn[,.(timestamp,symbol,value=fcase(c_code=="GPE",close/ra_reportedEPS, c_code=="GEP",100*ra_reportedEPS/close,
                                       c_code=="GPF",close/ra_estimatedEPS, c_code=="GFP",100*ra_estimatedEPS/close))]
   toplot_x <- toplot_x |> narrowbydtstr(rv$dtstr_hist)
+  titlelist <- list("GPE"="Price/Earnings","GEP"="100*Earnings/Price","GPF"="Px/FcstEarnings","GFP"="100*FctEarn/Px")
   out=list()
   if( nrow(toplot_x)>0) {
     toplot[[1]] <- setnames(toplot_x,"value",the_av$seriesnm)
-    out[[wheretoput]] <- one_px_ts(toplot,rv,events=rv$ts_events,dt_window=rv$dtstr_hist)
+    out[[wheretoput]] <- one_px_ts(toplot,rv,events=rv$ts_events,dt_window=rv$dtstr_hist,title=titlelist[[calccode]])
   }
   return(out)
 }
@@ -364,6 +364,7 @@ av_active <- function(todo,rv) {
 # For the following functions: DIV
 # Good
 av_divs <- function(todo,rv) {
+  asset<-NULL
   out=list()
   this_symset <- form_symset(s(rv$assetline))
   if( length(eqset <- this_symset[grepl("Equity|ETF",asset),]$symbol)>0 ) {

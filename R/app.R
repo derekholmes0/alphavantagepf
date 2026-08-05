@@ -1,6 +1,7 @@
 #source("./R/utilities.R")
-tver<-"0.8.2063"
+tver<-"0.8.300"
 
+# 300: Vignettes done, on to Check
 # 206: Function Walkthrough. av_misc implemented
 # 205: Av_misc functions, earnings stuff
 # 202: ui output finally working as intended Solved dygrahs height issue with containers, error code for bad tickers
@@ -52,9 +53,9 @@ av_make_ui <- function() {
        column(10,  # Was 11
           fluidRow(
             column(width=7,div(class = "enter-submit", textInput("istr1", paste("AVShiny",tver), the_av$inpline1,width='100%'))),
-            column(width=2,selectizeInput("list1","",c("AssetListnm"="", c("",sort(unique(the_av$assetgroups$listnm)))),size="80%",options=list(create=TRUE))),
-            column(width=2,radioButtons("managelist1","",choices=c("get","save","delete"),selected =character(0),width="85%",inline=TRUE)),
-            column(width=1,div(class = "enter-submit", textInput("istr2", "CounterAsset", the_av$inpline2,width='100%')))
+            column(width=2,selectizeInput("assetgp_list","",c("AssetListnm"="", c("",sort(unique(the_av$assetgroups$listnm)))),size="80%",options=list(create=TRUE))),
+            column(width=1,radioButtons("manage_aglist","",choices=c("get","save","delete"),selected =character(0),width="85%",inline=TRUE)),
+            column(width=2,div(class = "enter-submit", textInput("istr2", "CounterAsset", the_av$inpline2,width='100%')))
           ),
           fluidRow(
             tabsetPanel(id="inTabset",selected=the_av$starttab,
@@ -85,7 +86,7 @@ av_make_ui <- function() {
               # Other tabs
               tabPanel("INVENTORY",value="inventory",
                   actionButton("RefreshInv","RefreshInv",width='30%',class = "btn btn-primary"),
-                  tabsetPanel(id="inv_tabset",selected="inv1",
+                  tabsetPanel(id="inv_tabset",
                     tabPanel("Assets",value="inv1", gt_output(outputId="inv1") ),
                     tabPanel("AssetList",value="inv2", gt_output(outputId="inv2") )
                   )
@@ -194,8 +195,7 @@ av_make_server <- function() {
           newassets <- data.table(ticker=s(assetline))[,listnm:=tlist][]
           the_av$assetgroups <- DTUpsert(the_av$assetgroups,newassets,c("listnm"),replaceifbempty=the_av$assetgroups[!(listnm==tlist),])
           save_avs_state("all",msg="saveassets")
-          updateSelectizeInput(session,"list1", choices=sort(unique(the_av$assetgroups$listnm)))
-          updateSelectizeInput(session,"list2", choices=sort(unique(the_av$assetgroups$listnm)))
+          updateSelectizeInput(session,"assetgp_list", choices=sort(unique(the_av$assetgroups$listnm)))
           rtnmsg <-paste0("Asset set saved as ",tlist)
         }
       }
@@ -207,8 +207,7 @@ av_make_server <- function() {
       }
       if(listtodo=="delete") {
         the_av$assetgroups <- the_av$assetgroups[!listnm==tlist,]
-        updateSelectizeInput(session,"list1", choices=sort(unique(the_av$assetgroups$listnm)))
-        updateSelectizeInput(session,"list2", choices=sort(unique(the_av$assetgroups$listnm)))
+        updateSelectizeInput(session,"assetgp_list", choices=sort(unique(the_av$assetgroups$listnm)))
         rtnmsg <-paste0("Deleted Asset List: ",tlist)
         save_avs_state("all",msg="deleteassets")
       }
@@ -222,14 +221,9 @@ av_make_server <- function() {
       av_set_defaults("gropts",paste0(input$gropts,sep=";"))
     })
 
-    observeEvent(input$managelist1, {
-      req(input$managelist1)
-      quick_message("istr1",set_list(input$managelist1,input$list1,input$istr1,1))
-    })
-
-    observeEvent(input$managelist2, {
-      req(input$managelist2)
-      quick_message("istr2",set_list(input$managelist2,input$list2,input$istr2,2))
+    observeEvent(input$manage_aglist, {
+      req(input$manage_aglist)
+      quick_message("istr1",set_list(input$manage_aglist,input$assetgp_list,input$istr1,1))
     })
 
     observeEvent(input$SetOpts, {
@@ -268,7 +262,7 @@ av_make_server <- function() {
         if( !quick_message(eval=(nrow(the_av$pxinv)<=0),"istr1","No INventory: Create Data by running a Time Series Graph") ) {
           invtosend <- the_av$pxinv[,.SD,.SDcol=!s("earnf_next;div_lastval;lastearn_dt;earnf_nextdt;earnf_ts")]
           output$inv1 <- invtosend[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv") |> render_gt() #  gt.avtheme(themeset="pxinv") |>
-          output$inv2 <- dump_assetgroups(returngt=TRUE) |>  gt.avtheme(themeset="assetgroups") |> render_gt()
+          output$inv2 <- dump_assetgroups() |>  gt() |> gt.avtheme(themeset="assetgroups") |> render_gt()
         }
         the_av$starttab <- "inventory"
         if( exists("do_on_start",envir=the_av) ) { rm("do_on_start",envir=the_av) }
@@ -316,7 +310,7 @@ av_make_server <- function() {
       # New variables created and added to rv:  todo todofunc todoargs assetline
       parse_inpline(toupper(rv$istr1))
       rv <- c(rv,setNames(list(todo,todofunc,todoargs,assetline), s("todo;todofunc;todoargs;assetline"))) # Augment rv
-      cAssign("todo;todofunc;rv;todoargs;assetline",silent=TRUE)
+      cAssign("todo;todofunc;rv;todoargs;assetline",silent=TRUE) # Take out in prodiction version
       runfunc_set <-  the_av$avsh_funcs[runcode==todofunc,]
 
       quick_message("istr1",fifelse(nrow(runfunc_set)<=0,paste(todo,":Invalid function"),""))

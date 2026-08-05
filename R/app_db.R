@@ -236,24 +236,31 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
 #' @importFrom lubridate NA_Date_
 manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL, delay=0.05) {
   todo=ts=horizon=eps_estimate_average=assetType=NULL
-  src<-""; rtniv<-data.table()
+  src<-outmsg<-""; rtniv<-data.table()
   earntickers <- the_av$listings[tickerdt,on=.(symbol),nomatch=NULL][assetType=="Stock",]
   if(nrow(earntickers)<=0) { return() }
+  # Kick out bad tickers
   if( length( badtickers <- setdiff(tickerdt$symbol,earntickers$symbol))>0) {
     message_if_red(the_av$verbose,"Earnings skipping invalid or non-equity tickers: ",paste_trunc(badtickers))
     earntickers <- earntickers[!data.table(symbol=badtickers),on=.(symbol)]
   }
-  if(nrow(the_av$earn)>0) {
-    alreadyhave <-the_av$earn[,.(age=as.numeric(Sys.Date()-max(ts))),by=.(symbol)]
-    toget <- alreadyhave[earntickers[,.(symbol,assetType)],on=.(symbol)][,todo:=fcase(age<=the_av$maxage_earn_days,"skip",default="get")][]
-    if(nrow(toget[todo=="get"])<=0) {
-        message_if(the_av$verbose,paste0("Earnings data less than ",the_av$maxage_earn_days," maxage for all tickers, skipping"))
-        return()
-    }
-    earntickers <- toget[todo=="get",]
-    message_if(the_av$verbose & nrow(toget[todo=="skip"])>0,"Earnings: Getting ",nrow(earntickers)," symbols and skipping:",paste_trunc(toget[todo=="skip"]$symbol))
+  # Determine what we have, but replace anyway if substitutes are given
+  if(nrow(the_av$earn)>0 && !is.null(substitute_earn)) {
+    alreadyhave_earn <-the_av$earn[earntickers,on=.(symbol),nomatch=NULL][,.(age=as.numeric(Sys.Date()-max(ts,na.rm=T))),by=.(symbol)][,
+                                      todo:=fcase(age<=the_av$maxage_earn_days,"skip",default="get")][]
+    skipped_tickers <- alreadyhave_earn[todo=="skip",]$symbol
+    message_if(the_av$verbose && length(skipped_tickers)>0,"Earnings Skipping tickers ",skipped_tickers, " with age<=",the_av$maxage_earn_days)
+    earntickers <- earntickers[!data.table(symbol=skipped_tickers),on=.(symbol)]
+  }
+  if(nrow(the_av$earnest)>0 && !is.null(substitute_earnest)) {
+    alreadyhave_earnest <-the_av$earnest[earntickers,on=.(symbol),nomatch=NULL][,.(age=as.numeric(Sys.Date()-max(ts,na.rm=T))),by=.(symbol)][,
+                                         todo:=fcase(age<=the_av$maxage_earn_days,"skip",default="get")][]
+    skipped_tickers <- alreadyhave_earnest[todo=="skip",]$symbol
+    message_if(the_av$verbose && length(skipped_tickers)>0,"Earnings Estimates Skipping tickers ",skipped_tickers, " with age<=",the_av$maxage_earn_days)
+    earntickers <- earntickers[!data.table(symbol=skipped_tickers),on=.(symbol)]
   }
   if( nrow(earntickers)>0) {
+    earn_past <- earn_fwd <- data.table()
     if(is.data.table(substitute_earn)) {
       src<-"subs earnings"
       earn_past <- copy(substitute_earn)
@@ -269,24 +276,26 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
       earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress="Forecast Earnings")
       earn_fwd <- rbindlist(earn_fwd,fill=TRUE)
     }
-    if(nrow(earn_past)>0) {
+    if(!is.null(earn_past) && nrow(earn_past)>0) {
       setkeyv(earn_past,s("symbol;reportedDate;fiscalDateEnding"))
       earn_past <- earn_past[,ts:=Sys.Date()]
-      rtninv_past = earn_past[,.(lastearndt=max(reportedDate)),by=.(symbol)]
+      rtninv_past = earn_past[,.(lastearndt=max(reportedDate,na.rm=T)),by=.(symbol)]
       the_av$earn <- DTUpsert(the_av$earn,earn_past,key(earn_past))
+      outmsg <- paste0(" adds ",nrow(earn_past), " past")
     }
     else {
-      rtninv_past <- earntickers[,.(symbol,lastearndt=lubridate::NA_Date_)]
+      rtniv <- rtninv_past <- earntickers[,.(symbol,lastearndt=lubridate::NA_Date_)]
     }
-    if(nrow(earn_fwd)>0) {
+    if(!is.null(earn_fwd) && nrow(earn_fwd)>0) {
       earn_fwd <- earn_fwd[,ts:=Sys.Date()]
       setkeyv(earn_fwd,s("symbol;date;horizon;ts"))  # Possibly want evolution.
       the_av$earnest <- DTUpsert(the_av$earnest,earn_fwd,key(earn_fwd))
       rtninv_fwd <- earn_fwd[horizon=="fiscal quarter",.SD[which.max(date)],by=.(symbol)][,
                             .(symbol,earnf_ts=ts,earnf_nextdt=date,earnf_next=eps_estimate_average)]
       rtniv =  rtninv_fwd[rtninv_past,on=.(symbol)]
+      outmsg <- paste0(outmsg, " adds ",nrow(earn_fwd), " fwd earnings")
     }
-    message_if_green(the_av$verbose,"earnings(",paste_trunc(earntickers$symbol),") from ",src," adds ",nrow(earn_past), " past and ",nrow(earn_fwd), " fwd earnings")
+    message_if_green(the_av$verbose,"earnings(",paste_trunc(earntickers$symbol),") from ",src, outmsg)
     message_if_red(src=="","manage_earn: No tickers to update.  Have they been priced?")
   }
   return(rtniv)
@@ -325,7 +334,7 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
       load(avdatafn,envir=the_av)
     }
   }
-  message_if_green(TRUE,"Restored state (",todo,") from ",the_av$cachedir, " ",msg)
+  message_if_green(the_av$verbose & the_av$dbglvl>=2,"Restored state (",todo,") from ",the_av$cachedir, " ",msg)
 }
 
 # =========================================================
@@ -356,7 +365,7 @@ save_avs_state <- function(todo="all",msg="") {
     save(list=unames,envir=the_av,file=the_av$constants_fn)
     shortmsg <- paste(shortmsg,"const")
   }
-  message_if_green(the_av$verbose & the_av$dbglvl>=1,"Save State (",todo,") or (",shortmsg,") from '",msg,"' at ",format(Sys.time(),"%d-%H:%M%:S"))
+  message_if_green(the_av$verbose & the_av$dbglvl>=2,"Save State (",todo,") or (",shortmsg,") from '",msg,"' at ",format(Sys.time(),"%d-%H:%M%:S"))
 }
 
 
@@ -454,8 +463,10 @@ check_min_colset <- function(indta,colsneeded) {
 kill_symbol <- function(inticker) {
   the_av$pxd <- the_av$pxd[!(symbol==inticker),]
   the_av$pxinv <- the_av$pxinv[!(symbol==inticker),]
+  the_av$earn <- the_av$earn[!(symbol==inticker),]
+  the_av$earnest <- the_av$earnest[!(symbol==inticker),]
   message_if_red(TRUE,"Removed ",inticker," from price database")
-  save_avs_state(,msg=" Ttticker RRREdrum")
+  save_avs_state("all",msg=" Ttticker RRREdrum")
 }
 
 av_dbgmode <- function() {

@@ -1,20 +1,36 @@
-Location, ui_out,inclass,outname,displayed
-MAIN,t1gt,gt_tbl,GT1,FALSE
-MAIN,t2gt,gt_tbl,GT2,FALSE
-MAIN,t3lgt,gt_tbl,GT3L,FALSE
-MAIN,t3rgt,gt_tbl,GT3R,FALSE
-MAIN,dy1,dygraphs,TS1,FALSE
-MAIN,dy2,dygraphs,TS2,FALSE
-MAIN,plot1,ggplot2::ggplot,SCAT1,FALSE
-MAIN,plot2,ggplot2::ggplot,SCAT2,FALSE
-DET,d_t1gt,gt_tbl,DGT1,FALSE
-DET,d_t2gt,gt_tbl,DGT2,FALSE
-DET,d_plot1,ggplot2::ggplot,DSCAT1,FALSE
-DET,d_plot2,ggplot2::ggplot,DSCAT2,FALSE
-INVENTORY,inv1,gt_tbl,inv1,FALSE
-INVENTORY,inv2,gt_tbl,inv2,FALSE
-OPT,opt_t1gt,gt_tbl,OPT1GT,FALSE
-OPT,opt_plot1,ggplot2::ggplot,OPTPLOT1,FALSE
-OPT,opt_plot2,ggplot2::ggplot,OPTPLOT2,FALSE
-NEWS,newsgt,gt_tbl,NEWSGT,FALSE
-MAIN,msg,text,MSG,FALSE
+Location, ui_out,inclass,outname,displayed,,,Name,Order Shown,Class,Type
+MAIN,t1gt,gt_tbl,GT1,FALSE,,,GT1,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html
+MAIN,t2gt,gt_tbl,GT2,FALSE,,,GT2,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html
+MAIN,t3lgt,gt_tbl,GT3L,FALSE,,,GT3L,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html
+MAIN,t3rgt,gt_tbl,GT3R,FALSE,,,GT3R,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html
+MAIN,dy1,dygraphs,TS1,FALSE,,,TS1,,dygraphs,[dygraphs](https://rstudio.github.io/dygraphs/)
+MAIN,dy2,dygraphs,TS2,FALSE,,,TS2,,dygraphs,[dygraphs](https://rstudio.github.io/dygraphs/)
+MAIN,plot1,ggplot2::ggplot,SCAT1,FALSE,,,SCAT1,,ggplot2::ggplot,[ggplots](https://ggplot2.tidyverse.org/reference/index.html)
+MAIN,plot2,ggplot2::ggplot,SCAT2,FALSE,,,SCAT2,,ggplot2::ggplot,[ggplots](https://ggplot2.tidyverse.org/reference/index.html)
+DET,d_t1gt,gt_tbl,DGT1,FALSE,,,DGT1,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html)
+DET,d_t2gt,gt_tbl,DGT2,FALSE,,,DGT2,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html)
+DET,d_plot1,ggplot2::ggplot,DSCAT1,FALSE,,,DSCAT1,,ggplot2::ggplot,[ggplots](https://ggplot2.tidyverse.org/reference/index.html)
+DET,d_plot2,ggplot2::ggplot,DSCAT2,FALSE,,,DSCAT2,,ggplot2::ggplot,[ggplots](https://ggplot2.tidyverse.org/reference/index.html)
+INVENTORY,inv1,gt_tbl,inv1,FALSE,,,,,,
+INVENTORY,inv2,gt_tbl,inv2,FALSE,,,,,,
+OPT,opt_t1gt,gt_tbl,OPT1GT,FALSE,,,,,,
+OPT,opt_plot1,ggplot2::ggplot,OPTPLOT1,FALSE,,,,,,
+OPT,opt_plot2,ggplot2::ggplot,OPTPLOT2,FALSE,,,,,,
+NEWS,newsgt,gt_tbl,NEWSGT,FALSE,,,,,,
+MAIN,msg,text,MSG,FALSE,,,,,,
+,,,,,,,,,,
+,,,,,,,,,,
+,,,,,,,,,,
+,,,,,,,,,,
+,,,,,,,,,,
+,,"                    textOutput(""msg""),",,,,,,,"                    gt_output(outputId=""d_t1gt""),",
+,,"                    htmlOutput(""htm1""),",,,,,,,"                    gt_output(outputId=""d_t2gt""),",
+,,"                    gt_output(outputId = ""t1gt""),",,,,,,,"                    plotOutput(outputId=""d_plot1""),",
+,,"                    gt_output(outputId = ""t2gt""),",,,,,,,"                    plotOutput(outputId=""d_plot2""),",
+,,"                    div(class = ""no-gap-row"",",,,,,,,,
+,,"                        div(class = ""table-pane"", style=""flex: 1"", gt_output(""t3lgt"")),",,,,,,,,
+,,"                        div(class = ""table-pane"", style=""flex: 1"", gt_output(""t3rgt"")) ),",,,,,,,,
+,,"                    uiOutput(""dy1_container""),",,,,,,,,
+,,"                    uiOutput(""dy2_container""),",,,,,,,,
+,,"                    plotOutput(outputId=""plot1""),",,,,,,,,
+,,"                    plotOutput(outputId=""plot2""),",,,,,,,,

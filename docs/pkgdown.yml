@@ -3,11 +3,11 @@ pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   API_interface_usage: API_interface_usage.html
-  ShinyApp_Data_Management: ShinyApp_Data_Management.html
-  ShinyApp_Graphs_and_Options: ShinyApp_Graphs_and_Options.html
-  ShinyApp_New_Functionality: ShinyApp_New_Functionality.html
-  ShinyApp_setup_and_usage: ShinyApp_setup_and_usage.html
-last_built: 2026-07-31T21:56Z
+  ShinyApp_1_setup_and_usage: ShinyApp_1_setup_and_usage.html
+  ShinyApp_2_Graphs_and_Options: ShinyApp_2_Graphs_and_Options.html
+  ShinyApp_3_Data_Management: ShinyApp_3_Data_Management.html
+  ShinyApp_4_New_Functionality: ShinyApp_4_New_Functionality.html
+last_built: 2026-08-05T10:31Z
 urls:
   reference: https://derekholmes0.github.io/alphavantagepf/reference
   article: https://derekholmes0.github.io/alphavantagepf/articles

@@ -150,12 +150,12 @@ analyze and visualize data. Some key features of the interface are:
   objects), [dygraphs](https://rstudio.github.io/dygraphs/), or
   [ggplots](https://ggplot2.tidyverse.org/reference/index.html). Details
   are in [New Functionality
-  Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_New_Functionality.html).
+  Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.html).
 
 To launch the app, run
 [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html),
 and start with the first step of setting your API key. (See [Setup
-Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_setup_and_usage.html)
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html)
 for other items you can set) Once the API key is set, it’s easy to start
 building a data set and analyzing it in real time.
 
@@ -182,7 +182,7 @@ highlighted.
 
 A full description of the options available is given in the options
 vignette [Options
-Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Graphs_and_Options.html)
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_2_Graphs_and_Options.html)
 
 <figure>
 <img src="man/figures/InitialSetup.jpg" alt="Initial Setup" />
@@ -202,15 +202,9 @@ forms:
 
 - **Single name commands** do not need any particular set of assets, and
   all start with the prefix `AV.`. The first command you should run is
-  `AV.H` to show what commands are available[^1].
-
-<figure>
-<img src="man/figures/av1.jpg" alt="Set opts" />
-<figcaption aria-hidden="true">Set opts</figcaption>
-</figure>
-
-Single name commands are used mostly to query the internal state of the
-app or to remember and recall previous commands.
+  `AV.H` to show what commands are available[^1]. Single name commands
+  are used mostly to query the internal state of the app or to remember
+  and recall previous commands.
 
 - **Commands on asset groups** are applied to a semi-colon delimited set
   of assets, and are of the form
@@ -224,11 +218,6 @@ save the data and and run the analysis. For example, to get a simple
 total return graph of a set of ETFs, just enter `QQQ;SPY;DIA;EEM GPI` in
 the yellow line, and get a dygraph (created with
 [fgts_dygraph()](https://derekholmes0.github.io/FinanceGraphs/reference/fgts_dygraph.html)):
-
-<figure>
-<img src="man/figures/avh.jpg" alt="Help Screen" />
-<figcaption aria-hidden="true">Help Screen</figcaption>
-</figure>
 
 A brief outline of what can be done is shown in the table below. Note
 that
@@ -304,7 +293,7 @@ function. Historical earnings (kept in `avpf_earn.fst`) or forecasts
 [av_add_earn()](https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.html).
 Those functions can be called independently without user data to source
 the data from Alphavantage. See [Data Management
-Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Data_Management.html)
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
 for further details.
 
 As an example, suppose we wish to plot two fixed income ETFs against Fed
@@ -336,7 +325,7 @@ cached to the `AV dump Directory` which *optionally* can be set also in
 Data is saved in a named (by Alphavantage function) list of data.tables,
 and can be keyed (and upserted) or appended to a saved `.Rd` file. See
 [Data Management
-Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_Data_Management.html)
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
 
 ## Adding new Functionality
 
@@ -346,7 +335,7 @@ the command and any subsequent options, and (2) A list of all current
 (de-reactive’d) values of the input fields. They must return a (possibly
 named) list of `gt()` tables, `dygraphs()`, or `ggplots()` to be
 displayed when the command is run. See [New Functionality
-Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_New_Functionality.html)
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.html)
 
 [^1]: Note that more explanatory notes are given unless the
     `showGeneralHelp` option is deselected in the

@@ -1,0 +1,186 @@
+---
+title: "ShinyApp_3_Data_Management"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ShinyApp_3_Data_Management}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Data storage overview
+
+One of the key contributions of the  [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html) app 
+is to hide the details of Alphavantage asset-specific calling conventions. TO the degree possible, the app also caches locally 
+that data, both to speed up retrieval and to minimize traffic to the API.  To generalize the analyses beyind that Alphavantage 
+data, The app also allows other **user data** to be added.  Economic or sentiment data may be added, or rates or other company financial 
+data.
+
+The minimal set of data needed consists of a **time series** dataset and (for equities) **earnings** datasets.  For scalability and
+speed, those files are kept in [fst](https://www.fstpackage.org/) format.  They can accessed directly (even when the 
+app is running), or via helper functions described in the next section.  The files kept are 
+
+|Filename|Location|Description
+|:---------:|:------:|:-------------------|
+|`avpf_px.fst`|Cache Directory|Raw and adjusted (total rtn) prices, and cash flows|
+|`avpf_earn.fst`|Cache Directory|Historical earnings|
+|`avpf_earnest.fst`|Cache Directory|Earnings forecasts|
+|`avpf_inv.RD`|Cache Directory|Inventory (dates and latest values) file|
+
+In addition, there is a constants file that is always kept in a system-assigned cache directory. This file (summarized by
+[dump_state()](https://derekholmes0.github.io/alphavantagepf/reference/dump_state.html)) contains pointers to the
+other files as well as downloaded ticker lists and cached state values.
+
+# Adding new data
+
+Each dataset described above has its own minimal set of columns and columns that may be zero for many cases. To ease the
+burden of determining that, three helpful user functions are included.  These can be used in two ways, either to 
+add new data or to download data from [AlphaVantage](https://www.alphavantage.co/).   Below is a list of data
+available from the API and which is downloadable via the [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html)
+app and the interface functions described in subsequent sections
+
+|Data Item|Stored in App|Helper Function|Notes|
+|:------------|:-:|:-----:|:----------------------|
+|Equity,ETF prices|Y|[av_add_px](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.html)||
+|Equity Option Prices|N||Available per ticker using `OS` function|
+|Equity,ETF dividends|Y|[av_add_px](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.html)||
+|Currency, Crypto prices|Y|[av_add_px](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.html)|Not all Crypto pairs available|
+|Equity related Indices|Y|[av_add_px](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.html)|Run `AV.TICKERS` to get list[^1]|
+|Equity Earnings|Y|[av_add_earn](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.html)|Kept in `avpf_earn.fst`|
+|Equity Earnings Estimates|Y|[av_add_earn](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.html)|Kept in `avpf_earnest.fst`|
+|Earnings Call Transcripts|N||Available per ticker using `EA` function|
+|Company News|N||Available per ticker using `CN` function|
+|Equity Financials|N||Planned for a future release|
+|Insider Transactions|N||Planned for a future release|
+|Commodities|N||Planned for a future release|
+
+Any other data you may need can be added as generic (i.e. without further description) price series.
+
+[^1]: Alphavantage has a small select list of CBOE, VIX and equity futures indices available as historical data, listed by running `AV.TICKERS`
+
+## Adding Prices and Indices
+
+The function [av_add_px](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.html) can add user time series
+or price data from symbols (via [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html)) would would normally
+be downloaded from the app.
+
+The function requires at a minimum one of two items:
+
+* An input `data.table()` with at least three columns `c(symbol,timestamp,close)` containing the series identifier, a date, and a value.
+Optionally, other data (usually provided automatically from AlphaVantge) associated with intraday moves and total return calculations could be added.
+
+|Data types|required?|Column names|
+|:--------:|:--:|:------------------------|
+|Time Series|Y|`c(symbol,timestamp,close)`|
+|Intraday|N|`c(open,high,low,volume)`|
+|Total Return|N|`c(adjusted_close,dividend_amount,split_coefficient)`|
+
+Suppose we wish to download Natural Gas data from Alphavantage (via [FRED](https://fred.stlouisfed.org/)) and give it
+our own ticker `HH_GAS`. First we download the price series and get the columns we need.  Then we add some basic description,
+including most critically the asset type, so the app knows where to get data going forward.
+
+```{r, eval=FALSE}
+require(data.table)
+ng_dta <- av_get_pf("","NATURAL_GAS")[,.(symbol="GAS_HH",timestamp,close=value)]
+asset_df <- data.frame(symbol=c("GAS_HH"),type=c("user"),currency=c("USD"), name=c("Henry Hub Gas Spot"))
+av_add_px(ng_dta, assettypes=asset_df)
+```
+We can source data anywhere, really.  As an example of getting data directly from  [FRED](https://fred.stlouisfed.org/), let's
+add FEDFUNDS as its own ticker:
+
+```{r, eval=FALSE}
+suppressMessages(require(quantmod))
+ffdta <- as.data.table(quantmod::getSymbols("FEDFUNDS",src="FRED",auto.assign=FALSE))
+ffdta <- ffdta[,.(DT_ENTRY=index,close=FEDFUNDS,symbol="FEDFUNDS")]
+av_add_px(ffdta)
+```
+In this case where the `assettypes` argument is not used, the source (`user`) and symbol (`symbol`) are inferred from the input data.
+
+* A list of Equity, ETF, currency, crypto[^1] or available index[^1] symbols. For example,
+
+```{r, eval=FALSE}
+av_add_px(equitylist=c("IBM","GS","JPM"))
+```
+
+will determine the asset type, download, and inventory the data as would be done if the data were requested by a command.
+
+
+## Earnings
+
+Earnings and Earnings estimates are not strictly necessary for many of the commands, and are kept in separate files.
+Like the `av_add_px()` function above, either user data can be added or a list of tickers can be given. However,
+please note that **price data must always be downloaded or added before any earnings or estimates data**.
+
+Any of the following will work:
+
+```{r, eval=FALSE}
+av_add_earn(equitylist=c("IBM","GS"))
+
+tmp_earn <- av_get_pf("JPM","EARNINGS") |> av_extract_df("quarterlyEarnings")
+tmp_earnf<- av_get_pf("JPM","EARNINGS_ESTIMATES") |> av_extract_df("estimates")
+av_add_earn(substitute_earn=tmp_earn)
+av_add_earn(substitute_earnest=tmp_earnf)
+
+
+tmp_earn <- av_get_pf("MU","EARNINGS") |> av_extract_df("quarterlyEarnings")
+tmp_earnf<- av_get_pf("MU","EARNINGS_ESTIMATES") |> av_extract_df("estimates")
+av_add_earn(substitute_earn=tmp_earn, substitute_earnest=tmp_earnf)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+testlist <- s("GS;IBM;JPM;MU")
+u1 <- lapply(testlist, \(x) kill_symbol(x))
+dump_inv("^(GS|IBM|JPM|MU)")
+av_add_px(equitylist = testlist)
+dump_inv("^(GS|IBM|JPM|MU)")
+
+av_add_earn(equitylist=c("IBM","GS"))
+dump_inv("^(GS|IBM|JPM|MU)")
+
+tmp_earn <- av_get_pf("JPM","EARNINGS") |> av_extract_df("quarterlyEarnings")
+tmp_earnf<- av_get_pf("JPM","EARNINGS_ESTIMATES") |> av_extract_df("estimates")
+av_add_earn(substitute_earn=tmp_earn)
+av_add_earn(substitute_earnest=tmp_earnf)
+dump_inv("^(GS|IBM|JPM|MU)")
+
+tmp_earn <- av_get_pf("MU","EARNINGS") |> av_extract_df("quarterlyEarnings")
+tmp_earnf<- av_get_pf("MU","EARNINGS_ESTIMATES") |> av_extract_df("estimates")
+av_add_earn(substitute_earn=tmp_earn, substitute_earnest=tmp_earnf)
+dump_inv("^(GS|IBM|JPM|MU)")
+```
+The advantage of such generality is that you can source price data anywhere, but not necessarily earnings data.  
+Likewise, you may want to do analyses with your own forecasts, instead of consensus forecasts.
+
+## Asset Groups
+
+Saving sets of asset groups via the app (see [Usage](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html) is to be sure a tedious task.
+To shortcut that effort, use [av_add_assetgroups()](https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.html) as in the following
+example:
+
+```{r, eval=FALSE}
+newtickers <- c("QQQ","QQQE","NDX")
+newasset_dt <- data.table(ticker=newtickers,listnm=rep("nasdaq",length(newtickers)))
+av_add_assetgroups(newasset_dt)
+dump_assetgroups()
+```
+
+# Data Inventory and retrieval.
+
+Whenever data is added, as inventory information after the addition is collected.   There are three ways to see what is currently in inventory:
+
+* Run `AV.INV` to get all tickers with data downloaded, including indices and user data
+* Run `AV.EQINV` to get just Equity and ETF tickers.
+* Run [dump_inv()](https://derekholmes0.github.io/alphavantagepf/reference/av_state_interface.html) from the R console.
+
+Also a separate tab <span style="border: 1px solid #000000; padding: 2px 6px;">INVENTORY</span> is populated on application startup.  The idea is
+to always have a dictionary what what you have on hand, without going back and forth between (e.g.) `AV.INV` and your train of thought.
+
+
+
+

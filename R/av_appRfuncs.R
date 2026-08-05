@@ -6,7 +6,7 @@
 #' @import data.table
 #' @importFrom stats setNames
 #'
-#' @name av_runShiny_userthings
+#' @name av_add_px
 #' @description Adds price data to [av_runShiny()] internal data.
 #' @param indta A data.frame with the following minimal columns: `c(symbol,timestamp,close)`.
 #' Other variables added could be `c(adjusted_close,open,high,low,volume,dividend_amount,split_coefficient)`
@@ -15,41 +15,61 @@
 #' descriptive data for the assets given in `indta`.  If not specified, a call to `av_get_pf(.,"SYMBOL_SEARCH")`
 #' is necessary to determine the asset type (one of `c("Equity","ETF","FX","Index","Crypto")`) for subsequent
 #' calls to [av_get_pf()]
+#' @param equitylist (default NULL) If specified, function will get equity prices from `av_get_pf`.  `indta` can be
+#' null or is otherwise ignored.
+#' @param dtstr (default `"-30y::"`). Date range to download if applicable.
 #' @param delay (default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
 #' unused if `assettypes` is given.
-#'
 #' @returns Nothing
 #' @seealso [av_runShiny()]
-#' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`
+#' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp` internally.
 #' @examples
 #' \dontrun{
-#' av_add_px(av_get_pf("IBM","TIME_SERIES_DAILY_ADJUSTED"))
-#' asset_df <- data.frame(symbol=c("HYG"),type=c("ETF"),currency=c("USD"), name=c("HY ETF"))
-#' av_add_px(av_get_pf("HYG","TIME_SERIES_DAILY_ADJUSTED"), assettypes=asset_df)
+#' # To add known symbols outside the app
+#' av_add_px(equitylist=c("IBM","GS","JPM"))
 #'
+#' # To add ad-hoc data from Alphavantage (e.g. Natgas spot at Henry Hub)
+#' # Note that "symbol" in indta must match same in assettypes
+#' asset_df <- data.frame(symbol=c("GAS_HH"),type=c("user"),currency=c("USD"), name=c("GAS_HH"))
+#' ng_data <- av_get_pf("","NATURAL_GAS")[,.(symbol="GAS_HH",timestamp,close=value)]
+#' av_add_px(ng_data, assettypes=asset_df)
+#'
+#' # To data from other sources
 #' suppressMessages(require(quantmod))
 #' ffdta <- as.data.table(quantmod::getSymbols("FEDFUNDS",src="FRED",auto.assign=FALSE))
 #' ffdta <- ffdta[,.(DT_ENTRY=index,close=FEDFUNDS,adjusted_close=FEDFUNDS,symbol="FEDFUNDS")]
 #' av_add_px(ffdta)
 #' }
-#'
 #' @export
-av_add_px <- function(indta,assettypes=NULL,delay=0) {
+av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",delay=0) {
   restore_avs_state("all")
-  firstdate <- find_col_bytype(indta,lubridate::is.instant)
-  if (is.null(firstdate)) {
-    stop("av_add_data: Need a timestamp column")
+  if(!is.null(assettypes)) { assettypes <- as.data.table(assettypes) }
+  if(!is.null(indta)) {
+    indta <- as.data.table(indta)
+    firstdate <- find_col_bytype(indta,lubridate::is.instant)
+    if (is.null(firstdate)) {
+      stop("av_add_data: Need a timestamp column")
+    }
+    indta <- data.table(indta)
+    setnames(indta,firstdate,"timestamp")
+    check_min_colset(indta,s("symbol;timestamp;close"))
+    if(!"adjusted_close" %in% names(indta)) {
+      indta <- indta[,adjusted_close:=close][]
+    }
+    symbolset <- unique(indta$symbol)
+    dtstr <- paste0(min(indta$timestamp),"::")
+    manage_px(symbolset,dtstr,substitute_data=indta,substitute_symset=assettypes,delay=delay)
   }
-  indta <- data.table(indta)
-  setnames(indta,firstdate,"timestamp")
-  check_min_colset(indta,s("symbol;timestamp;close"))
-  if(!"adjusted_close" %in% names(indta)) {
-    indta <- indta[,adjusted_close:=close][]
+  else if (is.vector(s(equitylist))) {
+    symbolset <- lapply(s(equitylist),\(x) manage_px(x,dtstr,delay=delay))
+    symbolset <- s(equitylist)
   }
-  manage_px(unique(indta$symbol),"-30y::",substitute_data=indta,substitute_symset=assettypes,delay=delay)
-  message("here 10")
+  else {
+    message_if_red(TRUE,"av_add_px: without any data or an equitylist, have nothing to do")
+    return()
+  }
   # need (symbol=TICKER,type="user",currency="USD",name=TICKER)
-  newinv <- get_inv(unique(indta$symbol),override_symset=assettypes)
+  newinv <- get_inv(symbolset,override_symset=assettypes)
   the_av$pxinv <- DTUpsert(the_av$pxinv, newinv, c("symbol"),fill=TRUE)
   save_avs_state("px",msg="av_add_px")
 }
@@ -57,44 +77,62 @@ av_add_px <- function(indta,assettypes=NULL,delay=0) {
 # =======================================================================================================
 #' App database functions: Earnings
 #'
-#' @rdname av_runShiny_userthings
+#' @name av_add_earn
 #' @description Adds earnings data to [av_runShiny()] internal data, either by download or with user data
 #' @param substitute_earn A (default NULL)  data.frame with past earnings
 #' @param substitute_earnest  (default NULL)  A data.frame with  earnings estimates
-#' @param assettypes (default NULL)  An optional data.frame with minimal columns `c(symbol,type,currency,name)` with
-#' descriptive data for the assets given in `indta`.  If not specified, a call to `av_get_pf(.,"SYMBOL_SEARCH")`
-#' is necessary to determine the asset type (one of `c("Equity","ETF","FX","Index","Crypto")`) for subsequent
-#' calls to [av_get_pf()]
-#' NOTE THAT assettypes cannot be NULL if substitute_earn and substitute_earnest are NULL.
-#' @param delay (default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
-#' unused if `assettypes` is given.
-#'
-#' @returns Data.table with downloaded or added earnings
+#' @returns Data.table with summary of downloaded or added earnings
 #' @seealso [av_runShiny()]
 #' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`.
 #' If just assetypes is given, the function downloads earnings as needed (respecting maximum age parameters defined
 #' in the app's `AVOPTS` tab.)
+#' **Note that price data must always be added first**
 #' @examples
 #' \dontrun{
 #' # To add earnings for a set of tickers
-#' av_add_earn(assettypes=data.table(symbol=c("AAPL","QQQ"))
+#' av_add_earn(equitylist=data.table(symbol=c("IBM","GS"))
 #' }
-#'
-#'
 #' @export
-av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,assettypes=NULL,delay=0) {
+av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=NULL,delay=0) {
   # Age taken care of by manage_earn
-    symset = if (is.null(substitute_earn)) unique(assettypes$symbol) else unique(substitute_earn$symbol)
-    rtnpx <- the_av$pxinv[data.table(symbol=symset),on=.(symbol)][,.(symbol,type)][type=="Equity",]
-    rtniv <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
-    the_av$pxinv <- DTUpsert(the_av$pxinv, get_inv(symset), c("symbol"),fill=TRUE)
-    save_avs_state("px",msg="av_add_earn")
-    return(rtniv)
+  symset <- list()
+  if(!is.null(substitute_earn) && length(symset)<=0) { symset <- unique(substitute_earn$symbol) }
+  if(!is.null(substitute_earnest) && length(symset)<=0) { symset <- unique(substitute_earnest$symbol) }
+  if(!is.null(equitylist) && length(symset)<=0) { symset <- unique(s(equitylist)) }
+  if(length(symset)<=0) {
+    message_if_red(TRUE,"av_add_earn cannot find any symbols")
+  }
+  rtnpx <- the_av$pxinv[data.table(symbol=symset),on=.(symbol)][,.(symbol,type)][type=="Equity",]
+  rtniv <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
+  the_av$pxinv <- DTUpsert(the_av$pxinv, get_inv(symset), c("symbol"),fill=TRUE)
+  save_avs_state("px",msg="av_add_earn")
+  return(rtniv)
 }
 
 # =======================================================================================================
 #'
-#' @rdname av_runShiny_userthings
+#' @name av_load_shinydata
+#' @description Loads internal data (prices, earnings, etc.
+#' @param item Any data name as seen by running [dump_state()].  **If blank, loads entire database**
+#' @returns Data item specified by `item` or a nothing (but a message) if left blank
+#' @seealso [av_runShiny()]
+#' @export
+av_load_shinydata <- function(item=NULL) {
+  if(is.null(item)) {
+    restore_avs_state("all");
+    the_av$outcopy<-list()
+    options(av_api_key = the_av$avapikey)
+    options(av_api_entitlement = the_av$avapientitlement)
+    message_if(the_av$verbose,"Loading avShiny Internal data.  Use dump_state() to see what's available")
+  }
+  else {
+    return(get(item,envir=the_av))
+  }
+}
+
+# =======================================================================================================
+#'
+#' @name av_add_assetgroups
 #' @description Adds asset lists to [av_runShiny()] internal data.
 #' @param indta A data.frame with two columns `c("listnm","ticker")` with one or more lines for each `"listnm"`
 #' @returns Nothing
@@ -119,16 +157,14 @@ av_add_assetgroups <- function(indta) {
   save_avs_state("all",msg="add_assetgroups")
 }
 
-
 # =======================================================================================================
 #'
-#' @rdname av_runShiny_userthings
+#' @name av_add_analytic
 #' @description Adds a user-defined function to the av Shiny app
 #' @param runcode Code string user must run to call the function.
 #' @param func_name Name of function run when analytic is called.  If an empty string is supplied, the runcode will be de-registered.
 #' @param helpstr (default: "user function"): A string comment to ad to the av.h (help) command
 #' @param focus (default: "MAIN")  String with tab name to set focus to when command is run
-#' @param category (default "USER") A string with a category used to sort function when help is called.
 #'
 #' @returns String message with success or failure of function addition.
 #' @seealso [av_runShiny()]
@@ -158,7 +194,7 @@ av_add_assetgroups <- function(indta) {
 #' }
 #'
 #' @export
-av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAIN",category="USER") {
+av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAIN") {
   runcode=toupper(runcode)
   if( toupper(runcode) %in% the_av$avsh_funcs$runcode) {
     if( nchar(func_name)<=0) {
@@ -174,30 +210,9 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
     message_if_red(TRUE,"Invalid function name; skipping operation")
     return()
   }
-  new_analytics <- data.table(category=category,runcode=runcode, func_src="user", func_name=func_name, focus=focus, helpstr=helpstr)
+  new_analytics <- data.table(category="user",runcode=runcode, func_src="user", func_name=func_name, focus=focus, helpstr=helpstr)
   the_av$avsh_funcs <- DTUpsert(the_av$avsh_funcs,new_analytics,keys=c("runcode"),fill=TRUE)
   save_avs_state("all",msg=paste0("Add FUnction ",runcode))
-}
-
-# =======================================================================================================
-#'
-#' @rdname av_runShiny_userthings
-#' @description Loads internal data (prices, earnings, etc.
-#' @param item Any data name as seen by running [dump_state()].  **If blank, loads database**
-#' @returns Data item specified by `item` or a nothing (but a message) if left blank
-#' @seealso [av_runShiny()]
-#' @export
-av_shinydata <- function(item=NULL) {
-  if(is.null(item)) {
-    restore_avs_state("all");
-    the_av$outcopy<-list()
-    options(av_api_key = the_av$avapikey)
-    options(av_api_entitlement = the_av$avapientitlement)
-    message_if(the_av$verbose,"Loading avShiny Internal data.  Use dump_state() to see what's available")
-  }
-  else {
-    return(get(item,envir=the_av))
-  }
 }
 
 # =======================================================================================================
@@ -257,16 +272,17 @@ avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail",makefocus=TRUE) {
 # ====================================================================================================
 #' Exported Internal  internal state functions
 #'
-#' @name dump_state
-#' @description Prints internal data state of [av_runShiny()]
+#' @name av_state_interface
+#' @description retrieves internal data state of [av_runShiny()]
 #' `dump_state(typegrep="*")`
-#' `dump_inv()`
+#' `dump_inv(invgrep="*")`
 #' `dump_assetgroups()`
-#' `dump_captured()`
+#' `dump_captured(todo="byfunction")`
+#' `av_shiny_px()`
 #' @param typegrep : Grep string for internal state parameters
-#' @param returngt : Return GT table
 #' @param todo : One of c("byfunction","pxhist",any av function name)
 #' @param rv : An isolated list of av_shiny parameters
+#' @param invgrep : A regular expression string
 #' @returns data.table with desired data.
 #' @seealso [av_runShiny()]
 #' @examples
@@ -274,7 +290,7 @@ avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail",makefocus=TRUE) {
 #' `dump_state()`
 #' `dump_inv()`
 #' `dump_av_funcs()`
-#' `dump_assetgroups(returngt=TRUE)`
+#' `dump_assetgroups()`
 #' `dump_captured(todo="byfunction")`
 #' `inv_rv(rv)`
 #' }
@@ -315,13 +331,13 @@ inv_rv <- function(rv) {
 
 #' @rdname dump_state
 #' @export
-dump_inv <- function() {
-  return(the_av$pxinv)
+dump_inv <- function(invgrep="*") {
+  return(the_av$pxinv[grepl(invgrep,symbol,ignore.case=TRUE),])
 }
 
 #' @rdname dump_state
 #' @export
-dump_assetgroups <- function(returngt=TRUE) {
+dump_assetgroups <- function() {
   return(the_av$assetgroups[,.(tickers=paste0(.SD$ticker,collapse=" ")), by=.(listnm)])
 }
 
