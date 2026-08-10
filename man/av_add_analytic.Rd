@@ -22,6 +22,8 @@ String message with success or failure of function addition.
 Adds a user-defined function to the av Shiny app
 }
 \details{
+Add a new command to the av_runShiny app
+
 When the \code{\link[=av_runShiny]{av_runShiny()}} app is run, users can call functions to provide analytics based on asset strings in the command line.
 This function allows users to add their own analytics by registering a function which takes, as inputs
 \enumerate{

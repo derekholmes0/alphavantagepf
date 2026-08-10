@@ -1,5 +1,7 @@
+#' Add Price or Time Series Data
 #'
-#' @title av_add_px
+#' @name av_add_px
+#' @title Add or download Price or Time Series Data
 #' @description Adds price data to [av_runShiny()] internal data.
 #' @param indta A data.frame with the following minimal columns: `c(symbol,timestamp,close)`.
 #' Other variables added could be `c(adjusted_close,open,high,low,volume,dividend_amount,split_coefficient)`
@@ -71,8 +73,10 @@ av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",
   save_avs_state("px",msg="av_add_px")
 }
 
+#' Add Earnings Data
 #'
-#' @title av_add_earn
+#' @name av_add_earn
+#' @title Add or download Earnings Data
 #' @description Adds earnings data to [av_runShiny()] internal data, either by download or with user data
 #' @param substitute_earn A (default NULL)  data.frame with past earnings
 #' @param substitute_earnest  (default NULL)  A data.frame with  earnings estimates
@@ -108,8 +112,10 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=
   return(rtniv)
 }
 
+#' Load ShinyApp data from Cache
 #'
-#' @title av_load_shinydata
+#' @name av_load_shinydata
+#' @title Load av_runShiny() internal data.
 #' @description Loads internal data (prices, earnings, etc.
 #' @param item Any data name as seen by running [dump_state()].  **If blank, loads entire database**
 #' @param verbose (default TRUE) write a status message to console
@@ -129,10 +135,12 @@ av_load_shinydata <- function(item=NULL,verbose=TRUE) {
   }
 }
 
+#' Add Asset Groups
 #'
-#' @title av_add_assetgroups
+#' @name av_add_assetgroups
+#' @title Add asset lists
 #' @description Adds asset lists to [av_runShiny()] internal data.
-#' @param indta A data.frame with two columns `c("listnm","ticker")` with one or more lines for each `"listnm"`
+#' @param indta A data.frame with a minimum of two columns `c("listnm","ticker")` with one or more lines for each `"listnm"` and possibly a column `weight` for weightings
 #' @returns Nothing
 #' @seealso [av_runShiny()]
 #' @details Lists are specified in normalized form.  Duplicate list names with those currently in use are replaced.
@@ -148,12 +156,14 @@ av_add_assetgroups <- function(indta) {
   av_load_shinydata(verbose=FALSE)
   indta <- as.data.table(indta)
   check_min_colset(indta,s("listnm;ticker"))
+  if(!("weight" %in% colnames(indta))) { indta[, weight:=1/.N, by=.(listnm)]  }
   restore_avs_state("constants")
   the_av$assetgroups <- DTUpsert(the_av$assetgroups,indta,c("listnm"))
   the_av$assetgroups <- the_av$assetgroups[nchar(ticker)>0,]
   save_avs_state("all",msg="add_assetgroups")
 }
 
+#' Add a new command to the av_runShiny app
 #'
 #' @title av_add_analytic
 #' @description Adds a user-defined function to the av Shiny app
@@ -209,25 +219,29 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
   save_avs_state("all",msg=paste0("Add FUnction ",runcode))
 }
 
+#' Display a user message in the av_runShiny app
 #'
-#' @title quick_message
+#' @title avsh_quick_message
 #' @description Displays a message underneath an input box
-#' @param wh inputID for shiny element to put a message underneath of.  See Documentation and/or Code
 #' @param this_message (default "")  A text message to  be used. If empty string, the current message is cleared.
 #' @param eval (default TRUE) OPtional parameter to suppress execution.
 #' @param color Optional text color
 #' @returns logical value of `eval`
 #' @export
-quick_message <- function(wh,this_message="",eval=TRUE,color="#1f78b4") {
-  shinyFeedback::hideFeedback(inputId=wh)
+avsh_quick_message <- function(this_message,eval=TRUE,color="#1f78b4") {
+  if(eval) {  the_av$user_feedback <- this_message }
+}
+
+quick_message <- function(this_message="",eval=TRUE,color="#1f78b4",wh="istr1", session = shiny::getDefaultReactiveDomain()) {
+  shinyFeedback::hideFeedback(inputId=wh, session=session)
   if(nchar(this_message)>0 & eval==TRUE) {
     this_message <- paste0("<small>",this_message,"</small>")
     shinyFeedback::showFeedback(inputId=wh, text=this_message,color=color)
-    the_av$last_feedback <- this_message
   }
   return(eval)
 }
 
+#' Copy data to clipboard
 #'
 #' @title avsh_clipboard
 #' @description Copies a data.frame to the clipboard, with a status message if relevant
@@ -240,10 +254,11 @@ avsh_clipboard <- function(x,title="") {
   if(the_av$autocopy) {
     write_clip(as.data.frame(x))
     message_if_green(the_av$verbose,"to Clipboard: ",title," w/ ",nrow(x)," rows")
-    quick_message("istr1","Data copied to Clipboad")
+    quick_message("Data copied to Clipboad")
   }
 }
 
+#' Set an av_runShiny Tab Title
 #'
 #' @title avsh_set_tabtitle
 #' @description Sets the title for the Details tab
@@ -259,6 +274,7 @@ avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail",makefocus=TRUE) {
   shinyjs::runjs(shpf)
 }
 
+#' Return av_runShiny data and states
 #'
 #' @name av_state_interface
 #' @title av_state_interface
@@ -270,7 +286,6 @@ avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail",makefocus=TRUE) {
 #' `av_shiny_px()`
 #' @param typegrep : Grep string for internal state parameters
 #' @param todo : One of c("byfunction","pxhist",any av function name)
-#' @param rv : An isolated list of av_shiny parameters
 #' @param invgrep : A regular expression string
 #' @returns data.table with desired data.
 #' @seealso [av_runShiny()]
@@ -281,7 +296,6 @@ avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail",makefocus=TRUE) {
 #' `dump_av_funcs()`
 #' `dump_assetgroups()`
 #' `dump_captured(todo="byfunction")`
-#' `inv_rv(rv)`
 #' }
 #' @export
 dump_state <- function(typegrep="*") {
@@ -305,17 +319,6 @@ dump_state <- function(typegrep="*") {
   #-------------------
   return(outdump[order(classtype,nm)])
 }
-
-#'
-#' @rdname av_state_interface
-#' @export
-inv_rv <- function(rv) {
-  tnames <- names(rv)
-  tclass <- sapply(tnames, \(x) paste0(class(rv[[x]]),sep=" "))
-  tres <- rv[tnames]
-  return(data.table(inputId=tnames, type=tclass, res=tres))
-}
-
 
 #'
 #' @rdname av_state_interface

@@ -2,7 +2,7 @@
 % Please edit documentation in R/av_appRfuncs.R
 \name{av_load_shinydata}
 \alias{av_load_shinydata}
-\title{av_load_shinydata}
+\title{Load av_runShiny() internal data.}
 \usage{
 av_load_shinydata(item = NULL, verbose = TRUE)
 }
@@ -16,6 +16,9 @@ Data item specified by \code{item} or a nothing (but a message) if left blank
 }
 \description{
 Loads internal data (prices, earnings, etc.
+}
+\details{
+Load ShinyApp data from Cache
 }
 \seealso{
 \code{\link[=av_runShiny]{av_runShiny()}}

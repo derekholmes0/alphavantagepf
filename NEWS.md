@@ -1,6 +1,6 @@
 # alphavantagepf (development version)
 
-# alphavantagepf 0.8.3: in Progress
+# alphavantagepf 0.8.4: in Progress
 
 New feature todo
 * calendars
@@ -23,7 +23,8 @@ Bug fixes
 
 * Fixed app crash if no earnings transcript available.
 * Fixed graphing so that stepPlots are chosen appropriately, not always.
-* splitfirst ignored for single name plots.
+* `splitfirst` ignored for single name plots.
+* `av_get_pf(.,"OVERVIEW")` now properly produces a type-separated table.
 
 ## Breaking changes
 

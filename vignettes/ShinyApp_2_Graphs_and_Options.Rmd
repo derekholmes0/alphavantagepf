@@ -54,10 +54,7 @@ The options associated with the dumping are given below:
 |:----------:|:------------------------|
 |<span style="color:blue">C</span> Cache Data</span>|Directory to store time series, earnings, and earnings estimates|
 |<span style="color:blue">D</span> AV dump directory</span>|Directory to store API call results.  Must be set for dumping to occur.|
-|<span style="color:blue">E</span> Capture AV Data</span>|What to capture<br>
-`None` (default): Turn capture off, even if the directory is set.<br>
-`nopricesonly`: Capture anything *but* time series data.<br>
-'all' Capture all calls|
+|<span style="color:blue">E</span> Capture AV Data</span>|What to capture<br>`None` (default): Turn capture off, even if the directory is set.<br>`nopricesonly`: Capture anything *but* time series data.<br>'all' Capture all calls|
 |<span style="color:blue">F</span> Update or Cumulative|`update` data captured by symbol, or (`cum`) capture every time with a timestamp.|
 |<span style="color:blue">G</span> Data Saving Options|Other options<br>
 `SaveEveryAVCall`: Save all calls cumulatively when the call is made.<br>

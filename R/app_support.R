@@ -98,10 +98,10 @@ av_validate_directory <- function(newdir,src_inputID) {
   if(nchar(newdir)>0) {
     newdir <- gsub("\\","/",newdir,fixed=TRUE)
     if(!dir.exists(newdir)) {
-      quick_message(src_inputID,"Invalid Directory.....")
+      quick_message("Invalid Directory.....",wh=src_inputID)
     }
     else {
-      quick_message(src_inputID,"")
+      quick_message("",wh=src_inputID)
       outdir<-newdir
     }
   }
@@ -165,10 +165,9 @@ data_from_list <-function(inlist,datestring,ts_rebase,dtstr_window,msg_inputID="
   inlist=unique(inlist)
   toplot <- sapply(inlist, \(x) manage_epx(x,datestring,addlive=the_av$uselive))
   if(length(badtickers <- names(toplot)[grep("ERROR",toplot)])>0) {
-      quick_message(msg_inputID,paste("Invalid tickers:", paste(badtickers)))
+      quick_message(paste("Invalid tickers:", paste(badtickers)),wh=msg_inputID)
   }
   inlist <- inlist[!grepl("ERROR",toplot)]
-  #quick_message(msg_inputID,"Data retrived:", paste0(inlist,collapse=" "))
   toplot <- get_one_ts(inlist,ts_rebase,datestring,dtstr_window) # REturns list(data.table,"") if nothing valid
   if(copytable) { avsh_clipboard(toplot[[1]],"px") }
   return(toplot)

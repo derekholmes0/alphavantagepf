@@ -19,3 +19,6 @@ Nothing
 \description{
 Sets the title for the Details tab
 }
+\details{
+Set an av_runShiny Tab Title
+}

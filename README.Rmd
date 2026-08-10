@@ -33,7 +33,6 @@ I'm continually improving the shiny app, so if you are a frequent user, you may 
 #pak::pak("derekholmes0/alphavantagepf")
 install.packages("alphavantagepf")
 ```
-<span style="color:red">
 
 Load the package.
 ```{r}

@@ -18,6 +18,7 @@ export(av_reset_defaults)
 export(av_runShiny)
 export(avpf_api_key)
 export(avsh_clipboard)
+export(avsh_quick_message)
 export(avsh_set_tabtitle)
 export(dump_assetgroups)
 export(dump_av_funcs)
@@ -25,8 +26,6 @@ export(dump_captured)
 export(dump_inv)
 export(dump_state)
 export(gt.basetheme)
-export(inv_rv)
-export(quick_message)
 import(FinanceGraphs)
 import(clipr)
 import(data.table)
@@ -68,6 +67,7 @@ importFrom(lubridate,
   with_tz
 )
 importFrom(patchwork,wrap_plots)
+importFrom(progressr,handlers)
 importFrom(purrr,
   map,
   map2

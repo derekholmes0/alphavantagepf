@@ -62,6 +62,11 @@ epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
   return(tortn)
 }
 
+# ---
+# Manage_epx: DOwnload (or redownload) all relevant data
+# ---
+
+
 
 # manage_epx only accepts more than one ticker if called with substitute_data
 # mange_eps will download repeatedly before market opens, no real way to avoid it without time of day logic
@@ -234,10 +239,10 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
 # todo:  only download earnings when you think you might need to
 #' @importFrom purrr map
 #' @importFrom lubridate NA_Date_
+#' @importFrom progressr handlers
 manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL, delay=0.05) {
   todo=ts=horizon=eps_estimate_average=assetType=NULL
   called_from_console <- as.character(sys.call(-1)[[1]])
-  message(" called from ",called_from_console)
   src<-outmsg<-""; rtniv<-data.table()
   earntickers <- the_av$listings[tickerdt,on=.(symbol),nomatch=NULL][assetType=="Stock",]
   if(nrow(earntickers)<=0) { return() }
@@ -276,11 +281,11 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
       src <- "Downloaded"
 # 260805: Cant get progress to work smoothly both from within shiny app and outside it, and CRAN doesn't want me to switch handlers. FIx later
       if(called_from_console=="av_add_earn") {
-        old_handlers <- progressr::handlers()
-        progressr::handlers("cli")
+        old_handlers <- handlers()
+        handlers("cli")
         earn_past <-purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"),.progress="Previous Earnings")
         earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress="Forecast Earnings")
-        progressr::handlers(old_handlers)
+        handlers(old_handlers)
       }
       else {
         earn_past <-purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"))

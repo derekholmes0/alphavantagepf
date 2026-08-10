@@ -2,7 +2,7 @@
 % Please edit documentation in R/av_appRfuncs.R
 \name{av_add_earn}
 \alias{av_add_earn}
-\title{av_add_earn}
+\title{Add or download Earnings Data}
 \usage{
 av_add_earn(
   substitute_earn = NULL,
@@ -27,6 +27,8 @@ Data.table with summary of downloaded or added earnings
 Adds earnings data to \code{\link[=av_runShiny]{av_runShiny()}} internal data, either by download or with user data
 }
 \details{
+Add Earnings Data
+
 Entire set of columns from \code{\link[=av_get_pf]{av_get_pf()}} can be added. First date column renamed to \code{timestamp}.
 If just assetypes is given, the function downloads earnings as needed (respecting maximum age parameters defined
 in the app's \code{AVOPTS} tab.)

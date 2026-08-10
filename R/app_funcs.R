@@ -34,7 +34,7 @@ av_inventory <- function(todo,rv) {
 
 # -----------------------------------------------------------------------
 # FOr the following functions: AV.H
-# Good
+#
 av_help <- function(todo,rv) {
   func_reqinput=func_opts=helpstr=helpexample=func_src=HelpComment=runcode2=NULL
   grepstr <-  s(c(todo,"*"),"[ ]+",rtn=2)
@@ -51,7 +51,6 @@ av_help <- function(todo,rv) {
                   add_colwidths("avh")
       )
   })["elapsed"]
-  message(" av_help rendered in ",thistm)
   if(grepl("showGeneralHelp",the_av$logopts)) {
     helptable <- avsd$generalhelp |> gt() |> gt.basetheme(sizepct=90) |> decorate_table() |>
                   tab_style(style=cell_text(font="Courier"),locations=cells_body(columns=c("Example/Choice"))) |>
@@ -59,6 +58,18 @@ av_help <- function(todo,rv) {
     rtnlist=c(list(helptable),rtnlist)
   }
   return(rtnlist)
+}
+
+# -----------------------------------------------------------------------
+# FOr the following functions: AV.INPUTS
+#
+av_dumprv <- function(todo,rv) {
+  inputId<-NULL
+  tnames <- names(rv)
+  tortn <- data.table(inputId=tnames, type=sapply(tnames, \(x) paste0(class(rv[[x]]))), current_value=rv[tnames])
+  tortn[inputId=="avapikey",]$current_value<-"<<redacted>>"
+  tortn<- tortn[!grepl("shinyAction",type),]
+  return(list(tortn |> gt() |> gt.basetheme(sizepct=70)))
 }
 
 # -----------------------------------------------------------------------
@@ -116,7 +127,7 @@ av_gearn <- function(todo,rv) {
   todolist <- s(toupper(todo),"[ ]+",pad=1)
   func_details <- the_av$avsh_funcs[runcode==todolist[[1]],]
   eqset <- form_symset(s(rv$assetline),typegrep="Equity")$symbol
-  if(length(eqset)<=0) { quick_message("istr1","No equities in set"); return() }
+  if(length(eqset)<=0) { quick_message("No equities in set"); return() }
   wheretoput <- fifelse(stringr::str_detect(todolist[[1]],"2$"), "TS2" , "TS1")
   calccode <- toupper(substr(todolist[[1]],1,3))
   bigdtstr <- extenddtstr(rv$dtstr_hist,begchg=-365)
@@ -231,13 +242,13 @@ av_livepx <- function(todo,rv) {
   assetlist <- s(rv$istr1)
   df_live <- data.table()
   if(nrow(the_av$pxinv)<=0) {
-    quick_message("istr1","No inventory to price")
+    quick_message("No inventory to price")
     return()
   }
   tmp_syms  <- the_av$pxinv[grepl("Equity|ETF",type),]$symbol
   fxsymbols <- the_av$pxinv[grepl("FX",type),]$symbol
   if(tmp_syms[[1]]=="NOPXINV") {
-      quick_message("istr1","Run some Price History first..")
+      quick_message("Run some Price History first..")
       return()
   }
   if( todolist[[1]]=="Q") {
@@ -257,7 +268,7 @@ av_livepx <- function(todo,rv) {
   }
   avsh_clipboard(df_live,"liveprice")
   if(nrow(df_live)<=0) {
-    quick_message("istr1","Need to make sure all tickers are in inventory by having history retrieved")
+    quick_message("Need to make sure all tickers are in inventory by having history retrieved")
     return()
   }
   return(list(df_live |>  gt.avtheme(themeset="live")))
@@ -270,17 +281,17 @@ av_des <- function(todo,rv) {
   out<-list()
   this_symset <- form_symset(s(rv$assetline))
   if( length(eqset <- this_symset[type=="Equity",]$symbol)>0 ) {
-    eqdt <- rbindlist(lapply(eqset, \(x) av_get_pf(x,"OVERVIEW")))
+    eqdt <- rbindlist(lapply(eqset, \(x) av_get_pf(x,"OVERVIEW")))  |> setnames("field","variable",skip_absent=TRUE)
     eqdt <- eqdt |> save_av_data("OVERVIEW")
     olist <- avsd$overviewlist[,variable:=EquityName][]
     eqdta <- olist[eqdt,on=.(variable)][source=="av",]
-    eqdta <- eqdta[order(catprio,prio)][,.(category,symbol,catprio,prio,variable,ltype,value_str,format ,value_num)]
-    eqdta_2 <- copy(eqdta)[variable=="Description",value_str:="See Below"]
-    toplot <- dcast(eqdta_2[order(catprio,prio)], catprio+prio+category + variable+format ~ symbol, value.var="value_str")
+    eqdta <- eqdta[order(catprio,prio)][,.(category,symbol,catprio,prio,variable,value,format,value_num)]
+    eqdta_2 <- copy(eqdta)[variable=="Description",value:="See Below"]
+    toplot <- dcast(eqdta_2[order(catprio,prio)], catprio+prio+category + variable+format ~ symbol, value.var="value")
     toplot <- toplot[,imp:=fifelse(grepl("green|yellow|bold",format),"imp","")]
     setcolorder(toplot,"imp",after="category")
     out[["GT1"]] <-  toplot |> gt.avtheme(themeset="eqdesc1")
-    out[["GT2"]] <-  eqdta[variable=="Description",.(symbol,desc=value_str)] |> gt() |> gt.basetheme(sizepct=70)
+    out[["GT2"]] <-  eqdta[variable=="Description",.(symbol,desc=value)] |> gt() |> gt.basetheme(sizepct=70)
   }
   # tab_style(eval(parse(text=fm31)),eval(parse(text=fm32)))
   if( length(eqset <- this_symset[type=="ETF",]$symbol)>0 ) {
@@ -372,7 +383,7 @@ av_divs <- function(todo,rv) {
     out<- list(alldivs |> gt.avtheme(themeset="dividends"))
   }
   else {
-    quick_message("istr1","No relevant tickers")
+    quick_message("No relevant tickers")
   }
   return(out)
 }
@@ -397,7 +408,7 @@ av_earn <- function(todo,rv) {
     }
   }
   else {
-    quick_message("istr1","No relevant tickers")
+    quick_message("No relevant tickers")
   }
   return(out)
 }
@@ -481,7 +492,7 @@ av_optsearch <- function(todo,rv) {
     indta <- inspots[indta,on=.(symbol)][,ncak:=1]
     filteredopts <- indta |> av_grep_opts(grepstring=ochains,mindelta=as.numeric(mindelta)/100)
     filteredopts <- filteredopts |> av_opt_helper_cols(scaling=rv$oscaling)
-    quick_message("istr1",paste(nrow(indta),"rows ", fifelse(nchar(allmsg)>0, paste0(allmsg, " missing"),""), " and narrowing to ",nrow(filteredopts), " using ",ochains))
+    quick_message(paste(nrow(indta),"rows ", fifelse(nchar(allmsg)>0, paste0(allmsg, " missing"),""), " and narrowing to ",nrow(filteredopts), " using ",ochains))
     colstoshow <- data.table(showset=c("reduced","trading","all"),
                              colstring=c("symbol;ncak;strike;type;daysExp;moneyn;mat_be;mat_bepct;IV;mark;last;bo_pct;delta;vega;theta;contractID",
                                          "symbol;ncak;strike;daysExp;volume;open_interest;IV;delta;last;mark;bo_pct;bid;ask;bid_size_poi;ask_size_poi;contractID",
@@ -495,7 +506,7 @@ av_optsearch <- function(todo,rv) {
     out[["OPT1GT"]] <- filteredopts |> gt.avtheme(themeset="filteredopts", rv$istr1, rv$otodisplay)
   }
   else {
-    quick_message("istr1"," ... No options found")
+    quick_message(" ... No options found")
   }
   return(out)
 }

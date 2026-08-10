@@ -218,7 +218,10 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
           content[,c(symbolvarnm):=symbol]  # Need to do before melt
           }
         content <- content |> melt_tobasetype(idvar=symbolvarnm)
-        }
+      }
+      if(melted=="default" & pset[1,]$outform=="tobase") {
+        content <- content |> df_tobasetype(idvar=symbolvarnm)
+      }
     }
     if( !pset[1,]$hassymbol ) {
       content$symbol = av_fun
@@ -247,6 +250,22 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     return(content[])
 }
 
+#  narrow  format to basetype: 4.72 ms
+df_tobasetype <- function(dta,idvar="symbol",valname="value") {  # Keep original value
+  value_date<-value_num<-NULL
+  # 10pct faster: dta <- dta[,ltype:=suppressWarnings(fcase(!is.na(as.numeric(get(valname))),"value_num",!is.na(as.Date(get(valname),format="%Y-%m-%d")),"value_date",default="value_str"))][]
+  cnames = setdiff(colnames(dta),valname)
+  dtacopy <- copy(dta)
+  dta$ltype <- sapply(dta[[valname]], \(x) readr::guess_parser(x)[[1]])
+  dta <- dta[,ltype:=fcase(ltype=="character","value_str", ltype=="date","value_date",default="value_num")]
+  dtatr <- dcast(dta,...~ltype,value.var=valname)
+  dta <- dtatr[,let(value_num=as.numeric(value_num),value_date=as.Date(value_date))]
+  dta <- dtacopy[dta,on=cnames] # Restore value
+  return(dta)
+}
+
+#  wide format to basetype
+
 melt_tobasetype <- function(dta,idvar="symbol",varname="variable") {
     value_date=NULL
     # idvar must always be in input
@@ -256,13 +275,15 @@ melt_tobasetype <- function(dta,idvar="symbol",varname="variable") {
     char_cols <- setdiff(names(which(sapply(dta, is.character))),idvar)
     num_cols <- c(names(which(sapply(dta, \(x) !is.character(x)))))
     date_cols <- c(names(which(sapply(dta, \(x) is.instant(x)))))
-    mm1 <- data.table::data.table()
+    tortn <- data.table::data.table()
     if(length(char_cols)>0) {
-        mm1 <- data.table::melt(dta, id.vars=idvar,measure.vars=char_cols,variable.name=varname,value.name="value_str")
+      tortn <- data.table::melt(dta, id.vars=idvar,measure.vars=char_cols,variable.name=varname,value.name="value_str")
     }
     # Warning will always be given for numeric-like objects coerced into numeric
-    mm2 <- suppressWarnings(data.table::melt(dta,id.vars=idvar,measure.vars=num_cols,variable.name=varname,value.name="value_num"))
-    tortn <- data.table::rbindlist(list(mm1,mm2),use.names=TRUE,fill=TRUE)
+    if(length(num_cols)>0) {
+      mm2 <- suppressWarnings(data.table::melt(dta,id.vars=idvar,measure.vars=num_cols,variable.name=varname,value.name="value_num"))
+      tortn <- data.table::rbindlist(list(tortn,mm2),use.names=TRUE,fill=TRUE)
+    }
     tortn[data.table(variable=date_cols),on=.(variable),value_date:=as.Date(value_num)][]
     return(tortn)
 }

@@ -1,4 +1,4 @@
-#' Extract data from Alpha Vantage returned data
+#' Extract data from AlphaVantage API results
 #'
 #' @name av_extract_df
 #' @description

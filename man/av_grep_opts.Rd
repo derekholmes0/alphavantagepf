@@ -2,7 +2,7 @@
 % Please edit documentation in R/av_extract_opts.R
 \name{av_grep_opts}
 \alias{av_grep_opts}
-\title{Extract data from Alpha Vantage returned data}
+\title{Filter options from returned AV data}
 \usage{
 av_grep_opts(
   indta,
@@ -44,7 +44,7 @@ must be in \code{indta} to get correct results.}
 A reduced set of options obtained from \code{\link[=av_get_pf]{av_get_pf()}} using Alphavantage \code{HISTORICAL_OPTIONS} function.
 }
 \description{
-Extract data from Alpha Vantage returned data
+Filter options from returned AV data
 }
 \details{
 \code{\link[=av_get_pf]{av_get_pf()}} returns a large list of options.  This function helps to narrow down the list by maturity and moneyness.

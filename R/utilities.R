@@ -1,9 +1,6 @@
 # =======================================================================================================
-#' Date Utilities
+#' av_runShiny utilities
 #'
-
-# =======================================================================================================
-#' Other utititlies internal to this package
 #' @name message_if
 #' @description Prints message if condition met
 #' @param reallydothis Condition to be met

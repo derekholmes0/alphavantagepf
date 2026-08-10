@@ -2,7 +2,7 @@
 % Please edit documentation in R/av_extract_opts.R
 \name{av_opt_helper_cols}
 \alias{av_opt_helper_cols}
-\title{Add additional data to returned option sets}
+\title{Add additional columns to returned option sets}
 \usage{
 av_opt_helper_cols(indta, scaling = NULL, spot = NULL)
 }
@@ -25,7 +25,7 @@ must be in \code{indta} to get correct results.}
 An option \code{data.table} with extra columns helpful for further analysis
 }
 \description{
-Add additional data to returned option sets
+Add additional columns to returned option sets
 }
 \details{
 Adds columns including\tabular{cl}{

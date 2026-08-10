@@ -18,12 +18,20 @@
 <url><loc>https://derekholmes0.github.io/alphavantagepf/news/index.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/alphavantagepf.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/avpf_api_key.html</loc></url>
+<url><loc>https://derekholmes0.github.io/alphavantagepf/reference/avsh_clipboard.html</loc></url>
+<url><loc>https://derekholmes0.github.io/alphavantagepf/reference/avsh_quick_message.html</loc></url>
+<url><loc>https://derekholmes0.github.io/alphavantagepf/reference/avsh_set_tabtitle.html</loc></url>
+<url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_add_analytic.html</loc></url>
+<url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_add_data.html</loc></url>
+<url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.html</loc></url>
+<url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_api_key.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_funhelp.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_grep_opts.html</loc></url>
+<url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_load_shinydata.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_make_funcmap.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_opt_helper_cols.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_reset_defaults.html</loc></url>
@@ -32,10 +40,12 @@
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userthings.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_shinydata.html</loc></url>
-<url><loc>https://derekholmes0.github.io/alphavantagepf/reference/dump_state.html</loc></url>
+<url><loc>https://derekholmes0.github.io/alphavantagepf/reference/av_state_interface.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/dump_the.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/gt.basetheme.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/index.html</loc></url>
+<url><loc>https://derekholmes0.github.io/alphavantagepf/reference/inv_rv.html</loc></url>
 <url><loc>https://derekholmes0.github.io/alphavantagepf/reference/message_if.html</loc></url>
+<url><loc>https://derekholmes0.github.io/alphavantagepf/reference/quick_message.html</loc></url>
 </urlset>
 

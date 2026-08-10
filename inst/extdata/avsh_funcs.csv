@@ -5,6 +5,7 @@ EQ,AV.LIVE,avsh,av_livepx,,,main,,,Live Prices (all),
 HELP,AV.H,avsh,av_help,,grepstr,main,,,Help on Commands,H PX
 MISC,AV.HIST,avsh,av_misc,,,main,,,Show recent history,
 MISC,AV.R,avsh,av_misc,nitem,,main,,,Recall command <nitem>,
+MISC,AV.INPUTS,avsh,av_dumprv,,,main,,,Summary of input values,
 MISC,AV.INV,avsh,av_inventory,,,main,,,All Data Inventory,
 MISC,AV.EQINV,avsh,av_inventory,,,main,,,Equity/ETF inventory,
 MISC,AV.TICKERS,avsh,av_inventory,,,main,,,Available Index and Crypt tickers,

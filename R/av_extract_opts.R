@@ -1,4 +1,4 @@
-#' Extract data from Alpha Vantage returned data
+#' Filter options from returned AV data
 #'
 #' @name av_grep_opts
 #'
@@ -63,7 +63,7 @@ av_grep_opts<-function(indta, grepstring="F,M,C,otm",spot=NULL,mindays=3,startdt
   return(toget)
 }
 
-#' Add additional data to returned option sets
+#' Add additional columns to returned option sets
 #'
 #' @name av_opt_helper_cols
 #' @param indta An option data.table as returned by [av_get_pf()]

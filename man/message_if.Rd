@@ -2,7 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{message_if}
 \alias{message_if}
-\title{Date Utilities}
+\title{av_runShiny utilities}
 \usage{
 message_if(reallydothis, ...)
 }
@@ -13,7 +13,4 @@ message_if(reallydothis, ...)
 }
 \description{
 Prints message if condition met
-}
-\details{
-Other utititlies internal to this package
 }

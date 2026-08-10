@@ -3,7 +3,6 @@
 \name{av_state_interface}
 \alias{av_state_interface}
 \alias{dump_state}
-\alias{inv_rv}
 \alias{dump_inv}
 \alias{dump_assetgroups}
 \alias{dump_av_funcs}
@@ -11,8 +10,6 @@
 \title{av_state_interface}
 \usage{
 dump_state(typegrep = "*")
-
-inv_rv(rv)
 
 dump_inv(invgrep = "*")
 
@@ -24,8 +21,6 @@ dump_captured(todo = "byfunction")
 }
 \arguments{
 \item{typegrep}{: Grep string for internal state parameters}
-
-\item{rv}{: An isolated list of av_shiny parameters}
 
 \item{invgrep}{: A regular expression string}
 
@@ -42,6 +37,9 @@ retrieves internal data state of \code{\link[=av_runShiny]{av_runShiny()}}
 \code{dump_captured(todo="byfunction")}
 \code{av_shiny_px()}
 }
+\details{
+Return av_runShiny data and states
+}
 \examples{
 \dontrun{
 `dump_state()`
@@ -49,7 +47,6 @@ retrieves internal data state of \code{\link[=av_runShiny]{av_runShiny()}}
 `dump_av_funcs()`
 `dump_assetgroups()`
 `dump_captured(todo="byfunction")`
-`inv_rv(rv)`
 }
 }
 \seealso{

@@ -1,6 +1,6 @@
 Package: alphavantagepf
 Title: 'Alphavantage Financial Data' API R Wrapper and Shiny Interface
-Version: 0.8.3
+Version: 0.8.4
 Authors@R: c(
     person("Derek", "Holmes", email = "derek@derekholmes.com", role = c("aut", "cre", "cph"))
     )
@@ -33,6 +33,7 @@ Imports:
     TTR (>= 0.24.0),
     splines (>= 4.6.0),
     patchwork (>= 1.3.0),
+    progressr (>= 1.0.0),
     usethis,
     ggplot2 (>= 3.0.0),
     FinanceGraphs (>= 0.9.0)

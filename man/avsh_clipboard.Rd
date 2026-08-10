@@ -17,3 +17,6 @@ Nothing
 \description{
 Copies a data.frame to the clipboard, with a status message if relevant
 }
+\details{
+Copy data to clipboard
+}

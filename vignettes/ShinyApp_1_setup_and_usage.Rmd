@@ -175,6 +175,18 @@ The options change can be overridden as parameters to the `OS` call, as seen bel
 returned.
 
 ![Options Search](img/optsearch.jpg)
+# Interacting with the app from the command line.
+
+A great and recent innovation in `shiny()` is the ability to run an app and return to the console.  The internal data can be accessed in one of three ways:
+
+* Directly by reading or writing to the files enumerated in [Data Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
+* One `av_runShiny()` has been run (which loads its data), using functions such as `av_load_shinydata("pxd")`
+* Even before `av_runShiny()` has been run, call to `  av_load_shinydata()` and then via functions such as `av_load_shinydata("pxd")`
+
+In addition, internal states and data can be extracted via functions such as [dump_state()](https://derekholmes0.github.io/alphavantagepf/reference/av_state_interface.html). 
+
+
+
 [^1]: A "cheatsheet" with these conventions is displayed when `AV.H` is run, unless the `showGeneralHelp` option is deselected.
 
 [^2]: See `AV.TICKERS` for a list of cryptocurrencies available.  Not all are available as symmetric pairs, so please use only those on the list.

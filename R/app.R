@@ -1,17 +1,13 @@
 #source("./R/utilities.R")
-tver<-"0.8.302"
+tver<-"0.8.4"
 
+# 400: CHange to quick_message, vignettes done, av.inputs
 # 302: Handlers for Earnings.  fpos
 # 300: Vignettes done, on to Check
 # 206: Function Walkthrough. av_misc implemented
 # 205: Av_misc functions, earnings stuff
 # 202: ui output finally working as intended Solved dygrahs height issue with containers, error code for bad tickers
 # 201: Generalize render, JS to only run on enter, cleaned up some cruft
-# 20: WOrking copy
-# 16: Fix scatter plotting, refactor ui names
-# 145: Command line interface
-# 14: Saving earnings and estimates: LOtsa plumbing, redid symset
-# 135: Separate out inventory tab, start Plumbing for new functions
 
 #' @importFrom TTR volatility
 #' @import gt
@@ -169,7 +165,7 @@ av_make_server <- function() {
   av_server<-function(input, output,session) {
     inlist=list_ts=vartype=todofunc=todo=assetline=NULL
     curr_assetgroups <- sort(unique(the_av$assetgroups$listnm))
-    quick_message("ochains","[F(ront)|B(ack)],[M(onth)|Q(tr)],[C(all)|P(ut)],[itm|otm|all]")
+    quick_message("[F(ront)|B(ack)],[M(onth)|Q(tr)],[C(all)|P(ut)],[itm|otm|all]",wh="ochains")
     # On Startup download current index list if not there
     update_tickerlists( is.null(the_av$tickerlist) || nrow(the_av$tickerlist)<=0 ||
             (max(the_av$tickerlist$list_ts)<=Sys.Date()-4) )
@@ -224,7 +220,7 @@ av_make_server <- function() {
 
     observeEvent(input$manage_aglist, {
       req(input$manage_aglist)
-      quick_message("istr1",set_list(input$manage_aglist,input$assetgp_list,input$istr1,1))
+      quick_message(set_list(input$manage_aglist,input$assetgp_list,input$istr1,1))
     })
 
     observeEvent(input$SetOpts, {
@@ -254,13 +250,13 @@ av_make_server <- function() {
       save_avs_state("all",msg="sEToPTS")
       th1 <- th1[,.(nm,old=toget)][dump_state(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
       th1 <- th1[,.SD,.SDcols=s("classtype;nm;toget;format")]
-      quick_message("istr1","No data in inventory; load or ask for some via PriceTS", eval=(nrow(th1)<=0))
+      quick_message("No data in inventory; load or ask for some via PriceTS", eval=(nrow(th1)<=0))
       output$dumpthe <- render_gt(th1 |> gt() |> gt.basetheme(interactive="filter") |> decorate_table())
     })
 
     observe({ # Want executed at startup
       if(input$RefreshInv==1 || exists("do_on_start",envir=the_av)) {
-        if( !quick_message(eval=(nrow(the_av$pxinv)<=0),"istr1","No INventory: Create Data by running a Time Series Graph") ) {
+        if( !quick_message(eval=(nrow(the_av$pxinv)<=0),"No INventory: Create Data by running a Time Series Graph") ) {
           invtosend <- the_av$pxinv[,.SD,.SDcol=!s("earnf_next;div_lastval;lastearn_dt;earnf_nextdt;earnf_ts")]
           output$inv1 <- invtosend[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv") |> render_gt() #  gt.avtheme(themeset="pxinv") |>
           output$inv2 <- dump_assetgroups() |>  gt() |> gt.avtheme(themeset="assetgroups") |> render_gt()
@@ -301,23 +297,22 @@ av_make_server <- function() {
         the_av$cmdhist <- rbindlist(list(the_av$cmdhist,data.table(cmd=rv$istr1,ts=Sys.time())), fill=TRUE,use.names=TRUE)
       }
       thisenv <- environment()
-      if( quick_message("istr1","SET Alphavantage API key",eval=the_av$avapikey=="NOT_SET") |
-          quick_message("istr1","Enter a valid command", eval=nchar(rv$istr1)<=0) ) {
+      if( quick_message("SET Alphavantage API key",eval=the_av$avapikey=="NOT_SET") |
+          quick_message("Enter a valid command", eval=nchar(rv$istr1)<=0) ) {
         return()
       }
-      quick_message("istr1","Working..")
       message_if(the_av$verbose,"avrs(",tver,") >>>> input(",rv$istr1,") Line2:",rv$istr2)
       # Clear all but TS graphs
+      the_av$user_feedback <- ""
       out <- list()
       outcopy <- the_av$outcopy %||% list()
       # ----------------
       # New variables created and added to rv:  todo todofunc todoargs assetline
       parse_inpline(toupper(rv$istr1))
       rv <- c(rv,setNames(list(todo,todofunc,todoargs,assetline), s("todo;todofunc;todoargs;assetline"))) # Augment rv
-      cAssign("todo;todofunc;rv;todoargs;assetline",silent=TRUE) # Take out in prodiction version
+      cAssign("todo;todofunc;rv;todoargs;assetline",silent=TRUE) # Take out in production version
       runfunc_set <-  the_av$avsh_funcs[runcode==todofunc,]
-
-      quick_message("istr1",fifelse(nrow(runfunc_set)<=0,paste(todo,":Invalid function"),""))
+      quick_message(fifelse(nrow(runfunc_set)<=0,paste(todo,":Invalid function"),""))
       if(nrow(runfunc_set)<=0) { return() }
       # Set defaults
       av_set_defaults("starttab",tolower(runfunc_set[[1,"focus"]]))
@@ -333,7 +328,7 @@ av_make_server <- function() {
       tenv <- thisenv
       if( runfunc_set$func_src=="user" ) { tenv <-  .GlobalEnv }
       if( !exists(runfunc_set$func_name,envir=tenv)) {
-        quick_message("istr1",this_message=paste0("Function Code not found for ",runfunc_set$func_name),color="red")
+        quick_message(paste0("Function Code not found for ",runfunc_set$func_name),color="red")
         return()
       }
       # ---- General Magick here:
@@ -344,14 +339,18 @@ av_make_server <- function() {
         tcmd <- s(outres[["CMD"]],":")
         newcmd<-""
         if(tcmd[[1]]=="toinput") { newcmd<-tcmd[[2]] }
-        if(tcmd[[1]]=="clear") { message("here clear"); output<-list(); the_av$outcopy<-list() } # Not working
+        if(tcmd[[1]]=="clear") {  output<-list(); the_av$outcopy<-list() } # Not working
         updateTextInput(session,"istr1", value= newcmd)
         return()
       }
-      if(!quick_message("istr1","Invalid ticker or analysis, check logs",color="red", eval=length(outres)<=0)) {
+
+      if(!quick_message("Invalid ticker or analysis, check logs",color="red", eval=length(outres)<=0)) {
         outres <- setNames(outres,av_determine_output_locs(outres))
         for(nm in names(outres)) { out[[nm]]<-outres[[nm]] } # hash w/o hash
       }
+      # Final Message
+      quick_message(the_av$user_feedback,eval=nchar(the_av$user_feedback)>0)
+
       # Save outputs ONLY if another graph is being asked for OR persistOut is TRUE
       outcopy_grepstr <- fcase("persistOutput" %in% the_av$logopts,"*",grepl("^G",todo),"TS", default="NoMatch")
       outcopy_names <- setdiff(grepv(outcopy_grepstr, names(outcopy)), names(outres))
@@ -375,8 +374,8 @@ av_make_server <- function() {
       output$dy1_container <- renderUI({ dygraphOutput("dy1", height= torend[ui_out=="dy1",]$displayheight) })
       output$dy2_container <- renderUI({ dygraphOutput("dy2", height= torend[ui_out=="dy2",]$displayheight) })
       updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
-      if(the_av$last_feedback=="Working..") { message("here... "); quick_message("istr1","done")}
       save_avs_state("all",msg="RUNLN")
+
     })
   } # Server
   return(av_server)

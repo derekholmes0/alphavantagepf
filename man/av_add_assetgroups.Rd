@@ -2,12 +2,12 @@
 % Please edit documentation in R/av_appRfuncs.R
 \name{av_add_assetgroups}
 \alias{av_add_assetgroups}
-\title{av_add_assetgroups}
+\title{Add asset lists}
 \usage{
 av_add_assetgroups(indta)
 }
 \arguments{
-\item{indta}{A data.frame with two columns \code{c("listnm","ticker")} with one or more lines for each \code{"listnm"}}
+\item{indta}{A data.frame with a minimum of two columns \code{c("listnm","ticker")} with one or more lines for each \code{"listnm"} and possibly a column \code{weight} for weightings}
 }
 \value{
 Nothing
@@ -16,6 +16,8 @@ Nothing
 Adds asset lists to \code{\link[=av_runShiny]{av_runShiny()}} internal data.
 }
 \details{
+Add Asset Groups
+
 Lists are specified in normalized form.  Duplicate list names with those currently in use are replaced.
 }
 \examples{

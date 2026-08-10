@@ -39,7 +39,7 @@ av_reset_defaults <- function(fileopts=TRUE,keep_apikeys=FALSE,resetgrep="*") {
     }
   }
   # Tables that will get modified by users
-  the_av$assetgroups <- data.table(listnm=c(rep("defaultIdx",3)),ticker=c("SPY","QQQ","DIA"))
+  the_av$assetgroups <- data.table(listnm=c(rep("defaultIdx",3)),ticker=c("SPY","QQQ","DIA"), weight=c(0.34,0.33,0.33))
   the_av$avsh_funcs <- copy(avsd$def_avsh_funcs)
   # Data to keep track of
   lapply(s("pxd;pxinv;earn;earnest;tickerlist;cmdhist"), \(x) assign(x, data.table(), envir=the_av))

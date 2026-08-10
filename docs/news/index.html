@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,14 +44,14 @@
 <h2 class="pkg-version" data-toc-text="development version" id="alphavantagepf-development-version">alphavantagepf (development version)<a class="anchor" aria-label="anchor" href="#alphavantagepf-development-version"></a></h2>
 </div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.8.3" id="alphavantagepf-083-in-progress">alphavantagepf 0.8.3: in Progress<a class="anchor" aria-label="anchor" href="#alphavantagepf-083-in-progress"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.8.4" id="alphavantagepf-084-in-progress">alphavantagepf 0.8.4: in Progress<a class="anchor" aria-label="anchor" href="#alphavantagepf-084-in-progress"></a></h2>
 <p>New feature todo * calendars</p>
 <div class="section level3">
-<h3 id="major-changes-0-8-3">Major Changes<a class="anchor" aria-label="anchor" href="#major-changes-0-8-3"></a></h3>
+<h3 id="major-changes-0-8-4">Major Changes<a class="anchor" aria-label="anchor" href="#major-changes-0-8-4"></a></h3>
 <p>The Shiny interface has been completely redesigned (and recoded) to have an extendable command line interface for all analytics. New functions have been added for adding and managing data outside the app. Users can also add their own analytics, posssibly with the help of with several “helper” functions to interface with the GUI. See vignettes for details.</p>
 </div>
 <div class="section level3">
-<h3 id="new-features-in-api-interface-0-8-3">New Features in API interface<a class="anchor" aria-label="anchor" href="#new-features-in-api-interface-0-8-3"></a></h3>
+<h3 id="new-features-in-api-interface-0-8-4">New Features in API interface<a class="anchor" aria-label="anchor" href="#new-features-in-api-interface-0-8-4"></a></h3>
 <ul><li>
 <code><a href="../reference/av_get_pf.html">av_get_pf()</a></code> returns a date column for melted data.</li>
 <li>
@@ -62,10 +62,13 @@
 </ul><p>Bug fixes</p>
 <ul><li>Fixed app crash if no earnings transcript available.</li>
 <li>Fixed graphing so that stepPlots are chosen appropriately, not always.</li>
-<li>splitfirst ignored for single name plots.</li>
+<li>
+<code>splitfirst</code> ignored for single name plots.</li>
+<li>
+<code>av_get_pf(.,"OVERVIEW")</code> now properly produces a type-separated table.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="breaking-changes-0-8-3">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-8-3"></a></h3>
+<h3 id="breaking-changes-0-8-4">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-8-4"></a></h3>
 <ul><li>
 <code>av_api_key()</code> has been renamed to <code><a href="../reference/avpf_api_key.html">avpf_api_key()</a></code> which has an additional parameter <code>entitlement</code>. <code>av_api_key()</code> is also in the <code>alphavantager</code> package. Usage of that function is still compatible with this package, but an additional step to set entitlement status is necessary.</li>
 </ul></div>

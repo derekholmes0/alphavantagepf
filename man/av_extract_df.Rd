@@ -5,7 +5,7 @@
 \alias{av_extract_fx}
 \alias{av_extract_analytics}
 \alias{av_extract_divs_or_splits}
-\title{Extract data from Alpha Vantage returned data}
+\title{Extract data from AlphaVantage API results}
 \usage{
 av_extract_df(indta, grepstring = "", melt = FALSE, empty_dt_onerror = TRUE)
 

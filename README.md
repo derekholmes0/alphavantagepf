@@ -29,8 +29,6 @@ may want to install the development version.
     #pak::pak("derekholmes0/alphavantagepf")
     install.packages("alphavantagepf")
 
-<span style="color:red">
-
 Load the package.
 
 ``` r
