@@ -150,9 +150,19 @@ conventions of this app:
 
 | Function | Description |
 |:--:|:---|
-| [narrowbydtstr()](https://derekholmes0.github.io/FinanceGraphs/reference/gendtstr.html) | Filter a [`data.table()`](https://rdrr.io/pkg/data.table/man/data.table.html) using a date string |
-| [extenddtstr()](https://derekholmes0.github.io/FinanceGraphs/reference/gendtstr.html) | Expand a datestring into a new one |
-| [gendtstr()](https://derekholmes0.github.io/FinanceGraphs/reference/gendtstr.html) | Expand a datestring into a list of dates |
+| [narrowbydtstr()](https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html) | Filter a [`data.table()`](https://rdrr.io/pkg/data.table/man/data.table.html) using a date string |
+| [extenddtstr()](https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html) | Expand a datestring into a new one |
+| [gendtstr()](https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html) | Expand a datestring into a list of dates |
+
+These functions facilitate transformation of succinct date strings such
+as `"-3y::"` to actual dates, possibly with offsets, e.g.
+
+``` r
+extenddtstr("-3y::",begchg=-30)
+[1] "2023-07-11::2026-08-10"
+```
+
+and truncating `data.tables()` with date fields to those dates.
 
 ### Helper Functions: UI Interaction
 

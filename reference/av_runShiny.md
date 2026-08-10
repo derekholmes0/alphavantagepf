@@ -70,18 +70,23 @@ functions calls that are necessary to do cross-asset analyses.
 
 **Other niceties**:
 
-- Groups of assets can be named, saved, and recalled easily. See Basic
-  Usage vignette
+- Groups of assets can be named, saved, and recalled easily. See [Basic
+  Usage](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html)
+  vignette
 
 - Internal data can be stored and used (as `data.table()`s) in a
-  directory of the users' choosing. See setup vignette.
+  directory of the users' choosing. See
+  [Options](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_2_Graphs_and_Options.html)
+  vignette.
 
 - Events and other plotting options can be specified in the app. See
   functions vignette and e.g.
   [FinanceGraphs](https://derekholmes0.github.io/FinanceGraphs/reference/index.html)
 
 - Data within each produced graph or table can be copied to the
-  clipboard (option in `AVOPTS` page), See setup vignette.
+  clipboard (option in `AVOPTS` page), See
+  [Setup](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html)
+  vignette.
 
 - Raw downloaded data can be saved into a "dump directory" (option in
   `AVOPTS` page)
@@ -94,11 +99,15 @@ functions calls that are necessary to do cross-asset analyses.
   [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.md),
   [`av_add_earn()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.md),
   [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.md).
-  See Extensions vignette
+  See [data
+  management](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
+  vignette.
 
 - User analytics can be added using
   [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_analytic.md).
-  See examples in the Extensions vignette
+  See examples in the
+  [Extensions](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.html)
+  vignette
 
 ## Examples
 
