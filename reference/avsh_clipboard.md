@@ -21,3 +21,7 @@ avsh_clipboard(x, title = "")
 ## Value
 
 Nothing
+
+## Details
+
+Copy data to clipboard

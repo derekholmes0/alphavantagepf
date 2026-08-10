@@ -20,6 +20,10 @@ should return a (possibly named) list of tables
 element names can correspond to the output names defined in the next
 section, or (if the list is unnamed) will be filled in order.
 
+The examples in this section assume some familiarity with
+[`data.table()`](https://rdrr.io/pkg/data.table/man/data.table.html). At
+some point, I’ll rewrite them in simpler formats.
+
 ### App layout: Outputs
 
 Outputs in the main page are shown in the following order:
@@ -48,29 +52,26 @@ and a truncated table first in the DETAILS tab.
 ### App layout: inputs
 
 The values of input design elements are all passed into a user function
-as (de-reacted) named list. The following table, which is not
-comprehensive, gives the most relevant items:
+as (de-reacted) named list. The app command `AV.INPUTS` will produce a
+full table of the current values of design elements. The most important
+items for a user function are listed below:
 
-| inputId | Type | Description | Example |
-|:--:|:--:|:--:|:--:|
-| `assetline` | character | Asset string | QQQ;DIA |
-| `todo` | character | Full Command to Run | QQQ;DIA GPD -6m:: |
-| `todofunc` | character | Command base | GPD |
-| `todoargs` | character | Command arguments | -6m:: |
-| `istr1` | character | Full input line | QQQ;DIA GPD -6m:: |
-| `inTabset` | character | Currently selected Tab | MAIN |
-| `istr2` | character | Counterasset | SPY |
-| `dtstr_hist` | character | Analysis date string | -2y:: |
-| `logopts` | character | Logical Options from AVOPTS | useLivePx,verbos |
-| `maxage_earn_days` | integer | Maximum age for earnings data | 3 |
-| `maxage_px_hrs` | integer | Maximum age for price data | 0 |
-| `cachedir` | character | Directory with cached data | c:/t/avsh |
-| `ts_volparams` | character | Volatility parameters | gk.yz;20;252 |
-| `sigpct` | character | Highlight p-value | 0.025 |
-| `gropts` | character | Time Series Graphing options | last |
-| `scatopts` | character | Scatter plot options | last |
-| `ts_events` | character | Time Series Events | tp,5 |
-| `ts_colorset` | character | Graphics color set | lines |
+|    inputId     |   Type    |         Description          |      Example      |
+|:--------------:|:---------:|:----------------------------:|:-----------------:|
+|  `assetline`   | character |         Asset string         |      QQQ;DIA      |
+|     `todo`     | character |     Full Command to Run      | QQQ;DIA GPD -6m:: |
+|   `todofunc`   | character |         Command base         |        GPD        |
+|   `todoargs`   | character |      Command arguments       |       -6m::       |
+|    `istr1`     | character |       Full input line        | QQQ;DIA GPD -6m:: |
+|   `inTabset`   | character |    Currently selected Tab    |       MAIN        |
+|    `istr2`     | character |         Counterasset         |        SPY        |
+|  `dtstr_hist`  | character |     Analysis date string     |       -2y::       |
+|   `cachedir`   | character |  Directory with cached data  |     c:/t/avsh     |
+| `ts_volparams` | character |    Volatility parameters     |   gk.yz;20;252    |
+|    `sigpct`    | character |      Highlight p-value       |       0.025       |
+|    `gropts`    | character | Time Series Graphing options |       last        |
+|   `scatopts`   | character |     Scatter plot options     |       last        |
+|  `ts_events`   | character |      Time Series Events      |       tp,5        |
 
 All other items in the named list can be found either by inspection when
 the function is run within the shiny app, or by inspecting the source
@@ -138,7 +139,7 @@ For example, to get price data for a ticker string, use
         SPY 2026-07-31 744.7 748.9 737.7 747.0          747.0 62445899               0                 1 2026-08-01 19:38:06        NA
 
 Outside of the function, use
-[`av_load_shinydata()`](https://derekholmes0.github.io/alphavantagepf/reference/av_load_shinydata.md)
+[av_load_shinydata()](https://derekholmes0.github.io/alphavantagepf/reference/av_load_shinydata.html)
 without arguments to load the data into the app without actually running
 it.
 
@@ -160,7 +161,7 @@ Shiny app:
 
 | Function | Critical Arguments | Description |
 |:--:|:---|:---|
-| [quick_message](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html) | `where,this_message=""` | Give user feedback below a design element |
+| [avsh_quick_message](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html) | `where,this_message=""` | Give user feedback below a design element |
 | [avsh_clipboard](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html) | `data table` | Copy data to the clipboard |
 | [avsh_set_tabtitle](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html) | `newtext="",tabnm="detail"` | Set a Tab title and optionally change focus to it |
 
@@ -184,46 +185,86 @@ and is added to the app’s internal cache using
 Suppose we wish to add an analytic which (given a set of assets) does
 the following with the assets entered with the command.
 
-- Produces a `dygraph()` with the an average rolling correlation, as
-  well as 25th and 75th percentiles
-- Produces a `gt()` table with a full correlation table.
+- Produces a time series graph (`dygraph()`) with the an average rolling
+  correlation, as well as 25th and 75th percentiles
+- Produces a table (`gt()`) with a correlation matrix of returns over
+  the entire history.
+- Produces a table (`gt()`) with a matrix of percentiles of the last
+  rolling correlation over the entire history[^1].
 
-Putting the above information together we can write
+### Writing a function
+
+Putting the above information together we can create the following
+function
 
 ``` r
 
 my_corr <- function(todo,rv) {
     # Get Data
     tickers_to_get=strsplit(rv$assetline,";")[[1]]
-    if(length(tickers_to_get)<3) { 
-        quick_message("istr1","Need at least 3 tickers")
-        return() }
-    # Price Data
-    allpx <- av_load_shinydata("pxd")[data.table(symbol=tickers_to_get),on=.(symbol)]
-    allpx <- allpx[,.(symbol,timestamp, rtn = diff(log(adjusted_close),1))] |> FinanceGraphs::narrowbydtstr(rv$dtstr_hist)
     roll_window <- fcoalesce(as.numeric(rv$todoargs),22) # default to 22 day rolling correlation
-
-    # Oraganize into pairs
-    pairs <- CJ(var1=tickers_to_get,var2=tickers_to_get)[var1<var2,]
-    corDT1<- allpx[,.(timestamp, var1=symbol, rtn1=rtn)][pairs,on=.(var1)]
-    corDT2<- allpx[,.(timestamp, var2=symbol, rtn2=rtn)][pairs,on=.(var2)]
-    corDT <- corDT1[corDT2, on=.(timestamp,var1,var2)]
+    if(length(tickers_to_get)<3) { 
+        avsh_quick_message("Need at least 3 tickers")
+        return() }
     
+    allpx <- av_load_shinydata("pxd")[data.table(symbol=tickers_to_get),on=.(symbol)]
+    allpx <- allpx[,rtn:=c(NA_real_,diff(log(adjusted_close),1)), by=.(symbol)]
+    newdtstr <- FinanceGraphs::extenddtstr(rv$dtstr_hist,begchg=-ceiling(31/22*roll_window))
+    allpx <- allpx [,.(symbol,timestamp,rtn)] |> FinanceGraphs::narrowbydtstr(newdtstr)
+
+    # get Data
+    pairs <- CJ(var1=tickers_to_get,var2=tickers_to_get)[var1<var2,]
+    corDT1<- allpx[,.(timestamp, var1=symbol, rtn1=rtn)][pairs,on=.(var1),allow.cartesian=TRUE]
+    corDT<- allpx[,.(timestamp, var2=symbol, rtn2=rtn)][corDT1,on=.(var2,timestamp),allow.cartesian=TRUE]
     # Rolling correlation
     rollcor_DT <- corDT[,rcorr:=frollapply(.SD,roll_window,\(x) cor(x$rtn1,x$rtn2),by.column=FALSE), by=.(var1,var2)]
     cornames <- c("corr_p25","corr_p50","corr_p75")
-    rollcor_toplot <- rollcor_DT[, (cornames):=lapply(.SD$rcorr,quantile,probs=c(0.25,0.5,0.75),na.rm=TRUE), by=.(timestamp)][
+    rollcor_toplot <- rollcor_DT[, (cornames):=as.list(quantile(.SD$rcorr,probs=c(0.25,0.5,0.75),na.rm=TRUE)), by=.(timestamp)][
                                         ,.SD, .SDcols=c("timestamp",cornames)]    
-    rollcorr_dyg <- fgts_dygraph(rollcor_toplot,title=paste0("Rolling percentiles of ",roll_window," bd correlations"),roller=1,events=rv$ts_events)
-    
-    # Overall correlations
+    rollcorr_dyg <- fgts_dygraph(rollcor_toplot,title=paste0("Rolling percentiles of ",roll_window," bd correlations"),
+                roller=1,events=rv$ts_events)
+    # Overall correlations for period
+    corDT <- corDT |> FinanceGraphs::narrowbydtstr(rv$dtstr_hist)
     allcorr <- corDT[,.(allcorr=cor(rtn1,rtn2,use="pairwise.complete.obs")),by=.(var1,var2)]
-    allcorr_gt <- dcast(corDT,var1 ~ var2,value.var="allcorr") |> gt() |> tab_header(title=paste0("Correlation matrix for ",rv$dttr_hist))
-    
+    allcorr_gt <- dcast(allcorr,var1 ~ var2,value.var="allcorr") |> gt() |> 
+                    tab_header(title=paste0("Correlation matrix for ",rv$dtstr_hist)) |> sub_missing(missing_text="--")
+    # Last Percentiles
+    corrpct <- rollcor_DT[,.(lastpctile=100*last(frank(rcorr,na.last=NA))/.N), by=.(var1,var2)]
+    pctlast_gt <- dcast(corrpct,var1 ~ var2,value.var="lastpctile") |> gt() |> 
+            tab_header(title=paste0("Last correlation percentile ",rv$dtstr_hist)) |> 
+            fmt_number(decimals=1) |> sub_missing(missing_text="--")
+
     # Return list
-    return(list(allcorr_gt,rollcorr_dyg))
+    return(list("GT3L"=allcorr_gt,"TS1"=rollcorr_dyg,"GT3R"=pctlast_gt))
 }
 ```
+
+Note a few items about this code:
+
+- The app uses the user function
+  [av_load_shinydata()](https://derekholmes0.github.io/alphavantagepf/reference/av_load_shinydata.html)
+  to get data from the internal data store. In this case, we need access
+  to `pxd` from the table above.
+
+- The app uses two helper functions from
+  [FinanceGraphs](https://derekholmes0.github.io/FinanceGraphs/).
+  `extenddtstr()` backs up the date string so that we can get a valid
+  rolling correlation from the start of the analysis period (given as a
+  string by `rv$dttr_hist`). `narrowbydtstr()` filters the data to the
+  time periods desired.
+
+- To control where the output goes, you can return a **named list** of
+  outputs consistent with the above table. In this case, we return to
+  matrices side by side by naming the outputs `"GT3L"` and `"GT3R"`. If
+  named, the returned items don’t need to be in any order. If not named,
+  the items are placed top to bottom.
+
+- The function is a
+  [`data.table()`](https://rdrr.io/pkg/data.table/man/data.table.html)-centric,
+  but does not need to be. [Yidyverse](https://tidyverse.org/) idioms
+  can be used, but are likely to be slower.
+
+### Registering and running the function.
 
 We need to define how users will call this function, so a reasonable
 choice is “RCOR”. To add that function to the stable of those available,
@@ -237,4 +278,20 @@ av_add_analytic("RCOR","my_corr",helpstr="Rolling Correlations")
 Doing so will save the definition in the disk cache, so we just need to
 rerun
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
-and then we can run it!
+prior to running the `RCOR` function.
+
+Once
+[`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
+is running with the registered function, we need to ensure its
+definition is in the Global Environment
+([`.GlobalEnv()`](https://rdrr.io/r/base/environment.html)), and run it
+on a larger set of assets. For example, to analyze a series of Factor
+ETFs over the past two years using 2 month rolling correlations, we
+would type in the command line
+`QUAL;USMV;MTUM;VLUE;QUS;SMMV;SIZE;ESMV RCOR 44` to get \`
+
+![rcor Example](img/rcor_example.jpg)
+
+rcor Example
+
+[^1]: In homage to Dean Curnutt’s Alpha Exchange podcast.

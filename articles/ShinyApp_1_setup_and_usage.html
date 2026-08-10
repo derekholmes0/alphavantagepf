@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -100,7 +100,9 @@ latter is used via a “sister” package <a href="https://derekholmes0.github.i
 <li>Provide a framework for adding user-generated analyses.</li>
 </ul>
 <p>A few conventions which are helpful to know before using the app
-are[^1]</p>
+are<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;A “cheatsheet” with these conventions is displayed when
+&lt;code&gt;AV.H&lt;/code&gt; is run, unless the &lt;code&gt;showGeneralHelp&lt;/code&gt; option
+is deselected.&lt;/p&gt;"><sup>1</sup></a></p>
 <table class="table">
 <colgroup>
 <col width="21%">
@@ -138,7 +140,7 @@ relative to today</td>
 the usual form of an alphabetic string of the form
 (<code>countercurrency</code> / <code>currency</code>), cryptocurrency<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;See &lt;code&gt;AV.TICKERS&lt;/code&gt; for a list of
 cryptocurrencies available. Not all are available as symmetric pairs, so
-please use only those on the list.&lt;/p&gt;"><sup>1</sup></a>, index, or
+please use only those on the list.&lt;/p&gt;"><sup>2</sup></a>, index, or
 user defined time series.</p>
 </div>
 <div class="section level2">
@@ -211,7 +213,7 @@ can change names to highlight existence of results in the tab.</p></li>
 but can appear elsewhere. Progress messages will show in the R Console
 <a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;unless the &lt;code&gt;verbose&lt;/code&gt; option is deselected in
 the &lt;span style="border: 1px solid #000000; padding: 1px 5px;"&gt;AVOPTS&lt;/span&gt;
-tab.&lt;/p&gt;'><sup>2</sup></a></p></li>
+tab.&lt;/p&gt;'><sup>3</sup></a></p></li>
 </ul>
 <div class="section level3">
 <h3 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
@@ -375,7 +377,7 @@ expiration</td>
 <tr class="odd">
 <td align="left"></td>
 <td align="left">4. <code>[itm|otm|all]</code> In or out of the money<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;The app looks up the current spot to determine
-moneyness.&lt;/p&gt;"><sup>3</sup></a>
+moneyness.&lt;/p&gt;"><sup>4</sup></a>
 </td>
 </tr>
 <tr class="even">
@@ -397,10 +399,25 @@ premium</td>
 <p>The options change can be overridden as parameters to the
 <code>OS</code> call, as seen below. WIthout the parameters added on the
 command line, calls would have been returned.</p>
-<p><img src="img/optsearch.jpg" alt="Options Search"> [^1]: A
-“cheatsheet” with these conventions is displayed when <code>AV.H</code>
-is run, unless the <code>showGeneralHelp</code> option is
-deselected.</p>
+<p><img src="img/optsearch.jpg" alt="Options Search"> # Interacting
+with the app from the command line.</p>
+<p>A great and recent innovation in <code>shiny()</code> is the ability
+to run an app and return to the console. The internal data can be
+accessed in one of three ways:</p>
+<ul>
+<li>Directly by reading or writing to the files enumerated in <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html">Data
+Vignette</a>
+</li>
+<li>One <code><a href="../reference/av_runShiny.html">av_runShiny()</a></code> has been run (which loads its data),
+using functions such as <code>av_load_shinydata("pxd")</code>
+</li>
+<li>Even before <code><a href="../reference/av_runShiny.html">av_runShiny()</a></code> has been run, call to
+<code><a href="../reference/av_load_shinydata.html">av_load_shinydata()</a></code> and then via functions such as
+<code>av_load_shinydata("pxd")</code>
+</li>
+</ul>
+<p>In addition, internal states and data can be extracted via functions
+such as <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_state_interface.html">dump_state()</a>.</p>
 </div>
 </div>
 

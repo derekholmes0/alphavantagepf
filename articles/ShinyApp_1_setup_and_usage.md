@@ -32,8 +32,7 @@ The app is designed to
   [FinanceGraphs](https://derekholmes0.github.io/FinanceGraphs/reference/index.html)
 - Provide a framework for adding user-generated analyses.
 
-A few conventions which are helpful to know before using the app
-are\[^1\]
+A few conventions which are helpful to know before using the app are[^1]
 
 | Item | Convention | Example |
 |:--:|:---|:---|
@@ -43,7 +42,7 @@ are\[^1\]
 
 “Assets” can be any (common) symbol for an Equity, ETF, Currency (in the
 usual form of an alphabetic string of the form (`countercurrency` /
-`currency`), cryptocurrency[^1], index, or user defined time series.
+`currency`), cryptocurrency[^2], index, or user defined time series.
 
 ## App invocation and initial setup.
 
@@ -122,7 +121,7 @@ The app responds as follows:
 
 - Feedback (i.e.an error message) is placed below the command line, but
   can appear elsewhere. Progress messages will show in the R Console
-  [^2]
+  [^3]
 
 ### Examples
 
@@ -206,7 +205,7 @@ help narrow down the options are:
 |  | 1\. `[F|B]` first contract or second contract |
 |  | 2\. `[M|Q]` Monthly expiration or Quarterly expiration |
 |  | 3\. `[C|P|A]` Calls, Puts or Both |
-|  | 4\. `[itm|otm|all]` In or out of the money[^3] |
+|  | 4\. `[itm|otm|all]` In or out of the money[^4] |
 | Mindelta | Minimum absolute delta of option |
 | Output | Subset of columns to show, relevant to Trading or Valuation |
 | Scaling | Values and Greeks for 10 contracts or 10kUSD premium |
@@ -215,14 +214,36 @@ The options change can be overridden as parameters to the `OS` call, as
 seen below. WIthout the parameters added on the command line, calls
 would have been returned.
 
-![Options Search](img/optsearch.jpg) \[^1\]: A “cheatsheet” with these
-conventions is displayed when `AV.H` is run, unless the
-`showGeneralHelp` option is deselected.
+![Options Search](img/optsearch.jpg) \# Interacting with the app from
+the command line.
 
-[^1]: See `AV.TICKERS` for a list of cryptocurrencies available. Not all
+A great and recent innovation in `shiny()` is the ability to run an app
+and return to the console. The internal data can be accessed in one of
+three ways:
+
+- Directly by reading or writing to the files enumerated in [Data
+  Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
+- One
+  [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
+  has been run (which loads its data), using functions such as
+  `av_load_shinydata("pxd")`
+- Even before
+  [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
+  has been run, call to
+  [`av_load_shinydata()`](https://derekholmes0.github.io/alphavantagepf/reference/av_load_shinydata.md)
+  and then via functions such as `av_load_shinydata("pxd")`
+
+In addition, internal states and data can be extracted via functions
+such as
+[dump_state()](https://derekholmes0.github.io/alphavantagepf/reference/av_state_interface.html).
+
+[^1]: A “cheatsheet” with these conventions is displayed when `AV.H` is
+    run, unless the `showGeneralHelp` option is deselected.
+
+[^2]: See `AV.TICKERS` for a list of cryptocurrencies available. Not all
     are available as symmetric pairs, so please use only those on the
     list.
 
-[^2]: unless the `verbose` option is deselected in the AVOPTS tab.
+[^3]: unless the `verbose` option is deselected in the AVOPTS tab.
 
-[^3]: The app looks up the current spot to determine moneyness.
+[^4]: The app looks up the current spot to determine moneyness.

@@ -1,4 +1,4 @@
-# Extract data from Alpha Vantage returned data
+# Extract data from AlphaVantage API results
 
 `av_extract_df()` pulls out nested data.frames from mixed data returned
 by

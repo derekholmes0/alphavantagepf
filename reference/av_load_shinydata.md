@@ -1,4 +1,4 @@
-# av_load_shinydata
+# Load av_runShiny() internal data.
 
 Loads internal data (prices, earnings, etc.
 
@@ -23,6 +23,10 @@ av_load_shinydata(item = NULL, verbose = TRUE)
 ## Value
 
 Data item specified by `item` or a nothing (but a message) if left blank
+
+## Details
+
+Load ShinyApp data from Cache
 
 ## See also
 

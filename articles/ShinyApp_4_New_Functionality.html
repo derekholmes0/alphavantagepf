@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,6 +86,9 @@ interface with the feedback elements of the app. As output, the function
 should return a (possibly named) list of tables (<a href="https://gt.rstudio.com/reference/index.html" class="external-link">gt</a> objects), <a href="https://rstudio.github.io/dygraphs/" class="external-link">dygraphs</a>, or <a href="https://ggplot2.tidyverse.org/reference/index.html" class="external-link">ggplots</a>.
 The element names can correspond to the output names defined in the next
 section, or (if the list is unnamed) will be filled in order.</p>
+<p>The examples in this section assume some familiarity with
+<code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table()</a></code>. At some point, I’ll rewrite them in simpler
+formats.</p>
 <div class="section level3">
 <h3 id="app-layout-outputs">App layout: Outputs<a class="anchor" aria-label="anchor" href="#app-layout-outputs"></a>
 </h3>
@@ -209,8 +212,10 @@ tab.</p>
 <h3 id="app-layout-inputs">App layout: inputs<a class="anchor" aria-label="anchor" href="#app-layout-inputs"></a>
 </h3>
 <p>The values of input design elements are all passed into a user
-function as (de-reacted) named list. The following table, which is not
-comprehensive, gives the most relevant items:</p>
+function as (de-reacted) named list. The app command
+<code>AV.INPUTS</code> will produce a full table of the current values
+of design elements. The most important items for a user function are
+listed below:</p>
 <table class="table">
 <thead><tr class="header">
 <th align="center">inputId</th>
@@ -268,64 +273,40 @@ comprehensive, gives the most relevant items:</p>
 <td align="center">-2y::</td>
 </tr>
 <tr class="odd">
-<td align="center"><code>logopts</code></td>
-<td align="center">character</td>
-<td align="center">Logical Options from AVOPTS</td>
-<td align="center">useLivePx,verbos</td>
-</tr>
-<tr class="even">
-<td align="center"><code>maxage_earn_days</code></td>
-<td align="center">integer</td>
-<td align="center">Maximum age for earnings data</td>
-<td align="center">3</td>
-</tr>
-<tr class="odd">
-<td align="center"><code>maxage_px_hrs</code></td>
-<td align="center">integer</td>
-<td align="center">Maximum age for price data</td>
-<td align="center">0</td>
-</tr>
-<tr class="even">
 <td align="center"><code>cachedir</code></td>
 <td align="center">character</td>
 <td align="center">Directory with cached data</td>
 <td align="center">c:/t/avsh</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="center"><code>ts_volparams</code></td>
 <td align="center">character</td>
 <td align="center">Volatility parameters</td>
 <td align="center">gk.yz;20;252</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="center"><code>sigpct</code></td>
 <td align="center">character</td>
 <td align="center">Highlight p-value</td>
 <td align="center">0.025</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="center"><code>gropts</code></td>
 <td align="center">character</td>
 <td align="center">Time Series Graphing options</td>
 <td align="center">last</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="center"><code>scatopts</code></td>
 <td align="center">character</td>
 <td align="center">Scatter plot options</td>
 <td align="center">last</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="center"><code>ts_events</code></td>
 <td align="center">character</td>
 <td align="center">Time Series Events</td>
 <td align="center">tp,5</td>
-</tr>
-<tr class="even">
-<td align="center"><code>ts_colorset</code></td>
-<td align="center">character</td>
-<td align="center">Graphics color set</td>
-<td align="center">lines</td>
 </tr>
 </tbody>
 </table>
@@ -442,8 +423,9 @@ AlphaVantage</td>
     SPY 2026-07-29 740.0 742.7 729.1 729.5          729.5 70697215               0                 1 2026-08-01 19:38:06        NA
     SPY 2026-07-30 736.0 742.5 734.6 741.7          741.7 66811268               0                 1 2026-08-01 19:38:06        NA
     SPY 2026-07-31 744.7 748.9 737.7 747.0          747.0 62445899               0                 1 2026-08-01 19:38:06        NA</code></pre>
-<p>Outside of the function, use <code><a href="../reference/av_load_shinydata.html">av_load_shinydata()</a></code> without
-arguments to load the data into the app without actually running it.</p>
+<p>Outside of the function, use <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_load_shinydata.html">av_load_shinydata()</a>
+without arguments to load the data into the app without actually running
+it.</p>
 <p>The sister package <a href="https://derekholmes0.github.io/FinanceGraphs/" class="external-link">FinanceGraphs</a>
 also contains some very helpful functions consistent with the design
 conventions of this app:</p>
@@ -491,7 +473,7 @@ Shiny app:</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="center"><a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html">quick_message</a></td>
+<td align="center"><a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html">avsh_quick_message</a></td>
 <td align="left"><code>where,this_message=""</code></td>
 <td align="left">Give user feedback below a design element</td>
 </tr>
@@ -552,52 +534,101 @@ app is shown below:</p>
 <p>Suppose we wish to add an analytic which (given a set of assets) does
 the following with the assets entered with the command.</p>
 <ul>
-<li>Produces a <code>dygraph()</code> with the an average rolling
-correlation, as well as 25th and 75th percentiles</li>
-<li>Produces a <code>gt()</code> table with a full correlation
-table.</li>
+<li>Produces a time series graph (<code>dygraph()</code>) with the an
+average rolling correlation, as well as 25th and 75th percentiles</li>
+<li>Produces a table (<code>gt()</code>) with a correlation matrix of
+returns over the entire history.</li>
+<li>Produces a table (<code>gt()</code>) with a matrix of percentiles of
+the last rolling correlation over the entire history<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;In homage to Dean Curnutt’s Alpha Exchange podcast.&lt;/p&gt;"><sup>1</sup></a>.</li>
 </ul>
-<p>Putting the above information together we can write</p>
+<div class="section level3">
+<h3 id="writing-a-function">Writing a function<a class="anchor" aria-label="anchor" href="#writing-a-function"></a>
+</h3>
+<p>Putting the above information together we can create the following
+function</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_corr</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">todo</span>,<span class="va">rv</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="co"># Get Data</span></span>
 <span>    <span class="va">tickers_to_get</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">rv</span><span class="op">$</span><span class="va">assetline</span>,<span class="st">";"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span>    <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">tickers_to_get</span><span class="op">)</span><span class="op">&lt;</span><span class="fl">3</span><span class="op">)</span> <span class="op">{</span> </span>
-<span>        <span class="fu"><a href="../reference/quick_message.html">quick_message</a></span><span class="op">(</span><span class="st">"istr1"</span>,<span class="st">"Need at least 3 tickers"</span><span class="op">)</span></span>
-<span>        <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="op">)</span> <span class="op">}</span></span>
-<span>    <span class="co"># Price Data</span></span>
-<span>    <span class="va">allpx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/av_load_shinydata.html">av_load_shinydata</a></span><span class="op">(</span><span class="st">"pxd"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>symbol<span class="op">=</span><span class="va">tickers_to_get</span><span class="op">)</span>,on<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">symbol</span><span class="op">)</span><span class="op">]</span></span>
-<span>    <span class="va">allpx</span> <span class="op">&lt;-</span> <span class="va">allpx</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span><span class="va">symbol</span>,<span class="va">timestamp</span>, rtn <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">adjusted_close</span><span class="op">)</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu">FinanceGraphs</span><span class="fu">::</span><span class="fu"><a href="https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html" class="external-link">narrowbydtstr</a></span><span class="op">(</span><span class="va">rv</span><span class="op">$</span><span class="va">dtstr_hist</span><span class="op">)</span></span>
 <span>    <span class="va">roll_window</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/coalesce.html" class="external-link">fcoalesce</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">rv</span><span class="op">$</span><span class="va">todoargs</span><span class="op">)</span>,<span class="fl">22</span><span class="op">)</span> <span class="co"># default to 22 day rolling correlation</span></span>
-<span></span>
-<span>    <span class="co"># Oraganize into pairs</span></span>
-<span>    <span class="va">pairs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/J.html" class="external-link">CJ</a></span><span class="op">(</span>var1<span class="op">=</span><span class="va">tickers_to_get</span>,var2<span class="op">=</span><span class="va">tickers_to_get</span><span class="op">)</span><span class="op">[</span><span class="va">var1</span><span class="op">&lt;</span><span class="va">var2</span>,<span class="op">]</span></span>
-<span>    <span class="va">corDT1</span><span class="op">&lt;-</span> <span class="va">allpx</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span><span class="va">timestamp</span>, var1<span class="op">=</span><span class="va">symbol</span>, rtn1<span class="op">=</span><span class="va">rtn</span><span class="op">)</span><span class="op">]</span><span class="op">[</span><span class="va">pairs</span>,on<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">var1</span><span class="op">)</span><span class="op">]</span></span>
-<span>    <span class="va">corDT2</span><span class="op">&lt;-</span> <span class="va">allpx</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span><span class="va">timestamp</span>, var2<span class="op">=</span><span class="va">symbol</span>, rtn2<span class="op">=</span><span class="va">rtn</span><span class="op">)</span><span class="op">]</span><span class="op">[</span><span class="va">pairs</span>,on<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">var2</span><span class="op">)</span><span class="op">]</span></span>
-<span>    <span class="va">corDT</span> <span class="op">&lt;-</span> <span class="va">corDT1</span><span class="op">[</span><span class="va">corDT2</span>, on<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">timestamp</span>,<span class="va">var1</span>,<span class="va">var2</span><span class="op">)</span><span class="op">]</span></span>
+<span>    <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">tickers_to_get</span><span class="op">)</span><span class="op">&lt;</span><span class="fl">3</span><span class="op">)</span> <span class="op">{</span> </span>
+<span>        <span class="fu"><a href="../reference/avsh_quick_message.html">avsh_quick_message</a></span><span class="op">(</span><span class="st">"Need at least 3 tickers"</span><span class="op">)</span></span>
+<span>        <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="op">)</span> <span class="op">}</span></span>
 <span>    </span>
+<span>    <span class="va">allpx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/av_load_shinydata.html">av_load_shinydata</a></span><span class="op">(</span><span class="st">"pxd"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>symbol<span class="op">=</span><span class="va">tickers_to_get</span><span class="op">)</span>,on<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">symbol</span><span class="op">)</span><span class="op">]</span></span>
+<span>    <span class="va">allpx</span> <span class="op">&lt;-</span> <span class="va">allpx</span><span class="op">[</span>,<span class="va">rtn</span><span class="op">:=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA_real_</span>,<span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">adjusted_close</span><span class="op">)</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span>, by<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">symbol</span><span class="op">)</span><span class="op">]</span></span>
+<span>    <span class="va">newdtstr</span> <span class="op">&lt;-</span> <span class="fu">FinanceGraphs</span><span class="fu">::</span><span class="fu"><a href="https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html" class="external-link">extenddtstr</a></span><span class="op">(</span><span class="va">rv</span><span class="op">$</span><span class="va">dtstr_hist</span>,begchg<span class="op">=</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="fl">31</span><span class="op">/</span><span class="fl">22</span><span class="op">*</span><span class="va">roll_window</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">allpx</span> <span class="op">&lt;-</span> <span class="va">allpx</span> <span class="op">[</span>,<span class="fu">.</span><span class="op">(</span><span class="va">symbol</span>,<span class="va">timestamp</span>,<span class="va">rtn</span><span class="op">)</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu">FinanceGraphs</span><span class="fu">::</span><span class="fu"><a href="https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html" class="external-link">narrowbydtstr</a></span><span class="op">(</span><span class="va">newdtstr</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># get Data</span></span>
+<span>    <span class="va">pairs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/J.html" class="external-link">CJ</a></span><span class="op">(</span>var1<span class="op">=</span><span class="va">tickers_to_get</span>,var2<span class="op">=</span><span class="va">tickers_to_get</span><span class="op">)</span><span class="op">[</span><span class="va">var1</span><span class="op">&lt;</span><span class="va">var2</span>,<span class="op">]</span></span>
+<span>    <span class="va">corDT1</span><span class="op">&lt;-</span> <span class="va">allpx</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span><span class="va">timestamp</span>, var1<span class="op">=</span><span class="va">symbol</span>, rtn1<span class="op">=</span><span class="va">rtn</span><span class="op">)</span><span class="op">]</span><span class="op">[</span><span class="va">pairs</span>,on<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">var1</span><span class="op">)</span>,allow.cartesian<span class="op">=</span><span class="cn">TRUE</span><span class="op">]</span></span>
+<span>    <span class="va">corDT</span><span class="op">&lt;-</span> <span class="va">allpx</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span><span class="va">timestamp</span>, var2<span class="op">=</span><span class="va">symbol</span>, rtn2<span class="op">=</span><span class="va">rtn</span><span class="op">)</span><span class="op">]</span><span class="op">[</span><span class="va">corDT1</span>,on<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">var2</span>,<span class="va">timestamp</span><span class="op">)</span>,allow.cartesian<span class="op">=</span><span class="cn">TRUE</span><span class="op">]</span></span>
 <span>    <span class="co"># Rolling correlation</span></span>
 <span>    <span class="va">rollcor_DT</span> <span class="op">&lt;-</span> <span class="va">corDT</span><span class="op">[</span>,<span class="va">rcorr</span><span class="op">:=</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/frollapply.html" class="external-link">frollapply</a></span><span class="op">(</span><span class="va">.SD</span>,<span class="va">roll_window</span>,\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">rtn1</span>,<span class="va">x</span><span class="op">$</span><span class="va">rtn2</span><span class="op">)</span>,by.column<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>, by<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">var1</span>,<span class="va">var2</span><span class="op">)</span><span class="op">]</span></span>
 <span>    <span class="va">cornames</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"corr_p25"</span>,<span class="st">"corr_p50"</span>,<span class="st">"corr_p75"</span><span class="op">)</span></span>
-<span>    <span class="va">rollcor_toplot</span> <span class="op">&lt;-</span> <span class="va">rollcor_DT</span><span class="op">[</span>, <span class="op">(</span><span class="va">cornames</span><span class="op">)</span><span class="op">:=</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">.SD</span><span class="op">$</span><span class="va">rcorr</span>,<span class="va">quantile</span>,probs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span><span class="op">)</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>, by<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">timestamp</span><span class="op">)</span><span class="op">]</span><span class="op">[</span></span>
+<span>    <span class="va">rollcor_toplot</span> <span class="op">&lt;-</span> <span class="va">rollcor_DT</span><span class="op">[</span>, <span class="op">(</span><span class="va">cornames</span><span class="op">)</span><span class="op">:=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">.SD</span><span class="op">$</span><span class="va">rcorr</span>,probs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span><span class="op">)</span>,na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>, by<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">timestamp</span><span class="op">)</span><span class="op">]</span><span class="op">[</span></span>
 <span>                                        ,<span class="va">.SD</span>, .SDcols<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"timestamp"</span>,<span class="va">cornames</span><span class="op">)</span><span class="op">]</span>    </span>
-<span>    <span class="va">rollcorr_dyg</span> <span class="op">&lt;-</span> <span class="fu">fgts_dygraph</span><span class="op">(</span><span class="va">rollcor_toplot</span>,title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Rolling percentiles of "</span>,<span class="va">roll_window</span>,<span class="st">" bd correlations"</span><span class="op">)</span>,roller<span class="op">=</span><span class="fl">1</span>,events<span class="op">=</span><span class="va">rv</span><span class="op">$</span><span class="va">ts_events</span><span class="op">)</span></span>
-<span>    </span>
-<span>    <span class="co"># Overall correlations</span></span>
+<span>    <span class="va">rollcorr_dyg</span> <span class="op">&lt;-</span> <span class="fu">fgts_dygraph</span><span class="op">(</span><span class="va">rollcor_toplot</span>,title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Rolling percentiles of "</span>,<span class="va">roll_window</span>,<span class="st">" bd correlations"</span><span class="op">)</span>,</span>
+<span>                roller<span class="op">=</span><span class="fl">1</span>,events<span class="op">=</span><span class="va">rv</span><span class="op">$</span><span class="va">ts_events</span><span class="op">)</span></span>
+<span>    <span class="co"># Overall correlations for period</span></span>
+<span>    <span class="va">corDT</span> <span class="op">&lt;-</span> <span class="va">corDT</span> <span class="op">|&gt;</span> <span class="fu">FinanceGraphs</span><span class="fu">::</span><span class="fu"><a href="https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html" class="external-link">narrowbydtstr</a></span><span class="op">(</span><span class="va">rv</span><span class="op">$</span><span class="va">dtstr_hist</span><span class="op">)</span></span>
 <span>    <span class="va">allcorr</span> <span class="op">&lt;-</span> <span class="va">corDT</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span>allcorr<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">rtn1</span>,<span class="va">rtn2</span>,use<span class="op">=</span><span class="st">"pairwise.complete.obs"</span><span class="op">)</span><span class="op">)</span>,by<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">var1</span>,<span class="va">var2</span><span class="op">)</span><span class="op">]</span></span>
-<span>    <span class="va">allcorr_gt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/dcast.data.table.html" class="external-link">dcast</a></span><span class="op">(</span><span class="va">corDT</span>,<span class="va">var1</span> <span class="op">~</span> <span class="va">var2</span>,value.var<span class="op">=</span><span class="st">"allcorr"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">gt</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">tab_header</span><span class="op">(</span>title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Correlation matrix for "</span>,<span class="va">rv</span><span class="op">$</span><span class="va">dttr_hist</span><span class="op">)</span><span class="op">)</span></span>
-<span>    </span>
+<span>    <span class="va">allcorr_gt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/dcast.data.table.html" class="external-link">dcast</a></span><span class="op">(</span><span class="va">allcorr</span>,<span class="va">var1</span> <span class="op">~</span> <span class="va">var2</span>,value.var<span class="op">=</span><span class="st">"allcorr"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">gt</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>                    <span class="fu">tab_header</span><span class="op">(</span>title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Correlation matrix for "</span>,<span class="va">rv</span><span class="op">$</span><span class="va">dtstr_hist</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">sub_missing</span><span class="op">(</span>missing_text<span class="op">=</span><span class="st">"--"</span><span class="op">)</span></span>
+<span>    <span class="co"># Last Percentiles</span></span>
+<span>    <span class="va">corrpct</span> <span class="op">&lt;-</span> <span class="va">rollcor_DT</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span>lastpctile<span class="op">=</span><span class="fl">100</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/last.html" class="external-link">last</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/frank.html" class="external-link">frank</a></span><span class="op">(</span><span class="va">rcorr</span>,na.last<span class="op">=</span><span class="cn">NA</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="va">.N</span><span class="op">)</span>, by<span class="op">=</span><span class="fu">.</span><span class="op">(</span><span class="va">var1</span>,<span class="va">var2</span><span class="op">)</span><span class="op">]</span></span>
+<span>    <span class="va">pctlast_gt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/dcast.data.table.html" class="external-link">dcast</a></span><span class="op">(</span><span class="va">corrpct</span>,<span class="va">var1</span> <span class="op">~</span> <span class="va">var2</span>,value.var<span class="op">=</span><span class="st">"lastpctile"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">gt</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu">tab_header</span><span class="op">(</span>title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Last correlation percentile "</span>,<span class="va">rv</span><span class="op">$</span><span class="va">dtstr_hist</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu">fmt_number</span><span class="op">(</span>decimals<span class="op">=</span><span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">sub_missing</span><span class="op">(</span>missing_text<span class="op">=</span><span class="st">"--"</span><span class="op">)</span></span>
+<span></span>
 <span>    <span class="co"># Return list</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">allcorr_gt</span>,<span class="va">rollcorr_dyg</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"GT3L"</span><span class="op">=</span><span class="va">allcorr_gt</span>,<span class="st">"TS1"</span><span class="op">=</span><span class="va">rollcorr_dyg</span>,<span class="st">"GT3R"</span><span class="op">=</span><span class="va">pctlast_gt</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
+<p>Note a few items about this code:</p>
+<ul>
+<li><p>The app uses the user function <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_load_shinydata.html">av_load_shinydata()</a>
+to get data from the internal data store. In this case, we need access
+to <code>pxd</code> from the table above.</p></li>
+<li><p>The app uses two helper functions from <a href="https://derekholmes0.github.io/FinanceGraphs/" class="external-link">FinanceGraphs</a>.
+<code>extenddtstr()</code> backs up the date string so that we can get a
+valid rolling correlation from the start of the analysis period (given
+as a string by <code>rv$dttr_hist</code>). <code>narrowbydtstr()</code>
+filters the data to the time periods desired.</p></li>
+<li><p>To control where the output goes, you can return a <strong>named
+list</strong> of outputs consistent with the above table. In this case,
+we return to matrices side by side by naming the outputs
+<code>"GT3L"</code> and <code>"GT3R"</code>. If named, the returned
+items don’t need to be in any order. If not named, the items are placed
+top to bottom.</p></li>
+<li><p>The function is a <code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table()</a></code>-centric, but does not
+need to be. <a href="https://tidyverse.org/" class="external-link">Yidyverse</a> idioms can be
+used, but are likely to be slower.</p></li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="registering-and-running-the-function-">Registering and running the function.<a class="anchor" aria-label="anchor" href="#registering-and-running-the-function-"></a>
+</h3>
 <p>We need to define how users will call this function, so a reasonable
 choice is “RCOR”. To add that function to the stable of those available,
 just run</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/av_add_analytic.html">av_add_analytic</a></span><span class="op">(</span><span class="st">"RCOR"</span>,<span class="st">"my_corr"</span>,helpstr<span class="op">=</span><span class="st">"Rolling Correlations"</span><span class="op">)</span></span></code></pre></div>
 <p>Doing so will save the definition in the disk cache, so we just need
-to rerun <code><a href="../reference/av_runShiny.html">av_runShiny()</a></code> and then we can run it!</p>
+to rerun <code><a href="../reference/av_runShiny.html">av_runShiny()</a></code> prior to running the
+<code>RCOR</code> function.</p>
+<p>Once <code><a href="../reference/av_runShiny.html">av_runShiny()</a></code> is running with the registered
+function, we need to ensure its definition is in the Global Environment
+(<code><a href="https://rdrr.io/r/base/environment.html" class="external-link">.GlobalEnv()</a></code>), and run it on a larger set of assets. For
+example, to analyze a series of Factor ETFs over the past two years
+using 2 month rolling correlations, we would type in the command line
+<code>QUAL;USMV;MTUM;VLUE;QUS;SMMV;SIZE;ESMV RCOR 44</code> to get `</p>
+<div class="float">
+<img src="img/rcor_example.jpg" alt="rcor Example"><div class="figcaption">rcor Example</div>
 </div>
+</div>
+</div>
+
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>

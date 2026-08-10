@@ -25,3 +25,7 @@ avsh_set_tabtitle(newtext = "DETAIL", tabnm = "detail", makefocus = TRUE)
 ## Value
 
 Nothing
+
+## Details
+
+Set an av_runShiny Tab Title

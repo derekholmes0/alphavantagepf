@@ -1,6 +1,6 @@
-# Add additional data to returned option sets
+# Add additional columns to returned option sets
 
-Add additional data to returned option sets
+Add additional columns to returned option sets
 
 ## Usage
 

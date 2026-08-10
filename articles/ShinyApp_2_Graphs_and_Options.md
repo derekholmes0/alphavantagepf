@@ -46,11 +46,6 @@ The options associated with the dumping are given below:
 
 [TABLE]
 
-`None` (default): Turn capture off, even if the directory is set.  
-`nopricesonly`: Capture anything *but* time series data.  
-‘all’ Capture all calls\| \|F Update or Cumulative\|`update` data
-captured by symbol, or (`cum`) capture every time with a timestamp.\|
-\|G Data Saving Options\|Other options  
 `SaveEveryAVCall`: Save all calls cumulatively when the call is made.  
 `CleanOnStart`: Delete dump data on every startup of the app.  
 `None`: Keep dumped data in memory, avoiding I/O overhead.  

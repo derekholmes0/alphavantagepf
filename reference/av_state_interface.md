@@ -10,8 +10,6 @@ retrieves internal data state of
 ``` r
 dump_state(typegrep = "*")
 
-inv_rv(rv)
-
 dump_inv(invgrep = "*")
 
 dump_assetgroups()
@@ -27,10 +25,6 @@ dump_captured(todo = "byfunction")
 
   : Grep string for internal state parameters
 
-- rv:
-
-  : An isolated list of av_shiny parameters
-
 - invgrep:
 
   : A regular expression string
@@ -42,6 +36,10 @@ dump_captured(todo = "byfunction")
 ## Value
 
 data.table with desired data.
+
+## Details
+
+Return av_runShiny data and states
 
 ## See also
 
@@ -56,6 +54,5 @@ if (FALSE) { # \dontrun{
 `dump_av_funcs()`
 `dump_assetgroups()`
 `dump_captured(todo="byfunction")`
-`inv_rv(rv)`
 } # }
 ```

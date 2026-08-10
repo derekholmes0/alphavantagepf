@@ -1,4 +1,4 @@
-# av_add_px
+# Add or download Price or Time Series Data
 
 Adds price data to
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
@@ -54,6 +54,8 @@ av_add_px(
 Nothing
 
 ## Details
+
+Add Price or Time Series Data
 
 Entire set of columns from
 [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)

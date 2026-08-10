@@ -1,4 +1,4 @@
-# Date Utilities
+# av_runShiny utilities
 
 Prints message if condition met
 
@@ -17,7 +17,3 @@ message_if(reallydothis, ...)
 - ...:
 
   Additional items to be passed to `message`
-
-## Details
-
-Other utititlies internal to this package

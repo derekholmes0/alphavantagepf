@@ -1,4 +1,4 @@
-# av_add_assetgroups
+# Add asset lists
 
 Adds asset lists to
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
@@ -14,14 +14,17 @@ av_add_assetgroups(indta)
 
 - indta:
 
-  A data.frame with two columns `c("listnm","ticker")` with one or more
-  lines for each `"listnm"`
+  A data.frame with a minimum of two columns `c("listnm","ticker")` with
+  one or more lines for each `"listnm"` and possibly a column `weight`
+  for weightings
 
 ## Value
 
 Nothing
 
 ## Details
+
+Add Asset Groups
 
 Lists are specified in normalized form. Duplicate list names with those
 currently in use are replaced.

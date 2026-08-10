@@ -1,4 +1,4 @@
-# av_add_earn
+# Add or download Earnings Data
 
 Adds earnings data to
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
@@ -40,6 +40,8 @@ av_add_earn(
 Data.table with summary of downloaded or added earnings
 
 ## Details
+
+Add Earnings Data
 
 Entire set of columns from
 [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)

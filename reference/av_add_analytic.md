@@ -35,6 +35,8 @@ String message with success or failure of function addition.
 
 ## Details
 
+Add a new command to the av_runShiny app
+
 When the
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
 app is run, users can call functions to provide analytics based on asset

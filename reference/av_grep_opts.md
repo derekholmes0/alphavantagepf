@@ -1,6 +1,6 @@
-# Extract data from Alpha Vantage returned data
+# Filter options from returned AV data
 
-Extract data from Alpha Vantage returned data
+Filter options from returned AV data
 
 ## Usage
 
