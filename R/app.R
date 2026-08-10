@@ -310,7 +310,9 @@ av_make_server <- function() {
       # New variables created and added to rv:  todo todofunc todoargs assetline
       parse_inpline(toupper(rv$istr1))
       rv <- c(rv,setNames(list(todo,todofunc,todoargs,assetline), s("todo;todofunc;todoargs;assetline"))) # Augment rv
-      cAssign("todo;todofunc;rv;todoargs;assetline",silent=TRUE) # Take out in production version
+      # out for Production, IN for testing
+      # cAssign("todo;todofunc;rv;todoargs;assetline",silent=TRUE)
+      #
       runfunc_set <-  the_av$avsh_funcs[runcode==todofunc,]
       quick_message(fifelse(nrow(runfunc_set)<=0,paste(todo,":Invalid function"),""))
       if(nrow(runfunc_set)<=0) { return() }

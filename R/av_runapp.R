@@ -45,14 +45,14 @@
 #' One of the key contributions of this app is to abstract out the asset-specific functions calls that are necessary to do cross-asset analyses.
 #'
 #' **Other niceties**:
-#' * Groups of assets can be named, saved, and recalled easily. See Basic Usage <V2> vignette
-#' * Internal data can be stored and used (as `data.table()`s) in a directory of the users' choosing.  See setup <V1> vignette.
+#' * Groups of assets can be named, saved, and recalled easily. See [Basic Usage](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html) vignette
+#' * Internal data can be stored and used (as `data.table()`s) in a directory of the users' choosing.  See [Options](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_2_Graphs_and_Options.html) vignette.
 #' * Events and other plotting options can be specified in the app.  See functions vignette and e.g. [FinanceGraphs](https://derekholmes0.github.io/FinanceGraphs/reference/index.html)
-#' * Data within each produced graph or table can be copied to the clipboard (option in  `AVOPTS` page), See setup <V1> vignette.
+#' * Data within each produced graph or table can be copied to the clipboard (option in  `AVOPTS` page), See [Setup](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html) vignette.
 #' * Raw downloaded data can be saved into a "dump directory" (option in  `AVOPTS` page)
 #' * A current inventory list is always kept in a separate tab, avoiding having to run `AV.INV` repeatedly.
-#' * User price data, earnings data, and asset groups can be added using helper functions  [av_add_px()], [av_add_earn()], [av_add_assetgroups()].  See Extensions vignette <v3>
-#' * User analytics can be added using [av_add_analytic()].  See examples in the Extensions vignette <v3>
+#' * User price data, earnings data, and asset groups can be added using helper functions  [av_add_px()], [av_add_earn()], [av_add_assetgroups()].  See [data management](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html) vignette.
+#' * User analytics can be added using [av_add_analytic()].  See examples in the [Extensions](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.html) vignette
 #'
 #' @returns
 #' A `ShinyAppHandle` object.

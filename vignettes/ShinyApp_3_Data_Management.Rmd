@@ -81,7 +81,7 @@ Optionally, other data (usually provided automatically from AlphaVantge) associa
 |Intraday|N|`c(open,high,low,volume)`|
 |Total Return|N|`c(adjusted_close,dividend_amount,split_coefficient)`|
 
-Suppose we wish to download Natural Gas data from Alphavantage (via [FRED](https://fred.stlouisfed.org/)) and give it
+Suppose we wish to download Natural Gas data from Alphavantage (via [FRED](www.stlouisfed.org) ) and give it
 our own ticker `HH_GAS`. First we download the price series and get the columns we need.  Then we add some basic description,
 including most critically the asset type, so the app knows where to get data going forward.
 
@@ -91,7 +91,7 @@ ng_dta <- av_get_pf("","NATURAL_GAS")[,.(symbol="GAS_HH",timestamp,close=value)]
 asset_df <- data.frame(symbol=c("GAS_HH"),type=c("user"),currency=c("USD"), name=c("Henry Hub Gas Spot"))
 av_add_px(ng_dta, assettypes=asset_df)
 ```
-We can source data anywhere, really.  As an example of getting data directly from  [FRED](https://fred.stlouisfed.org/), let's
+We can source data anywhere, really.  As an example of getting data directly from  [quantmod](www.quantmod.com), let's
 add FEDFUNDS as its own ticker:
 
 ```{r, eval=FALSE}
