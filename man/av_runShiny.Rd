@@ -55,14 +55,14 @@ One of the key contributions of this app is to abstract out the asset-specific f
 
 \strong{Other niceties}:
 \itemize{
-\item Groups of assets can be named, saved, and recalled easily. See Basic Usage \if{html}{\out{<V2>}} vignette
-\item Internal data can be stored and used (as \code{data.table()}s) in a directory of the users' choosing.  See setup \if{html}{\out{<V1>}} vignette.
+\item Groups of assets can be named, saved, and recalled easily. See \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html}{Basic Usage} vignette
+\item Internal data can be stored and used (as \code{data.table()}s) in a directory of the users' choosing.  See \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_2_Graphs_and_Options.html}{Options} vignette.
 \item Events and other plotting options can be specified in the app.  See functions vignette and e.g. \href{https://derekholmes0.github.io/FinanceGraphs/reference/index.html}{FinanceGraphs}
-\item Data within each produced graph or table can be copied to the clipboard (option in  \code{AVOPTS} page), See setup \if{html}{\out{<V1>}} vignette.
+\item Data within each produced graph or table can be copied to the clipboard (option in  \code{AVOPTS} page), See \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html}{Setup} vignette.
 \item Raw downloaded data can be saved into a "dump directory" (option in  \code{AVOPTS} page)
 \item A current inventory list is always kept in a separate tab, avoiding having to run \code{AV.INV} repeatedly.
-\item User price data, earnings data, and asset groups can be added using helper functions  \code{\link[=av_add_px]{av_add_px()}}, \code{\link[=av_add_earn]{av_add_earn()}}, \code{\link[=av_add_assetgroups]{av_add_assetgroups()}}.  See Extensions vignette \if{html}{\out{<v3>}}
-\item User analytics can be added using \code{\link[=av_add_analytic]{av_add_analytic()}}.  See examples in the Extensions vignette \if{html}{\out{<v3>}}
+\item User price data, earnings data, and asset groups can be added using helper functions  \code{\link[=av_add_px]{av_add_px()}}, \code{\link[=av_add_earn]{av_add_earn()}}, \code{\link[=av_add_assetgroups]{av_add_assetgroups()}}.  See \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html}{data management} vignette.
+\item User analytics can be added using \code{\link[=av_add_analytic]{av_add_analytic()}}.  See examples in the \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.html}{Extensions} vignette
 }
 }
 \examples{

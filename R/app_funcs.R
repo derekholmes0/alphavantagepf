@@ -159,6 +159,7 @@ av_gearn <- function(todo,rv) {
 # For the following functions: GP GPI GPD GPI2 GPD2
 # todo="GPEE"; rv<-list(istr1="IBM;GS",dtstr_hist="-2y::")
 #' @importFrom stringr str_detect
+#' @importFrom FinanceGraphs fg_current_theme
 #' @importFrom ggplot2 ggplot aes geom_errorbar geom_line geom_segment scale_color_manual geom_crossbar labs theme
 #' @importFrom ggplot2 geom_vline
 av_earnest <- function(todo,rv) {

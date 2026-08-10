@@ -1,15 +1,12 @@
 # alphavantagepf (development version)
 
-# alphavantagepf 0.8.4: in Progress
-
-New feature todo
-* calendars
+# alphavantagepf 0.8.4
 
 ## Major Changes
 
 The Shiny interface has been completely redesigned (and recoded) to have an extendable command line interface
-for all analytics.  New functions have been added for adding and managing data  outside the app. Users can also add their
-own analytics, posssibly with the help of with several "helper" functions to interface with the GUI.  See vignettes
+for all analytics.  New functions have been added for adding and managing data outside the app. Users can also add their
+own analytics and interface with the GUI using several "helper" functions.  See vignettes
 for details.
 
 ## New Features in API interface
@@ -18,13 +15,13 @@ for details.
 * `av_runShiny()` now returns a `ShinyAppHandle` object and does not block execution
 * All helper functions (e.g. `av_extract_df`) now return an empty data.table if there is nothing to extract. Set `empty_dt_onerror=FALSE` to throw an error.
 * `av_extract_fx()`  timestamps always returned in `Sys.timezone()` time zone.
+* Functions which return multiple types as strings (specifically `av_get_pf(.,"OVERVIEW")`) now properly produce type-separated tables.
 
 Bug fixes
 
 * Fixed app crash if no earnings transcript available.
 * Fixed graphing so that stepPlots are chosen appropriately, not always.
 * `splitfirst` ignored for single name plots.
-* `av_get_pf(.,"OVERVIEW")` now properly produces a type-separated table.
 
 ## Breaking changes
 
