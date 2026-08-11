@@ -163,16 +163,16 @@ av_add_assetgroups <- function(indta) {
   save_avs_state("all",msg="add_assetgroups")
 }
 
-#' Add a new command to the av_runShiny app
+#' Adds or removes a new command to the av_runShiny app
 #'
 #' @title av_add_analytic
 #' @description Adds a user-defined function to the av Shiny app
 #' @param runcode Code string user must run to call the function.
-#' @param func_name Name of function run when analytic is called.  If an empty string is supplied, the runcode will be de-registered.
+#' @param func_name Name of function run when analytic is called.  **If an empty string is supplied, the runcode will be de-registered.**
 #' @param helpstr (default: "user function"): A string comment to ad to the av.h (help) command
 #' @param focus (default: "MAIN")  String with tab name to set focus to when command is run
 #' @returns String message with success or failure of function addition.
-#' @seealso [av_runShiny()]
+#' @seealso [av_runShiny()], [av_remove_analytic()]
 #' @details When the [av_runShiny()] app is run, users can call functions to provide analytics based on asset strings in the command line.
 #' This function allows users to add their own analytics by registering a function which takes, as inputs
 #'  1. `todo`: The command line and any subsequent parameters as a space delimited string
@@ -218,6 +218,7 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
   the_av$avsh_funcs <- DTUpsert(the_av$avsh_funcs,new_analytics,keys=c("runcode"),fill=TRUE)
   save_avs_state("all",msg=paste0("Add FUnction ",runcode))
 }
+
 
 #' Display a user message in the av_runShiny app
 #'

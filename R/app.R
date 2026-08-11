@@ -1,13 +1,9 @@
 #source("./R/utilities.R")
-tver<-"0.8.4"
+tver<-"0.8.41"
 
+
+# 410: Add file timestamps to inventory file to check for new data
 # 400: CHange to quick_message, vignettes done, av.inputs
-# 302: Handlers for Earnings.  fpos
-# 300: Vignettes done, on to Check
-# 206: Function Walkthrough. av_misc implemented
-# 205: Av_misc functions, earnings stuff
-# 202: ui output finally working as intended Solved dygrahs height issue with containers, error code for bad tickers
-# 201: Generalize render, JS to only run on enter, cleaned up some cruft
 
 #' @importFrom TTR volatility
 #' @import gt
@@ -306,6 +302,12 @@ av_make_server <- function() {
       the_av$user_feedback <- ""
       out <- list()
       outcopy <- the_av$outcopy %||% list()
+      # reload data if necessary
+      newts <- fifelse(file.exists(the_av$inv_fn), as.POSIXct( file.info(the_av$inv_fn)$mtime), Sys.time())
+      if(newts>the_av$inv_ts) {
+        message_if_red(TRUE,"RELOADING DATA")
+        restore_avs_state(msg="reload")
+      }
       # ----------------
       # New variables created and added to rv:  todo todofunc todoargs assetline
       parse_inpline(toupper(rv$istr1))
