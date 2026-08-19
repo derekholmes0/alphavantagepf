@@ -21,6 +21,7 @@
 #' @examples
 #' \dontrun{
 #' # To add known symbols outside the app
+#' av_load_shinydata()  # Make sure most recent data is loaded
 #' av_add_px(equitylist=c("IBM","GS","JPM"))
 #'
 #' # To add ad-hoc data from Alphavantage (e.g. Natgas spot at Henry Hub)
@@ -70,7 +71,7 @@ av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",
   # need (symbol=TICKER,type="user",currency="USD",name=TICKER)
   newinv <- get_inv(symbolset,override_symset=assettypes)
   the_av$pxinv <- DTUpsert(the_av$pxinv, newinv, c("symbol"),fill=TRUE)
-  save_avs_state("px",msg="av_add_px")
+  save_avs_state("px",msg="av_add_px",ts_update=FALSE)
 }
 
 #' Add Earnings Data
@@ -91,6 +92,7 @@ av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",
 #' @examples
 #' \dontrun{
 #' # To add earnings for a set of tickers
+#' av_load_shinydata()  # Make sure most recent data is loaded
 #' av_add_earn(equitylist=data.table(symbol=c("IBM","GS"))
 #' }
 #' @export
@@ -108,7 +110,7 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=
   rtnpx <- the_av$pxinv[data.table(symbol=symset),on=.(symbol)][,.(symbol,type)][type=="Equity",]
   rtniv <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
   the_av$pxinv <- DTUpsert(the_av$pxinv, get_inv(symset), c("symbol"),fill=TRUE)
-  save_avs_state("px",msg="av_add_earn")
+  save_avs_state("px",msg="av_add_earn",ts_update=FALSE)
   return(rtniv)
 }
 
@@ -172,7 +174,7 @@ av_add_assetgroups <- function(indta) {
 #' @param helpstr (default: "user function"): A string comment to ad to the av.h (help) command
 #' @param focus (default: "MAIN")  String with tab name to set focus to when command is run
 #' @returns String message with success or failure of function addition.
-#' @seealso [av_runShiny()], [av_remove_analytic()]
+#' @seealso [av_runShiny()]
 #' @details When the [av_runShiny()] app is run, users can call functions to provide analytics based on asset strings in the command line.
 #' This function allows users to add their own analytics by registering a function which takes, as inputs
 #'  1. `todo`: The command line and any subsequent parameters as a space delimited string
@@ -311,6 +313,9 @@ dump_state <- function(typegrep="*") {
       }
       if("list" %in% type) {
         toget<-paste0("<<list>> with ",length(toget), " items")
+      }
+      if("POSIXct" %in% type) { # KILLER
+        toget<-as.character(toget)
       }
       outdump<-rbindlist(list(outdump,data.table(nm=x,classtype=type[1], toget=toget)),ignore.attr=TRUE,fill=TRUE)
     }

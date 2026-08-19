@@ -3,7 +3,7 @@
 #' Update any lists from Alphavnatage.
 #' @noRd
 update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
-  from_currency=to_currency=list_ts=NULL
+  from_currency=to_currency=list_ts=Abbrev=NULL
   if(reallydoingthis==FALSE) { return() }
   if(reset==TRUE) {
     the_av$tickerlist <- data.table()
@@ -18,6 +18,16 @@ update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
   # Names
   listings <- av_get_pf("","LISTING_STATUS")[,list_ts:=Sys.Date()]
   setkeyv(listings,c("symbol"))
+  if(grepl("useAbbreviations",the_av$logopts)) {
+    otherabbs <- avsd$abbreviations[Abbrev!="",]
+    for (ibrev in seq(1,nrow(otherabbs))) {
+      listings <- listings[, name:=gsub(otherabbs[ibrev,]$Word,otherabbs[ibrev,]$Abbrev,paste0(name," "),ignore.case=TRUE)]
+    }
+    emptyabbrevs <- paste(avsd$abbreviations[Abbrev=="",]$Word,collapse="|")
+    emptyabbrevs <- gsub("\\\\","\\",emptyabbrevs,fixed=TRUE)
+    listings <- listings[,name:=gsub(emptyabbrevs,"",name,ignore.case=TRUE)]
+    listings <- listings[,name:=stringr::str_squish(name)][]
+  }
   the_av$listings <- listings
   message_if_red(the_av$verbose,"Reconstructed index (",nrow(indexlist),"), crypto (",nrow(cryptolist),
             "), and listing status (",nrow(the_av$listings),") lists at ",format(Sys.time(),"%d-%H:%M%:S"))
@@ -63,10 +73,8 @@ epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
 }
 
 # ---
-# Manage_epx: DOwnload (or redownload) all relevant data
+# Manage_epx: DOwnload (or redownload) all relevant data: Only use form withing SHiny
 # ---
-
-
 
 # manage_epx only accepts more than one ticker if called with substitute_data
 # mange_eps will download repeatedly before market opens, no real way to avoid it without time of day logic
@@ -87,7 +95,7 @@ manage_epx <- function(inticker, dtstr,
   thisinv <- get_inv(inticker)
   the_av$pxinv <- DTUpsert(the_av$pxinv, thisinv, c("symbol"),fill=TRUE)
   save_avs_state("px")
-  message_if_green(the_av$verbose,"mange_epx(",inticker,"): px:",rtnpx," earn:",rtnearn)
+  #message_if_green(the_av$verbose,"mange_epx(",inticker,"): px:",rtnpx," earn:",rtnearn)
 }
 
 # ------------------------------------------------------------------ INventories
@@ -363,7 +371,7 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
 # =========================================================
 
 #' @importFrom stats setNames
-save_avs_state <- function(todo="all",msg="") {
+save_avs_state <- function(todo="all",msg="", ts_update=TRUE) {
   classtype=rtn=NULL
   shortmsg <- ""
   # Price and earnings in one fst file, everythign else in inventory file
@@ -372,6 +380,10 @@ save_avs_state <- function(todo="all",msg="") {
   if(grepl("all|px",todo)) {
     pxinv <- setNames(lapply(nonpx_names,\(x) get(x,envir=the_av)), nonpx_names) # So we save a few extra things
     save(pxinv,file=the_av$inv_fn)
+    # Skip this if data is coming from OUTSIDE the app.  Login on command run will then reload the data
+    if(ts_update) {
+      the_av$inv_fn_ts <- as.POSIXct( file.info(the_av$inv_fn)$mtime) # NO need to reload again...
+    }
     rtn <- lapply(px_names, \(x) {
       thisfn = get(paste0(x,"_fn"),envir=the_av)
       fst::write_fst(get(x,envir=the_av),thisfn,compress=20) # pxd, earn to fst

@@ -35,5 +35,5 @@ autocopy,log,autocopy,,FALSE,
 starttab,str,,avopts,,
 gropts,str,onrun,last,,
 dbglvl ,num,,,,0
-avsh_logopts,str,,useTotRtn;useLivePx;verbose;data2clipboard;persistOutput;showGeneralHelp;showWarnings,,
-logopts,str,setopts,useTotRtn;showGeneralHelp;verbose,,
+avsh_logopts,str,,useTotRtn;useLivePx;verbose;data2clipboard;persistOutput;showGeneralHelp;showWarnings;useAbbreviations,,
+logopts,str,setopts,useTotRtn;showGeneralHelp;verbose;useAbbreviations,,

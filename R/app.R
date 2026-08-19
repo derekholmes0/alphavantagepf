@@ -1,7 +1,9 @@
 #source("./R/utilities.R")
-tver<-"0.8.41"
+tver<-"0.8.431"
 
-
+# 431: Seasonality, appbreviations
+# 430: Add correlatiosn to RV
+# 420: Refactored Asset List UI
 # 410: Add file timestamps to inventory file to check for new data
 # 400: CHange to quick_message, vignettes done, av.inputs
 
@@ -32,6 +34,7 @@ av_make_ui <- function() {
      ),
      fluidRow(
        column(1,
+            textInput("istr2", "CounterAsset", the_av$inpline2,width='100%'),
             selectizeInput("gropts","TS opts",
                            c("last","lastlabel","hilightfirst","splitts","hilow"),
                            selected=s(the_av$gropts),
@@ -45,10 +48,9 @@ av_make_ui <- function() {
        ),
        column(10,  # Was 11
           fluidRow(
-            column(width=7,div(class = "enter-submit", textInput("istr1", paste("AVShiny",tver), the_av$inpline1,width='100%'))),
-            column(width=2,selectizeInput("assetgp_list","",c("AssetListnm"="", c("",sort(unique(the_av$assetgroups$listnm)))),size="80%",options=list(create=TRUE))),
-            column(width=1,radioButtons("manage_aglist","",choices=c("get","save","delete"),selected =character(0),width="85%",inline=TRUE)),
-            column(width=2,div(class = "enter-submit", textInput("istr2", "CounterAsset", the_av$inpline2,width='100%')))
+            column(width=8,div(class = "enter-submit", textInput("istr1", paste("AVShiny",tver), the_av$inpline1,width='100%'))),
+            column(width=2,selectizeInput("assetgp_list","AssetGroups",c("AssetListnm"="", c("",sort(unique(the_av$assetgroups$listnm)))),size="80%",options=list(create=TRUE))),
+            column(width=2,selectInput("ag_state","",c("--","Expand","Save","Delete"),size=4,selectize=FALSE)),
           ),
           fluidRow(
             tabsetPanel(id="inTabset",selected=the_av$starttab,
@@ -156,12 +158,12 @@ av_make_ui <- function() {
 #' @importFrom stats quantile formula
 
 av_make_server <- function() {
-  ts_rebase=ts_events=ts_volparams=imp=x_close=y_close=ui_out=outname=displayed=inclass=displayheight=todoargs=NULL
+  wh=ts_rebase=ts_events=ts_volparams=imp=x_close=y_close=ui_out=outname=displayed=inclass=displayheight=todoargs=NULL
   out <- list()
   av_server<-function(input, output,session) {
     inlist=list_ts=vartype=todofunc=todo=assetline=NULL
     curr_assetgroups <- sort(unique(the_av$assetgroups$listnm))
-    quick_message("[F(ront)|B(ack)],[M(onth)|Q(tr)],[C(all)|P(ut)],[itm|otm|all]",wh="ochains")
+    quick_message("[F(ront)|B(ack)],[M|Q],[C(all)|P(ut)],[itm|otm|all]",wh="ochains")
     # On Startup download current index list if not there
     update_tickerlists( is.null(the_av$tickerlist) || nrow(the_av$tickerlist)<=0 ||
             (max(the_av$tickerlist$list_ts)<=Sys.Date()-4) )
@@ -176,60 +178,38 @@ av_make_server <- function() {
     dyheight1 <- reactive({ the_av$renderset[ui_out=="dy1",]$displayheight})
     dyheight2 <- reactive({ the_av$renderset[ui_out=="dy2",]$displayheight})
 
-    set_list <- function(listtodo,tlist,instr,no) {
-      assetline=todo=NULL
-      rtnmsg <- ""
-      parse_inpline(instr) # Makes todo;assetline
-      if(listtodo=="save") {
-        if(nchar(instr)<=0 | nchar(tlist)<=0) {
-          rtnmsg <- "Cannot Save blank assetgroups Name"
-        }
-        else {
-          newassets <- data.table(ticker=s(assetline))[,listnm:=tlist][]
-          the_av$assetgroups <- DTUpsert(the_av$assetgroups,newassets,c("listnm"),replaceifbempty=the_av$assetgroups[!(listnm==tlist),])
-          save_avs_state("all",msg="saveassets")
-          updateSelectizeInput(session,"assetgp_list", choices=sort(unique(the_av$assetgroups$listnm)))
-          rtnmsg <-paste0("Asset set saved as ",tlist)
-        }
-      }
-      if(listtodo=="get") {
-        newassets <- paste0( the_av$assetgroups[listnm==tlist,]$ticker,collapse=";")
-        av_set_defaults(paste0("inpline",no), paste0(newassets," ",todo))
-        save_avs_state("all",msg="getassets")
-        updateTextInput(session,paste0("istr",no), value= the_av[[paste0("inpline",no)]])
-      }
-      if(listtodo=="delete") {
-        the_av$assetgroups <- the_av$assetgroups[!listnm==tlist,]
-        updateSelectizeInput(session,"assetgp_list", choices=sort(unique(the_av$assetgroups$listnm)))
-        rtnmsg <-paste0("Deleted Asset List: ",tlist)
-        save_avs_state("all",msg="deleteassets")
-      }
-      Sys.sleep(0.2)
-      updateRadioButtons(session,paste0("managelist",no),selected=character(0))
-      return(rtnmsg)
-    }
-
     observeEvent(input$gropts, {
       req(input$gropts)
       av_set_defaults("gropts",paste0(input$gropts,sep=";"))
     })
 
-    observeEvent(input$manage_aglist, {
-      req(input$manage_aglist)
-      quick_message(set_list(input$manage_aglist,input$assetgp_list,input$istr1,1))
+    observeEvent(input$ag_state, {
+      req(input$ag_state)
+      quick_message(set_list(input$ag_state,input$assetgp_list,input$istr1,session))
+    })
+
+    observeEvent(input$assetgp_list, {
+      req(input$assetgp_list)
+      if(length(setdiff(input$assetgp_list,curr_assetgroups))<=0) { # New Asset LIst Name
+        parse_inpline(input$istr1) # Makes todo;assetline
+        av_set_defaults("inpline1", paste0(input$assetgp_list," ",todo))
+        updateTextInput(session,"istr1", value= the_av[["inpline1"]])
+      }
+      else { message(" .>>> skipping")}
     })
 
     observeEvent(input$SetOpts, {
       old=toget=NULL
+      oldcache <- the_av$cachedir
       rv <- isolate(reactiveValuesToList(input))
       th1<- dump_state()
-      oldcache <- th1[nm=="cachedir",]$toget
       avpf_api_key(rv$avapikey,rv$avapientitlement)
       av_set_default_set("setopts",rv)
+      newcache<-av_validate_directory(rv$cachedir,"cachedir")
       if( nchar(newcache<-av_validate_directory(rv$cachedir,"cachedir"))>0 ) {
         if(!(newcache==oldcache)) {
           message_if_red(TRUE,"Cache directory moved; cleaning up old price/inventory data from ",oldcache)
-          lapply(avsd$defaults[vartype=="cache",]$value_str, \(x) unlink(paste0(oldcache,"/",x),force = TRUE))
+          sapply(avsd$defaults[vartype=="cache",]$value_str, \(x) unlink(paste0(oldcache,"/",x),force = TRUE))
           av_set_defaults("cachedir",newcache)
         }
         oldcache <- newcache
@@ -244,8 +224,9 @@ av_make_server <- function() {
       av_set_defaults("verbose", "verbose" %in% rv$logopts)
       av_set_defaults("autocopy","data2clipboard" %in% rv$logopts)
       save_avs_state("all",msg="sEToPTS")
-      th1 <- th1[,.(nm,old=toget)][dump_state(),on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
-      th1 <- th1[,.SD,.SDcols=s("classtype;nm;toget;format")]
+      thnew <- dump_state()
+      th1 <- th1[,.(nm,old=toget)][thnew,on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
+      th1 <- th1[,.SD,.SDcols=s("nm;classtype;toget;format")]
       quick_message("No data in inventory; load or ask for some via PriceTS", eval=(nrow(th1)<=0))
       output$dumpthe <- render_gt(th1 |> gt() |> gt.basetheme(interactive="filter") |> decorate_table())
     })
@@ -255,7 +236,7 @@ av_make_server <- function() {
         if( !quick_message(eval=(nrow(the_av$pxinv)<=0),"No INventory: Create Data by running a Time Series Graph") ) {
           invtosend <- the_av$pxinv[,.SD,.SDcol=!s("earnf_next;div_lastval;lastearn_dt;earnf_nextdt;earnf_ts")]
           output$inv1 <- invtosend[,age:=Sys.Date()-end_dt] |> gt.avtheme(themeset="pxinv") |> render_gt() #  gt.avtheme(themeset="pxinv") |>
-          output$inv2 <- dump_assetgroups() |>  gt() |> gt.avtheme(themeset="assetgroups") |> render_gt()
+          output$inv2 <- dump_assetgroups() |>gt.avtheme(themeset="assetgroups") |> render_gt()
         }
         the_av$starttab <- "inventory"
         if( exists("do_on_start",envir=the_av) ) {
@@ -269,12 +250,9 @@ av_make_server <- function() {
 
     observeEvent(input$capture_av_what, {
       req(input$capture_av_what)
-      feedtxt<- fcase(input$capture_av_what=="none","No Data Capture",
-                      input$capture_av_what=="pricesonly","Only prices captured",
-                      input$capture_av_what=="noprices","Only non price data captured",
-                      input$capture_av_what=="all","All Data captured",
-                      default="Denmark call home")
-      if("capture" %chin% feedtxt) {
+      txtset <- data.table(wh=s("none;pricesonly;noprices;all"),txt=s("No Data Saving;Only prices captured;Only non price data captured;All Data captured"))
+      feedtxt <- txtset[wh==input$capture_av_what,]$txt
+      if(!("No " %chin% feedtxt)) {
         feedtxt <- paste0(feedtxt," to ",input$av_dump_dir,"/av_download.RD")
       }
       shinyFeedback::showFeedback(inputId="av_dump_dir", text=feedtxt,color="#2ca35f")
@@ -289,6 +267,7 @@ av_make_server <- function() {
 
     observeEvent(input$istr1_enter, {
       rv <- isolate(reactiveValuesToList(input))
+      newts <- fifelse(file.exists(the_av$inv_fn), as.POSIXct( file.info(the_av$inv_fn)$mtime), Sys.time())
       if(!grepl("^av",rv$istr1,ignore.case=TRUE)) {
         the_av$cmdhist <- rbindlist(list(the_av$cmdhist,data.table(cmd=rv$istr1,ts=Sys.time())), fill=TRUE,use.names=TRUE)
       }
@@ -297,23 +276,24 @@ av_make_server <- function() {
           quick_message("Enter a valid command", eval=nchar(rv$istr1)<=0) ) {
         return()
       }
-      message_if(the_av$verbose,"avrs(",tver,") >>>> input(",rv$istr1,") Line2:",rv$istr2)
+      message_if(the_av$verbose,"avrs(",tver,") >>>> input(",rv$istr1,") Line2:",rv$istr2, " invts:",newts)
       # Clear all but TS graphs
       the_av$user_feedback <- ""
       out <- list()
       outcopy <- the_av$outcopy %||% list()
       # reload data if necessary
-      newts <- fifelse(file.exists(the_av$inv_fn), as.POSIXct( file.info(the_av$inv_fn)$mtime), Sys.time())
-      if(newts>the_av$inv_ts) {
-        message_if_red(TRUE,"RELOADING DATA")
+      #message("  reload check: newts= ",newts," oldts: ",the_av$inv_fn_ts)
+      if(newts>the_av$inv_fn_ts) {
+        message_if_red(TRUE,"RELOADING DATA updated outside the app at ",newts)
         restore_avs_state(msg="reload")
+        the_av$inv_fn_ts<-newts
       }
       # ----------------
       # New variables created and added to rv:  todo todofunc todoargs assetline
-      parse_inpline(toupper(rv$istr1))
+      parse_inpline(toupper(rv$istr1))  # NEw 26-08-15: Expand assetgrouplists
       rv <- c(rv,setNames(list(todo,todofunc,todoargs,assetline), s("todo;todofunc;todoargs;assetline"))) # Augment rv
       # out for Production, IN for testing
-      # cAssign("todo;todofunc;rv;todoargs;assetline",silent=TRUE)
+      cAssign("todo;todofunc;rv;todoargs;assetline",silent=TRUE)
       #
       runfunc_set <-  the_av$avsh_funcs[runcode==todofunc,]
       quick_message(fifelse(nrow(runfunc_set)<=0,paste(todo,":Invalid function"),""))
@@ -324,7 +304,6 @@ av_make_server <- function() {
       av_set_defaults("inpline2",rv$istr2)
       av_set_default_set("onrun",rv,save="the")
       rv$istr1 <- assetline
-
       rv$seriesnm <- av_set_defaults("seriesnm", fifelse(grepl("useTotRtn",the_av$logopts),"adjusted_close","close"))
       rv$uselive <- av_set_defaults("uselive",grepl("useLivePx",the_av$logopts))
       avsh_set_tabtitle(makefocus=FALSE)
@@ -379,7 +358,6 @@ av_make_server <- function() {
       output$dy2_container <- renderUI({ dygraphOutput("dy2", height= torend[ui_out=="dy2",]$displayheight) })
       updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
       save_avs_state("all",msg="RUNLN")
-
     })
   } # Server
   return(av_server)

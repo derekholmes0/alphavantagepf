@@ -83,6 +83,11 @@ parse_inpline <- function(istr1,envir=parent.frame()) {
       tasset <- stringr::str_squish(istrs[[1]])
       tcmd <- stringr::str_squish(istrs[[2]])
       targs <- stringr::str_squish(paste(tail(istrs,-2),collapse=" "))
+      if(!grepl(";",tasset)) {  # Silently expand
+        if( nchar(newassets <- paste0( the_av$assetgroups[grepl(tasset,listnm,ignore.case=TRUE),]$ticker,collapse=";"))>0 ) {
+          tasset <- newassets
+        }
+      }
     }
   }
   outlist = list("todo"=stringr::str_squish(paste(tcmd,targs)),"todofunc"=tcmd,"todoargs"=targs,"assetline"=tasset)
@@ -143,16 +148,51 @@ find_rebasecode <- function(todo,default_window=the_av$dtstr_hist) {
   # SCAT, GP <- Need to figure out how better to generalize
   todolist <- grepv("\\w+|\\d+",s(toupper(todo),"[ ]+"))
   actual_func <- gsub("\\d$","",todolist[[1]])
-  ts_rebase <- switch(stringr::str_sub(actual_func, -1), "I"="start","D"="focus") %||% "none"
+  lastchar <- stringr::str_sub(actual_func, -1)
+  ts_rebase <- switch(lastchar, "I"="start","D"="focus") %||% "none"
   dtstr_window <- default_window
   if(ts_rebase=="focus") {
     if(length(todolist)<2) { message_if_red(the_av$verbose,"Rebasing date not specified, dedaulting to start") }
     else { dtstr_window<- todolist[[2]]  }
   }
   dtstr_window <- find_arg(todo,"w") %||% dtstr_window
-  ts_title <- switch(stringr::str_sub(actual_func, -1), "I"="Index","D"=paste("Index centered at",dtstr_window)) %||% "Prices"
-  message_if_green(the_av$verbose,paste("rebase",ts_rebase,"rebase_window",dtstr_window,"func",actual_func))
+  ts_title <- switch(lastchar, "I"="Index","D"=paste("Index centered at",dtstr_window),"R"="LogReturns (bp)") %||% "Prices"
+  #message_if_green(the_av$verbose,paste("rebase",ts_rebase,"rebase_window",dtstr_window,"func",actual_func))
   return(list("rebase"=ts_rebase,"rebase_window"=dtstr_window,"func"=actual_func,"grtitle"=ts_title))
+}
+
+set_list <- function(listtodo,tlist,instr,session) {
+  assetline=todo=NULL
+  rtnmsg <- ""
+  tlistgrep <- paste0("^",tlist,"$")
+  parse_inpline(instr) # Makes todo;assetline
+  if(listtodo=="Save") {
+    if(nchar(instr)<=0 | nchar(tlist)<=0) {
+      rtnmsg <- "Cannot Save blank assetgroups Name"
+    }
+    else {
+      newassets <- data.table(ticker=s(assetline))[,listnm:=tlist][,weight:=1/.N][]
+      the_av$assetgroups <- DTUpsert(the_av$assetgroups,newassets,c("listnm"),replaceifbempty=the_av$assetgroups[!(listnm==tlist),])
+      updateSelectizeInput(session,"assetgp_list", choices=sort(unique(the_av$assetgroups$listnm)))
+      rtnmsg <-paste0("Set saved as ",tlist, " w/ Equal Weights")
+      av_set_defaults("inpline1", paste0(tlist," ",todo))
+      updateTextInput(session,"istr1", value= the_av[["inpline1"]])
+    }
+  }
+  if(listtodo=="Expand") {
+    newassets <- paste0( the_av$assetgroups[grepl(tlistgrep,listnm,ignore.case=TRUE),]$ticker,collapse=";")
+    av_set_defaults("inpline1", paste0(newassets," ",todo))
+    updateTextInput(session,"istr1", value= the_av[["inpline1"]])
+  }
+  if(listtodo=="Delete") {
+    the_av$assetgroups <- the_av$assetgroups[!grepl(tlistgrep,listnm),]
+    updateSelectizeInput(session,"assetgp_list", choices=sort(unique(the_av$assetgroups$listnm)))
+    rtnmsg <-paste0("Deleted Asset List: ",tlist)
+  }
+  save_avs_state("all",msg=paste0("set_list:",listtodo))
+  Sys.sleep(0.2)
+  updateSelectInput(session,"ag_state",selected="--")
+  return(rtnmsg)
 }
 
 # =====================-==============================================================================
@@ -176,10 +216,9 @@ data_from_list <-function(inlist,datestring,ts_rebase,dtstr_window,msg_inputID="
 get_one_ts <- function(assets,rebase,datestring,dtstr_window) {
   symbol=NULL
   toplot <- the_av$pxd[data.table(symbol=assets),on=.(symbol)] |> narrowbydtstr(datestring)
-  rebasedt <- fcase(rebase=="none","",
-                    rebase=="start",paste0(format(toplot[1,]$timestamp,"%Y-%m-%d"),",100"),
-                    rebase=="focus",paste0(format(
-                        max(toplot[1,]$timestamp,gendtstr(dtstr_window,rtn="first")),"%Y-%m-%d"),",100"))
+  rebasedt <- fcase(rebase=="start",paste0(format(toplot[1,]$timestamp,"%Y-%m-%d"),",100"),
+                    rebase=="focus",paste0(format(max(toplot[1,]$timestamp,gendtstr(dtstr_window,rtn="first")),"%Y-%m-%d"),",100"),
+                    default="")
   #message_if_green(the_av$verbose,"get_one_ts(",paste0(assets,collapse=" "),") retrieves ",nrow(toplot), " rows up to ",as.Date(max(toplot$timestamp)))
   return(list(toplot,rebasedt))
 }
@@ -294,17 +333,6 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_wind
   return(outdyg)
 }
 
-ts_vol <- function(toplot,ts_volparams) {
-  volp <- s(ts_volparams)
-  one_ts_vol <- function(x) {
-    tdta <- toplot[[1]][symbol==x,]
-    xdta <- tdta[,lapply(.SD,\(x) x+(get(the_av$seriesnm)-close)), .SDcols=s("open;high;low;close")]
-    xdta <- tdta[,lapply(.SD,\(x) fcoalesce(x,close)),  .SDcols=s("open;high;low;close")]
-    setnafill(xdta,"locf")
-    data.table(timestamp=tdta$timestamp,variable=x,value=100*TTR::volatility(xdta, calc=volp[[1]],n=as.integer(volp[[2]]), N=as.integer(volp[[3]])))
-  }
-  return(rbindlist(lapply(unique(toplot[[1]]$symbol), one_ts_vol)))
-}
 
 get_allNews <- function(eqlist,rv) {
   symbol=sntmt=time_published=NULL

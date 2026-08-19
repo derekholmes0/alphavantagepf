@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.431</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,11 +44,10 @@
 <h2 class="pkg-version" data-toc-text="development version" id="alphavantagepf-development-version">alphavantagepf (development version)<a class="anchor" aria-label="anchor" href="#alphavantagepf-development-version"></a></h2>
 </div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.8.4" id="alphavantagepf-084-in-progress">alphavantagepf 0.8.4: in Progress<a class="anchor" aria-label="anchor" href="#alphavantagepf-084-in-progress"></a></h2>
-<p>New feature todo * calendars</p>
+<h2 class="pkg-version" data-toc-text="0.8.4" id="alphavantagepf-084">alphavantagepf 0.8.4<a class="anchor" aria-label="anchor" href="#alphavantagepf-084"></a></h2>
 <div class="section level3">
 <h3 id="major-changes-0-8-4">Major Changes<a class="anchor" aria-label="anchor" href="#major-changes-0-8-4"></a></h3>
-<p>The Shiny interface has been completely redesigned (and recoded) to have an extendable command line interface for all analytics. New functions have been added for adding and managing data outside the app. Users can also add their own analytics, posssibly with the help of with several “helper” functions to interface with the GUI. See vignettes for details.</p>
+<p>The Shiny interface has been completely redesigned (and recoded) to have an extendable command line interface for all analytics. New functions have been added for adding and managing data outside the app. Users can also add their own analytics and interface with the GUI using several “helper” functions. See vignettes for details.</p>
 </div>
 <div class="section level3">
 <h3 id="new-features-in-api-interface-0-8-4">New Features in API interface<a class="anchor" aria-label="anchor" href="#new-features-in-api-interface-0-8-4"></a></h3>
@@ -59,13 +58,12 @@
 <li>All helper functions (e.g. <code>av_extract_df</code>) now return an empty data.table if there is nothing to extract. Set <code>empty_dt_onerror=FALSE</code> to throw an error.</li>
 <li>
 <code><a href="../reference/av_extract_df.html">av_extract_fx()</a></code> timestamps always returned in <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">Sys.timezone()</a></code> time zone.</li>
+<li>Functions which return multiple types as strings (specifically <code>av_get_pf(.,"OVERVIEW")</code>) now properly produce type-separated tables.</li>
 </ul><p>Bug fixes</p>
 <ul><li>Fixed app crash if no earnings transcript available.</li>
 <li>Fixed graphing so that stepPlots are chosen appropriately, not always.</li>
 <li>
 <code>splitfirst</code> ignored for single name plots.</li>
-<li>
-<code>av_get_pf(.,"OVERVIEW")</code> now properly produces a type-separated table.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="breaking-changes-0-8-4">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-8-4"></a></h3>

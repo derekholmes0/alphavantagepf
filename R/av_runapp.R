@@ -79,6 +79,6 @@ av_runShiny <- function() {
     save_avs_state("all",msg="I N I T")
   }
   the_av$do_on_start <- TRUE
-  the_av$inv_ts <- fifelse(file.exists(the_av$inv_fn), as.POSIXct( file.info(the_av$inv_fn)$mtime), Sys.time())
+  the_av$inv_fn_ts <- fifelse(file.exists(the_av$inv_fn), as.POSIXct( file.info(the_av$inv_fn)$mtime), Sys.time())
   return(startApp(shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1400,height=800,"launch.browser"))))
 }

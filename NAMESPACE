@@ -33,6 +33,7 @@ import(gt)
 import(gtExtras)
 import(shiny)
 import(shinyFeedback)
+importFrom(FinanceGraphs,fg_current_theme)
 importFrom(TTR,volatility)
 importFrom(data.table,
   ":=",

@@ -44,6 +44,7 @@ Entire set of columns from \code{\link[=av_get_pf]{av_get_pf()}} can be added. F
 \examples{
 \dontrun{
 # To add known symbols outside the app
+av_load_shinydata()  # Make sure most recent data is loaded
 av_add_px(equitylist=c("IBM","GS","JPM"))
 
 # To add ad-hoc data from Alphavantage (e.g. Natgas spot at Henry Hub)

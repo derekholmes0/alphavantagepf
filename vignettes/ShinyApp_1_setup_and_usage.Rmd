@@ -91,7 +91,7 @@ tabs.  For example, the <span style="border: 1px solid #000000; padding: 1px 5px
 and the  <span style="border: 1px solid #000000; padding: 1px 5px;">NEWS</span> tab has specific fields to narrow search results.  Note that 
 there is also a separate <span style="border: 1px solid #000000; padding: 1px 5px;">INVENTORY</span> tab to always have a searchable ticker list available.
 
-* By design, time series graphs are shown first, followed by tables and then `ggplot`s.  THe app allows for two independent time series graphs to be shown
+* By design, time series graphs are shown first, followed by tables and `ggplot` objects.  THe app allows for two independent time series graphs to be shown
 on top of each other.  The second graph is typically made by adding a "2" onto the end of the command.
 
 * Some commands may produce some auxiliary information in a separate tab. That tab is typically called  <span style="border: 1px solid #000000; padding: 1px 5px;">DETAIL</span> 
@@ -135,13 +135,14 @@ knitr::include_graphics("img/ibit_fv.jpg")
 
 Securities are seldom analyzed in isolation.  It is easy to create and use ad-hoc groups of securities in this app.
 
-* **To create a list**, First, type in a new name for the list in the `AssetListnm` list box as shown below.  Hit "enter" to add the name
-to the set of asset lists already in existence. (The Enter is necessary for Shiny to know that it's a new identifier.)
-Then either type in the components into the Command line, or use the assets already in the asset line.  Remenber lists are semi-colon
-delimited. Then hit the <span style="background-color: #003366; color: #FFFFFF;">set</span> button to save the list.
+* **To create a list**, First, type in a new name for the list in the `AssetGroups` list box as shown below.  Hit "enter" to add the name
+to the set of lists already in existence. (The Enter is necessary for Shiny to know that it's a new identifier.)  
+Then either type in the components into the Command line, or use the assets already in the asset line, and hit 
+<span style="background-color: #003366; color: #FFFFFF;">save</span> in the box to the right of the `AssetGroups` dropdown.
+The assets will then be replaced by the new name, which can be used subsequently in place of the full asset set[^4].
 
-* **To get the assets in a list**, select the desired list from the dropdown and hit <span style="background-color: #003366; color: #FFFFFF;">get</span> button.
-The app will replace whatever assets you have in the command line with those from the desired list, leaving the command in place.
+* **To expand a list name on the command line to its components**, simply select the <span style="background-color: #003366; color: #FFFFFF;">Expand</span>
+option on the dropdown, and the list name will be replaced by the components.,
 
 The best way to see how this works is with a short clip:
 
@@ -166,7 +167,7 @@ A few fields on that page which will help narrow down the options are:
 ||1. `[F|B]` first contract or second contract|
 ||2. `[M|Q]` Monthly expiration or Quarterly expiration|
 ||3. `[C|P|A]` Calls, Puts or Both|
-||4. `[itm|otm|all]` In or out of the money[^4]|
+||4. `[itm|otm|all]` In or out of the money[^5]|
 |Mindelta|Minimum absolute delta of option|
 |Output|Subset of columns to show, relevant to Trading or Valuation|
 |Scaling|Values and Greeks for 10 contracts or 10kUSD premium|
@@ -193,4 +194,6 @@ In addition, internal states and data can be extracted via functions such as [du
 
 [^3]: unless the `verbose` option is deselected in the  <span style="border: 1px solid #000000; padding: 1px 5px;">AVOPTS</span> tab.
 
-[^4]: The app looks up the current spot to determine moneyness.
+[^4]: Adding and using component weights to the asset lists is planned for a future release.
+
+[^5]: The app looks up the current spot to determine moneyness.

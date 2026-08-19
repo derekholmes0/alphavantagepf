@@ -13,9 +13,11 @@ MISC,S,avsh,av_search,searchstring,"checkav, name=,type=",main,,,Search for Tick
 MISC,RM,avsh,av_misc,,,main,,,Remove Ticker,
 PX,GP,avsh,av_gp,,w=-6m::,main,TS1,,Graph Prices,
 PX,GPI,avsh,av_gp,,w=-6m::,main,TS1,,Graph Prices (Rebase),
+PX,GPLR,avsh,av_gp,,w=-6m::,main,TS1,,Graph Log Returns,
 PX,GPD,avsh,av_gp,gendatestring,,main,TS1,,Graph Prices (Rebase at date),GPD2 -3m::
 PX,GP2,avsh,av_gp,,w=-6m::,main,TS2,,Graph Prices (Graph 2),GP2 w=-3m::-1m
 PX,GPI2,avsh,av_gp,,w=-6m::,main,TS2,,Graph Prices (Rebase) on Graph 2,
+PX,GPLR2,avsh,av_gp,,w=-6m::,main,TS1,,Graph Log Returns,
 PX,GPD2,avsh,av_gp,gendatestring,,main,TS2,,Graph Prices (Rebase at date) on Graph 2,
 PX,SCAT,avsh,av_scat,,,main,SCAT1,scatter,Scatter vs CounterAsset,
 PX,SCATI,avsh,av_scat,,w=-6m::,main,SCAT1,scatter,Scatter vs CounterAsset (rebased),
@@ -36,3 +38,6 @@ PX,GPF2,avsh,av_gearn,,,main,,,Graph (on 2) Fcst P/E,
 PX,GFP,avsh,av_gearn,,,main,,,Graph FcstE/P,
 PX,GFP2,avsh,av_gearn,,,main,,,Graph (on 2) FcstE/P,
 PX,GPEE,avsh,av_earnest,,,main,,,Graph Estimates Evolution,
+PX,SEASDIV,avsh,av_seasonality,,,main,,,First Asset Dividend Seasonality,
+PX,SEASEA,avsh,av_seasonality,,,main,,,First Asset Earnings Seasonality,
+PX,SEAS,avsh,av_seasonality,,yr,main,,,First Asset Seasonality,

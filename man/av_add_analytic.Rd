@@ -9,7 +9,7 @@ av_add_analytic(runcode, func_name, helpstr = "user function", focus = "MAIN")
 \arguments{
 \item{runcode}{Code string user must run to call the function.}
 
-\item{func_name}{Name of function run when analytic is called.  If an empty string is supplied, the runcode will be de-registered.}
+\item{func_name}{Name of function run when analytic is called.  \strong{If an empty string is supplied, the runcode will be de-registered.}}
 
 \item{helpstr}{(default: "user function"): A string comment to ad to the av.h (help) command}
 
@@ -22,7 +22,7 @@ String message with success or failure of function addition.
 Adds a user-defined function to the av Shiny app
 }
 \details{
-Add a new command to the av_runShiny app
+Adds or removes a new command to the av_runShiny app
 
 When the \code{\link[=av_runShiny]{av_runShiny()}} app is run, users can call functions to provide analytics based on asset strings in the command line.
 This function allows users to add their own analytics by registering a function which takes, as inputs
