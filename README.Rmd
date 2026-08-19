@@ -17,7 +17,6 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 This package contains a comprehensive R and Shiny interface for using, visualizing, and analyzing financial data based on the [Alpha Vantage API](https://www.alphavantage.co/).  
-
 There are two major parts.  First, a functional interface and several associated helper functions extracts data directly from API calls, and can be used as a stand-alone source to build a finance data stores.  
 Those calls are integrated into a Shiny (and functional) interface which seamlessly downloads and manages data across multiple asset classes, including Equities, FX, indices, options or any other user-specified data.
 Second, a Shiny app (modeled after modern professional tools) with a simple one-line interface can be used to display, visualize and analyze downloaded data. Both user data and user analytics can be added
@@ -169,7 +168,7 @@ a dygraph (created with [fgts_dygraph()](https://derekholmes0.github.io/FinanceG
 A brief outline of *some* of the functions available is shown in the table below.  All functions can be seen by running `AV.H` in the command line.
 
 |Category|Example(s)|Functionality|
-|:----:|:----:|:-------------------------|
+|:--:|:---:|:-------------------------|
 |Time Series|`QQQ;DIA GPI`,`SPY GPI2`|Asset prices or rebased indices, possibly in the middle of the time series|
 ||`QQQ GV`|Rolling volatilities|
 |Scatter|`QQQ SCATI`|Scatter plot of assets against counterasset|

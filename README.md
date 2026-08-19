@@ -9,8 +9,7 @@
 
 This package contains a comprehensive R and Shiny interface for using,
 visualizing, and analyzing financial data based on the [Alpha Vantage
-API](https://www.alphavantage.co/).
-
+API](https://www.alphavantage.co/).\
 There are two major parts. First, a functional interface and several
 associated helper functions extracts data directly from API calls, and
 can be used as a stand-alone source to build a finance data stores.\

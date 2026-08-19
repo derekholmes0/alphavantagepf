@@ -289,10 +289,10 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
       src <- "Downloaded"
 # 260805: Cant get progress to work smoothly both from within shiny app and outside it, and CRAN doesn't want me to switch handlers. FIx later
       if(called_from_console=="av_add_earn") {
-        message("Called from Console, use progress bars")
 #        old_handlers <- handlers()
 #        handlers("cli")
-        show_progress <- !isTRUE(shiny::isRunning())
+        show_progress <- !shiny::isRunning() || is.null(shiny::getDefaultReactiveDomain())
+        message("Loading Earnins with show_progress as ",show_progress)
         earn_past <-purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"),.progress=show_progress)
         earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress=show_progress)
 #        handlers(old_handlers)

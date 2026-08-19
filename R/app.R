@@ -1,6 +1,8 @@
 #source("./R/utilities.R")
-tver<-"0.8.431"
+tver<-"0.8.432"
 
+
+# 432: av.inv(grep),user index fix
 # 431: Seasonality, appbreviations
 # 430: Add correlatiosn to RV
 # 420: Refactored Asset List UI
