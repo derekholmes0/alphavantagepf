@@ -9,8 +9,7 @@
 
 This package contains a comprehensive R and Shiny interface for using,
 visualizing, and analyzing financial data based on the [Alpha Vantage
-API](https://www.alphavantage.co/).
-
+API](https://www.alphavantage.co/).\
 There are two major parts. First, a functional interface and several
 associated helper functions extracts data directly from API calls, and
 can be used as a stand-alone source to build a finance data stores.\
@@ -265,10 +264,7 @@ As an example, suppose we wish to find simple excess returns (over
 `SPY`) and betas for two asset classes proxied by `HYG` and `EEM`. Just
 type in `HYG;EEM RV` to get:
 
-<figure>
-<img src="man/figures/eemhygrv.jpg" alt="Help Screen" />
-<figcaption aria-hidden="true">Help Screen</figcaption>
-</figure>
+![](man/figures/eemhygrv.jpg)
 
 This app seeks to facilitate quick ad-hoc analyses by minimizing typing
 and providing command persistence.
@@ -330,8 +326,9 @@ av_add_px(ffdta)
 ```
 
 <figure>
-<img src="man/figures/FIwFEDFUNDS.jpg" alt="FIwFF" />
-<figcaption aria-hidden="true">FIwFF</figcaption>
+<img src="man/figures/FIwFEDFUNDS.jpg"
+alt="Combining two data sources" />
+<figcaption aria-hidden="true">Combining two data sources</figcaption>
 </figure>
 
 #### Getting data and interacting with the app from the console

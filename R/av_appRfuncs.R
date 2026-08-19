@@ -50,7 +50,7 @@ av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",
     if (is.null(firstdate)) {
       stop("av_add_data: Need a timestamp column")
     }
-    indta <- data.table(indta)
+    indta <- data.table(indta)[,symbol:=toupper(symbol)][]
     setnames(indta,firstdate,"timestamp")
     check_min_colset(indta,s("symbol;timestamp;close"))
     if(!"adjusted_close" %in% names(indta)) {

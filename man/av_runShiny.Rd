@@ -27,10 +27,12 @@ Invocation starts Shiny application.  See vignettes for full details.
 Other options that can be set are given below.
 }
 
-\strong{To get data and run analyses}:
-
+\strong{To get data and run analyses:}
 Enter in the top yellowed line a semicolon delimited set of securities (Equity, ETF, FX, Crypto, indices) followed
-by a command to run analytics on those securities.  Commands without securities are always prefixed by \verb{"AV.". THe results are shown as tables, plots, or dygraphs below the command line, and possibly in an additional tab to the right of the main tab.  Some commands may change the focus to specialized tabs (e.g.}NEWS\code{or}OPTIONS`).
+by a command to run analytics on those securities.  Commands without securities are always prefixed by `"AV.". The results are shown as
+tables, plots, or dygraphs below the command line, and possibly in an additional tab to the right of the main tab.  The secondary tab
+will change names as approprriate, and the focus may be changed off the MAIN tab.
+
 Commands are not case sensitive, and may refer to a counterasset in the second yellowed line. A few examples include:\tabular{cl}{
    Command \tab Description \cr
    \code{AV.H} \tab List all available functions \cr
@@ -39,7 +41,7 @@ Commands are not case sensitive, and may refer to a counterasset in the second y
    \verb{SPACE S} \tab Search for all tickers with \code{SPACE} in their names \cr
    \verb{IBM;QQQ;NDX;USD/MXN GPI} \tab Produce a rebased time series graph of the securities \cr
    \verb{IBM;QQQ GV} \tab Time series graph of rolling volatiliies \cr
-   \verb{IBM;QQQ GV} \tab Time series graph of rolling volatiliies \cr
+   \verb{ibm;qqq rv} \tab Relative Value /Active Return Analysis \cr
    \verb{IBM;AAPL;USD/MXN Q} \tab Table of latest prices for each instrument \cr
    \verb{USD/BRL;USD/MXN SCATI} \tab Scatterplot of rebased levels and returns \cr
    \verb{IBM;AAPL EA} \tab Table of Earnings data for each instrument \cr
@@ -50,18 +52,20 @@ Commands are not case sensitive, and may refer to a counterasset in the second y
 
 
 If an analysis requires price, dividend or earnings data that is not in the app's internal store, then it will download it as necessary from
-\href{https://www.alphavantage.co/documentation/}{Alpha Vantage}. Other data (e.g. News, options) are downloaded freshly each time.
+\href{https://www.alphavantage.co/documentation/}{Alpha Vantage}.  Other data (e.g. News, options) are downloaded freshly each time.
 One of the key contributions of this app is to abstract out the asset-specific functions calls that are necessary to do cross-asset analyses.
 
 \strong{Other niceties}:
 \itemize{
-\item Groups of assets can be named, saved, and recalled easily. See \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html}{Basic Usage} vignette
-\item Internal data can be stored and used (as \code{data.table()}s) in a directory of the users' choosing.  See \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_2_Graphs_and_Options.html}{Options} vignette.
+\item Groups of assets can be named, saved, and recalled easily.  The saved name can then be used in lieu of the original list. See \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html}{Basic Usage} vignette
+\item Internal data can be stored and used (as \code{data.table()}s) in a directory of the users' choosing.  See \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_2_Graphs_and_Options.html}{Options} vignette
+to set the directory, and the \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html}{Data} vignette for details on how the data is structured.
 \item Events and other plotting options can be specified in the app.  See functions vignette and e.g. \href{https://derekholmes0.github.io/FinanceGraphs/reference/index.html}{FinanceGraphs}
-\item Data within each produced graph or table can be copied to the clipboard (option in  \code{AVOPTS} page), See \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html}{Setup} vignette.
+\item Data within each produced graph or table can be copied to the clipboard (option in  \code{AVOPTS} page), See \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html}{Setup} vignette to see where to turn this on.
 \item Raw downloaded data can be saved into a "dump directory" (option in  \code{AVOPTS} page)
 \item A current inventory list is always kept in a separate tab, avoiding having to run \code{AV.INV} repeatedly.
-\item User price data, earnings data, and asset groups can be added using helper functions  \code{\link[=av_add_px]{av_add_px()}}, \code{\link[=av_add_earn]{av_add_earn()}}, \code{\link[=av_add_assetgroups]{av_add_assetgroups()}}.  See \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html}{data management} vignette.
+\item User price data, earnings data, and asset groups can be added using helper functions  \code{\link[=av_add_px]{av_add_px()}}, \code{\link[=av_add_earn]{av_add_earn()}}, \code{\link[=av_add_assetgroups]{av_add_assetgroups()}}.  See \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html}{data} vignette.
+Adding data from the console immediately adds the data to the app.
 \item User analytics can be added using \code{\link[=av_add_analytic]{av_add_analytic()}}.  See examples in the \href{https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.html}{Extensions} vignette
 }
 }

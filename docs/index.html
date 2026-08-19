@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.431</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.434</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,8 +63,8 @@
 </h1></div>
 <!-- badges: start -->
 <!-- badges: end -->
-<p>This package contains a comprehensive R and Shiny interface for using, visualizing, and analyzing financial data based on the <a href="https://www.alphavantage.co/" class="external-link">Alpha Vantage API</a>.</p>
-<p>There are two major parts. First, a functional interface and several associated helper functions extracts data directly from API calls, and can be used as a stand-alone source to build a finance data stores.<br>
+<p>This package contains a comprehensive R and Shiny interface for using, visualizing, and analyzing financial data based on the <a href="https://www.alphavantage.co/" class="external-link">Alpha Vantage API</a>.<br>
+There are two major parts. First, a functional interface and several associated helper functions extracts data directly from API calls, and can be used as a stand-alone source to build a finance data stores.<br>
 Those calls are integrated into a Shiny (and functional) interface which seamlessly downloads and manages data across multiple asset classes, including Equities, FX, indices, options or any other user-specified data. Second, a Shiny app (modeled after modern professional tools) with a simple one-line interface can be used to display, visualize and analyze downloaded data. Both user data and user analytics can be added easily.</p>
 <div class="section level2">
 <h2 id="installation-and-first-steps">Installation and First Steps<a class="anchor" aria-label="anchor" href="#installation-and-first-steps"></a>
@@ -259,9 +259,8 @@ Indices
 <li>Neither commands nor symbols are case sensitive.</li>
 </ul>
 <p>As an example, suppose we wish to find simple excess returns (over <code>SPY</code>) and betas for two asset classes proxied by <code>HYG</code> and <code>EEM</code>. Just type in <code>HYG;EEM RV</code> to get:</p>
-<figure><img src="reference/figures/eemhygrv.jpg" alt="Help Screen"><figcaption aria-hidden="true">
-Help Screen
-</figcaption></figure><p>This app seeks to facilitate quick ad-hoc analyses by minimizing typing and providing command persistence.</p>
+<p><img src="reference/figures/eemhygrv.jpg"></p>
+<p>This app seeks to facilitate quick ad-hoc analyses by minimizing typing and providing command persistence.</p>
 <ul>
 <li><p><strong>Asset Lists</strong> are groups of assets saved or recalled by name. To do so, type in your list name in the box to the right of the yellow asset line, and click <span style="background-color: #003366; color: #FFFFFF;">save</span>. The asset list will be replaced by the new name, and <strong>each list name can subsequently be used in lieu of the individual assets</strong> for any of the analyses. Internally, the list is expanded to the full set. If you would like to expand the list on the command line, just hit the <span style="background-color: #003366; color: #FFFFFF;">expand</span> option in the options box.</p></li>
 <li><p><strong>Command persistence</strong> is availble using the <code>AV.HIST</code> commands and <code>AV.R &lt;n&gt;</code> commands, which list the last several commands used and recalls them by number.</p></li>
@@ -281,8 +280,8 @@ Help Screen
 <span><span class="va">ffdta</span> <span class="op">&lt;-</span> <span class="fu">as.data.table</span><span class="op">(</span><span class="fu">quantmod</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/quantmod/man/getSymbols.html" class="external-link">getSymbols</a></span><span class="op">(</span><span class="st">"FEDFUNDS"</span>,src<span class="op">=</span><span class="st">"FRED"</span>,auto.assign<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">ffdta</span> <span class="op">&lt;-</span> <span class="va">ffdta</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span>DT_ENTRY<span class="op">=</span><span class="va">index</span>,close<span class="op">=</span><span class="va">FEDFUNDS</span>,symbol<span class="op">=</span><span class="st">"FEDFUNDS"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="reference/av_add_px.html">av_add_px</a></span><span class="op">(</span><span class="va">ffdta</span><span class="op">)</span></span></code></pre></div>
-<figure><img src="reference/figures/FIwFEDFUNDS.jpg" alt="FIwFF"><figcaption aria-hidden="true">
-FIwFF
+<figure><img src="reference/figures/FIwFEDFUNDS.jpg" alt="Combining two data sources"><figcaption aria-hidden="true">
+Combining two data sources
 </figcaption></figure>
 </div>
 <div class="section level4">

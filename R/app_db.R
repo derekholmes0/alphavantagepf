@@ -105,7 +105,7 @@ get_inv <- function(tickerlist=NULL,override_symset=NULL) {
   if(nrow(the_av$pxinv)<=0) {
     tickerlist <-unique(the_av$pxd$symbol)
   }
-  if(is.null(tickerlist)) {
+  if(is.null(tickerlist)) { #Might want to redo this
     rtnpx = the_av$pxinv[data.table(type=s("Equity;ETF")),on=.(type),nomatch=NULL][,.(symbol,type,currency,name,matchScore,list_ts)]
   }
   else if (is.data.frame(override_symset)) {
@@ -119,8 +119,8 @@ get_inv <- function(tickerlist=NULL,override_symset=NULL) {
   thisinv_px <- thisinv_dta[,.(beg_dt=min(timestamp),end_dt=max(timestamp),age=Sys.Date()-max(timestamp),lastpx=last(adjusted_close),
                            medgap=median(diff(as.numeric(timestamp)))),by=.(symbol,type)]
 
-  earn_past <- data.table(symbol=tickerlist)[,let(lastearn_dt=Sys.Date(), lastearn_eps=NA_real_)]
-  earn_fwd <- data.table(symbol=tickerlist)[,let(earnf_ts=Sys.Date(),earnf_nextdt=Sys.Date(),earnf_next=NA_real_)]
+  earn_past <- data.table(symbol=tickerlist)[,let(lastearn_dt=NA_real_, lastearn_eps=NA_real_)]
+  earn_fwd <- data.table(symbol=tickerlist)[,let(earnf_ts=NA_real_,earnf_nextdt=NA_real_,earnf_next=NA_real_)]
   rtnpx_eqonly <- rtnpx[type %in% c("Equity","ETF")]
   if(nrow(the_av$earn)>0 & nrow(rtnpx_eqonly)>0) {
     earn_past <- the_av$earn[rtnpx_eqonly,on=.(symbol)][,.SD[which.max(reportedDate)],by=.(symbol)][,.(symbol,lastearn_dt=reportedDate,lastearn_eps=reportedEPS)]
@@ -130,7 +130,10 @@ get_inv <- function(tickerlist=NULL,override_symset=NULL) {
                       .(symbol,earnf_ts=ts,earnf_nextdt=date,earnf_next=eps_estimate_average)]
   }
   thisinv_id <- rtnpx[,.(symbol,currency,name,matchScore,list_ts)] # Tricky
+
   thisinv <- Reduce(function(x,y) merge(x,y,by="symbol",all=TRUE),list(thisinv_div,thisinv_px,earn_past,earn_fwd,thisinv_id))
+  #cAssign("thisinv_id;thisinv_px;earn_past;earn_fwd;thisinv_id")
+  #cAssign("thisinv_div;thisinv")
   setcolorder(thisinv,s("symbol;end_dt;lastearn_dt;earnf_nextdt;earnf_ts;div_lastdt;lastpx;earnf_next;div_lastval"))
   return(thisinv)
 }
@@ -289,13 +292,13 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
       src <- "Downloaded"
 # 260805: Cant get progress to work smoothly both from within shiny app and outside it, and CRAN doesn't want me to switch handlers. FIx later
       if(called_from_console=="av_add_earn") {
-        message("Called from Console, use progress bars")
-#        old_handlers <- handlers()
-#        handlers("cli")
-        show_progress <- !isTRUE(shiny::isRunning())
+        show_progress <- TRUE
+        if(shiny::isRunning()) {
+          show_progress <- FALSE
+          message_if_red(TRUE,"manage_earn: Progress bars are turned off when shiny app is runnning")
+          }
         earn_past <-purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"),.progress=show_progress)
         earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress=show_progress)
-#        handlers(old_handlers)
       }
       else {
         message("Not Called from Console, no pogress")
