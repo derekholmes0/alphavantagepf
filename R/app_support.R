@@ -203,11 +203,13 @@ set_list <- function(listtodo,tlist,instr,session) {
 
 data_from_list <-function(inlist,datestring,ts_rebase,dtstr_window,msg_inputID="istr1",copytable=TRUE) {
   inlist=unique(inlist)
+  # Make sure we have data
   toplot <- sapply(inlist, \(x) manage_epx(x,datestring,addlive=the_av$uselive))
   if(length(badtickers <- names(toplot)[grep("ERROR",toplot)])>0) {
       quick_message(paste("Invalid tickers:", paste(badtickers)),wh=msg_inputID)
   }
   inlist <- inlist[!grepl("ERROR",toplot)]
+  # Now retreive it
   toplot <- get_one_ts(inlist,ts_rebase,datestring,dtstr_window) # REturns list(data.table,"") if nothing valid
   if(copytable) { avsh_clipboard(toplot[[1]],"px") }
   return(toplot)

@@ -2,7 +2,7 @@
 # FOr the following functions: AV.INV AV.EQINV
 # Good
 av_inventory <- function(todo,rv) {
-  ntickers=NULL
+  ntickers=todoargs=NULL
   if(nrow(the_av$pxd)<=0) {
     quick_message("istr1","No Inventory, Run a GP graph to start",color="red")
     return()

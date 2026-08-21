@@ -88,7 +88,8 @@ manage_epx <- function(inticker, dtstr,
   # rtnpx returns list (messge,dta_downloaded)
   # rtnpx <- manage_px(inticker,dtstr); rtn_earn<-manage_earn(rtnpx)
   rtnpx   <- manage_px(inticker,dtstr,substitute_data=substitute_data,substitute_symset=substitute_symset,addlive=addlive,force=force,delay=delay)
-  if(is.character(rtnpx)) { # Already kicked a message
+  if(is.character(rtnpx) | is.null(rtnpx)) {
+    quick_message("Cannot find Data for ",inticker)
     return()
   }
   rtnearn <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
@@ -132,8 +133,6 @@ get_inv <- function(tickerlist=NULL,override_symset=NULL) {
   thisinv_id <- rtnpx[,.(symbol,currency,name,matchScore,list_ts)] # Tricky
 
   thisinv <- Reduce(function(x,y) merge(x,y,by="symbol",all=TRUE),list(thisinv_div,thisinv_px,earn_past,earn_fwd,thisinv_id))
-  #cAssign("thisinv_id;thisinv_px;earn_past;earn_fwd;thisinv_id")
-  #cAssign("thisinv_div;thisinv")
   setcolorder(thisinv,s("symbol;end_dt;lastearn_dt;earnf_nextdt;earnf_ts;div_lastdt;lastpx;earnf_next;div_lastval"))
   return(thisinv)
 }
@@ -195,9 +194,10 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
       tickertype <- symset[1,]$type
       if(tickertype=="user") {
         src <- "userdata"
-        message_if(the_av$verbose,"avs_update(",inticker,") is User data w/ last day ",the_av$pxinv[symbol==inticker,]$end_dt,
-                        " and must be updated outside of ShinyApp")
-        return()
+        lastinv <- the_av$pxinv[symbol==inticker,]
+        daysmissing <- as.numeric(dtstoget[2]-lastinv$end_dt)
+        message_if_red(the_av$verbose,"avs_update(",inticker,") is User data that is  ",daysmissing," days out of date; Update outside of ShinyApp")
+        return(tortn[, ':='(minadddt=lastinv$beg_dt, maxadddt=lastinv$end_dt)][])
       }
       else {
         avfun <- epx_get_avfn(tickertype,live=FALSE)
@@ -255,7 +255,7 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
   todo=ts=horizon=eps_estimate_average=assetType=NULL
   called_from_console <- as.character(sys.call(-1)[[1]])
   src<-outmsg<-""; rtniv<-data.table()
-  earntickers <- the_av$listings[tickerdt,on=.(symbol),nomatch=NULL][assetType=="Stock",]
+  earntickers <- the_av$listings[assetType=="Stock",][tickerdt,on=.(symbol),nomatch=NULL]
   if(nrow(earntickers)<=0) { return() }
   # Kick out bad tickers
   if( length( badtickers <- setdiff(tickerdt$symbol,earntickers$symbol))>0) {
@@ -298,7 +298,7 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
         earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"), .progress=show_progress)
       }
       else {
-        message("Not Called from Console, no pogress")
+        message("Not Called from Console, no progress")
         earn_past <-purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS",delay=delay) |> av_extract_df("quarterlyEarnings"))
         earn_fwd <- purrr::map(earntickers$symbol, \(x) av_get_pf(x,"EARNINGS_ESTIMATES",delay=delay) |> av_extract_df("estimates"))
       }
@@ -501,6 +501,12 @@ kill_symbol <- function(inticker) {
   message_if_red(TRUE,"Removed ",inticker," from price database")
   save_avs_state("all",msg=" Ttticker RRREdrum")
 }
+
+kill_userdata <-function() {
+  tickerset <- the_av$pxinv[type=="user",]$symbol
+  oo<-sapply(tickerset,\(x) kill_symbol(x))
+}
+
 
 av_dbgmode <- function() {
   source("c:\\d\\src\\R\\ut_package.R");

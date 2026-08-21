@@ -2,6 +2,7 @@
 tver<-"0.8.434"
 
 
+# 434: Last  user index fix.  assetnames needed caps
 # 432: av.inv(grep),user index fix
 # 431: Seasonality, appbreviations
 # 430: Add correlatiosn to RV

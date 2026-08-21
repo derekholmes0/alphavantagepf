@@ -43,7 +43,8 @@
 #' @export
 av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",delay=0) {
   av_load_shinydata(verbose=FALSE)
-  if(!is.null(assettypes)) { assettypes <- as.data.table(assettypes) }
+  if(!is.null(assettypes)) {
+    assettypes <- as.data.table(assettypes)[,symbol:=toupper(symbol)] }
   if(!is.null(indta)) {
     indta <- as.data.table(indta)
     firstdate <- find_col_bytype(indta,lubridate::is.instant)
