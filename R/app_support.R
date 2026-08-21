@@ -164,8 +164,9 @@ find_rebasecode <- function(todo,default_window=the_av$dtstr_hist) {
 set_list <- function(listtodo,tlist,instr,session) {
   assetline=todo=NULL
   rtnmsg <- ""
+  parse_inpline(instr) # todo, todofunc, todoargs,assetline
   tlistgrep <- paste0("^",tlist,"$")
-  parse_inpline(instr) # Makes todo;assetline
+  parse_inpline(instr) # Makes todo; excpanded assetline
   if(listtodo=="Save") {
     if(nchar(instr)<=0 | nchar(tlist)<=0) {
       rtnmsg <- "Cannot Save blank assetgroups Name"
@@ -180,8 +181,7 @@ set_list <- function(listtodo,tlist,instr,session) {
     }
   }
   if(listtodo=="Expand") {
-    newassets <- paste0( the_av$assetgroups[grepl(tlistgrep,listnm,ignore.case=TRUE),]$ticker,collapse=";")
-    av_set_defaults("inpline1", paste0(newassets," ",todo))
+    av_set_defaults("inpline1", paste0(assetline," ",todo))
     updateTextInput(session,"istr1", value= the_av[["inpline1"]])
   }
   if(listtodo=="Delete") {

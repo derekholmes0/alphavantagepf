@@ -1,24 +1,24 @@
 # -----------------------------------------------------------------------
 # FOr the following functions: AV.INV AV.EQINV
-# Good
+#
 av_inventory <- function(todo,rv) {
   ntickers=todoargs=NULL
   if(nrow(the_av$pxd)<=0) {
     quick_message("istr1","No Inventory, Run a GP graph to start",color="red")
     return()
   }
-  grepstr <- todoargs
+  grepstr <-  s(c(todo,"*"),"[ ]+",rtn=2)
   if(grepl("eqinv",todo,ignore.case=TRUE)) {
     outcols <- s("symbol;name;type;currency;end_dt;lastearn_dt;div_lastdt;age;lastpx;lastearn_eps;div_lastval")
     invout <- the_av$pxinv[grepl("ETF|Equity",type),][,age:=Sys.Date()-end_dt][,.SD,.SDcols=outcols]
-    invout <- invout[grepl(todoargs,name),]
+    invout <- invout[grepl(grepstr,name),]
     gtout <-invout |> gt() |> gt.basetheme(interactive="all") |> add_colwidths("pxinv")
   }
   else if(grepl("tickers",todo,ignore.case=TRUE)) {
     toprint <- data.table(type=s("Crypto;Index"),prio=c(2,1))[the_av$tickerlist,on=.(type)]
     toprint <- toprint[,symbol:=s(symbol,"/")[[1]], by=.I][,ntickers:=.N,by=.(symbol)]
     toprint <- toprint[,.SD[1][,name:=paste0(fifelse(ntickers>1,"e.g.",""),name)],by=.(symbol)]
-    toprint <- toprint[grepl(todoargs,name),]
+    toprint <- toprint[grepl(grepstr,name),]
     gtout <- toprint[order(prio,symbol)] |> gt() |>  gt.basetheme(interactive="all",sizepct=85) |> cols_hide(columns=c(prio)) |>
         cols_move_to_start(columns=c(symbol,name)) |>
                   fmt_number(columns=c(ntickers),decimals=0) |> add_colwidths("tickers")
@@ -27,7 +27,7 @@ av_inventory <- function(todo,rv) {
   else {
     outcols <- s("symbol;name;type;currency;lastpx;end_dt;beg_dt;list_ts")
     invout <- the_av$pxinv[,.SD,.SDcols=outcols][,age:=Sys.Date()-end_dt]
-    invout <- invout[grepl(todoargs,name),]
+    invout <- invout[grepl(grepstr,name),]
     gtout <- invout |>  gt.avtheme(themeset="pxinv",sizepct=90)
 
   }

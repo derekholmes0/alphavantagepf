@@ -188,6 +188,7 @@ av_make_server <- function() {
 
     observeEvent(input$ag_state, {
       req(input$ag_state)
+      if(input$ag_state=="--") { return() }
       quick_message(set_list(input$ag_state,input$assetgp_list,input$istr1,session))
     })
 
