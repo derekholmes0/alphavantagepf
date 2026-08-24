@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.41</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.435</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -243,9 +243,12 @@ would would normally be downloaded from the app.</p>
 <ul>
 <li>An input <code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table()</a></code> with at least three columns
 <code>c(symbol,timestamp,close)</code> containing the series identifier,
-a date, and a value. Optionally, other data (usually provided
-automatically from AlphaVantge) associated with intraday moves and total
-return calculations could be added.</li>
+a date, and a value. **The user has the responsibility for ensuring that
+symbols are unique*. To avoid conflicts, consider decorating your data’s
+symbols, e.g. <code>I_CL</code> instead of <code>CL</code> for Crude
+futures. Optionally, other data (usually provided automatically from
+AlphaVantge) associated with intraday moves and total return
+calculations could be added.</li>
 </ul>
 <table class="table">
 <thead><tr class="header">

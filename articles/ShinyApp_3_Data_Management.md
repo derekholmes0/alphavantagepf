@@ -72,9 +72,12 @@ The function requires at a minimum one of two items:
 - An input
   [`data.table()`](https://rdrr.io/pkg/data.table/man/data.table.html)
   with at least three columns `c(symbol,timestamp,close)` containing the
-  series identifier, a date, and a value. Optionally, other data
-  (usually provided automatically from AlphaVantge) associated with
-  intraday moves and total return calculations could be added.
+  series identifier, a date, and a value. \*\*The user has the
+  responsibility for ensuring that symbols are unique\*. To avoid
+  conflicts, consider decorating your data’s symbols, e.g. `I_CL`
+  instead of `CL` for Crude futures. Optionally, other data (usually
+  provided automatically from AlphaVantge) associated with intraday
+  moves and total return calculations could be added.
 
 | Data types | required? | Column names |
 |:--:|:--:|:---|

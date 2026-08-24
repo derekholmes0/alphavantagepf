@@ -111,9 +111,9 @@ The app responds as follows:
   INVENTORY tab to always have a searchable ticker list available.
 
 - By design, time series graphs are shown first, followed by tables and
-  then `ggplot`s. THe app allows for two independent time series graphs
-  to be shown on top of each other. The second graph is typically made
-  by adding a “2” onto the end of the command.
+  `ggplot` objects. THe app allows for two independent time series
+  graphs to be shown on top of each other. The second graph is typically
+  made by adding a “2” onto the end of the command.
 
 - Some commands may produce some auxiliary information in a separate
   tab. That tab is typically called DETAIL but can change names to
@@ -168,17 +168,18 @@ Securities are seldom analyzed in isolation. It is easy to create and
 use ad-hoc groups of securities in this app.
 
 - **To create a list**, First, type in a new name for the list in the
-  `AssetListnm` list box as shown below. Hit “enter” to add the name to
-  the set of asset lists already in existence. (The Enter is necessary
-  for Shiny to know that it’s a new identifier.) Then either type in the
-  components into the Command line, or use the assets already in the
-  asset line. Remenber lists are semi-colon delimited. Then hit the set
-  button to save the list.
+  `AssetGroups` list box as shown below. Hit “enter” to add the name to
+  the set of lists already in existence. (The Enter is necessary for
+  Shiny to know that it’s a new identifier.)  
+  Then either type in the components into the Command line, or use the
+  assets already in the asset line, and hit save in the box to the right
+  of the `AssetGroups` dropdown. The assets will then be replaced by the
+  new name, which can be used subsequently in place of the full asset
+  set[^4].
 
-- **To get the assets in a list**, select the desired list from the
-  dropdown and hit get button. The app will replace whatever assets you
-  have in the command line with those from the desired list, leaving the
-  command in place.
+- **To expand a list name on the command line to its components**,
+  simply select the Expand option on the dropdown, and the list name
+  will be replaced by the components.,
 
 The best way to see how this works is with a short clip:
 
@@ -205,7 +206,7 @@ help narrow down the options are:
 |  | 1\. `[F|B]` first contract or second contract |
 |  | 2\. `[M|Q]` Monthly expiration or Quarterly expiration |
 |  | 3\. `[C|P|A]` Calls, Puts or Both |
-|  | 4\. `[itm|otm|all]` In or out of the money[^4] |
+|  | 4\. `[itm|otm|all]` In or out of the money[^5] |
 | Mindelta | Minimum absolute delta of option |
 | Output | Subset of columns to show, relevant to Trading or Valuation |
 | Scaling | Values and Greeks for 10 contracts or 10kUSD premium |
@@ -246,4 +247,7 @@ such as
 
 [^3]: unless the `verbose` option is deselected in the AVOPTS tab.
 
-[^4]: The app looks up the current spot to determine moneyness.
+[^4]: Adding and using component weights to the asset lists is planned
+    for a future release.
+
+[^5]: The app looks up the current spot to determine moneyness.

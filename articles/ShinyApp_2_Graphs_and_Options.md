@@ -60,16 +60,7 @@ Non analytic features are set as check boxes, and are described in the
 following table. Note that they only change “officially” when the Set
 Opts button is pressed.
 
-| Field | Description |
-|:--:|:---|
-| UseTotRtn | Use total return data (i.e. adjusted for splits and dividends in price series) |
-| UseLivePx | Use separate Alphavantage calls to always have the most recent price point. |
-| verbose | Display (or not) informative messages in the console. |
-| data2clipboard | Copy select data from each analysis to the clipboard for pasting into other applications. |
-|  | This is useful for other ad-hoc analysis without going through download boxes or extra buttons |
-| persistOuput | Keep analyses output (graphs, tables, etc) until replaced by new ones |
-| showGeneralHelp | Show (or not) a general help screen when `AV.H` is run. |
-| showWarnings | Suppress warnings from other packages (e.g. ggplot2) |
+[TABLE]
 
 ### Analytics Options
 
@@ -153,3 +144,10 @@ set of options.
 |  `surp`  | Show earnings suprises at report dates, color coded by sign. |
 |  `div`   | Show dividends at ex-dates                                   |
 | `divpct` | Show dividends as percent of close at ex-dates               |
+
+As an example of how to use those events, here is a graph of JPM and
+XLF, with earnings surprise events:
+
+![earn_on_gpi.jpg](img/earn_on_gpi.jpg)
+
+earn_on_gpi.jpg

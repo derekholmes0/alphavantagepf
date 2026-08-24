@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.41</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.435</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -203,7 +203,7 @@ specific fields to narrow search results. Note that there is also a
 separate <span style="border: 1px solid #000000; padding: 1px 5px;">INVENTORY</span>
 tab to always have a searchable ticker list available.</p></li>
 <li><p>By design, time series graphs are shown first, followed by tables
-and then <code>ggplot</code>s. THe app allows for two independent time
+and <code>ggplot</code> objects. THe app allows for two independent time
 series graphs to be shown on top of each other. The second graph is
 typically made by adding a “2” onto the end of the command.</p></li>
 <li><p>Some commands may produce some auxiliary information in a
@@ -315,17 +315,19 @@ the following.</p>
 use ad-hoc groups of securities in this app.</p>
 <ul>
 <li><p><strong>To create a list</strong>, First, type in a new name for
-the list in the <code>AssetListnm</code> list box as shown below. Hit
-“enter” to add the name to the set of asset lists already in existence.
-(The Enter is necessary for Shiny to know that it’s a new identifier.)
+the list in the <code>AssetGroups</code> list box as shown below. Hit
+“enter” to add the name to the set of lists already in existence. (The
+Enter is necessary for Shiny to know that it’s a new identifier.)<br>
 Then either type in the components into the Command line, or use the
-assets already in the asset line. Remenber lists are semi-colon
-delimited. Then hit the <span style="background-color: #003366; color: #FFFFFF;">set</span> button to
-save the list.</p></li>
-<li><p><strong>To get the assets in a list</strong>, select the desired
-list from the dropdown and hit <span style="background-color: #003366; color: #FFFFFF;">get</span> button.
-The app will replace whatever assets you have in the command line with
-those from the desired list, leaving the command in place.</p></li>
+assets already in the asset line, and hit <span style="background-color: #003366; color: #FFFFFF;">save</span> in the
+box to the right of the <code>AssetGroups</code> dropdown. The assets
+will then be replaced by the new name, which can be used subsequently in
+place of the full asset set<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Adding and using component weights to the asset lists is
+planned for a future release.&lt;/p&gt;"><sup>4</sup></a>.</p></li>
+<li><p><strong>To expand a list name on the command line to its
+components</strong>, simply select the <span style="background-color: #003366; color: #FFFFFF;">Expand</span> option
+on the dropdown, and the list name will be replaced by the
+components.,</p></li>
 </ul>
 <p>The best way to see how this works is with a short clip:</p>
 <p><img src="img/assetlist.gif" class="r-plt" alt="" width="100%"></p>
@@ -377,7 +379,7 @@ expiration</td>
 <tr class="odd">
 <td align="left"></td>
 <td align="left">4. <code>[itm|otm|all]</code> In or out of the money<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;The app looks up the current spot to determine
-moneyness.&lt;/p&gt;"><sup>4</sup></a>
+moneyness.&lt;/p&gt;"><sup>5</sup></a>
 </td>
 </tr>
 <tr class="even">

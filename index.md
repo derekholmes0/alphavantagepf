@@ -1,16 +1,18 @@
-# [alphavantagepf](https://derekholmes0.github.io/alphavantagepf/index.html)
+# [alphavantagepf](https://derekholmes0.github.io/alphavantagepf/index.html): A Financial Data Platform
 
-A comprehensive R and Shiny interface for using, visualizing, and
-analyzing financial data based on the [Alpha Vantage
-API](https://www.alphavantage.co/). A functional interface and several
+This package contains a comprehensive R and Shiny interface for using,
+visualizing, and analyzing financial data based on the [Alpha Vantage
+API](https://www.alphavantage.co/).  
+There are two major parts. First, a functional interface and several
 associated helper functions extracts data directly from API calls, and
-can be used as a stand-alone source to build a finance data stores.
+can be used as a stand-alone source to build a finance data stores.  
 Those calls are integrated into a Shiny (and functional) interface which
 seamlessly downloads and manages data across multiple asset classes,
 including Equities, FX, indices, options or any other user-specified
-data. The Shiny app is modeled after modern professional tools with a
-simple one-line interface to display, visualize and analyze downloaded
-data. Both user data and user analytics can be added easily.
+data. Second, a Shiny app (modeled after modern professional tools) with
+a simple one-line interface can be used to display, visualize and
+analyze downloaded data. Both user data and user analytics can be added
+easily.
 
 ## Installation and First Steps
 
@@ -50,7 +52,7 @@ command
 which will fill in the API keys if they have been set, or direct you to
 set them if not.
 
-## Functional Interface Example
+## Functional Interfaces
 
 Once the API key has been set, use the function
 [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html)
@@ -118,9 +120,7 @@ Key: <symbol>
 1: USD/BRL  5.37  5.37 2026-01-06 15:47:46  5.37
 ```
 
-More examples and notes are in the accompanying vignette.
-
-# A powerful interactive interface
+## A powerful interactive interface using Shiny
 
 An interactive Shiny interface is included in the package to manage,
 analyze and visualize data. Some key features of the interface are:
@@ -134,8 +134,9 @@ analyze and visualize data. Some key features of the interface are:
   `NDX;IBM;BTC/USD;USD/BRL GPI`. If the data isn’t there, the app gets
   it from [Alpha Vantage API](https://www.alphavantage.co/) and saves
   it. If realtime quotes are necessary (and you have the right
-  permissionings), the app gets them automatically. See vignette
-  (LINK_usage) for further details.
+  permissionings), the app gets them automatically. See
+  [Usage](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.html)
+  for further details.
 - **Typing and mousing are minimized.** by using a command lines sets of
   assets which can be saved and recalled at any time, or added as a
   [`data.frame()`](https://rdrr.io/r/base/data.frame.html) externally.
@@ -155,7 +156,7 @@ Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setu
 for other items you can set) Once the API key is set, it’s easy to start
 building a data set and analyzing it in real time.
 
-## Initial setup
+### Initial setup
 
 The first time
 [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html)
@@ -186,12 +187,12 @@ Initial Setup
 Now you have the ability to get data form AlphaVantage and can get
 started with analyses.
 
-## Finding and running commands
+### Finding and running commands
 
 The app seeks to minimize the amount of typing or mousework to get
 analyses done by using short commands, with options, that operate on
 sets of symbols. Critical options are set outside the command line, but
-overrides after the commands are possible. Commands have one of two
+overrides after the commands are possible. Commands have one of three
 forms:
 
 - **Single name commands** do not need any particular set of assets, and
@@ -200,27 +201,39 @@ forms:
   are used mostly to query the internal state of the app or to remember
   and recall previous commands.
 
-- **Commands on asset groups** are applied to a semi-colon delimited set
-  of assets, and are of the form
+- **Commands on a list of assets** are applied to a semi-colon delimited
+  set of assets, and are of the form
+  `Symbol_1;Symbol_2;...;Symbol_n [Command] [Options]` As an example,
+  `SPY;DIA;QQQ GPI` will produce a time series graph of total return
+  indices for the three market ETFs listed.
 
-> Symbol_11;Symbol_2;…;Symbol_n Command Options
+- **Commands on saved asset groups.** Groups of assets can be saved as
+  new identifiers by adding a new name of an asset group in the Asset
+  Groups dropdown, and then selecing `Save` in the box to the right of
+  that dropdown. Whatever is in the command line will be saved as that
+  new name, which can then be used in place of the list along with any
+  other command. For example, if the asset set `SPY;DIA;QQQ` is saved as
+  `my_indices`, then running on the command line `my_indices GPI` will
+  produce the exact same graph as above.
 
 If an asset or commmand is invalid, the app will tell you, otherwise it
-will download what it needs using
+will download (and save) what it needs using
 [av_get_pf()](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.html),
-save the data and and run the analysis. For example, to get a simple
-total return graph of a set of ETFs, just enter `QQQ;SPY;DIA;EEM GPI` in
-the yellow line, and get a dygraph (created with
+save the data and and run the analysis. The app will redownload what it
+may need to ensure that the most recent value (price) is shown.
+
+For example, to get a simple total return graph of a set of ETFs, just
+enter `QQQ;SPY;DIA;EEM GPI` in the yellow line, and get a dygraph
+(created with
 [fgts_dygraph()](https://derekholmes0.github.io/FinanceGraphs/reference/fgts_dygraph.html)):
 
-A brief outline of what can be done is shown in the table below. Note
-that
+![Indices](reference/figures/av_indexgraph1.jpg)
 
-- Some commands compare the assets in the main line with a
-  *counterasset* specified in a different box.  
-- Commands that end in `2` put their graphs (etc) below any main graph.
-  This allows two independent time series to be visualized.
-- Neither commands nor symbols are case sensitive.
+Indices
+
+A brief outline of *some* of the functions available is shown in the
+table below. All functions can be seen by running `AV.H` in the command
+line.
 
 | Category | Example(s) | Functionality |
 |:--:|:--:|:---|
@@ -233,30 +246,38 @@ that
 | News | `IBM;MU CN` | Table of news stories, with links |
 | Ticker Search | `mining S` | Search on symbol or name |
 | Options | `QQQ OS` | Table of options, implied Vols, etc |
-| Miscellaneous | `av.mov`,`av.inv` | Market movers, data inventory, help |
+| Miscellaneous | `av.mov`,`av.inv`,`av.h` | Market movers, data inventory, help |
+
+Note that
+
+- Some commands compare the assets in the main line with a
+  *counterasset* specified in a different box.  
+- Commands that end in `2` put their graphs (etc) below any main graph.
+  This allows two independent time series to be visualized.
+- Neither commands nor symbols are case sensitive.
 
 As an example, suppose we wish to find simple excess returns (over
 `SPY`) and betas for two asset classes proxied by `HYG` and `EEM`. Just
 type in `HYG;EEM RV` to get:
 
-![Help Screen](reference/figures/eemhygrv.jpg)
-
-Help Screen
+![](reference/figures/eemhygrv.jpg)
 
 This app seeks to facilitate quick ad-hoc analyses by minimizing typing
 and providing command persistence.
 
 - **Asset Lists** are groups of assets saved or recalled by name. To do
   so, type in your list name in the box to the right of the yellow asset
-  line, and click save. To recall the items in a list, select the name
-  from the dropdown and click get. The assets in that list will then be
-  pasted into the command line (keeping the currently chosen command)
+  line, and click save. The asset list will be replaced by the new name,
+  and **each list name can subsequently be used in lieu of the
+  individual assets** for any of the analyses. Internally, the list is
+  expanded to the full set. If you would like to expand the list on the
+  command line, just hit the expand option in the options box.
 
 - **Command persistence** is availble using the `AV.HIST` commands and
   `AV.R <n>` commands, which list the last several commands used and
   recalls them by number.
 
-## Data management and adding new commands
+### Data management and adding new commands
 
 Price, dividend and earnings data are all stored internally in
 `data.table()` format[^2], with columns coming directly from relevant
@@ -270,7 +291,7 @@ Asset classes are determined by comparing them with pre-downloaded[^3]
 symbol lists, or asssumed to be currencies if they are of the standard
 `[[:alpha:]]*3/[[:alpha:]]*3` format.
 
-### Adding data
+#### Adding data
 
 Those files can be read (*and written to*) outside the shiny app, so the
 data can be used for other analyses (e.g. RMarkdown runs) or added to
@@ -298,25 +319,37 @@ ffdta <- ffdta[,.(DT_ENTRY=index,close=FEDFUNDS,symbol="FEDFUNDS")]
 av_add_px(ffdta)
 ```
 
-![FIwFF](reference/figures/FIwFEDFUNDS.jpg)
+![Combining two data sources](reference/figures/FIwFEDFUNDS.jpg)
 
-FIwFF
+Combining two data sources
 
-### Getting data
+#### Getting data and interacting with the app from the console
 
 In addition to reading the price files directly, data can be captured
-for use in other apps or ad-hoc analyses in in two ways: \* **Copy to
-cliboard:** Any data that goes into a graph or table is automatically
-copied to the clipboard if the **data2clipboard** option is set. \*
-**Function call capture:** Each individual call to
-[`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
-can be cached to the `AV dump Directory` which *optionally* can be set
-also in AVOPTS. Data is saved in a named (by Alphavantage function) list
-of data.tables, and can be keyed (and upserted) or appended to a saved
-`.Rd` file. See [Data Management
-Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
+for use in other apps or ad-hoc analyses in in two ways:
 
-## Adding new Functionality
+- **Copy to cliboard:** Any data that goes into a graph or table is
+  automatically copied to the clipboard if the **data2clipboard** option
+  is set.
+
+- **Function call capture:** Each individual call to
+  [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
+  can be cached to the `AV dump Directory` which *optionally* can be set
+  also in AVOPTS. Data is saved in a named (by Alphavantage function)
+  list of data.tables, and can be keyed (and upserted) or appended to a
+  saved `.Rd` file. See [Data Management
+  Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
+
+Running the Shiny app will load all of the data the app has collected up
+until the invocation of
+[`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md).
+However, you may want to load the collected data without actually
+running the app. To do, run
+[av_load_shinydata()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.html).
+A list of data collected can be retrieved using
+[dump_state()](https://derekholmes0.github.io/alphavantagepf/reference/av_state_interface.html).
+
+#### Adding new Functionality
 
 New commands can be added by writing yur own functions and “registering”
 them with the app. New functions have two arguments: (1) a string with

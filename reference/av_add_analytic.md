@@ -16,8 +16,8 @@ av_add_analytic(runcode, func_name, helpstr = "user function", focus = "MAIN")
 
 - func_name:
 
-  Name of function run when analytic is called. If an empty string is
-  supplied, the runcode will be de-registered.
+  Name of function run when analytic is called. **If an empty string is
+  supplied, the runcode will be de-registered.**
 
 - helpstr:
 
@@ -35,7 +35,7 @@ String message with success or failure of function addition.
 
 ## Details
 
-Add a new command to the av_runShiny app
+Adds or removes a new command to the av_runShiny app
 
 When the
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
