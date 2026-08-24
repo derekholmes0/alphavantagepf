@@ -256,42 +256,18 @@ av_vol <-function(todo,rv) {
 }
 
 # For the following functions: AV.LIVE Q
-# Good
+#
 av_livepx <- function(todo,rv) {
-  inlist=NULL
+  inlist=list_ts=matchScore=NULL
   todolist <- s(toupper(todo),"[ ]+")
-  assetlist <- s(rv$assetline)
-  df_live <- data.table()
-  if(nrow(the_av$pxinv)<=0) {
-    quick_message("No inventory to price")
-    return()
-  }
-  tmp_syms  <- the_av$pxinv[grepl("Equity|ETF",type),]$symbol
-  fxsymbols <- the_av$pxinv[grepl("FX",type),]$symbol
-  if(tmp_syms[[1]]=="NOPXINV") {
-      quick_message("Run some Price History first..")
-      return()
-  }
   if( todolist[[1]]=="Q") {
-    tmp_syms <- intersect(tmp_syms,assetlist)
-    fxsymbols <- intersect(fxsymbols,assetlist)
+    assets <- form_symset(s(rv$assetline)) }
+  else {
+    assets <- the_av$pxinv[,.(symbol,type,currency,name,matchScore,list_ts)]
   }
-  if( length(tmp_syms)>0) {
-    df_live <- av_get_pf(tmp_syms,"REALTIME_BULK_QUOTES",melted=FALSE)
-    df_live <- data.table(symbol=assetlist)[,inlist:=TRUE][df_live,on=.(symbol)][order(change_percent)]
-  }
-  if( length( fxsymbols)>0 ) {
-    required_numcols <- s("previous_close;change;change_percent;extended_hours_quote;extended_hours_change;extended_hours_change_percent")
-    df_live_fx <- lapply(fxsymbols, \(x) av_get_pf(x,"CURRENCY_EXCHANGE_RATE",melted=FALSE) |> av_extract_fx(cols="symbol;timestamp;close") )
-    df_live_fx <- rbindlist(df_live_fx)[,let(open=close,low=close,high=close,volume=NA_integer_)]
-    df_live_fx[, (required_numcols):=NA_real_]
-    df_live <- rbindlist(list(df_live,df_live_fx),use.names=TRUE,fill=TRUE)
-  }
+  if( quick_message("No inventory to price",eval=(nrow(assets)<=0)) ) { return() }
+  df_live <- livepx_epx(assets,outformat="live")
   avsh_clipboard(df_live,"liveprice")
-  if(nrow(df_live)<=0) {
-    quick_message("Need to make sure all tickers are in inventory by having history retrieved")
-    return()
-  }
   return(list(df_live |>  gt.avtheme(themeset="live")))
 }
 

@@ -47,7 +47,7 @@ epx_get_avfn <- function(intype,live=FALSE) {
 # epx_fmt_to_hist : Convert quotes to same schema as historical data
 # --------------------------------------------------
 epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
-  latestDay=high=low=volume=NULL
+  latestDay=high=low=volume=extended_hours_quote=NULL
   if(live==FALSE & (intype=="Equity" | intype=="ETF")) {
     tortn <- inquote
   }
@@ -58,7 +58,10 @@ epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
     tortn <- inquote[,.(symbol,timestamp,open,high,low,close,adjusted_close=close,volume=0,dividend_amount=0,split_coefficient=1)]
   }
   else if(live==TRUE & (intype=="Equity" | intype=="ETF")) {
-    tortn <- inquote[,.(symbol,timestamp=latestDay,open,high,low,close=price,adjusted_close=price,volume,dividend_amount=0,split_coefficient=1)]
+    # GLOBAL_QUOTEtortn <- inquote[,.(symbol,timestamp=latestDay,open,high,low,close=price,adjusted_close=price,volume,dividend_amount=0,split_coefficient=1)]
+    # REALTIME_BULK_QUOTES
+    tortn <- inquote[,.(symbol,timestamp,open,high,low,close=fcoalesce(close,extended_hours_quote),
+                  adjusted_close=fcoalesce(close,extended_hours_quote),volume,dividend_amount=0,split_coefficient=1)]
   }
   else if(live==TRUE & (intype=="Index" | intype=="user")) {
     tortn <- data.table()
@@ -98,6 +101,48 @@ manage_epx <- function(inticker, dtstr,
   save_avs_state("px")
   #message_if_green(the_av$verbose,"mange_epx(",inticker,"): px:",rtnpx," earn:",rtnearn)
 }
+
+# epx_livepx returns raw list of assets and quotes
+# assets must have [symbol, type], outformat in [hist,live]
+# Generalized previously, but decided to de-generalize here
+livepx_epx <- function(assets,outformat="live") {
+  src=NULL
+  df_list <- list()
+  # EQuity|ETF: 0.26ms hist, 0.13ms live
+  ts<-Sys.time()
+  if( length( tmp_syms <- assets[(type=="Equity" | type=="ETF"),]$symbol)>0)   {
+    df_eq <- av_get_pf(tmp_syms,"REALTIME_BULK_QUOTES",melted=FALSE)[,src:="live"]
+    if(outformat=="hist") {
+      df_eq <- df_eq[,timestamp:=as.Date(timestamp)] |> epx_fmt_to_hist("Equity",live=TRUE)
+    }
+    df_list <- c(df_list,list(df_eq))
+  }
+  # FX|Cryto 0.34ms hist, 0.2ms live
+  if( length( tmp_syms <- assets[(type=="FX" | type=="Crypto"),]$symbol)>0)   {
+    df_live_fx <- lapply(tmp_syms, \(x) av_get_pf(x,"CURRENCY_EXCHANGE_RATE",melted=FALSE) |> av_extract_fx(cols="symbol;timestamp;close") )
+    df_live_fx <- rbindlist(df_live_fx)[,let(open=close,low=close,high=close,volume=NA_integer_,src="live")]
+    if(outformat=="hist") {
+      df_live_fx <- df_live_fx[,timestamp:=as.Date(timestamp)] |> epx_fmt_to_hist("FX",live=TRUE)
+    }
+    df_list <- c(df_list,list(df_live_fx))
+  }
+  # Index, use manage_epx, then get last value: 0.4/0.6ms
+  if( length( tmp_syms <- assets[(type=="Index"),]$symbol)>0)   {
+    opx <- lapply(tmp_syms,\(x) manage_epx(x,"-1m::"))
+  }
+  # All Others: deminimus
+  if( length( tmp_syms <- assets[(type=="Index" | type=="user"),]$symbol)>0) {
+    df_hist <- the_av$pxd[data.table(symbol=tmp_syms),.SD[.N],on=.(symbol),by=.(symbol)]
+    if(!(outformat=="hist")) {
+      df_hist <-df_hist[,.SD,.SDcols=c("symbol","timestamp","close","open","high","low")][,
+                                                                                          let(src="hist",timestamp=as.POSIXct(timestamp))]
+    }
+    df_list <- c(df_list,list(df_hist))
+  }
+  df_all <- rbindlist(df_list,use.names=TRUE,fill=TRUE)
+  return(df_all)
+}
+
 
 # ------------------------------------------------------------------ INventories
 # symset must be given to update names etc of user data in pxinv
@@ -220,19 +265,11 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
     } # Downloaded
   } # DOwnloaded or external
   # Add Live if requested
-  if(addlive==TRUE) {
-    # Live date does not change until market opens
-    for(ttype in unique(tortn$type)) {
-      if(!(avfun_live <- epx_get_avfn(ttype,live=TRUE)) =="NOTAVAIL") {
-        intickers <- tortn[type==ttype,]
-        livedta <- lapply(intickers$symbol, \(x) {
-            av_get_pf(x,avfun_live,outputsize="compact",verbose=FALSE) |> epx_fmt_to_hist(ttype,live=TRUE) })
-        livedta <- rbindlist(livedta,fill=TRUE)[,let(ts=Sys.time())]
-        src <- paste0(src,"+live")
-        outmsg <- paste0(outmsg, " w/ Live px @ ",format(Sys.time(),"%d-%H:%M%:S"))
-        dta <- DTUpsert(dta,livedta,c("symbol","timestamp"),fill=TRUE)
-      }
-    }
+  if(addlive==TRUE) { # Live date does not change until market opens
+    livedta <- livepx_epx(symset,outformat="hist")
+    src <- paste0(src,"+live")
+    outmsg <- paste0(outmsg, " w/ Live px @ ",format(Sys.time(),"%d-%H:%M%:S"))
+    dta <- DTUpsert(dta,livedta,c("symbol","timestamp"),fill=TRUE)
   }
   if(nrow(dta)>0) {
     the_av$pxd <- DTUpsert(the_av$pxd,dta,c("symbol","timestamp"),fill=TRUE)

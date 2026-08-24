@@ -186,7 +186,7 @@ av_make_dtmap <- function(yrs_ahead=5) {
 
 #' @importFrom usethis use_data
 av_shiny_constants <- function() {
-  tinputformstyle <- I("{font-size:12px; font-weight:bold; background-color: #ffff99}")
+  tinputformstyle <- I("{font-size:12px; font-weight:bold; background-color: #ffff99; padding-top:0px; padding-bottom: 0px}")
   yellowed_inputs <- s("#dtstr_hist;#events;#ochains")
   avsd <- list(
     "defaults"=data.table::fread("./inst/extdata/av_defaults.csv"),
@@ -200,10 +200,8 @@ av_shiny_constants <- function() {
     "edit_tableoptions"=list('editable1'='row','editable2'='row','pagelen1'=80,'pagelen2'=80,'digits'=3),
     "selectizeoptions" =I("selectize-input: 12px; background-color:red"),
     "inputcss_side" = paste(lapply(yellowed_inputs,(\(x) paste(x,tinputformstyle))),collapse=" "),
-    "inputformstyle" =tinputformstyle,
-    "inputcss_top" =paste(lapply(s("#istr1;#istr2"),\(x) paste(x,tinputformstyle)),collapse=" "),
-    "labelcss" =I("font-size:11pt color:red font-weight:bold"),
-    "othercss1"=I("#msg {font-size:10px; background-color: #ddfcd9; width:330px}"),
+    #"inputcss_top" =paste(lapply(s("#istr1;#istr2"),\(x) paste(x,tinputformstyle)),collapse=" "),
+    #"labelcss" =I("font-size:11pt color:red font-weight:bold"),
     "othercss2"=I("gropts {font-size:10px; background-color: #ddfcd9}")
   )
   av_funcmap <- av_make_funcmap()

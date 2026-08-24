@@ -1,7 +1,8 @@
 #source("./R/utilities.R")
-tver<-"0.8.434"
+tver<-"0.8.435"
 
 
+# 435: Refactor live prices
 # 434: Last  user index fix.  assetnames needed caps
 # 432: av.inv(grep),user index fix
 # 431: Seasonality, appbreviations
@@ -51,7 +52,11 @@ av_make_ui <- function() {
        ),
        column(10,  # Was 11
           fluidRow(
-            column(width=8,div(class = "enter-submit", textInput("istr1", paste("AVShiny",tver), the_av$inpline1,width='100%'))),
+            column(width=8,
+                   fluidRow(
+                   div(class = "enter-submit", textInput("istr1", paste("AVShiny",tver), the_av$inpline1,width='100%'))),
+                   div(class = "msgcopy", textOutput("msg"))
+            ),
             column(width=2,selectizeInput("assetgp_list","AssetGroups",c("AssetListnm"="", c("",sort(unique(the_av$assetgroups$listnm)))),size="80%",options=list(create=TRUE))),
             column(width=2,selectInput("ag_state","",c("--","Expand","Save","Delete"),size=4,selectize=FALSE)),
           ),
@@ -59,7 +64,6 @@ av_make_ui <- function() {
             tabsetPanel(id="inTabset",selected=the_av$starttab,
               tabPanel("MAIN", value="main",
                   fluidRow(
-                    textOutput("msg"),
                     htmlOutput("htm1"),
                     gt_output(outputId = "t1gt"),
                     gt_output(outputId = "t2gt"),
@@ -199,7 +203,6 @@ av_make_server <- function() {
         av_set_defaults("inpline1", paste0(input$assetgp_list," ",todo))
         updateTextInput(session,"istr1", value= the_av[["inpline1"]])
       }
-      else { message(" .>>> skipping")}
     })
 
     observeEvent(input$SetOpts, {
@@ -297,8 +300,8 @@ av_make_server <- function() {
       parse_inpline(toupper(rv$istr1))  # NEw 26-08-15: Expand assetgrouplists
       rv <- c(rv,setNames(list(todo,todofunc,todoargs,assetline), s("todo;todofunc;todoargs;assetline"))) # Augment rv
       # out for Production, IN for testing
-      cAssign("todo;todofunc;rv;todoargs;assetline",silent=TRUE)
-      #
+      out[["MSG"]]<- rv$istr1_enter
+      #cAssign("todo;todofunc;rv;todoargs;assetline",silent=TRUE)
       runfunc_set <-  the_av$avsh_funcs[runcode==todofunc,]
       quick_message(fifelse(nrow(runfunc_set)<=0,paste(todo,":Invalid function"),""))
       if(nrow(runfunc_set)<=0) { return() }
@@ -346,7 +349,6 @@ av_make_server <- function() {
       torend <- torend[outname %in% names(out),displayed:=TRUE][inclass=="dygraphs",displayheight:=fifelse(displayed,"400px","0px")]
       av_set_defaults("outcopy",out)
       av_set_defaults("renderset",torend)
-
       mapply( \(outnm,innm,intype) {
         local({
           output[[outnm]]<-switch(gsub("::","",intype),
@@ -362,6 +364,7 @@ av_make_server <- function() {
       output$dy2_container <- renderUI({ dygraphOutput("dy2", height= torend[ui_out=="dy2",]$displayheight) })
       updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
       save_avs_state("all",msg="RUNLN")
+      updateTextInput("istr1",value="",session=session)
     })
   } # Server
   return(av_server)

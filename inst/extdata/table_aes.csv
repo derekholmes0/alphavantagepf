@@ -52,7 +52,7 @@ filteredopts,x,autocopy,1,
 earnings,x,autocopy,1,
 news,x,autocopy,1,
 apphtml,line1,HTML,,.radio-inline {  font-size: 11px;  }
-apphtml,line2,HTML,,.shiny-input-select { font-size: 11px; background-color: #f0f0f0 }
+apphtml,line2,HTML,,.shiny-input-select { font-size: 10px; background-color: #f0f0f0 }
 apphtml,line3,HTML,,.shiny-bound-input { font-size: 11px}
 apphtml,line4,HTML,,.item { font-size: 11px; }
 apphtml,line5,HTML,,.no-gap-row { display: flex; gap: 0;align-items: flex-start; }
@@ -62,3 +62,5 @@ apphtml,line8,HTML,,.dataTables_wrapper { font-size: 13px !important; }
 apphtml,line9,HTML,,".selectize-dropdown-content {  max-height: 500px;  }""))"
 apphtml,line10,HTML, ,.shiny-input-checkbox { font-size: 11px}
 apphtml,line11,HTML,,.control-label { font-size:11px}
+apphtml,line12,HTML,,.msgcopy { font-size:9px; font-weight: bold; background-color: #d3f9d1; width=330px; padding:3px }
+apphtml,line13,HTML,,.shiny-input-text { font-size:12px; font-weight:bold; background-color: #ffff99; padding-top:1px; padding-bottom: 1px;  border-radius: 2px }
