@@ -5,7 +5,7 @@ Add additional columns to returned option sets
 ## Usage
 
 ``` r
-av_opt_helper_cols(indta, scaling = NULL, spot = NULL)
+av_opt_helper_cols(indta, scaling = NULL, spot_override = NULL)
 ```
 
 ## Arguments
@@ -29,7 +29,7 @@ av_opt_helper_cols(indta, scaling = NULL, spot = NULL)
   - `number` : Any numeric value in thousands of USD into equivalent
     market value
 
-- spot:
+- spot_override:
 
   (default `NULL`) Spot to be used to determine itm/otm, If null then it
   is inferred from most out of the money call or put Note: This

@@ -1,4 +1,4 @@
-# ShinyApp_3_Data_Management
+# ShinyApp Data Management
 
 ## Data storage overview
 
@@ -169,10 +169,15 @@ as in the following example:
 ``` r
 
 newtickers <- c("QQQ","QQQE","NDX")
-newasset_dt <- data.table(ticker=newtickers,listnm=rep("nasdaq",length(newtickers)))
+newweights <- c(0.5,0.2,0.3)
+newasset_dt <- data.table(ticker=newtickers,listnm=rep("nasdaq",length(newtickers)), weight=newweights)
 av_add_assetgroups(newasset_dt)
 dump_assetgroups()
 ```
+
+If no column `weight` is given weights are assumed equal. This
+information is saved for future use with the idea that user defined
+indices (as opposed to asset groups) may be useful.
 
 ## Data Inventory and retrieval.
 
@@ -189,6 +194,46 @@ collected. There are three ways to see what is currently in inventory:
 Also a separate tab INVENTORY is populated on application startup. The
 idea is to always have a dictionary what what you have on hand, without
 going back and forth between (e.g.) `AV.INV` and your train of thought.
+
+### API call dumping
+
+As described in the options vignette, the app has the ability to save
+the results of every API call into the “dump directory” set in the
+AVOPTS tab. If a valid directory is named and saved in that page, the
+app will append the results of every API call to a file called
+`av_download.RD`
+
+This file consists of a list of named (by API call function)
+data.tables, each of which contains the results of that call. This is
+best illustrated by the following code:
+
+    > load("c:\\t\\av_dump\\av_download.RD",verbose=TRUE)
+    Loading objects:
+      av_download
+      
+    > names(av_download)
+    [1] "HISTORICAL_OPTIONS"         "TIME_SERIES_DAILY_ADJUSTED" "EARNINGS"                   "EARNINGS_ESTIMATES"        
+    > av_download[["EARNINGS"]]
+     symbol          variable     ltype            value_df value_str value_num             load_ts
+     <char>            <char>    <char>              <list>    <char>     <num>              <POSc>
+        BAC    annualEarnings      list  <data.frame[31x2]>      NULL        NA 2026-08-26 14:59:00
+        BAC quarterlyEarnings      list <data.frame[122x7]>      NULL        NA 2026-08-26 14:59:00
+        BAC            symbol character              [NULL]       BAC        NA 2026-08-26 14:59:00
+         GS    annualEarnings      list  <data.frame[27x2]>      NULL        NA 2026-08-26 14:59:01
+         GS quarterlyEarnings      list <data.frame[109x7]>      NULL        NA 2026-08-26 14:59:01
+         GS            symbol character              [NULL]        GS        NA 2026-08-26 14:59:01
+        JPM    annualEarnings      list  <data.frame[31x2]>      NULL        NA 2026-08-26 14:59:02
+        JPM quarterlyEarnings      list <data.frame[122x7]>      NULL        NA 2026-08-26 14:59:02
+        JPM            symbol character              [NULL]       JPM        NA 2026-08-26 14:59:02
+
+Data stored in the file can either be **cumulative**, which will save
+every call with a new timestamp, or as a keyed
+[`data.table()`](https://rdrr.io/pkg/data.table/man/data.table.html)
+where new results are updated by a relevant key (usually `symbol`) as
+necessary. **This file can grow to be quite large** (and hence slow the
+app considerably), so consider also enabling the `CleanOnStart` option.
+The user may want to periodically remove that file, but that would be
+outside the scope of this app.
 
 [^1]: Alphavantage has a small select list of CBOE, VIX and equity
     futures indices available as historical data, listed by running

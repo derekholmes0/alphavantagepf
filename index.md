@@ -260,7 +260,9 @@ As an example, suppose we wish to find simple excess returns (over
 `SPY`) and betas for two asset classes proxied by `HYG` and `EEM`. Just
 type in `HYG;EEM RV` to get:
 
-![](reference/figures/eemhygrv.jpg)
+![ETF RV](reference/figures/eemhygrv.jpg)
+
+ETF RV
 
 This app seeks to facilitate quick ad-hoc analyses by minimizing typing
 and providing command persistence.

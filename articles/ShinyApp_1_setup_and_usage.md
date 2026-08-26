@@ -1,4 +1,4 @@
-# ShinyApp_1_setup_and_usage
+# ShinyApp setup and usage
 
 The **Alphavantagepf** package contains a Shiny Application which can be
 used to query, save, and visualize basic market information without
@@ -32,7 +32,8 @@ The app is designed to
   [FinanceGraphs](https://derekholmes0.github.io/FinanceGraphs/reference/index.html)
 - Provide a framework for adding user-generated analyses.
 
-A few conventions which are helpful to know before using the app are[^1]
+A few conventions which are helpful to know before using the app are
+[^1]
 
 | Item | Convention | Example |
 |:--:|:---|:---|
@@ -44,10 +45,9 @@ A few conventions which are helpful to know before using the app are[^1]
 usual form of an alphabetic string of the form (`countercurrency` /
 `currency`), cryptocurrency[^2], index, or user defined time series.
 
-## App invocation and initial setup.
+## App invocation, permissionings, and initial setup.
 
-The app requires a very modest amount of setup before using. It can be
-run with
+To invoke the app, just run the following from the R console.
 
 ``` r
 
@@ -58,10 +58,19 @@ av_runShiny()
 When
 [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html)
 is first run, the following screen will be shown, with the AVOPTS tab
-selected. The first order of business will be to set the Alphavantage
-API keys and (optionally) set data directories. To do so, just type or
-copy in both your API key and your entitlement status (`delayed` or
-`realtime`), and hit the blue Set Opts button.
+selected.
+
+Before using, the app needs to ensure that[Alpha Vantage
+API](https://www.alphavantage.co/) permissions are set up. **The
+development of this app assumes the lowest (i.e. cheapest) real-time
+permissionings.** Better data may be obtained for some uses with
+higher-frequency permissionings (e.g. Realtime option quotes), but are
+not used currently. Use with delayed data may (as of v0.8.4) break some
+commands.
+
+To set the permissionings, just type or copy in both your API key and
+your entitlement status (`delayed` or `realtime`), and hit the blue Set
+Opts button.
 
 ![avopts](img/av_opts.jpg)
 
@@ -93,9 +102,10 @@ oriented towards app-specific information such as data inventories or
 help pages. All other commands refer to the semi-colon delimited asset
 or ticker list given first.
 
-Once you know what you want, just type it in and hit “Enter”. The
-command will get any data it needs and then produce a set of tables,
-time series graphs, or other plots. See [Data
+Once you know what you want, just type it in and hit “Enter”. To start,
+the app will copy the command to the green line (and clear the input for
+the next command). The, the command will get any data it needs and then
+produce a set of tables, time series graphs, or other plots. See [Data
 Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
 for details as to how this done. Most commands require a timeframe of
 historical data to analyze. The date range (formatted as above) in
@@ -139,6 +149,7 @@ available. Some examples of commands that can be run are
 | `IBM;ORCL DES` | Table of descriptive items for `IBM` and `ORCL` |
 | `ORCL OS` | Table of options for `ORCL` |
 | `ORCL RV` | Active returns and correlations with the counterasset (default is `SPY`) |
+| `av.r` | Recall the last executed command into the yellow input area |
 | `AV.EQINV` | Show a list of all ETFs and Equities with downloaded data |
 
 To see how the date conventions work, the results of the third command
@@ -157,7 +168,7 @@ Here is another example which highlights both the comprehensive
 abilities to combine assets in the app with graphing abilities. Suppose
 we wish to plot the fair value history of the crypto ETF `IBIT`, and add
 some visual indication of overall market direction. Editing the
-counterasset to `BTC/USD` adding `doi:regm` in Events, and running
+counterasset to `BTC/USD`, adding `doi:regm` in Events, and running
 `IBIT RV` gives the following.
 
 ![](img/ibit_fv.jpg)
@@ -192,31 +203,9 @@ See [Data
 Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
 for details.
 
-## Specific command notes
+## Usage Notes
 
-### Options Search
-
-To find options for a given set of tickers use the command `OS`, which
-will take you to the OPTIONS tab. A few fields on that page which will
-help narrow down the options are:
-
-| Field | Detail |
-|:---|:---|
-| Chains | Comma delimited string of four items to narrow downloaded options. |
-|  | 1\. `[F|B]` first contract or second contract |
-|  | 2\. `[M|Q]` Monthly expiration or Quarterly expiration |
-|  | 3\. `[C|P|A]` Calls, Puts or Both |
-|  | 4\. `[itm|otm|all]` In or out of the money[^5] |
-| Mindelta | Minimum absolute delta of option |
-| Output | Subset of columns to show, relevant to Trading or Valuation |
-| Scaling | Values and Greeks for 10 contracts or 10kUSD premium |
-
-The options change can be overridden as parameters to the `OS` call, as
-seen below. WIthout the parameters added on the command line, calls
-would have been returned.
-
-![Options Search](img/optsearch.jpg) \# Interacting with the app from
-the command line.
+### Interacting with the app from the command line.
 
 A great and recent innovation in `shiny()` is the ability to run an app
 and return to the console. The internal data can be accessed in one of
@@ -238,6 +227,39 @@ In addition, internal states and data can be extracted via functions
 such as
 [dump_state()](https://derekholmes0.github.io/alphavantagepf/reference/av_state_interface.html).
 
+### Other notes
+
+- The biggest bottleneck for many analyses is the creation of the `gt()`
+  tables. Very occasionally, they may take a few seconds to render.
+  Typically, once a table has been rendered once, it will be much faster
+  the next time.
+
+- Commands that are particularly helpful are `av.r` which recalls the
+  last command issued, and `av.inv [grepstr]` to know what has been
+  downloaded for any items with `grepstr` in it’s name.
+
+- if `useAbbreviations` is checked, names are abbreviated using an
+  internal dictionary. Unchecking the box will not reset the names until
+  the app is closed and restarted.
+
+## Specific command notes
+
+### Options Search
+
+To find options for a given set of tickers use the command `OS`, which
+will take you to the OPTIONS tab. A few fields on that page which will
+help narrow down the options are:
+
+[TABLE]
+
+The options change can be overridden as parameters to the `OS` call, as
+seen below. WIthout the parameters added on the command line, calls
+would have been returned.
+
+![Options Search](img/optsearch.jpg)
+
+Options Search
+
 [^1]: A “cheatsheet” with these conventions is displayed when `AV.H` is
     run, unless the `showGeneralHelp` option is deselected.
 
@@ -249,5 +271,3 @@ such as
 
 [^4]: Adding and using component weights to the asset lists is planned
     for a future release.
-
-[^5]: The app looks up the current spot to determine moneyness.

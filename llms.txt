@@ -260,7 +260,9 @@ As an example, suppose we wish to find simple excess returns (over
 `SPY`) and betas for two asset classes proxied by `HYG` and `EEM`. Just
 type in `HYG;EEM RV` to get:
 
-![](reference/figures/eemhygrv.jpg)
+![ETF RV](reference/figures/eemhygrv.jpg)
+
+ETF RV
 
 This app seeks to facilitate quick ad-hoc analyses by minimizing typing
 and providing command persistence.
@@ -430,7 +432,11 @@ Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_
 ### All vignettes
 
 - [API_interface_usage](https://derekholmes0.github.io/alphavantagepf/articles/API_interface_usage.md):
-- [ShinyApp_1_setup_and_usage](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.md):
-- [ShinyApp_2_Graphs_and_Options](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_2_Graphs_and_Options.md):
-- [ShinyApp_3_Data_Management](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.md):
-- [ShinyApp_4_New_Functionality](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.md):
+- [ShinyApp setup and
+  usage](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_1_setup_and_usage.md):
+- [ShinyApp Graphs and
+  Options](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_2_Graphs_and_Options.md):
+- [ShinyApp Data
+  Management](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.md):
+- [ShinyApp New
+  Functionality](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.md):

@@ -32,14 +32,14 @@ av_grep_opts(
   abbreviated code for what to select. The items are not case sensitive
   and in order are
 
-  |                  |         |             |
-  |------------------|---------|-------------|
-  | Item             | Values  | description |
-  | Expiration Limit | \`\[F   | B           |
-  | Maturity Type    | \`\[M   | Q           |
-  | Option Type      | \`\[C   | P           |
-  | Moneyness        | \`\[otm | itm         |
-  | Activity         | \`\[act | A\]\`       |
+  |  |  |  |
+  |----|----|----|
+  | Item | Values | description |
+  | Expiration Limit | `F`\|`B`\|`A` | `F` is first maturity, `B` is second maturity, `A` (pr blank) are all |
+  | Maturity Type | `M`\|`Q`\|`A` | `M` for monthly contracts, `Q` for quarterly, `A` (pr blank) are all |
+  | Option Type | `C`\|`P`\|`A` | Calls, puts, `all` (or blank) for all |
+  | Moneyness | `otm`\|`itm`\|`A` | Out of the money, in the money or both |
+  | Activity | `act`\|`A` | If `A`, only pass contracts with positive open interest |
 
 - spot:
 
@@ -75,6 +75,8 @@ A reduced set of options obtained from
 using Alphavantage `HISTORICAL_OPTIONS` function.
 
 ## Details
+
+Alphavantage doesn't always return quarterly options
 
 [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
 returns a large list of options. This function helps to narrow down the

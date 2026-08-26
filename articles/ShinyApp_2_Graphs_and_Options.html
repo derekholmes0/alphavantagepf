@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>ShinyApp_2_Graphs_and_Options • alphavantagepf</title>
+<title>ShinyApp Graphs and Options • alphavantagepf</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="ShinyApp_2_Graphs_and_Options">
+<meta property="og:title" content="ShinyApp Graphs and Options">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.435</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.438</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,10 +35,10 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/API_interface_usage.html">API_interface_usage</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_1_setup_and_usage.html">ShinyApp_1_setup_and_usage</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp_2_Graphs_and_Options</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_3_Data_Management.html">ShinyApp_3_Data_Management</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_4_New_Functionality.html">ShinyApp_4_New_Functionality</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_1_setup_and_usage.html">ShinyApp setup and usage</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp Graphs and Options</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_3_Data_Management.html">ShinyApp Data Management</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_4_New_Functionality.html">ShinyApp New Functionality</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -61,7 +61,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>ShinyApp_2_Graphs_and_Options</h1>
+      <h1>ShinyApp Graphs and Options</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/derekholmes0/alphavantagepf/blob/master/vignettes/ShinyApp_2_Graphs_and_Options.Rmd" class="external-link"><code>vignettes/ShinyApp_2_Graphs_and_Options.Rmd</code></a></small>
@@ -86,30 +86,62 @@ itself is stored in the same directory unless a <strong>Cache data
 directory</strong> is set up. The options can be categorized within
 three groups: required API options, data management options, and
 others.</p>
-<p><img src="img/av_opts_detail.jpg" class="r-plt" alt="" width="270" height="40%"></p>
+<div style="display: flex;">
+<div class="float">
+<img src="img/av_opts_detail.jpg" style="width:80.0%" alt="Options"><div class="figcaption">Options</div>
+</div>
+<table class="table">
+<colgroup>
+<col width="32%">
+<col width="67%">
+</colgroup>
+<thead><tr class="header">
+<th align="center">Category</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="center">
+<span style="color:red">A:</span> Keys and Data</td>
+<td align="left">API keys and path to saved data<br>API connection is
+minimal requirement</td>
+</tr>
+<tr class="even">
+<td align="center">
+<span style="color:red">B:</span> Data Update
+Frequency</td>
+<td align="left">How often to update prices/earnings</td>
+</tr>
+<tr class="odd">
+<td align="center">
+<span style="color:red">C:</span> AV Capture</td>
+<td align="left">Capture individual calls to API</td>
+</tr>
+<tr class="even">
+<td align="center">
+<span style="color:red">D:</span> Options</td>
+<td align="left">Other binary options to control app behavior</td>
+</tr>
+</tbody>
+</table>
+</div>
 <div class="section level3">
 <h3 id="required-api-options">Required API Options<a class="anchor" aria-label="anchor" href="#required-api-options"></a>
 </h3>
 <p>This app is centered around the Alphavantage API, and requires a
 valid API key and entitlement status to function.</p>
 <table class="table">
-<colgroup>
-<col width="40%">
-<col width="59%">
-</colgroup>
 <thead><tr class="header">
 <th align="center">Field</th>
 <th align="left">Description</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="center">av api key (<span style="color:blue">A</span>
-above)</td>
+<td align="center">av api key</td>
 <td align="left">API key obtained form Alphavantage.</td>
 </tr>
 <tr class="even">
-<td align="center">av entitlement (<span style="color:blue">B</span>
-above)</td>
+<td align="center">av entitlement</td>
 <td align="left">Entitlement status, either <code>delayed</code> or
 <code>realtime</code>
 </td>
@@ -123,16 +155,25 @@ above)</td>
 <p>Data is stored in one or two directories, depending on whether a
 <strong>Dump directory</strong> is set.</p>
 <ul>
-<li>Price series and user time series are kept in a cache directory
-which defaults to the temporary directory created for the package, but
-can be set in the Cache Data Directory (<span style="color:blue">C</span> above). Earnings data is stored in the same
-directory.</li>
-<li>The results of each call to the Alphavantage API can optionally be
-stored in a <strong>Dump directory</strong>. The purpose of this is to
-allow users to “scrape” their thoughts, analyses, etc. on a per-call
+<li><p>Price series and user time series are kept in a <strong>cache
+directory</strong> which defaults to the temporary directory created for
+the package, but can be set as above to a more user friendly location
+(e.g. <code>c:/t/avsh</code> as above). Earnings data is stored in the
+same directory.</p></li>
+<li><p><strong>Update Frequencies</strong> are set in set in the <span style="color:red">(B) Update frequencies</span> section above, and are
+the maximum time between downloads of data. For prices, only the
+smallest historical data is retrieved and updated into the local dataset
+if they are older than the time specified<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;Live data is always retrieved if the option to do so is
+set in the &lt;span style="color:red"&gt;options section D&lt;/span&gt;&lt;/p&gt;'><sup>1</sup></a>. Historical earnings
+estimates are fuller redownloaded if they are older than the number of
+days specified.</p></li>
+<li><p>The results of each call to the Alphavantage API can optionally
+be stored in a <strong>Dump directory</strong>. The purpose of this is
+to allow users to “scrape” their thoughts, analyses, etc. on a per-call
 basis. Please be aware that this does increase the time spent on each
-command issued. That directory is set in Dump Directory (<span style="color:blue">D</span> above) and data is stored as a named (by
-function call name) list of <code>data.tables()</code>.</li>
+command issued. That directory is set in Dump Directory (in the<br><span style="color:red">(C) Dump data:</span> section above) where data
+is stored as a named (by function call name) list of
+<code>data.tables()</code>.</p></li>
 </ul>
 <p>The options associated with the dumping are given below:</p>
 <table class="table">
@@ -146,59 +187,47 @@ function call name) list of <code>data.tables()</code>.</li>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="center">
-<span style="color:blue">C</span> Cache
-Data</td>
+<td align="center">Cache Data</td>
 <td align="left">Directory to store time series, earnings, and earnings
 estimates</td>
 </tr>
 <tr class="even">
-<td align="center">
-<span style="color:blue">D</span> AV dump
-directory</td>
+<td align="center">AV dump directory</td>
 <td align="left">Directory to store API call results. Must be set for
 dumping to occur.</td>
 </tr>
 <tr class="odd">
-<td align="center">
-<span style="color:blue">E</span> Capture AV
-Data</td>
-<td align="left">What to capture<br><code>None</code> (default): Turn
-capture off, even if the directory is set.<br><code>nopricesonly</code>:
-Capture anything <em>but</em> time series data.<br>‘all’ Capture all
-calls</td>
+<td align="center">Capture AV Data</td>
+<td align="left">Capture individual API calls<br><code>None</code>
+(default): Turn capture off, even if the directory is
+set.<br><code>nopricesonly</code>: Capture anything <em>but</em> time
+series data.<br><code>all</code> Capture all calls</td>
 </tr>
 <tr class="even">
-<td align="center">
-<span style="color:blue">F</span> Update or
-Cumulative</td>
+<td align="center">Update or Cumulative</td>
 <td align="left">
 <code>update</code> data captured by symbol, or
 (<code>cum</code>) capture every time with a timestamp.</td>
 </tr>
 <tr class="odd">
-<td align="center">
-<span style="color:blue">G</span> Data Saving
-Options</td>
-<td align="left">Other options<br>
+<td align="center">Data Saving Options</td>
+<td align="left">Manage capture file<br><code>SaveEveryAVCall</code>:
+Save all calls cumulatively when the call is
+made.<br><code>CleanOnStart</code>: Delete dump data on every startup of
+the app.<br><code>None</code>: Keep dumped data in memory, avoiding IO
+overhead<br><code>SaveNowonOptUpdate</code>
 </td>
 </tr>
 </tbody>
 </table>
-<p><code>SaveEveryAVCall</code>: Save all calls cumulatively when the
-call is made.<br><code>CleanOnStart</code>: Delete dump data on every
-startup of the app.<br><code>None</code>: Keep dumped data in memory,
-avoiding I/O overhead.<br><code>SaveNowonOptUpdate</code>|Save next
-time <code>Set Opts</code> is pressed, (used in conjunction with
-<code>None</code>| |<span style="color:blue">H</span> Max Earnings
-Age|Number of days to go before reloading earnings data.| |<span style="color:blue">G</span> Max Price Age| Number of hours to go before
-refreshing price data.|</p>
+<p>More detail on this feature is in the <a href="https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html">Data
+Vignette</a></p>
 </div>
 <div class="section level3">
 <h3 id="non-analytic-options">Non-analytic Options<a class="anchor" aria-label="anchor" href="#non-analytic-options"></a>
 </h3>
-<p>Non analytic features are set as check boxes, and are described in
-the following table. Note that they only change “officially” when the
+<p>Non analytic features are set as check boxes in <span style="color:red">options section D</span>, and are described in the
+following table. Note that any changes made only take effect when the
 <span style="background-color: #003366; color: #FFFFFF;">Set Opts</span>
 button is pressed.</p>
 <table class="table">
@@ -252,6 +281,13 @@ replaced by new ones</td>
 <td align="left">Abbreviate Ticker Names, dropping superfluous words in
 title</td>
 </tr>
+<tr class="odd">
+<td align="center">allDaysOnGraph</td>
+<td align="left">Show non-equity business days if relevant<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;This matters, e.g. when plotting a 24hr asset
+(e.g. Cryptocurrencies) with equities. If selected, there will be
+noticeable gaps in the series of assets that aren’t trading when the
+24hr asset is.&lt;/p&gt;"><sup>2</sup></a> on dygraphs</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -270,16 +306,12 @@ title</td>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="center">
-<span style="color:green">J</span>
-HistVolParams</td>
+<td align="center">HistVolParams</td>
 <td align="left">Historical volatility parameters, see <a href="https://www.rdocumentation.org/packages/TTR/versions/0.24.4/topics/volatility" class="external-link">TTR::volatility</a>
 </td>
 </tr>
 <tr class="even">
-<td align="center">
-<span style="color:green">K</span> Regr
-Significance</td>
+<td align="center">Regr Significance</td>
 <td align="left">Significance level below which regression results are
 highlighted</td>
 </tr>
@@ -307,8 +339,7 @@ e.g. last values.</li>
 <strong>Full aesthetic control</strong> of the graphing output,
 including colors, line types, and point types. For example, to change
 color sets for timeseries lines, use an aesthtic set
-(e.g. <code>lines</code> or <code>altlines_6</code>, specified in
-<strong>L</strong> above. See <a href="https://derekholmes0.github.io/FinanceGraphs/articles/Time-Series-dygraph.html#customization-colors" class="external-link">Color
+(e.g. <code>lines</code> or <code>altlines_6</code>). See <a href="https://derekholmes0.github.io/FinanceGraphs/articles/Time-Series-dygraph.html#customization-colors" class="external-link">Color
 customization</a>
 </li>
 </ul>
@@ -436,6 +467,7 @@ XLF, with earnings surprise events:</p>
 </div>
 </div>
 </div>
+
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>

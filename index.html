@@ -12,8 +12,8 @@
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
 <meta property="og:title" content="Alphavantage Financial Data API R Wrapper and Shiny Interface">
-<meta name="description" content="Download, manage, and visualize via Shiny App Alphavantage financial data &lt;https://www.alphavantage.co/documentation/&gt;. Data is downloaded and organized into `data.table` objects using a single calling function with optional helper functions to extract and simplify more complex data. A Shiny interface is also provided to download, manage, and graph asset prices and characteristics.">
-<meta property="og:description" content="Download, manage, and visualize via Shiny App Alphavantage financial data &lt;https://www.alphavantage.co/documentation/&gt;. Data is downloaded and organized into `data.table` objects using a single calling function with optional helper functions to extract and simplify more complex data. A Shiny interface is also provided to download, manage, and graph asset prices and characteristics.">
+<meta name="description" content="Download, manage, and visualize via Shiny App Alphavantage financial data &lt;https://www.alphavantage.co/documentation/&gt;. Data is downloaded into `data.table`s using one parameterized function. Results can be piped to optional helper functions to extract and simplify more complex data. A Shiny interface is also provided to download, manage, analyze and visualize market data.">
+<meta property="og:description" content="Download, manage, and visualize via Shiny App Alphavantage financial data &lt;https://www.alphavantage.co/documentation/&gt;. Data is downloaded into `data.table`s using one parameterized function. Results can be piped to optional helper functions to extract and simplify more complex data. A Shiny interface is also provided to download, manage, analyze and visualize market data.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.435</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.438</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,10 +37,10 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/API_interface_usage.html">API_interface_usage</a></li>
-    <li><a class="dropdown-item" href="articles/ShinyApp_1_setup_and_usage.html">ShinyApp_1_setup_and_usage</a></li>
-    <li><a class="dropdown-item" href="articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp_2_Graphs_and_Options</a></li>
-    <li><a class="dropdown-item" href="articles/ShinyApp_3_Data_Management.html">ShinyApp_3_Data_Management</a></li>
-    <li><a class="dropdown-item" href="articles/ShinyApp_4_New_Functionality.html">ShinyApp_4_New_Functionality</a></li>
+    <li><a class="dropdown-item" href="articles/ShinyApp_1_setup_and_usage.html">ShinyApp setup and usage</a></li>
+    <li><a class="dropdown-item" href="articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp Graphs and Options</a></li>
+    <li><a class="dropdown-item" href="articles/ShinyApp_3_Data_Management.html">ShinyApp Data Management</a></li>
+    <li><a class="dropdown-item" href="articles/ShinyApp_4_New_Functionality.html">ShinyApp New Functionality</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -259,8 +259,9 @@ Indices
 <li>Neither commands nor symbols are case sensitive.</li>
 </ul>
 <p>As an example, suppose we wish to find simple excess returns (over <code>SPY</code>) and betas for two asset classes proxied by <code>HYG</code> and <code>EEM</code>. Just type in <code>HYG;EEM RV</code> to get:</p>
-<p><img src="reference/figures/eemhygrv.jpg"></p>
-<p>This app seeks to facilitate quick ad-hoc analyses by minimizing typing and providing command persistence.</p>
+<figure><img src="reference/figures/eemhygrv.jpg" alt="ETF RV"><figcaption aria-hidden="true">
+ETF RV
+</figcaption></figure><p>This app seeks to facilitate quick ad-hoc analyses by minimizing typing and providing command persistence.</p>
 <ul>
 <li><p><strong>Asset Lists</strong> are groups of assets saved or recalled by name. To do so, type in your list name in the box to the right of the yellow asset line, and click <span style="background-color: #003366; color: #FFFFFF;">save</span>. The asset list will be replaced by the new name, and <strong>each list name can subsequently be used in lieu of the individual assets</strong> for any of the analyses. Internally, the list is expanded to the full set. If you would like to expand the list on the command line, just hit the <span style="background-color: #003366; color: #FFFFFF;">expand</span> option in the options box.</p></li>
 <li><p><strong>Command persistence</strong> is availble using the <code>AV.HIST</code> commands and <code>AV.R &lt;n&gt;</code> commands, which list the last several commands used and recalls them by number.</p></li>

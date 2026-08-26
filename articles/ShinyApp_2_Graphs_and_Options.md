@@ -1,4 +1,4 @@
-# ShinyApp_2_Graphs_and_Options
+# ShinyApp Graphs and Options
 
 This vignette describes in detail graphing and data options available in
 [av_runShiny()](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html).
@@ -14,51 +14,59 @@ itself is stored in the same directory unless a **Cache data directory**
 is set up. The options can be categorized within three groups: required
 API options, data management options, and others.
 
-![](img/av_opts_detail.jpg)
+![Options](img/av_opts_detail.jpg)
+
+Options
+
+[TABLE]
 
 ### Required API Options
 
 This app is centered around the Alphavantage API, and requires a valid
 API key and entitlement status to function.
 
-| Field | Description |
-|:--:|:---|
-| av api key (A above) | API key obtained form Alphavantage. |
-| av entitlement (B above) | Entitlement status, either `delayed` or `realtime` |
+|     Field      | Description                                        |
+|:--------------:|:---------------------------------------------------|
+|   av api key   | API key obtained form Alphavantage.                |
+| av entitlement | Entitlement status, either `delayed` or `realtime` |
 
 ### Data Management Options
 
 Data is stored in one or two directories, depending on whether a **Dump
 directory** is set.
 
-- Price series and user time series are kept in a cache directory which
-  defaults to the temporary directory created for the package, but can
-  be set in the Cache Data Directory (C above). Earnings data is stored
-  in the same directory.
+- Price series and user time series are kept in a **cache directory**
+  which defaults to the temporary directory created for the package, but
+  can be set as above to a more user friendly location (e.g. `c:/t/avsh`
+  as above). Earnings data is stored in the same directory.
+
+- **Update Frequencies** are set in set in the (B) Update frequencies
+  section above, and are the maximum time between downloads of data. For
+  prices, only the smallest historical data is retrieved and updated
+  into the local dataset if they are older than the time specified[^1].
+  Historical earnings estimates are fuller redownloaded if they are
+  older than the number of days specified.
+
 - The results of each call to the Alphavantage API can optionally be
   stored in a **Dump directory**. The purpose of this is to allow users
   to “scrape” their thoughts, analyses, etc. on a per-call basis. Please
   be aware that this does increase the time spent on each command
-  issued. That directory is set in Dump Directory (D above) and data is
-  stored as a named (by function call name) list of `data.tables()`.
+  issued. That directory is set in Dump Directory (in the  
+  (C) Dump data: section above) where data is stored as a named (by
+  function call name) list of `data.tables()`.
 
 The options associated with the dumping are given below:
 
 [TABLE]
 
-`SaveEveryAVCall`: Save all calls cumulatively when the call is made.  
-`CleanOnStart`: Delete dump data on every startup of the app.  
-`None`: Keep dumped data in memory, avoiding I/O overhead.  
-`SaveNowonOptUpdate`\|Save next time `Set Opts` is pressed, (used in
-conjunction with `None`\| \|H Max Earnings Age\|Number of days to go
-before reloading earnings data.\| \|G Max Price Age\| Number of hours to
-go before refreshing price data.\|
+More detail on this feature is in the [Data
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
 
 ### Non-analytic Options
 
-Non analytic features are set as check boxes, and are described in the
-following table. Note that they only change “officially” when the Set
-Opts button is pressed.
+Non analytic features are set as check boxes in options section D, and
+are described in the following table. Note that any changes made only
+take effect when the Set Opts button is pressed.
 
 [TABLE]
 
@@ -68,8 +76,8 @@ These are default statistical parameters:
 
 | Field | Description |
 |:--:|:---|
-| J HistVolParams | Historical volatility parameters, see [TTR::volatility](https://www.rdocumentation.org/packages/TTR/versions/0.24.4/topics/volatility) |
-| K Regr Significance | Significance level below which regression results are highlighted |
+| HistVolParams | Historical volatility parameters, see [TTR::volatility](https://www.rdocumentation.org/packages/TTR/versions/0.24.4/topics/volatility) |
+| Regr Significance | Significance level below which regression results are highlighted |
 
 ## Graphing Options
 
@@ -86,8 +94,8 @@ the features described there can be used, most notably:
 - **Annotations** to highlight levels on a graph, e.g. last values.
 - **Full aesthetic control** of the graphing output, including colors,
   line types, and point types. For example, to change color sets for
-  timeseries lines, use an aesthtic set (e.g. `lines` or `altlines_6`,
-  specified in **L** above. See [Color
+  timeseries lines, use an aesthtic set (e.g. `lines` or `altlines_6`).
+  See [Color
   customization](https://derekholmes0.github.io/FinanceGraphs/articles/Time-Series-dygraph.html#customization-colors)
 
 Specific options for this app are described below, referencing this
@@ -151,3 +159,6 @@ XLF, with earnings surprise events:
 ![earn_on_gpi.jpg](img/earn_on_gpi.jpg)
 
 earn_on_gpi.jpg
+
+[^1]: Live data is always retrieved if the option to do so is set in the
+    options section D

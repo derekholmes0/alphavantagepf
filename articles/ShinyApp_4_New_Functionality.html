@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>ShinyApp_4_New_Functionality • alphavantagepf</title>
+<title>ShinyApp New Functionality • alphavantagepf</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="ShinyApp_4_New_Functionality">
+<meta property="og:title" content="ShinyApp New Functionality">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.435</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.438</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,10 +35,10 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/API_interface_usage.html">API_interface_usage</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_1_setup_and_usage.html">ShinyApp_1_setup_and_usage</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp_2_Graphs_and_Options</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_3_Data_Management.html">ShinyApp_3_Data_Management</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_4_New_Functionality.html">ShinyApp_4_New_Functionality</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_1_setup_and_usage.html">ShinyApp setup and usage</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp Graphs and Options</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_3_Data_Management.html">ShinyApp Data Management</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_4_New_Functionality.html">ShinyApp New Functionality</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -61,7 +61,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>ShinyApp_4_New_Functionality</h1>
+      <h1>ShinyApp New Functionality</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/derekholmes0/alphavantagepf/blob/master/vignettes/ShinyApp_4_New_Functionality.Rmd" class="external-link"><code>vignettes/ShinyApp_4_New_Functionality.Rmd</code></a></small>
@@ -76,7 +76,7 @@
 <p>The commands embedded with this app are just basic building blocks
 and nowhere near sufficient to do all the analyses that may be required.
 The app is designed to be extended by allowing users to add new
-functions outside the<strong>Alphavantagepf</strong> package.</p>
+functions outside th <strong>Alphavantagepf</strong> package.</p>
 <p>New functions will take (as inputs) the command (and options) to be
 executed and a named list with the current values of every design
 element in the app, augmented with a few more parameters to simplify
@@ -203,6 +203,11 @@ formats.</p>
 </tbody>
 </table>
 <p>So for example, a named list of the form</p>
+<pre><code><span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  <span class="st">'GT1'</span>   <span class="op">=</span>  <span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">gt</span><span class="op">(</span><span class="op">)</span>, </span>
+<span>  <span class="st">'SCAT1'</span> <span class="op">=</span>  <span class="fu">ggplot</span><span class="op">(</span><span class="va">mtcars</span>,<span class="fu">aes</span><span class="op">(</span>x<span class="op">=</span><span class="va">mpg</span>,y<span class="op">=</span><span class="va">disp</span><span class="op">)</span><span class="op">)</span><span class="op">+</span><span class="fu">geom_point</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  <span class="st">'DGT1'</span>  <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mtcars</span>,<span class="fl">10</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">gt</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre>
 <p>will show <code>mtcars</code> as a table followed by a scatterplot on
 the <span style="border: 1px solid #000000; padding: 2px 6px;">MAIN</span> tab,
 and a truncated table first in the <span style="border: 1px solid #000000; padding: 2px 6px;">DETAILS</span>
@@ -228,31 +233,31 @@ listed below:</p>
 <td align="center"><code>assetline</code></td>
 <td align="center">character</td>
 <td align="center">Asset string</td>
-<td align="center">QQQ;DIA</td>
+<td align="center"><code>QQQ;DIA</code></td>
 </tr>
 <tr class="even">
 <td align="center"><code>todo</code></td>
 <td align="center">character</td>
 <td align="center">Full Command to Run</td>
-<td align="center">QQQ;DIA GPD -6m::</td>
+<td align="center"><code>QQQ;DIA GPD -6m::</code></td>
 </tr>
 <tr class="odd">
 <td align="center"><code>todofunc</code></td>
 <td align="center">character</td>
 <td align="center">Command base</td>
-<td align="center">GPD</td>
+<td align="center"><code>GPD</code></td>
 </tr>
 <tr class="even">
 <td align="center"><code>todoargs</code></td>
 <td align="center">character</td>
 <td align="center">Command arguments</td>
-<td align="center">-6m::</td>
+<td align="center"><code>-6m::</code></td>
 </tr>
 <tr class="odd">
 <td align="center"><code>istr1</code></td>
 <td align="center">character</td>
 <td align="center">Full input line</td>
-<td align="center">QQQ;DIA GPD -6m::</td>
+<td align="center"><code>QQQ;DIA GPD -6m::</code></td>
 </tr>
 <tr class="even">
 <td align="center"><code>inTabset</code></td>
@@ -264,25 +269,25 @@ listed below:</p>
 <td align="center"><code>istr2</code></td>
 <td align="center">character</td>
 <td align="center">Counterasset</td>
-<td align="center">SPY</td>
+<td align="center"><code>SPY</code></td>
 </tr>
 <tr class="even">
 <td align="center"><code>dtstr_hist</code></td>
 <td align="center">character</td>
 <td align="center">Analysis date string</td>
-<td align="center">-2y::</td>
+<td align="center"><code>-2y::</code></td>
 </tr>
 <tr class="odd">
 <td align="center"><code>cachedir</code></td>
 <td align="center">character</td>
 <td align="center">Directory with cached data</td>
-<td align="center">c:/t/avsh</td>
+<td align="center"><code>c:/t/avsh</code></td>
 </tr>
 <tr class="even">
 <td align="center"><code>ts_volparams</code></td>
 <td align="center">character</td>
 <td align="center">Volatility parameters</td>
-<td align="center">gk.yz;20;252</td>
+<td align="center"><code>gk.yz;20;252</code></td>
 </tr>
 <tr class="odd">
 <td align="center"><code>sigpct</code></td>
@@ -294,26 +299,25 @@ listed below:</p>
 <td align="center"><code>gropts</code></td>
 <td align="center">character</td>
 <td align="center">Time Series Graphing options</td>
-<td align="center">last</td>
+<td align="center"><code>last</code></td>
 </tr>
 <tr class="odd">
 <td align="center"><code>scatopts</code></td>
 <td align="center">character</td>
 <td align="center">Scatter plot options</td>
-<td align="center">last</td>
+<td align="center"><code>last</code></td>
 </tr>
 <tr class="even">
 <td align="center"><code>ts_events</code></td>
 <td align="center">character</td>
 <td align="center">Time Series Events</td>
-<td align="center">tp,5</td>
+<td align="center"><code>tp,5</code></td>
 </tr>
 </tbody>
 </table>
 <p>All other items in the named list can be found either by inspection
 when the function is run within the shiny app, or by inspecting the
-source code of the <code>ui</code> function generator in the file
-<code>app.R</code>.</p>
+source code of the <code>ui</code> function generator in the file <a href="https://github.com/derekholmes0/alphavantagepf/blob/master/R/app.R" class="external-link"><code>app.R</code></a>.</p>
 </div>
 </div>
 <div class="section level2">
@@ -431,36 +435,41 @@ also contains some very helpful functions consistent with the design
 conventions of this app:</p>
 <table class="table">
 <colgroup>
-<col width="29%">
-<col width="70%">
+<col width="27%">
+<col width="19%">
+<col width="52%">
 </colgroup>
 <thead><tr class="header">
 <th align="center">Function</th>
+<th align="center">Example</th>
 <th align="left">Description</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td align="center"><a href="https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html" class="external-link">narrowbydtstr()</a></td>
-<td align="left">Filter a <code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table()</a></code> using a date
-string</td>
+<td align="center">
+<code>dt&lt;-av_get_pf("SPY","TIME_SERIES_DAILY")</code><br>
+</td>
+<td align="left"></td>
 </tr>
 <tr class="even">
-<td align="center"><a href="https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html" class="external-link">extenddtstr()</a></td>
-<td align="left">Expand a datestring into a new one</td>
+<td align="center"><code>dt |&gt; narrowbydtstr("-3m::")</code></td>
+<td align="center">Filter a <code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table()</a></code> using a date
+string</td>
+<td align="left"></td>
 </tr>
 <tr class="odd">
+<td align="center"><a href="https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html" class="external-link">extenddtstr()</a></td>
+<td align="center"><code>extenddtstr("-3y::",begchg=-30)</code></td>
+<td align="left">Expand a datestring into a new one</td>
+</tr>
+<tr class="even">
 <td align="center"><a href="https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html" class="external-link">gendtstr()</a></td>
+<td align="center"><code>gendtstr("-1m::")</code></td>
 <td align="left">Expand a datestring into a list of dates</td>
 </tr>
 </tbody>
 </table>
-<p>These functions facilitate transformation of succinct date strings
-such as <code>"-3y::"</code> to actual dates, possibly with offsets,
-e.g.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">extenddtstr</span>(<span class="st">"-3y::"</span>,<span class="at">begchg=</span><span class="sc">-</span><span class="dv">30</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>[<span class="dv">1</span>] <span class="st">"2023-07-11::2026-08-10"</span></span></code></pre></div>
-<p>and truncating <code>data.tables()</code> with date fields to those
-dates.</p>
 </div>
 <div class="section level3">
 <h3 id="helper-functions-ui-interaction">Helper Functions: UI Interaction<a class="anchor" aria-label="anchor" href="#helper-functions-ui-interaction"></a>
@@ -481,12 +490,12 @@ Shiny app:</p>
 <tbody>
 <tr class="odd">
 <td align="center"><a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html">avsh_quick_message</a></td>
-<td align="left"><code>where,this_message=""</code></td>
+<td align="left"><code>msg,where="istr1"</code></td>
 <td align="left">Give user feedback below a design element</td>
 </tr>
 <tr class="even">
 <td align="center"><a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html">avsh_clipboard</a></td>
-<td align="left"><code>data table</code></td>
+<td align="left"><code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table()</a></code></td>
 <td align="left">Copy data to the clipboard</td>
 </tr>
 <tr class="odd">
@@ -608,8 +617,8 @@ we return to matrices side by side by naming the outputs
 <code>"GT3L"</code> and <code>"GT3R"</code>. If named, the returned
 items don’t need to be in any order. If not named, the items are placed
 top to bottom.</p></li>
-<li><p>The function is a <code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table()</a></code>-centric, but does not
-need to be. <a href="https://tidyverse.org/" class="external-link">Yidyverse</a> idioms can be
+<li><p>The function is <code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table()</a></code>-centric, but does not
+need to be. <a href="https://tidyverse.org/" class="external-link">Tidyverse</a> idioms can be
 used, but are likely to be slower.</p></li>
 </ul>
 </div>

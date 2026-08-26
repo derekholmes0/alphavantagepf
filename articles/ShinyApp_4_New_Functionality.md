@@ -1,11 +1,11 @@
-# ShinyApp_4_New_Functionality
+# ShinyApp New Functionality
 
 ## Introduction: Innovate or die
 
 The commands embedded with this app are just basic building blocks and
 nowhere near sufficient to do all the analyses that may be required. The
 app is designed to be extended by allowing users to add new functions
-outside the**Alphavantagepf** package.
+outside th **Alphavantagepf** package.
 
 New functions will take (as inputs) the command (and options) to be
 executed and a named list with the current values of every design
@@ -46,6 +46,12 @@ Outputs in the main page are shown in the following order:
 
 So for example, a named list of the form
 
+    list(
+      'GT1'   =  mtcars |> gt(), 
+      'SCAT1' =  ggplot(mtcars,aes(x=mpg,y=disp))+geom_point(),
+      'DGT1'  =  head(mtcars,10) |> gt()
+      )
+
 will show `mtcars` as a table followed by a scatterplot on the MAIN tab,
 and a truncated table first in the DETAILS tab.
 
@@ -56,26 +62,27 @@ as (de-reacted) named list. The app command `AV.INPUTS` will produce a
 full table of the current values of design elements. The most important
 items for a user function are listed below:
 
-|    inputId     |   Type    |         Description          |      Example      |
-|:--------------:|:---------:|:----------------------------:|:-----------------:|
-|  `assetline`   | character |         Asset string         |      QQQ;DIA      |
-|     `todo`     | character |     Full Command to Run      | QQQ;DIA GPD -6m:: |
-|   `todofunc`   | character |         Command base         |        GPD        |
-|   `todoargs`   | character |      Command arguments       |       -6m::       |
-|    `istr1`     | character |       Full input line        | QQQ;DIA GPD -6m:: |
-|   `inTabset`   | character |    Currently selected Tab    |       MAIN        |
-|    `istr2`     | character |         Counterasset         |        SPY        |
-|  `dtstr_hist`  | character |     Analysis date string     |       -2y::       |
-|   `cachedir`   | character |  Directory with cached data  |     c:/t/avsh     |
-| `ts_volparams` | character |    Volatility parameters     |   gk.yz;20;252    |
-|    `sigpct`    | character |      Highlight p-value       |       0.025       |
-|    `gropts`    | character | Time Series Graphing options |       last        |
-|   `scatopts`   | character |     Scatter plot options     |       last        |
-|  `ts_events`   | character |      Time Series Events      |       tp,5        |
+|    inputId     |   Type    |         Description          |       Example       |
+|:--------------:|:---------:|:----------------------------:|:-------------------:|
+|  `assetline`   | character |         Asset string         |      `QQQ;DIA`      |
+|     `todo`     | character |     Full Command to Run      | `QQQ;DIA GPD -6m::` |
+|   `todofunc`   | character |         Command base         |        `GPD`        |
+|   `todoargs`   | character |      Command arguments       |       `-6m::`       |
+|    `istr1`     | character |       Full input line        | `QQQ;DIA GPD -6m::` |
+|   `inTabset`   | character |    Currently selected Tab    |        MAIN         |
+|    `istr2`     | character |         Counterasset         |        `SPY`        |
+|  `dtstr_hist`  | character |     Analysis date string     |       `-2y::`       |
+|   `cachedir`   | character |  Directory with cached data  |     `c:/t/avsh`     |
+| `ts_volparams` | character |    Volatility parameters     |   `gk.yz;20;252`    |
+|    `sigpct`    | character |      Highlight p-value       |        0.025        |
+|    `gropts`    | character | Time Series Graphing options |       `last`        |
+|   `scatopts`   | character |     Scatter plot options     |       `last`        |
+|  `ts_events`   | character |      Time Series Events      |       `tp,5`        |
 
 All other items in the named list can be found either by inspection when
 the function is run within the shiny app, or by inspecting the source
-code of the `ui` function generator in the file `app.R`.
+code of the `ui` function generator in the file
+[`app.R`](https://github.com/derekholmes0/alphavantagepf/blob/master/R/app.R).
 
 ## Writing and registering new functions and commands
 
@@ -148,21 +155,7 @@ The sister package
 contains some very helpful functions consistent with the design
 conventions of this app:
 
-| Function | Description |
-|:--:|:---|
-| [narrowbydtstr()](https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html) | Filter a [`data.table()`](https://rdrr.io/pkg/data.table/man/data.table.html) using a date string |
-| [extenddtstr()](https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html) | Expand a datestring into a new one |
-| [gendtstr()](https://derekholmes0.github.io/FinanceGraphs/reference/fg_date_utilities.html) | Expand a datestring into a list of dates |
-
-These functions facilitate transformation of succinct date strings such
-as `"-3y::"` to actual dates, possibly with offsets, e.g.
-
-``` r
-extenddtstr("-3y::",begchg=-30)
-[1] "2023-07-11::2026-08-10"
-```
-
-and truncating `data.tables()` with date fields to those dates.
+[TABLE]
 
 ### Helper Functions: UI Interaction
 
@@ -171,8 +164,8 @@ Shiny app:
 
 | Function | Critical Arguments | Description |
 |:--:|:---|:---|
-| [avsh_quick_message](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html) | `where,this_message=""` | Give user feedback below a design element |
-| [avsh_clipboard](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html) | `data table` | Copy data to the clipboard |
+| [avsh_quick_message](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html) | `msg,where="istr1"` | Give user feedback below a design element |
+| [avsh_clipboard](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html) | [`data.table()`](https://rdrr.io/pkg/data.table/man/data.table.html) | Copy data to the clipboard |
 | [avsh_set_tabtitle](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_interface.html) | `newtext="",tabnm="detail"` | Set a Tab title and optionally change focus to it |
 
 ### Registering a new function
@@ -269,9 +262,9 @@ Note a few items about this code:
   named, the returned items don’t need to be in any order. If not named,
   the items are placed top to bottom.
 
-- The function is a
+- The function is
   [`data.table()`](https://rdrr.io/pkg/data.table/man/data.table.html)-centric,
-  but does not need to be. [Yidyverse](https://tidyverse.org/) idioms
+  but does not need to be. [Tidyverse](https://tidyverse.org/) idioms
   can be used, but are likely to be slower.
 
 ### Registering and running the function.

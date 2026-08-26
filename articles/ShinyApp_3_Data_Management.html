@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>ShinyApp_3_Data_Management • alphavantagepf</title>
+<title>ShinyApp Data Management • alphavantagepf</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="ShinyApp_3_Data_Management">
+<meta property="og:title" content="ShinyApp Data Management">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.435</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.438</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,10 +35,10 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/API_interface_usage.html">API_interface_usage</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_1_setup_and_usage.html">ShinyApp_1_setup_and_usage</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp_2_Graphs_and_Options</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_3_Data_Management.html">ShinyApp_3_Data_Management</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_4_New_Functionality.html">ShinyApp_4_New_Functionality</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_1_setup_and_usage.html">ShinyApp setup and usage</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp Graphs and Options</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_3_Data_Management.html">ShinyApp Data Management</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_4_New_Functionality.html">ShinyApp New Functionality</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -61,7 +61,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>ShinyApp_3_Data_Management</h1>
+      <h1>ShinyApp Data Management</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/derekholmes0/alphavantagepf/blob/master/vignettes/ShinyApp_3_Data_Management.Rmd" class="external-link"><code>vignettes/ShinyApp_3_Data_Management.Rmd</code></a></small>
@@ -344,9 +344,13 @@ is to be sure a tedious task. To shortcut that effort, use <a href="https://dere
 as in the following example:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">newtickers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"QQQ"</span>,<span class="st">"QQQE"</span>,<span class="st">"NDX"</span><span class="op">)</span></span>
-<span><span class="va">newasset_dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>ticker<span class="op">=</span><span class="va">newtickers</span>,listnm<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"nasdaq"</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">newtickers</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">newweights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.2</span>,<span class="fl">0.3</span><span class="op">)</span></span>
+<span><span class="va">newasset_dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>ticker<span class="op">=</span><span class="va">newtickers</span>,listnm<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"nasdaq"</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">newtickers</span><span class="op">)</span><span class="op">)</span>, weight<span class="op">=</span><span class="va">newweights</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/av_add_assetgroups.html">av_add_assetgroups</a></span><span class="op">(</span><span class="va">newasset_dt</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/av_state_interface.html">dump_assetgroups</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>If no column <code>weight</code> is given weights are assumed equal.
+This information is saved for future use with the idea that user defined
+indices (as opposed to asset groups) may be useful.</p>
 </div>
 </div>
 <div class="section level2">
@@ -366,6 +370,45 @@ from the R console.</li>
 populated on application startup. The idea is to always have a
 dictionary what what you have on hand, without going back and forth
 between (e.g.) <code>AV.INV</code> and your train of thought.</p>
+<div class="section level3">
+<h3 id="api-call-dumping">API call dumping<a class="anchor" aria-label="anchor" href="#api-call-dumping"></a>
+</h3>
+<p>As described in the options vignette, the app has the ability to save
+the results of every API call into the “dump directory” set in the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab.
+If a valid directory is named and saved in that page, the app will
+append the results of every API call to a file called
+<code>av_download.RD</code></p>
+<p>This file consists of a list of named (by API call function)
+data.tables, each of which contains the results of that call. This is
+best illustrated by the following code:</p>
+<pre><code>&gt; load("c:\\t\\av_dump\\av_download.RD",verbose=TRUE)
+Loading objects:
+  av_download
+  
+&gt; names(av_download)
+[1] "HISTORICAL_OPTIONS"         "TIME_SERIES_DAILY_ADJUSTED" "EARNINGS"                   "EARNINGS_ESTIMATES"        
+&gt; av_download[["EARNINGS"]]
+ symbol          variable     ltype            value_df value_str value_num             load_ts
+ &lt;char&gt;            &lt;char&gt;    &lt;char&gt;              &lt;list&gt;    &lt;char&gt;     &lt;num&gt;              &lt;POSc&gt;
+    BAC    annualEarnings      list  &lt;data.frame[31x2]&gt;      NULL        NA 2026-08-26 14:59:00
+    BAC quarterlyEarnings      list &lt;data.frame[122x7]&gt;      NULL        NA 2026-08-26 14:59:00
+    BAC            symbol character              [NULL]       BAC        NA 2026-08-26 14:59:00
+     GS    annualEarnings      list  &lt;data.frame[27x2]&gt;      NULL        NA 2026-08-26 14:59:01
+     GS quarterlyEarnings      list &lt;data.frame[109x7]&gt;      NULL        NA 2026-08-26 14:59:01
+     GS            symbol character              [NULL]        GS        NA 2026-08-26 14:59:01
+    JPM    annualEarnings      list  &lt;data.frame[31x2]&gt;      NULL        NA 2026-08-26 14:59:02
+    JPM quarterlyEarnings      list &lt;data.frame[122x7]&gt;      NULL        NA 2026-08-26 14:59:02
+    JPM            symbol character              [NULL]       JPM        NA 2026-08-26 14:59:02
+</code></pre>
+<p>Data stored in the file can either be <strong>cumulative</strong>,
+which will save every call with a new timestamp, or as a keyed
+<code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table()</a></code> where new results are updated by a relevant
+key (usually <code>symbol</code>) as necessary. <strong>This file can
+grow to be quite large</strong> (and hence slow the app considerably),
+so consider also enabling the <code>CleanOnStart</code> option. The user
+may want to periodically remove that file, but that would be outside the
+scope of this app.</p>
+</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
