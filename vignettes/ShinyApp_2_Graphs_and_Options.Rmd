@@ -1,13 +1,15 @@
 ---
-title: "ShinyApp_2_Graphs_and_Options"
+title: "ShinyApp Graphs and Options"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ShinyApp_2_Graphs_and_Options}
+  %\VignetteIndexEntry{ShinyApp Graphs and Options}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -25,10 +27,18 @@ cache directory chosen by `tools::R_user_dir("alphavantagepf", which = "cache")`
 unless a **Cache data directory** is set up.  The options can be categorized within three groups: required API options, data management options,
 and others.
 
+::: {style="display: flex;"}
 
-```{r, echo=FALSE, out.height="40%"}
-knitr::include_graphics("img/av_opts_detail.jpg")
-```
+![Options](img/av_opts_detail.jpg){width=80%}
+
+|Category|Description|
+|:----------:|:------------------------|
+|<span style="color:red">A:</span> Keys and Data|API keys and path to saved data<br>API connection is minimal requirement|
+|<span style="color:red">B:</span> Data Update Frequency|How often to update prices/earnings|
+|<span style="color:red">C:</span> AV Capture|Capture individual calls to API|
+|<span style="color:red">D:</span> Options|Other binary options to control app behavior|
+
+:::
 
 ## Required API Options
 
@@ -36,39 +46,37 @@ This app is centered around the Alphavantage API, and requires a valid API key a
 
 |Field|Description |
 |:-----------:|:------------------|
-|av api key (<span style="color:blue">A</span> above)|API key obtained form Alphavantage.|
-|av entitlement (<span style="color:blue">B</span> above)|Entitlement status, either `delayed` or `realtime`|
+|av api key|API key obtained form Alphavantage.|
+|av entitlement|Entitlement status, either `delayed` or `realtime`|
 
 ## Data Management Options
 
 Data is stored in one or two directories, depending on whether a **Dump directory** is set.  
 
-* Price series and user time series are kept in a cache directory which defaults to the temporary directory created for the package, but can be set in
-the Cache Data Directory (<span style="color:blue">C</span> above).   Earnings data is stored in the same directory.
-* The results of each call to the Alphavantage API can optionally be stored in a **Dump directory**.  The purpose of this is to allow
-users to "scrape" their thoughts, analyses, etc. on a per-call basis.  Please be aware that this does increase the time spent on each command issued.
-That directory is set in Dump Directory (<span style="color:blue">D</span> above) and data is stored as a named (by function call name) list of `data.tables()`.  
+* Price series and user time series are kept in a **cache directory** which defaults to the temporary directory created for the package, but can be set as above to a more user friendly location (e.g. `c:/t/avsh` as above).  Earnings data is stored in the same directory.
+
+* **Update Frequencies** are set in set in the <span style="color:red">(B) Update frequencies</span> section above, and are the maximum time between downloads of data.  For prices, only the smallest historical data is retrieved and updated into the local
+dataset if they are older than the time specified[^1].  Historical earnings estimates are fuller redownloaded if they are older
+than the number of days specified.
+
+* The results of each call to the Alphavantage API can optionally be stored in a **Dump directory**.  The purpose of this is to allow users to "scrape" their thoughts, analyses, etc. on a per-call basis.  Please be aware that this does increase the time spent on each command issued. That directory is set in Dump Directory (in the  
+<span style="color:red">(C) Dump data:</span> section above) where data is stored as a named (by function call name) list of `data.tables()`.  
 
 The options associated with the dumping are given below:
 
 |Field|Description|
 |:----------:|:------------------------|
-|<span style="color:blue">C</span> Cache Data</span>|Directory to store time series, earnings, and earnings estimates|
-|<span style="color:blue">D</span> AV dump directory</span>|Directory to store API call results.  Must be set for dumping to occur.|
-|<span style="color:blue">E</span> Capture AV Data</span>|What to capture<br>`None` (default): Turn capture off, even if the directory is set.<br>`nopricesonly`: Capture anything *but* time series data.<br>'all' Capture all calls|
-|<span style="color:blue">F</span> Update or Cumulative|`update` data captured by symbol, or (`cum`) capture every time with a timestamp.|
-|<span style="color:blue">G</span> Data Saving Options|Other options<br>
-`SaveEveryAVCall`: Save all calls cumulatively when the call is made.<br>
-`CleanOnStart`: Delete dump data on every startup of the app.<br>
-`None`: Keep dumped data in memory, avoiding I/O overhead.<br>
-`SaveNowonOptUpdate`|Save next time `Set Opts` is pressed, (used in conjunction with `None`|
-|<span style="color:blue">H</span> Max Earnings Age|Number of days to go before reloading earnings data.|
-|<span style="color:blue">G</span> Max Price Age| Number of hours to go before refreshing price data.|
+|Cache Data|Directory to store time series, earnings, and earnings estimates|
+|AV dump directory|Directory to store API call results.  Must be set for dumping to occur.|
+|Capture AV Data|Capture individual API calls<br>`None` (default): Turn capture off, even if the directory is set.<br>`nopricesonly`: Capture anything *but* time series data.<br>`all` Capture all calls|
+|Update or Cumulative|`update` data captured by symbol, or (`cum`) capture every time with a timestamp.|
+|Data Saving Options|Manage capture file<br>`SaveEveryAVCall`: Save all calls cumulatively when the call is made.<br>`CleanOnStart`: Delete dump data on every startup of the app.<br>`None`: Keep dumped data in memory, avoiding IO overhead<br>`SaveNowonOptUpdate`|Save next time `Set Opts` is pressed, (used in conjunction with `None)`|
+
+More detail on this feature is in the [Data Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
 
 ## Non-analytic Options
 
-Non analytic features are set as check boxes, and are described in the following table.  Note that they only change "officially" when the 
-<span style="background-color: #003366; color: #FFFFFF;">Set Opts</span> button is pressed.  
+Non analytic features are set as check boxes in  <span style="color:red">options section D</span>, and are described in the following table.  Note that any changes made only take effect when the  <span style="background-color: #003366; color: #FFFFFF;">Set Opts</span> button is pressed.  
 
 |Field|Description |
 |:-------:|:------------------|
@@ -80,6 +88,10 @@ Non analytic features are set as check boxes, and are described in the following
 |showGeneralHelp|Show (or not) a general help screen when `AV.H` is run.|
 |showWarnings|Suppress warnings from other packages (e.g. ggplot2)|
 |useAbbreviations|Abbreviate Ticker Names, dropping superfluous words in title|
+|allDaysOnGraph|Show non-equity business days if relevant[^2] on dygraphs|
+
+[^2]:This matters, e.g. when plotting a 24hr asset (e.g. Cryptocurrencies) with equities. If selected, there will be noticeable gaps in
+the series of assets that aren't trading when the 24hr asset is.
 
 ## Analytics Options
 
@@ -87,8 +99,8 @@ These are default statistical parameters:
 
 |Field|Description |
 |:--:|:------------------|
-|<span style="color:green">J</span> HistVolParams</span>|Historical volatility parameters, see [TTR::volatility](https://www.rdocumentation.org/packages/TTR/versions/0.24.4/topics/volatility)|
-|<span style="color:green">K</span> Regr Significance|Significance level below which regression results are highlighted|
+|HistVolParams|Historical volatility parameters, see [TTR::volatility](https://www.rdocumentation.org/packages/TTR/versions/0.24.4/topics/volatility)|
+|Regr Significance|Significance level below which regression results are highlighted|
 
 # Graphing Options
 
@@ -100,7 +112,7 @@ Any of the features described there can be used, most notably:
 * **Automated rescaling** of data to put in total return (index) terms.
 * **Annotations** to highlight levels on a graph, e.g. last values.
 * **Full aesthetic control** of the graphing output, including colors, line types, and point types.  For example, to change color sets for
-timeseries lines, use an aesthtic set (e.g. `lines` or `altlines_6`, specified in **L** above.  See 
+timeseries lines, use an aesthtic set (e.g. `lines` or `altlines_6`).  See 
 [Color customization](https://derekholmes0.github.io/FinanceGraphs/articles/Time-Series-dygraph.html#customization-colors)
 
 Specific options for this app are described below, referencing this example:
@@ -150,7 +162,7 @@ As an example of how to use those events, here is a graph of JPM and XLF, with e
 
 ![earn_on_gpi.jpg](img/earn_on_gpi.jpg)
 
-
+[^1]:Live data is always retrieved if the option to do so is set in the <span style="color:red">options section D</span>
 
 
 

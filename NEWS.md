@@ -22,6 +22,7 @@ Bug fixes
 * Fixed app crash if no earnings transcript available.
 * Fixed graphing so that stepPlots are chosen appropriately, not always.
 * `splitfirst` ignored for single name plots.
+* `av_opt_helper_cols` better determines and communicates spot levels.
 
 ## Breaking changes
 

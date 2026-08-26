@@ -89,8 +89,8 @@ add_colwidths <- function(gtx,xtablenm) {
 #' @import data.table
 gt.avtheme<- function(x,themeset="",...) {
   term=`i.to`=estimate_Beta=p.value_Beta=loadts=n=catprio=prio=matchScore=nlink=sntmt=time_published=estiamtedEPS=NULL
-  est_low=est_high=est_n=est_30dpchg=est_90dpchg=divdays=estimatedEPS=volume=low=high=chgpct=EH_chgpct=age=EH_mid=isah=inlist=thisgt=NULL
-  tablenm=aesnm=regfactor=estimate=p.value=beg_dt=imp=NULL
+  est_low=est_high=est_n=est_30dpchg=est_90dpchg=divdays=estimatedEPS=volume=low=high=chgpct=EH_chgpct=age=EH_mid=inlist=thisgt=NULL
+  tablenm=aesnm=regfactor=estimate=p.value=beg_dt=imp=change=EH_chg=src=NULL
   ntable_len<-0
   ldots = list(...)
   # -- Tables that require further processing
@@ -116,21 +116,20 @@ gt.avtheme<- function(x,themeset="",...) {
   }
   if(themeset=="live") {
     # x = av_get_pf(c("ORCL","IBM","EWZ","ARGT"),"REALTIME_BULK_QUOTES",melt=FALSE)
-    setnames(x, s("change_percent;extended_hours_quote;extended_hours_change;extended_hours_change_percent;previous_close"),
-              s("chgpct;EH_mid;EH_chg;EH_chgpct;prevclose"),skip_absent=TRUE)
     x[,let(age=timestamp-Sys.time(), volume=volume/10^6)]
     x[,let(chgfropenbp=10000*(close/open-1), lowbpopen=10000*(low/open-1), hibpopen=10000*(high/open-1))]
-    x[,let(isah=is.na(chgpct), chgpct = fcoalesce(chgpct,EH_chgpct))]
+    x[,let(chgpct = fcoalesce(chgpct,EH_chgpct), change=fcoalesce(change,EH_chg))]
     thisgt = x |> gt() |> gt.basetheme(interactive="all",size="wide") |>
       tab_spanner_delim(delim="_") |> fmt_duration(columns=age,output_units=c("days", "hours", "minutes")) |>
-      cols_move_to_start(s("symbol;chgpct;close;age")) |>
+      cols_move_to_start(s("symbol;close;chgpct;age;change")) |>
+      tab_style(style=cell_text(color="gray60",weight="bold"), locations=cells_body(columns=c(symbol,close,chgpct), rows=(src=="hist"))) |>
       tab_style(style=cell_text(color="red",weight="bold"), locations=cells_body(columns=c(close,EH_mid), rows=chgpct<0)) |>
       tab_style(style=cell_text(color="blue",weight="bold"), locations=cells_body(columns=c(close,EH_mid), rows=chgpct>=0)) |>
       tab_style(style=cell_text(weight="bold"), locations=cells_body(columns=c(chgpct))) |>
-      tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,chgpct), rows=(isah==TRUE))) |>
-      cols_hide(columns=c(timestamp,prevclose,lowbpopen,hibpopen,isah)) |>
+      tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,chgpct), rows=!is.na(EH_mid))) |>
+      cols_hide(columns=c(timestamp,prevclose,lowbpopen,hibpopen,src)) |>
       add_colwidths("live") |>
-      tab_footnote("Extended hours in pink, prices are colored by direction from previous close")
+      tab_footnote("Extended hours in pink, prices are colored by direction from previous close, Historical data grayed")
     if("inlist" %in% names(x)) {
       thisgt = thisgt |>
         tab_style(style=cell_fill(color="lightgreen"), locations=cells_body(columns=everything(),  rows=(inlist==TRUE))) |>
@@ -153,7 +152,7 @@ gt.avtheme<- function(x,themeset="",...) {
   }
   if(themeset=="pxinv") {
     thisgt <- thisgt |> tab_header(title="Data Inventory") |>
-      gt.basetheme(interactive="all",sizepct=70) |>
+      gt.basetheme(interactive="all") |>
       fmt_datetime(columns=loadts,date_style="Md",time_style="iso-short") |>
       tab_style(style=cell_fill(color="pink"), locations=cells_body(columns=c(symbol,name,type,currency,age), rows=(as.numeric(age)>=3))) |>
       tab_style(style = cell_text(size = px(10)),locations = cells_body(columns = c(loadts))) |>

@@ -1,7 +1,9 @@
 #source("./R/utilities.R")
-tver<-"0.8.435"
+tver<-"0.8.437"
 
-
+# 438: Documentation, summary in options search
+# 437: OPtion Search done
+# 436: Seasoanlity works, Weekends options
 # 435: Refactor live prices
 # 434: Last  user index fix.  assetnames needed caps
 # 432: av.inv(grep),user index fix
@@ -95,7 +97,7 @@ av_make_ui <- function() {
               ),
               tabPanel("OPTIONS",value="options",
                 fluidRow(
-                  column(width=2,textInput(inputId="ochains", label="Default Chains",value=the_av$ochains)),
+                  column(width=3,textInput(inputId="ochains", label="Default Chains",value=the_av$ochains)),
                   column(width=2,numericInput(inputId="omindelta", label="omindelta", value=the_av$omindelta,min=0,max=100)),
                   column(width=2,selectInput(inputId="otodisplay", label="Output",
                                                  c("reduced","trading","all"),selected=the_av$otodisplay,multiple=FALSE)),
@@ -170,7 +172,6 @@ av_make_server <- function() {
   av_server<-function(input, output,session) {
     inlist=list_ts=vartype=todofunc=todo=assetline=NULL
     curr_assetgroups <- sort(unique(the_av$assetgroups$listnm))
-    quick_message("[F(ront)|B(ack)],[M|Q],[C(all)|P(ut)],[itm|otm|all]",wh="ochains")
     # On Startup download current index list if not there
     update_tickerlists( is.null(the_av$tickerlist) || nrow(the_av$tickerlist)<=0 ||
             (max(the_av$tickerlist$list_ts)<=Sys.Date()-4) )
@@ -188,6 +189,11 @@ av_make_server <- function() {
     observeEvent(input$gropts, {
       req(input$gropts)
       av_set_defaults("gropts",paste0(input$gropts,sep=";"))
+    })
+
+    observeEvent(input$ochains, {
+      req(input$ochains)
+      quick_message(opt_explation(input$ochains),wh="ochains")
     })
 
     observeEvent(input$ag_state, {
@@ -235,6 +241,7 @@ av_make_server <- function() {
       th1 <- th1[,.(nm,old=toget)][thnew,on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
       th1 <- th1[,.SD,.SDcols=s("nm;classtype;toget;format")]
       quick_message("No data in inventory; load or ask for some via PriceTS", eval=(nrow(th1)<=0))
+      th1 <- th1[nm=="avapikey",toget:="<< redacted >>"]
       output$dumpthe <- render_gt(th1 |> gt() |> gt.basetheme(interactive="filter") |> decorate_table())
     })
 

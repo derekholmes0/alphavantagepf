@@ -19,16 +19,15 @@ av_inventory <- function(todo,rv) {
     toprint <- toprint[,symbol:=s(symbol,"/")[[1]], by=.I][,ntickers:=.N,by=.(symbol)]
     toprint <- toprint[,.SD[1][,name:=paste0(fifelse(ntickers>1,"e.g.",""),name)],by=.(symbol)]
     toprint <- toprint[grepl(grepstr,name),]
-    gtout <- toprint[order(prio,symbol)] |> gt() |>  gt.basetheme(interactive="all",sizepct=85) |> cols_hide(columns=c(prio)) |>
+    gtout <- toprint[order(prio,symbol)] |> gt() |>  gt.basetheme(interactive="all") |> cols_hide(columns=c(prio)) |>
         cols_move_to_start(columns=c(symbol,name)) |>
                   fmt_number(columns=c(ntickers),decimals=0) |> add_colwidths("tickers")
-
   }
   else {
     outcols <- s("symbol;name;type;currency;lastpx;end_dt;beg_dt;list_ts")
     invout <- the_av$pxinv[,.SD,.SDcols=outcols][,age:=Sys.Date()-end_dt]
     invout <- invout[grepl(grepstr,name),]
-    gtout <- invout |>  gt.avtheme(themeset="pxinv",sizepct=90)
+    gtout <- invout |>  gt.avtheme(themeset="pxinv")
 
   }
   out<-list("GT1"=gtout ,"DGT1"=the_av$assetgroups |> gt() |> gt.basetheme(interactive="filter"))
@@ -237,16 +236,19 @@ av_vol <-function(todo,rv) {
   func_details <- the_av$avsh_funcs[runcode==todolist[[1]],]
   rb <- find_rebasecode(gsub("GV","GP",todolist[[1]]),rv$dtstr_hist)
   toplot<-data_from_list(s(rv$assetline),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID="istr1",copytable=FALSE)
-  if( nrow(toplot[[1]])>0) {
+  if( nrow(toplot_dt <- toplot[[1]])>0) {
+    if(!grepl("AllDaysOnGraph",the_av$logopts)) {
+      toplot_dt <- dtmap[isholiday==FALSE,.(timestamp=DT_ENTRY)][toplot_dt,on=.(timestamp),nomatch=NULL]
+    }
     volp <- s(rv$ts_volparams)
     one_ts_vol <- function(sb) {
-        tdta <- toplot[[1]][symbol==sb,]
+        tdta <- toplot_dt[symbol==sb,]
         xdta <- tdta[,lapply(.SD,\(x) x+(get(the_av$seriesnm)-close)), .SDcols=s("open;high;low;close")]
         xdta <- tdta[,lapply(.SD,\(x) fcoalesce(x,close)),  .SDcols=s("open;high;low;close")]
         setnafill(xdta,"locf")
-        data.table(timestamp=tdta$timestamp,variable=x,value=100*TTR::volatility(xdta, calc=volp[[1]],n=as.integer(volp[[2]]), N=as.integer(volp[[3]])))
+        data.table(timestamp=tdta$timestamp,variable=sb,value=100*TTR::volatility(xdta, calc=volp[[1]],n=as.integer(volp[[2]]), N=as.integer(volp[[3]])))
     }
-    toplot2 <- rbindlist(lapply(unique(toplot[[1]]$symbol), one_ts_vol))
+    toplot2 <- rbindlist(lapply(unique(toplot_dt$symbol), one_ts_vol))
     avsh_clipboard(toplot2,"HistVol")
     out[["TS1"]] <- one_px_ts(toplot2,rv,title=paste("Volatility (pct) using ",rv$ts_volparams),events=rv$ts_events,dt_window=rb$rebase_window)
     toplot[[2]]<-"start"
@@ -263,10 +265,11 @@ av_livepx <- function(todo,rv) {
   if( todolist[[1]]=="Q") {
     assets <- form_symset(s(rv$assetline)) }
   else {
-    assets <- the_av$pxinv[,.(symbol,type,currency,name,matchScore,list_ts)]
+    assets <- the_av$pxinv[!(type=="user"),][,.(symbol,type,currency,name,matchScore,list_ts)] # Only really live
   }
   if( quick_message("No inventory to price",eval=(nrow(assets)<=0)) ) { return() }
   df_live <- livepx_epx(assets,outformat="live")
+  if( quick_message("User data and indices not quoted live ",eval=(nrow(df_live)<=0)) ) { return() }
   avsh_clipboard(df_live,"liveprice")
   return(list(df_live |>  gt.avtheme(themeset="live")))
 }
@@ -368,7 +371,7 @@ av_active <- function(todo,rv) {
     out[["SCAT1"]] <- patchwork::wrap_plots( rtnscatall[[1]],o2,ncol=2)
 
     anames <- s(rv$assetline)
-    corr_idx = toplot_idx[,.(value=cor(rtn,mktrtn,method="kendall")), by=.(symbol)][,let(variable="coridx")]
+    corr_idx = toplot_idx[,.(value=cor(rtn,mktrtn,method="kendall")), by=.(symbol)][,let(variable="coridx", name=paste0(">>> ",combassetlist[1]))]
     corr_tr <- dcast(toplot_idx[,artn:=rtn-mktrtn],timestamp ~ symbol, value.var="rtn")
     corr_raw <- data.table(cor(corr_tr[,.SD,.SDcols=!("timestamp")]),keep.rownames=TRUE) |> setnames("rn","symbol")
     corr_tr <- dcast(toplot_idx[,artn:=rtn-mktrtn],timestamp ~ symbol, value.var="artn")
@@ -482,12 +485,14 @@ av_search <- function(todo,rv) {
 # For the following functions: OS
 # GOod
 av_optsearch <- function(todo,rv) {
+  open_interest=strikme=waK=spot=put=matdays=strike=NULL
   out<-list()
   av_set_default_set("optsearch",rv)
   allmsg <- ""
   indta <- data.table()
   eqlist1 <- s(rv$assetline)
   ochains <- find_arg(todo,"f") %||% rv$ochains
+  if(!(ochains==rv$ochains)) updateTextInput(session=getDefaultReactiveDomain(),"ochains", value= ochains)
   mindelta <- find_arg(todo,"d",altno=-1) %||% rv$omindelta
   message_if_red(the_av$verbose," av_optsearch ochains:: ",ochains, " mindelta: ",mindelta)
   for (x in eqlist1) {
@@ -517,7 +522,22 @@ av_optsearch <- function(todo,rv) {
     filteredopts<- filteredopts[,symbol:=sprintf("%s %3dd %s",symbol,daysExp,type)]
     avsh_clipboard(filteredopts,"opts")
     out[["OPT1GT"]] <- filteredopts |> gt.avtheme(themeset="filteredopts", rv$assetline, rv$otodisplay)
-    quick_message("Option set comes from HISTORICAL_OPTIONS, not REALTIME")
+    message_if_red(the_av$verbose,"Option set comes from HISTORICAL_OPTIONS, not REALTIME")
+    # SUmmary
+    alloi <- indta[,.(n=.N,oi=sum(open_interest)/1000, waK=sum(open_interest*strike)/sum(open_interest)),by=.(symbol,type,expiration)]
+    alloi <- inspots[alloi,on=.(symbol)][,':='(waKpct=100*(waK/spot-1))]
+    cpratio <- dcast(alloi,symbol+expiration~type,value.var="oi")[,.(symbol=paste0("CPRatio_",symbol),expiration,CP_ratio=100*call/put)] |>
+              dcast(expiration ~ symbol, value.var=c("CP_ratio"))
+    toprint <- cpratio[dcast(alloi,expiration+type ~ symbol,value.var=c("waK","waKpct","oi")),on=.(expiration)]
+    toprint <- toprint[, matdays:=as.numeric(expiration-Sys.Date())][order(type,expiration)]
+    out[["GT1"]] <- toprint |> gt() |> gt.basetheme() |>  tab_spanner_delim("_",columns=contains("_")) |> cols_move_to_start(s("type;expiration;matdays")) |>
+                  fmt_number(accounting=TRUE,decimals = 0,use_seps=TRUE) |>
+                  fmt_number(decimals=2,columns=contains("waK_")) |> tab_header("Weighted (by OI) Avg Strikes by expiration")
+    topoi <- indta[order(expiration,-symbol,open_interest)][,.SD[1:3],by=.(expiration,symbol)]  |> av_opt_helper_cols(scaling=rv$oscaling)
+    topoi[,type:=fifelse(type=="call","C","P")]
+    topoi<- topoi[,.SD,.SDcols=s(colstoshow[showset==rv$otodisplay,]$colstring)]
+    topoi<- topoi[,symbol:=sprintf("%s %3dd %s",symbol,daysExp,type)]
+    out[["DGT1"]] <- topoi |> gt.avtheme(themeset="filteredopts", rv$assetline, rv$otodisplay) |> tab_header("3 highest Open Interest")
   }
   else {
     quick_message(" ... No options found")
@@ -532,28 +552,31 @@ av_seasonality <- function(todo,rv) {
   firsteq <- this_symset[grepl("Equity|ETF",type),][,.SD[1]]$symbol
   firstticker <- this_symset[,.SD[1]]$symbol
   events <- data.table()
-  seastype <- ""
-  out<-list()
-  if(todofunc=="SEASDIV" && !is.na(firsteq)) {
+  seas_pd <- ""
+  if(rv$todofunc=="SEASDIV" && !is.na(firsteq)) {
     gtitle <- paste0(firsteq," Dividends Seasonality")
     toplot <- data_from_list(firsteq,rv$dtstr_hist ,"none",rv$dtstr_hist,msg_inputID="istr1")[[1]][,.(timestamp,close=get(the_av$seriesnm))]
     events <- oneticker_divs(firsteq,rv$dtstr_hist)[,.(date=ex_dividend_date ,label=format(ex_dividend_date ,"%y%m") )]
   }
-  else if(todofunc=="SEASEA" && !is.na(firsteq)) {
+  else if(rv$todofunc=="SEASEA" && !is.na(firsteq)) {
     gtitle <- paste0(firsteq," Earnings Seasonality")
     toplot <- data_from_list(firsteq,rv$dtstr_hist ,"none",rv$dtstr_hist,msg_inputID="istr1")[[1]][,.(timestamp,close=get(the_av$seriesnm))]
-    events <- oneticker_earns(thiseq,extenddtstr(rv$dtstr_hist,rtn="list"),rv$dtstr_hist)
+    cAssign("firsteq;rv")
+    events <- oneticker_earns(firsteq,extenddtstr(rv$dtstr_hist,rtn="list"),rv$dtstr_hist)
     events <- events[, .(date=reportedDate,label=paste0(fifelse(surprise<0,"MISS!",""),format(reportedDate,"%Y%m")))]
   }
-  else if (tolower(todoargs)  %in% c("yr","qtr","mo","wk","IMMroll","optmo","optqtr")) {
-    gtitle <- paste0(firstticker," ",todoargs," Seasonality")
+  else if (rv$todofunc=="SEAS") {
+    seas_pd <- fifelse(rv$todoargs=="","yr",tolower(rv$todoargs))
+    events <- NULL
+    valid_seas_pd = c("yr","qtr","mo","wk","IMMroll","optmo","optqtr")
+    if (quick_message("Seasonality period must be in ",paste(valid_seas_pd,sep=","),eval=!(seas_pd %in% valid_seas_pd))) { return() }
+    gtitle <- paste0(firstticker," ",seas_pd," Seasonality")
     toplot <- data_from_list(firstticker,rv$dtstr_hist ,"none",rv$dtstr_hist,msg_inputID="istr1")[[1]][,.(timestamp,close=get(the_av$seriesnm))]
-    seastype = tolower(todoargs)
   }
   else {
     quick_message("Invalid Seasonality type for given asset")
-    return(out)
+    return(list())
   }
-  out[["SCAT1"]]<- fg_seasonalstudy(toplot,yvar="close",seasonaldateset = events,seasonaltype<-seastype, normalize="index",projectfwd="mean",title=gtitle)
+  out<-list("SCAT1"= fg_seasonalstudy(toplot,yvar="close",seasonaldateset = events,seasonaltype=seas_pd, normalize="index",projectfwd="mean",title=gtitle))
   return(out)
 }

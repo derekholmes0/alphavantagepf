@@ -94,7 +94,7 @@ av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",
 #' \dontrun{
 #' # To add earnings for a set of tickers
 #' av_load_shinydata()  # Make sure most recent data is loaded
-#' av_add_earn(equitylist=data.table(symbol=c("IBM","GS"))
+#' av_add_earn(equitylist=data.table(symbol=c("IBM","GS")))
 #' }
 #' @export
 av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=NULL,delay=0) {

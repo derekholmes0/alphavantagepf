@@ -21,11 +21,11 @@ av_grep_opts(
 open interest categories from option sets returned by \code{av_get_pf(.,"HISTORICAL_OPTIONS")}. Each item in the list is an
 abbreviated code for what to select. The items are not case sensitive and in order are\tabular{lll}{
    Item \tab Values \tab description \cr
-   Expiration Limit \tab `[F \tab B \cr
-   Maturity Type \tab `[M \tab Q \cr
-   Option Type \tab `[C \tab P \cr
-   Moneyness \tab `[otm \tab itm \cr
-   Activity \tab `[act \tab A]` \cr
+   Expiration Limit \tab \code{F}|\code{B}|\code{A} \tab \code{F} is first maturity, \code{B} is second maturity, \code{A} (pr blank) are all \cr
+   Maturity Type \tab \code{M}|\code{Q}|\code{A} \tab \code{M} for monthly contracts, \code{Q} for quarterly,  \code{A} (pr blank) are all \cr
+   Option Type \tab \code{C}|\code{P}|\code{A} \tab Calls, puts, \code{all} (or blank) for all \cr
+   Moneyness \tab \code{otm}|\code{itm}|\code{A} \tab Out of the money, in the money or both \cr
+   Activity \tab \code{act}|\code{A} \tab If \code{A}, only pass contracts with positive open interest \cr
 }}
 
 \item{spot}{(default \code{NULL}) Spot to be used to determine itm/otm, If null then it is inferred from most out of the money call or put
@@ -47,6 +47,8 @@ A reduced set of options obtained from \code{\link[=av_get_pf]{av_get_pf()}} usi
 Filter options from returned AV data
 }
 \details{
+Alphavantage doesn't always return quarterly options
+
 \code{\link[=av_get_pf]{av_get_pf()}} returns a large list of options.  This function helps to narrow down the list by maturity and moneyness.
 }
 \examples{

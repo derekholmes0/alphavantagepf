@@ -47,7 +47,7 @@ epx_get_avfn <- function(intype,live=FALSE) {
 # epx_fmt_to_hist : Convert quotes to same schema as historical data
 # --------------------------------------------------
 epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
-  latestDay=high=low=volume=extended_hours_quote=NULL
+  latestDay=high=low=volume=extended_hours_quote=EH_mid=NULL
   if(live==FALSE & (intype=="Equity" | intype=="ETF")) {
     tortn <- inquote
   }
@@ -60,8 +60,8 @@ epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
   else if(live==TRUE & (intype=="Equity" | intype=="ETF")) {
     # GLOBAL_QUOTEtortn <- inquote[,.(symbol,timestamp=latestDay,open,high,low,close=price,adjusted_close=price,volume,dividend_amount=0,split_coefficient=1)]
     # REALTIME_BULK_QUOTES
-    tortn <- inquote[,.(symbol,timestamp,open,high,low,close=fcoalesce(close,extended_hours_quote),
-                  adjusted_close=fcoalesce(close,extended_hours_quote),volume,dividend_amount=0,split_coefficient=1)]
+    tortn <- inquote[,.(symbol,timestamp,open,high,low,close=fcoalesce(close,EH_mid),
+                  adjusted_close=fcoalesce(close,EH_mid),volume,dividend_amount=0,split_coefficient=1)]
   }
   else if(live==TRUE & (intype=="Index" | intype=="user")) {
     tortn <- data.table()
@@ -75,10 +75,8 @@ epx_fmt_to_hist <- function(inquote,intype,live=FALSE) {
   return(tortn)
 }
 
-# ---
+# ================================================================================================================
 # Manage_epx: DOwnload (or redownload) all relevant data: Only use form withing SHiny
-# ---
-
 # manage_epx only accepts more than one ticker if called with substitute_data
 # mange_eps will download repeatedly before market opens, no real way to avoid it without time of day logic
 # 260703:  Splitting price and earnings, and keeping manage_epx as wrapper
@@ -102,16 +100,20 @@ manage_epx <- function(inticker, dtstr,
   #message_if_green(the_av$verbose,"mange_epx(",inticker,"): px:",rtnpx," earn:",rtnearn)
 }
 
+# ================================================================================================================
 # epx_livepx returns raw list of assets and quotes
 # assets must have [symbol, type], outformat in [hist,live]
 # Generalized previously, but decided to de-generalize here
 livepx_epx <- function(assets,outformat="live") {
-  src=NULL
+  src=EH_mid=chgpct=NULL
   df_list <- list()
   # EQuity|ETF: 0.26ms hist, 0.13ms live
   ts<-Sys.time()
   if( length( tmp_syms <- assets[(type=="Equity" | type=="ETF"),]$symbol)>0)   {
     df_eq <- av_get_pf(tmp_syms,"REALTIME_BULK_QUOTES",melted=FALSE)[,src:="live"]
+    setnames(df_eq, s("change_percent;extended_hours_quote;extended_hours_change;extended_hours_change_percent;previous_close"),
+             s("chgpct;EH_mid;EH_chg;EH_chgpct;prevclose"),skip_absent=TRUE)
+    df_eq <- df_eq[,close:=fcoalesce(EH_mid,close)]
     if(outformat=="hist") {
       df_eq <- df_eq[,timestamp:=as.Date(timestamp)] |> epx_fmt_to_hist("Equity",live=TRUE)
     }
@@ -132,15 +134,15 @@ livepx_epx <- function(assets,outformat="live") {
   }
   # All Others: deminimus
   if( length( tmp_syms <- assets[(type=="Index" | type=="user"),]$symbol)>0) {
-    df_hist <- the_av$pxd[data.table(symbol=tmp_syms),.SD[.N],on=.(symbol),by=.(symbol)]
-    if(!(outformat=="hist")) {
-      df_hist <-df_hist[,.SD,.SDcols=c("symbol","timestamp","close","open","high","low")][,
-                                                                                          let(src="hist",timestamp=as.POSIXct(timestamp))]
+    df_hist <- the_av$pxd[data.table(symbol=tmp_syms),.SD[.N],on=.(symbol),by=.(symbol), nomatch=NULL]
+    if(!(outformat=="hist") & nrow(df_hist)>0) {
+      df_hist <-df_hist[,.SD,.SDcols=c("symbol","timestamp","close","open","high","low")][,                                                                                          let(src="hist",timestamp=as.POSIXct(timestamp))]
     }
     df_list <- c(df_list,list(df_hist))
   }
   df_all <- rbindlist(df_list,use.names=TRUE,fill=TRUE)
-  return(df_all)
+  if("chgpct" %notin% names(df_all)) { df_all[,chgpct:=NA_real_]}
+  return(df_all[])
 }
 
 

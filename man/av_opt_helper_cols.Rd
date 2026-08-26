@@ -4,7 +4,7 @@
 \alias{av_opt_helper_cols}
 \title{Add additional columns to returned option sets}
 \usage{
-av_opt_helper_cols(indta, scaling = NULL, spot = NULL)
+av_opt_helper_cols(indta, scaling = NULL, spot_override = NULL)
 }
 \arguments{
 \item{indta}{An option data.table as returned by \code{\link[=av_get_pf]{av_get_pf()}}}
@@ -17,7 +17,7 @@ av_opt_helper_cols(indta, scaling = NULL, spot = NULL)
 \item \code{number} : Any numeric value in thousands of USD into equivalent market value
 }}
 
-\item{spot}{(default \code{NULL}) Spot to be used to determine itm/otm, If null then it is inferred from most out of the money call or put
+\item{spot_override}{(default \code{NULL}) Spot to be used to determine itm/otm, If null then it is inferred from most out of the money call or put
 Note: This parameter only applies if there is one symbol in \code{indta}.  If there is more than one ticker in \code{indta} a column \code{spot}
 must be in \code{indta} to get correct results.}
 }

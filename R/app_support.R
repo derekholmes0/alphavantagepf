@@ -231,6 +231,7 @@ oneticker_earns <- function(thisticker,fwddts,datestring) {
   eps_estimate_analyst_count=eps_estimate_average_90_days_ago=reportTime=fiscalDateEnding=EPpct=estimatedEPS=NULL
   inspot <- av_get_pf(thisticker,"GLOBAL_QUOTE")$price
   earnb <- av_get_pf(thisticker,"EARNINGS") |> save_av_data("EARNINGS")
+  quick_message("Earnings not available for ",thisticker, eval=nrow(earnb)<=0) && return();
   earnb <- earnb |> av_extract_df("quarterlyEarnings") |> narrowbydtstr(datestring)
   earnf <- data.table()
   if(fwddts[2]>Sys.Date()) {
@@ -292,6 +293,10 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_wind
   else {
     fgdt<-toplot
     trebase<-""
+  }
+  # NarrowtoBUsinessDays
+  if(!grepl("AllDaysOnGraph",the_av$logopts)) {
+    fgdt <- dtmap[isholiday==FALSE,.(timestamp=DT_ENTRY)][fgdt,on=.(timestamp),nomatch=NULL]
   }
   # Annotations
   tanno <- fcase(
@@ -372,3 +377,16 @@ getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),newsagrep="",max
   news1<-news1[age<=fifelse("maxDays" %in% newsfilter, maxage,+Inf),]
   return(news1[,.(symbol=x,age,time_published,sntmt=overall_sentiment_score,source,title,url)])
 }
+
+opt_explation <- function(incode) {
+  codeset <- c(s(tolower(incode),sep=","),rep("",5))
+  outstr <- stringr::str_squish(paste(
+    switch(codeset[[1]], "f"="First","b"="2nd","allMats"),
+    switch(codeset[[2]], "m"="Monthly","q"="qtrly","wkly"),
+    switch(codeset[[4]], "otm"="OTM","itm"="ITM",""),
+    switch(codeset[[3]], "c"="calls","p"="puts","calls+puts"),
+    switch(codeset[[5]], "act"="(active)","a"="(active)","")
+    ))
+  return(outstr)
+}
+

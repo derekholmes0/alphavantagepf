@@ -7,11 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-<<<<<<< HEAD
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.434</small>
-=======
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.433</small>
->>>>>>> fed1b763197a802811b720ae2d4127725b0c9931
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.437</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,10 +19,10 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/API_interface_usage.html">API_interface_usage</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_1_setup_and_usage.html">ShinyApp_1_setup_and_usage</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp_2_Graphs_and_Options</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_3_Data_Management.html">ShinyApp_3_Data_Management</a></li>
-    <li><a class="dropdown-item" href="../articles/ShinyApp_4_New_Functionality.html">ShinyApp_4_New_Functionality</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_1_setup_and_usage.html">ShinyApp setup and usage</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp Graphs and Options</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_3_Data_Management.html">ShinyApp Data Management</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_4_New_Functionality.html">ShinyApp New Functionality</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -73,7 +69,7 @@
 <dt id="arg-grepstring">grepstring<a class="anchor" aria-label="anchor" href="#arg-grepstring"></a></dt>
 <dd><p>(default <code>F,M,call,otm,act</code>) Three to five item string to select specific maturities, option types,  strike ranges, and
 open interest categories from option sets returned by <code>av_get_pf(.,"HISTORICAL_OPTIONS")</code>. Each item in the list is an
-abbreviated code for what to select. The items are not case sensitive and in order are</p><table class="table table"><tr><td>Item</td><td>Values</td><td>description</td></tr><tr><td>Expiration Limit</td><td>`[F</td><td>B</td></tr><tr><td>Maturity Type</td><td>`[M</td><td>Q</td></tr><tr><td>Option Type</td><td>`[C</td><td>P</td></tr><tr><td>Moneyness</td><td>`[otm</td><td>itm</td></tr><tr><td>Activity</td><td>`[act</td><td>A]`</td></tr></table></dd>
+abbreviated code for what to select. The items are not case sensitive and in order are</p><table class="table table"><tr><td>Item</td><td>Values</td><td>description</td></tr><tr><td>Expiration Limit</td><td><code>F</code>|<code>B</code>|<code>A</code></td><td><code>F</code> is first maturity, <code>B</code> is second maturity, <code>A</code> (pr blank) are all</td></tr><tr><td>Maturity Type</td><td><code>M</code>|<code>Q</code>|<code>A</code></td><td><code>M</code> for monthly contracts, <code>Q</code> for quarterly,  <code>A</code> (pr blank) are all</td></tr><tr><td>Option Type</td><td><code>C</code>|<code>P</code>|<code>A</code></td><td>Calls, puts, <code>all</code> (or blank) for all</td></tr><tr><td>Moneyness</td><td><code>otm</code>|<code>itm</code>|<code>A</code></td><td>Out of the money, in the money or both</td></tr><tr><td>Activity</td><td><code>act</code>|<code>A</code></td><td>If <code>A</code>, only pass contracts with positive open interest</td></tr></table></dd>
 
 
 <dt id="arg-spot">spot<a class="anchor" aria-label="anchor" href="#arg-spot"></a></dt>
@@ -104,7 +100,8 @@ must be in <code>indta</code> to get correct results.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code><a href="av_get_pf.html">av_get_pf()</a></code> returns a large list of options.  This function helps to narrow down the list by maturity and moneyness.</p>
+    <p>Alphavantage doesn't always return quarterly options</p>
+<p><code><a href="av_get_pf.html">av_get_pf()</a></code> returns a large list of options.  This function helps to narrow down the list by maturity and moneyness.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

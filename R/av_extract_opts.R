@@ -8,11 +8,11 @@
 #' abbreviated code for what to select. The items are not case sensitive and in order are
 #' |Item|Values|description|
 #' |:--------------|:---------|:---------------|
-#' |Expiration Limit|`[F|B|A]`|`F` is first maturity, `B` is second maturity, `A` (pr blank) are all|
-#' |Maturity Type|`[M|Q|A]`|`M` for monthly contracts, `Q` for quarterly,  `A` (pr blank) are all|
-#' |Option Type|`[C|P|A]`|Calls, puts, `all` (or blank) for all|
-#' |Moneyness|`[otm|itm|A]`|Out of the money, in the money or both|
-#' |Activity|`[act|A]`|If `A`, only pass contracts with positive open interest|
+#' |Expiration Limit|`F`&#124;`B`&#124;`A`|`F` is first maturity, `B` is second maturity, `A` (pr blank) are all|
+#' |Maturity Type|`M`&#124;`Q`&#124;`A`|`M` for monthly contracts, `Q` for quarterly,  `A` (pr blank) are all|
+#' |Option Type|`C`&#124;`P`&#124;`A`|Calls, puts, `all` (or blank) for all|
+#' |Moneyness|`otm`&#124;`itm`&#124;`A`|Out of the money, in the money or both|
+#' |Activity|`act`&#124;`A`|If `A`, only pass contracts with positive open interest|
 #' @param mindelta (default `0.05`) delta limit on both moneyness sides, i.e. pass only options with deltas in range c(`mindelta`,1-`mindelta`)
 #' @param spot (default `NULL`) Spot to be used to determine itm/otm, If null then it is inferred from most out of the money call or put
 #' Note: This parameter only applies if there is one symbol in `indta`.  If there is more than one ticker in `indta` a column `spot`
@@ -20,7 +20,7 @@
 #' @param mindays (default 3). Minimum number of days to expiration to be passed through from `startdt`
 #' @param startdt (default `Sys.Date()`). Date from which expirations will be considered.
 #' @param dropsymbol (default `FALSE`). Drop symbol from returned data table.
-#'
+#' @details Alphavantage doesn't always return quarterly options
 #' @returns A reduced set of options obtained from [av_get_pf()] using Alphavantage `HISTORICAL_OPTIONS` function.
 #'
 #' @details [av_get_pf()] returns a large list of options.  This function helps to narrow down the list by maturity and moneyness.
@@ -72,7 +72,7 @@ av_grep_opts<-function(indta, grepstring="F,M,C,otm",spot=NULL,mindays=3,startdt
 #' * `"10contracts"` : 10 contracts converted into market value
 #' * `"10kMV"` : 10,000 USD converted into equivalent market value
 #' * `number` : Any numeric value in thousands of USD into equivalent market value
-#' @param spot (default `NULL`) Spot to be used to determine itm/otm, If null then it is inferred from most out of the money call or put
+#' @param spot_override (default `NULL`) Spot to be used to determine itm/otm, If null then it is inferred from most out of the money call or put
 #' Note: This parameter only applies if there is one symbol in `indta`.  If there is more than one ticker in `indta` a column `spot`
 #' must be in `indta` to get correct results.
 #' @returns An option `data.table` with extra columns helpful for further analysis
@@ -90,10 +90,21 @@ av_grep_opts<-function(indta, grepstring="F,M,C,otm",spot=NULL,mindays=3,startdt
 #' }
 #'
 #' @export
-av_opt_helper_cols<-function(indta, scaling=NULL, spot=NULL) {
-  mark=strike=ask=bid=implied_volatility=bid_size=open_interest=ncak=NULL
-  if( !("spot" %in% colnames(indta))) {
-      spot <- spot %||% indta[type=="call",][,.SD[1]][,.(spot=mark+strike)]$spot %||% indta[type=="put",][,.SD[.N]][,.(spot=strike-mark)]$spot
+av_opt_helper_cols<-function(indta, scaling=NULL, spot_override=NULL) {
+  mark=strike=ask=bid=implied_volatility=bid_size=open_interest=ncak=spot=omult=NULL
+  if( "spot" %in% colnames(indta)) {
+    spotstr <- "using spots in dataset"
+    if(!is.null(spot_override)) {
+      indta[,spot:=spot_override][]
+      spotstr <- paste0("using spot override:",spot_override)
+      }
+  }
+  else {
+    spotdt <-indta[,.SD[expiration==min(expiration)], by=.(symbol)]
+    spotdt <-spotdt[,omult:=fifelse(tolower(substr(type,1,1))=="c",1,-1)]
+    spotdt <-spotdt[,.SD[which.max(omult*(mark-strike))],by=.(symbol)][,.(symbol,spot=strike+omult*mark)]
+    indta <- spotdt[indta,on=.(symbol)]
+    spotstr <-"using inferred spots"
   }
   indta <- indta[,let(daysExp=as.integer(expiration-date),bo_pct=200*(ask-bid)/(ask+bid),IV=100*implied_volatility,
                       bid_size_poi=100*bid_size/fcoalesce(open_interest,1L), ask_size_poi=100*bid_size/fcoalesce(open_interest,1L),
@@ -101,7 +112,7 @@ av_opt_helper_cols<-function(indta, scaling=NULL, spot=NULL) {
                       mat_be=fifelse(type=="call",1,-1)*last+strike, mat_bepct=100*((fifelse(type=="call",1,-1)*last+strike)/spot-1),
                       ncak=1)]
   if (is.null(scaling) || tolower(scaling)=="none") {
-    message_if(the_av$verbose,"av_opt_helper_cols using Spot ",spot,", and date ",max(indta$date))
+    message_if(the_av$verbose,"av_opt_helper_cols ",spotstr," and date ",max(indta$date))
     return(indta)
   }
   qcols <- s("mark;last;delta;gamma;theta;vega;rho")
@@ -112,7 +123,7 @@ av_opt_helper_cols<-function(indta, scaling=NULL, spot=NULL) {
     default = 1)
   ), by=.I]
   indta <- indta[,(qcols):=lapply(.SD,\(x) ncak*100*x), .SDcols=qcols][]
-  message_if(the_av$verbose,"av_opt_helper_cols using Spot ",spot,", scaling ",scaling, " and date ",max(indta$date))
+  message_if(the_av$verbose,"av_opt_helper_cols ",spotstr,", scaling ",scaling, " and date ",max(indta$date))
   return(indta)
 }
 
