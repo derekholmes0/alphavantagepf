@@ -3,7 +3,7 @@
 #' @name av_add_px
 #' @title Add or download Price or Time Series Data
 #' @description Adds price data to [av_runShiny()] internal data.
-#' @param indta A data.frame with the following minimal columns: `c(symbol,timestamp,close)`.
+#' @param indta (default: NULL) A data.frame with the following minimal columns: `c(symbol,timestamp,close)`.
 #' Other variables added could be `c(adjusted_close,open,high,low,volume,dividend_amount,split_coefficient)`
 #' If `adjusted_close` is not in the dataset, it will be set to `close`
 #' @param assettypes (default NULL)  An optional data.frame with minimal columns `c(symbol,type,currency,name)` with
