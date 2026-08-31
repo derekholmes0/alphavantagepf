@@ -55,3 +55,11 @@ assetypes is given, the function downloads earnings as needed
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
 
 ## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# To add earnings for a set of tickers
+av_load_shinydata()  # Make sure most recent data is loaded
+av_add_earn(equitylist=data.table(symbol=c("IBM","GS")))
+} # }
+```

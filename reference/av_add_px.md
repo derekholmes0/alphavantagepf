@@ -20,7 +20,7 @@ av_add_px(
 
 - indta:
 
-  A data.frame with the following minimal columns:
+  (default: NULL) A data.frame with the following minimal columns:
   `c(symbol,timestamp,close)`. Other variables added could be
   `c(adjusted_close,open,high,low,volume,dividend_amount,split_coefficient)`
   If `adjusted_close` is not in the dataset, it will be set to `close`
