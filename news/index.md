@@ -1,8 +1,6 @@
 # Changelog
 
-## alphavantagepf (development version)
-
-## alphavantagepf 0.8.4
+## alphavantagepf 0.9.0
 
 ### Major Changes
 

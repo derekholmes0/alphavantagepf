@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/derekholmes0/alphavantagepf/blob/master/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/derekholmes0/alphavantagepf/blob/v0.9.0/DESCRIPTION)
 
 Holmes D (2026). *alphavantagepf: 'Alphavantage Financial Data' API R
 Wrapper and Shiny Interface*. R package version 0.9.0,
