@@ -278,7 +278,7 @@ oneticker_divs <- function(thisticker,datestring) {
   return(divs[])
 }
 
-one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_window=NULL) {
+one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_window=NULL,...) {
   symbol=low=high=medgap=reportedEPS=surprise=lpx=dividend_amount=surprisePercentage=NULL
   seriesnm <- the_av$seriesnm
   if(is.data.table(toplot[[1]])) {
@@ -336,7 +336,7 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_wind
                          splitcols=("splitts" %in% rv$gropts),roller=1,
                          stepcols=stepcols,event_ds=eventset,
                          hilightcols=fifelse("hilightfirst" %in% rv$gropts,fgdt[,.SD[1]]$variable,""),
-                         rebase=trebase)
+                         rebase=trebase,...)
   return(outdyg)
 }
 

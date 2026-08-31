@@ -246,13 +246,16 @@ av_vol <-function(todo,rv) {
         xdta <- tdta[,lapply(.SD,\(x) x+(get(the_av$seriesnm)-close)), .SDcols=s("open;high;low;close")]
         xdta <- tdta[,lapply(.SD,\(x) fcoalesce(x,close)),  .SDcols=s("open;high;low;close")]
         setnafill(xdta,"locf")
-        data.table(timestamp=tdta$timestamp,variable=sb,value=100*TTR::volatility(xdta, calc=volp[[1]],n=as.integer(volp[[2]]), N=as.integer(volp[[3]])))
+        data.table(timestamp=tdta$timestamp,variable=sb,
+                   value=100*TTR::volatility(xdta, calc=volp[[1]],n=as.integer(volp[[2]]), N=as.integer(volp[[3]]))
+                   )
     }
     toplot2 <- rbindlist(lapply(unique(toplot_dt$symbol), one_ts_vol))
     avsh_clipboard(toplot2,"HistVol")
-    out[["TS1"]] <- one_px_ts(toplot2,rv,title=paste("Volatility (pct) using ",rv$ts_volparams),events=rv$ts_events,dt_window=rb$rebase_window)
-    toplot[[2]]<-"start"
-    out[["TS2"]] <- one_px_ts(toplot,rv,events=rv$ts_events,dt_window=rb$rebase_window)
+    out[["TS1"]] <- one_px_ts(toplot2,rv,title="Volatility (annualized, pct)",events=rv$ts_events,dt_window=rb$rebase_window,
+                              xlab=paste("using ",rv$ts_volparams,"parameters"))
+    toplot[[2]]<-paste0(min(toplot[[1]]$timestamp),",100")
+    out[["TS2"]] <- one_px_ts(toplot,rv,events=rv$ts_events,dt_window=rb$rebase_window) # All formats failed to parse. No formats found.
   }
   return(out)
 }
@@ -439,7 +442,6 @@ av_news <- function(todo,rv) {
   return(out)
 }
 
-
 # For the following functions: MOV
 # Good
 av_movers <- function(todo,rv) {
@@ -544,7 +546,6 @@ av_optsearch <- function(todo,rv) {
   }
   return(out)
 }
-
 
 av_seasonality <- function(todo,rv) {
   todofunc=ex_dividend_date=thiseq=surprise=todoargs=NULL
