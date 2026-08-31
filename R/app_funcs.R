@@ -562,7 +562,6 @@ av_seasonality <- function(todo,rv) {
   else if(rv$todofunc=="SEASEA" && !is.na(firsteq)) {
     gtitle <- paste0(firsteq," Earnings Seasonality")
     toplot <- data_from_list(firsteq,rv$dtstr_hist ,"none",rv$dtstr_hist,msg_inputID="istr1")[[1]][,.(timestamp,close=get(the_av$seriesnm))]
-    cAssign("firsteq;rv")
     events <- oneticker_earns(firsteq,extenddtstr(rv$dtstr_hist,rtn="list"),rv$dtstr_hist)
     events <- events[, .(date=reportedDate,label=paste0(fifelse(surprise<0,"MISS!",""),format(reportedDate,"%Y%m")))]
   }

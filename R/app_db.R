@@ -180,6 +180,7 @@ get_inv <- function(tickerlist=NULL,override_symset=NULL) {
   thisinv_id <- rtnpx[,.(symbol,currency,name,matchScore,list_ts)] # Tricky
 
   thisinv <- Reduce(function(x,y) merge(x,y,by="symbol",all=TRUE),list(thisinv_div,thisinv_px,earn_past,earn_fwd,thisinv_id))
+  thisinv[,name:=fcoalesce(name,symbol)]
   setcolorder(thisinv,s("symbol;end_dt;lastearn_dt;earnf_nextdt;earnf_ts;div_lastdt;lastpx;earnf_next;div_lastval"))
   return(thisinv)
 }

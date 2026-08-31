@@ -1,5 +1,5 @@
 #source("./R/utilities.R")
-tver<-"0.8.437"
+tver<-"0.9.0"
 
 # 438: Documentation, summary in options search
 # 437: OPtion Search done
@@ -278,6 +278,7 @@ av_make_server <- function() {
         updateSelectInput(session,"capture_av_save",selected=the_av$capture_av_save)
       }
       })
+
 
     observeEvent(input$istr1_enter, {
       rv <- isolate(reactiveValuesToList(input))

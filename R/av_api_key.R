@@ -38,4 +38,3 @@ avpf_api_key <- function(api_key,entitlement=NULL) {
   }
   invisible(c(getOption('av_api_key'),getOption('av_api_entitlement',default=NA_character_)))
 }
-
