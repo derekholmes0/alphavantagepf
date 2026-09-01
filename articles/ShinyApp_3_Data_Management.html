@@ -275,18 +275,18 @@ calculations could be added.</li>
 </tbody>
 </table>
 <p>Suppose we wish to download Natural Gas data from Alphavantage (via
-<a href="www.stlouisfed.org">FRED</a> ) and give it our own ticker
-<code>HH_GAS</code>. First we download the price series and get the
-columns we need. Then we add some basic description, including most
-critically the asset type, so the app knows where to get data going
-forward.</p>
+<a href="https://www.quantmod.com/documentation/getSymbols.FRED.html" class="external-link">FRED</a>
+) and give it our own ticker <code>HH_GAS</code>. First we download the
+price series and get the columns we need. Then we add some basic
+description, including most critically the asset type, so the app knows
+where to get data going forward.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span><span class="va">ng_dta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/av_get_pf.html">av_get_pf</a></span><span class="op">(</span><span class="st">""</span>,<span class="st">"NATURAL_GAS"</span><span class="op">)</span><span class="op">[</span>,<span class="fu">.</span><span class="op">(</span>symbol<span class="op">=</span><span class="st">"GAS_HH"</span>,<span class="va">timestamp</span>,close<span class="op">=</span><span class="va">value</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">asset_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>symbol<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GAS_HH"</span><span class="op">)</span>,type<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"user"</span><span class="op">)</span>,currency<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"USD"</span><span class="op">)</span>, name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Henry Hub Gas Spot"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/av_add_px.html">av_add_px</a></span><span class="op">(</span><span class="va">ng_dta</span>, assettypes<span class="op">=</span><span class="va">asset_df</span><span class="op">)</span></span></code></pre></div>
 <p>We can source data anywhere, really. As an example of getting data
-directly from <a href="www.quantmod.com">quantmod</a>, let’s add
+directly from <a href="https://www.quantmod.com" class="external-link">quantmod</a>, let’s add
 FEDFUNDS as its own ticker:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://www.quantmod.com/" class="external-link">quantmod</a></span><span class="op">)</span><span class="op">)</span></span>

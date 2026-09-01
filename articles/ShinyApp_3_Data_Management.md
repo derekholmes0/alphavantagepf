@@ -86,9 +86,9 @@ The function requires at a minimum one of two items:
 | Total Return | N | `c(adjusted_close,dividend_amount,split_coefficient)` |
 
 Suppose we wish to download Natural Gas data from Alphavantage (via
-[FRED](https://derekholmes0.github.io/alphavantagepf/articles/www.stlouisfed.org)
-) and give it our own ticker `HH_GAS`. First we download the price
-series and get the columns we need. Then we add some basic description,
+[FRED](https://www.quantmod.com/documentation/getSymbols.FRED.html) )
+and give it our own ticker `HH_GAS`. First we download the price series
+and get the columns we need. Then we add some basic description,
 including most critically the asset type, so the app knows where to get
 data going forward.
 
@@ -101,9 +101,8 @@ av_add_px(ng_dta, assettypes=asset_df)
 ```
 
 We can source data anywhere, really. As an example of getting data
-directly from
-[quantmod](https://derekholmes0.github.io/alphavantagepf/articles/www.quantmod.com),
-let’s add FEDFUNDS as its own ticker:
+directly from [quantmod](https://www.quantmod.com), let’s add FEDFUNDS
+as its own ticker:
 
 ``` r
 
