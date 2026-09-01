@@ -192,9 +192,8 @@ use ad-hoc groups of securities in this app.
   simply select the Expand option on the dropdown, and the list name
   will be replaced by the components.,
 
-The best way to see how this works is with a short clip:
-
-![](img/assetlist.gif)
+The best way to see how this works is with the short clip shown
+[here](https://youtu.be/gw8dCArxQ9k)
 
 You can see a table of current asset lists by running the `AV.INV`
 command, and can add asset lists outside of the app using
