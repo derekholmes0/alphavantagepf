@@ -164,6 +164,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
         content_list <- content |> jsonlite::fromJSON()
         if ("Error Message" %in% names(content_list)) {
             message_if_red(TRUE,"av_get_pf:", content_list[[1]])
+          cAssign("content_list")
             return(data.frame())
         }
         # Detect good/bad call
