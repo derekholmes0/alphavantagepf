@@ -41,6 +41,8 @@
   : av_state_interface
 - [`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_api_key.md)
   : Set the Alpha Vantage API Key
+- [`avpf_set_request_pace()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_set_request_pace.md)
+  : Set the Alpha Vantage max requests per minute
 - [`avsh_clipboard()`](https://derekholmes0.github.io/alphavantagepf/reference/avsh_clipboard.md)
   : avsh_clipboard
 - [`avsh_quick_message()`](https://derekholmes0.github.io/alphavantagepf/reference/avsh_quick_message.md)

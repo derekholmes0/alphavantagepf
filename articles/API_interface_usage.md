@@ -239,10 +239,13 @@ the extracting function `av_extract_analytics`.
     specified in the
     [`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_api_key.md)
     call and relevant.
-2.  [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
-    has an optional `delay` parameter, which may be needed if several
-    short API calls are called sequentially (e.g. within another
-    function).
+2.  The preferred method for ensuring that you don’t exceed your data
+    plan’s request pace is to set \[avpf_request_pace()\].
+    Alternatively, you can set a manual delay after a call using
+    [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)’s
+    optional `delay` parameter. If the request rate is too fast,
+    **alphavantage** will return an empty dataset, or one with only an
+    informational appeal to slow down or pay more.
 3.  `symbol` is always returned in the output dataset, and defaults to
     the name of the `av_fun` call if no symbol is relevant.
 4.  There is no need to specify the `datatype` parameter as an argument

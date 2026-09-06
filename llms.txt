@@ -37,13 +37,19 @@ Set your API key obtained from [Alpha
 Vantage](https://www.alphavantage.co/). If you have paid access, include
 an additional argument with your entitlement status, which is one of two
 strings “delayed” or “realtime”. “delayed” may be needed for some
-historical quotes.
+historical quotes. You may also want to set a request pace consistent
+with your data plan, using
+[avpf_set_request_pace()](https://derekholmes0.github.io/alphavantagepf/reference/avpf_set_request_pace.html)
 
 ``` r
 
 avpf_api_key("YOUR_API_KEY","delayed")
 print(avpf_api_key())
 #> [1] "YOUR_API_KEY" "delayed"
+avpf_set_request_pace(60)
+#> Setting Max requests per minute to 60
+#> Saving to C:/Users/DFH/AppData/Local/R/cache/R/alphavantagepf/avpf_constants.RD
+#> NULL
 ```
 
 If you want to use the Shiny interface, you can launch it using the
@@ -416,6 +422,8 @@ Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_
   : av_state_interface
 - [`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_api_key.md)
   : Set the Alpha Vantage API Key
+- [`avpf_set_request_pace()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_set_request_pace.md)
+  : Set the Alpha Vantage max requests per minute
 - [`avsh_clipboard()`](https://derekholmes0.github.io/alphavantagepf/reference/avsh_clipboard.md)
   : avsh_clipboard
 - [`avsh_quick_message()`](https://derekholmes0.github.io/alphavantagepf/reference/avsh_quick_message.md)
@@ -440,3 +448,5 @@ Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_
   Management](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.md):
 - [ShinyApp New
   Functionality](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.md):
+- [ShinyApp Function
+  Reference](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_5_Function_Reference.md):

@@ -11,3 +11,5 @@
   Management](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.md):
 - [ShinyApp New
   Functionality](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.md):
+- [ShinyApp Function
+  Reference](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_5_Function_Reference.md):

@@ -49,7 +49,9 @@ av_get_pf(
 - delay:
 
   (default: 0) Delay in seconds after API call, used to embed within
-  large single-symbol calls.
+  large single-symbol calls. **If delay \<=0** then delays are scheduled
+  to keep within the request pace specified in
+  [`avpf_set_request_pace()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_set_request_pace.md).
 
 - verbose:
 
@@ -99,7 +101,8 @@ parameters. Usage example: `av_get_pf("USD/BRL", "FX_DAILY")`
 [`avpf_api_key()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_api_key.md),
 [`av_extract_df()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md),
 [`av_extract_fx()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md),
-[`av_grep_opts()`](https://derekholmes0.github.io/alphavantagepf/reference/av_grep_opts.md),[`av_funhelp()`](https://derekholmes0.github.io/alphavantagepf/reference/av_funhelp.md)
+[`av_grep_opts()`](https://derekholmes0.github.io/alphavantagepf/reference/av_grep_opts.md),[`av_funhelp()`](https://derekholmes0.github.io/alphavantagepf/reference/av_funhelp.md),
+[`avpf_set_request_pace()`](https://derekholmes0.github.io/alphavantagepf/reference/avpf_set_request_pace.md)
 
 ## Examples
 
