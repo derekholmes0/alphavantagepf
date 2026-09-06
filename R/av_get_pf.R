@@ -11,14 +11,14 @@
 #' @param dfonerror (default: TRUE) Return an empty data.table when any error occurs
 #' @param verbose (default: FALSE) Print debug information helpful for errors.  Also copies full url to clipboard.
 #' @param melted  (default: "default") String specifying when to melt, "default" is chosen by the package, "TRUE|always" always melt, "FALSE|never" never melts
-#' @param delay  (default: 0) Delay in seconds after API call, used to embed within large single-symbol calls.
+#' @param delay  (default: 0) Delay in seconds after API call, used to embed within large single-symbol calls.  **If delay <=0** then delays are scheduled to keep within the request pace specified in [avpf_set_request_pace()].
 #' @param ... Additional parameters or overrides passed to the Alpha Vantage API.
 #' For a list of parameters, visit the [Alpha Vantage API documentation](https://www.alphavantage.co/documentation/).
 #'
 #' @returns Returns a data.table with results dependent on the function called.
 #' Mixed data is returned as a melted data.table, possibly with nested data.frames.  Time series are returned as data.tables.
 #'
-#' @seealso [avpf_api_key()], [av_extract_df()], [av_extract_fx()], [av_grep_opts()],[av_funhelp()]
+#' @seealso [avpf_api_key()], [av_extract_df()], [av_extract_fx()], [av_grep_opts()],[av_funhelp()], [avpf_set_request_pace()]
 #'
 #' @details
 #'
@@ -96,11 +96,13 @@
 #' @export
 av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted="default",delay=0,verbose=FALSE, ...) {
 
+
     if (missing(symbol)) symbol <- NULL
     if (any(is.na(symbol))) {
       message_if_red(TRUE,"av_get_pf: Symbol is NA, returning empty data.table")
       return(data.table())
     }
+
     # Checks
     if (is.null(avpf_api_key())) {
         stop("Set API key using avpf_api_key(). If you do not have an API key, please claim your free API key on (https://www.alphavantage.co/support/#api-key). It should take less than 20 seconds, and is free permanently.",
@@ -130,7 +132,6 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
       currencies  <- symbol |> stringr::str_split_fixed("\\/", 2) |> as.vector()
       dots[c("symbol","market","from_symbol","to_symbol")] <- currencies[c(1,2,1,2)]
     }
-
     # Generate URL
     pset <- av_funcmap[get("av_fn")==av_fun,]
     url_params <-  av_form_param_url(av_fun,dots,t_entitlement=avpf_api_key()[2])
@@ -140,10 +141,20 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     }
     url <- paste0("https://www.alphavantage.co/query?function=",av_fun,"&",url_params)
 
+    #Keep track of times
+    timelist <- the_av$timelist %||% list()
+    calls_in_last_min <- timelist[which(timelist>=as.numeric(Sys.time()-60))]
+    if(delay<=0 && length(calls_in_last_min)>=the_av$max_requests_per_min) {
+      tdelay <- 60/the_av$max_requests_per_min;
+      message_if_green(TRUE,"av_get_pf: Starting delays of ", tdelay, " seconds to maintain pacing.")
+      Sys.sleep(tdelay)
+    }
+
     # Alpha Advantage API call
     response <- httr::GET(url, ua)
     content_type <- httr::http_type(response)
 
+    the_av$timelist <- as.numeric(c(calls_in_last_min,Sys.time()))
     if(verbose) {
         urlset = strsplit(url,"&")[[1]]
         zz=lapply(urlset, \(x) message(sprintf("%-45s",strsplit(x,"=")[[1]])))
@@ -164,7 +175,6 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
         content_list <- content |> jsonlite::fromJSON()
         if ("Error Message" %in% names(content_list)) {
             message_if_red(TRUE,"av_get_pf:", content_list[[1]])
-          cAssign("content_list")
             return(data.frame())
         }
         # Detect good/bad call
@@ -197,7 +207,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
             params_list <- params_list[setdiff(names(params_list),c("apikey","datatype"))]
             params <- paste(names(params_list), params_list, sep = "=", collapse = ", ")
             params <- gsub("av_fun","function",params)
-            content <- content  |> paste(". API parameters used: ", params)
+            content <- content  |> paste(". API params used: ", params)
             message_if_red(TRUE,"av_get_pf Error: ", content)
             return(data.table::data.table())
         }
@@ -248,6 +258,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
       }
       data.table::setcolorder(content,c(symbolvarnm))
     }
+
     return(content[])
 }
 

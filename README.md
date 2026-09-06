@@ -41,12 +41,18 @@ Set your API key obtained from [Alpha
 Vantage](https://www.alphavantage.co/). If you have paid access, include
 an additional argument with your entitlement status, which is one of two
 strings “delayed” or “realtime”. “delayed” may be needed for some
-historical quotes.
+historical quotes. You may also want to set a request pace consistent
+with your data plan, using
+[avpf_set_request_pace()](https://derekholmes0.github.io/alphavantagepf/reference/avpf_set_request_pace.html)
 
 ``` r
 avpf_api_key("YOUR_API_KEY","delayed")
 print(avpf_api_key())
 #> [1] "YOUR_API_KEY" "delayed"
+avpf_set_request_pace(60)
+#> [31mSetting Max requests per minute to 60[0m
+#> Saving to C:/Users/DFH/AppData/Local/R/cache/R/alphavantagepf/avpf_constants.RD
+#> NULL
 ```
 
 If you want to use the Shiny interface, you can launch it using the

@@ -6,9 +6,9 @@
 #' @param reallydothis Condition to be met
 #' @param ... Additional items to be passed to `message`
 #'
-message_if <- function(reallydothis,...) {  if(reallydothis) { message(...) } }
-message_if_red <- function(reallydothis,...) {  if(reallydothis) { message("\033[31m",...,"\033[0m") } }
-message_if_green <- function(reallydothis,...) {  if(reallydothis) { message("\033[32m",...,"\033[0m") } }
+message_if <- function(reallydothis,...) {  if(reallydothis) { message(...) }; reallydothis }
+message_if_red <- function(reallydothis,...) {  if(reallydothis) { message("\033[31m",...,"\033[0m") }; reallydothis }
+message_if_green <- function(reallydothis,...) {  if(reallydothis) { message("\033[32m",...,"\033[0m") }; reallydothis }
 
 #' @noRd
 s<-function(x,sep=";",fixed=NULL,rtn=NULL,pad=0) {

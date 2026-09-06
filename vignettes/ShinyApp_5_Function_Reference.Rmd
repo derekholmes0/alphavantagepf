@@ -1,0 +1,38 @@
+---
+title: "ShinyApp Function Reference"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ShinyApp Function Reference}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Functions included in the `av_runShiny()` app
+
+This vignette will give details about included functions in the `av_runShiny()` app.  It will describe usage (including parameters) and formulas behind the outputs,
+and provide pointers and examples as needed.  This vignette is not comprehensive, as many of the functions are self-evident from the documentation
+or help strings.
+
+# Review of broad function categories
+
+# Ease of Use Functions
+
+
+# Graphing Functions
+
+
+# Earnings Functions
+
+
+# Options Functions
+
+
+
+

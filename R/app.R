@@ -1,17 +1,17 @@
 #source("./R/utilities.R")
-tver<-"0.9.0"
+tver<-"0.9.02"
 
-# 438: Documentation, summary in options search
-# 437: OPtion Search done
-# 436: Seasoanlity works, Weekends options
-# 435: Refactor live prices
-# 434: Last  user index fix.  assetnames needed caps
-# 432: av.inv(grep),user index fix
-# 431: Seasonality, appbreviations
-# 430: Add correlatiosn to RV
-# 420: Refactored Asset List UI
-# 410: Add file timestamps to inventory file to check for new data
-# 400: CHange to quick_message, vignettes done, av.inputs
+
+# todo:
+# -- auyto-throttling
+# -- options db setup
+# HIVG
+# -- Write up functions
+# -- Implement
+# ellmer stuff
+
+# 02: THrottling with max_requests_per_minute
+# 01: Start after publications
 
 #' @importFrom TTR volatility
 #' @import gt
@@ -131,6 +131,7 @@ av_make_ui <- function() {
                     actionButton("SetOpts","Set Opts",width='50%',class = "btn btn-primary"),
                     span(passwordInput(inputId="avapikey", label="av api key", value=the_av$avapikey),style=avsd$labelcss),
                     span(textInput(inputId="avapientitlement", label="av entitlement", value=the_av$avapientitlement),style=avsd$labelcss),
+                    span(textInput(inputId="requestpace", label="Max Request Pace", value=the_av$max_requests_per_min),style=avsd$labelcss),
                     span(textInput(inputId="cachedir", label="Cache Data Directory", value=the_av$cachedir),style=avsd$labelcss),
                     #span(textInput(inputId="extracalc_file", label="extracalc csv", value=the_av$extracalc_file),style=avsd$labelcss), ## <<--- TODO
                     span(textInput(inputId="ts_colorset", label="fgts colorset", value=the_av$ts_colorset),style=avsd$labelcss),
@@ -176,6 +177,7 @@ av_make_server <- function() {
     update_tickerlists( is.null(the_av$tickerlist) || nrow(the_av$tickerlist)<=0 ||
             (max(the_av$tickerlist$list_ts)<=Sys.Date()-4) )
     FinanceGraphs::fg_sync_group("avshiny")
+    avpf_set_request_pace(the_av$max_requests_per_min)
     if("CleanOnStart" %in% the_av$capture_av_save) {  save_av_data(data.table(),"KILL") }
    # height_from_obs <- reactive({ the_av$out1h })
     need_index_asset <- reactive({
@@ -236,6 +238,7 @@ av_make_server <- function() {
       av_set_defaults("logopts",paste0(rv$logopts,collapse=";",sep=";"))
       av_set_defaults("verbose", "verbose" %in% rv$logopts)
       av_set_defaults("autocopy","data2clipboard" %in% rv$logopts)
+      av_set_defaults("max_requests_per_min",rv$requestpace)
       save_avs_state("all",msg="sEToPTS")
       thnew <- dump_state()
       th1 <- th1[,.(nm,old=toget)][thnew,on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
