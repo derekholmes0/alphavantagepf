@@ -5,6 +5,7 @@ the_av <- new.env(parent = emptyenv())
   the_av$constants_fn <- paste0( the_av$defaultcachedir, "/avpf_constants.RD")
   the_av$NY_local_hrs = as.POSIXct(paste0(Sys.Date()," 12:00:00"),tz="UTC") - as.POSIXct(paste0(Sys.Date()," 12:00:00"),tz="America/New_York")
   the_av$cachedir <- the_av$defaultcachedir
+  the_av$max_requests_per_min <- avsd$defaults[get("var")=="max_requests_per_min",]$value_num
 }
 
 .datatable.aware = TRUE

@@ -28,7 +28,7 @@ See parameter "function" in \href{https://www.alphavantage.co/documentation/}{Al
 
 \item{melted}{(default: "default") String specifying when to melt, "default" is chosen by the package, "TRUE|always" always melt, "FALSE|never" never melts}
 
-\item{delay}{(default: 0) Delay in seconds after API call, used to embed within large single-symbol calls.}
+\item{delay}{(default: 0) Delay in seconds after API call, used to embed within large single-symbol calls.  \strong{If delay <=0} then delays are scheduled to keep within the request pace specified in \code{\link[=avpf_set_request_pace]{avpf_set_request_pace()}}.}
 
 \item{verbose}{(default: FALSE) Print debug information helpful for errors.  Also copies full url to clipboard.}
 
@@ -115,5 +115,5 @@ av_get_pf(c("ORCL","IBM","EWZ","ARGT"),"ANALYTICS_FIXED_WINDOW",verbose=TRUE) |>
 
 }
 \seealso{
-\code{\link[=avpf_api_key]{avpf_api_key()}}, \code{\link[=av_extract_df]{av_extract_df()}}, \code{\link[=av_extract_fx]{av_extract_fx()}}, \code{\link[=av_grep_opts]{av_grep_opts()}},\code{\link[=av_funhelp]{av_funhelp()}}
+\code{\link[=avpf_api_key]{avpf_api_key()}}, \code{\link[=av_extract_df]{av_extract_df()}}, \code{\link[=av_extract_fx]{av_extract_fx()}}, \code{\link[=av_grep_opts]{av_grep_opts()}},\code{\link[=av_funhelp]{av_funhelp()}}, \code{\link[=avpf_set_request_pace]{avpf_set_request_pace()}}
 }
