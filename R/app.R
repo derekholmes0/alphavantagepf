@@ -239,6 +239,7 @@ av_make_server <- function() {
       av_set_defaults("verbose", "verbose" %in% rv$logopts)
       av_set_defaults("autocopy","data2clipboard" %in% rv$logopts)
       av_set_defaults("max_requests_per_min",rv$requestpace)
+
       save_avs_state("all",msg="sEToPTS")
       thnew <- dump_state()
       th1 <- th1[,.(nm,old=toget)][thnew,on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
