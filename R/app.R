@@ -1,9 +1,8 @@
 #source("./R/utilities.R")
-tver<-"0.9.02"
+tver<-"0.9.03"
 
 
 # todo:
-# -- auyto-throttling
 # -- options db setup
 # HIVG
 # -- Write up functions
