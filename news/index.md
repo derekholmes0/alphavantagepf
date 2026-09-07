@@ -11,6 +11,7 @@
 ### New Features in Shiny interface
 
 - Request pacing added to options page.
+- 
 
 ## alphavantagepf 0.9.0
 
