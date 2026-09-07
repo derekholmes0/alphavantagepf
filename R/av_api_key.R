@@ -50,8 +50,9 @@ avpf_api_key <- function(api_key,entitlement=NULL) {
 #' Change this if you have a better plan with AlphaVantage
 #' @seealso [avpf_api_key()]
 #' @export
-avpf_set_request_pace <- function(max_requests_per_min=60) {
+avpf_set_request_pace <- function(max_requests_per_min) {
   message_if_red(TRUE,"Setting Max requests per minute to ",max_requests_per_min)
-  av_set_defaults("max_requests_per_min",max_requests_per_min,savetoconstants=TRUE)
+  the_av$max_requests_per_min <- max_requests_per_min
+  save_avs_state("the",msg="avpf_set_request_pace")
   return()
 }

@@ -142,19 +142,22 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     url <- paste0("https://www.alphavantage.co/query?function=",av_fun,"&",url_params)
 
     #Keep track of times
-    timelist <- the_av$timelist %||% list()
-    calls_in_last_min <- timelist[which(timelist>=as.numeric(Sys.time()-60))]
+    timelist <- unlist(the_av$timelist) %||% list()
+    calls_in_last_min <- timelist[which(as.numeric(timelist)>=as.numeric(Sys.time()-60))]
+    last_delay <- the_av$lastdelay %||% 0
+    new_delay <- 0
     if(delay<=0 && length(calls_in_last_min)>=the_av$max_requests_per_min) {
-      tdelay <- 60/the_av$max_requests_per_min;
-      message_if_green(TRUE,"av_get_pf: Starting delays of ", tdelay, " seconds to maintain pacing.")
-      Sys.sleep(tdelay)
+      new_delay <- 60/the_av$max_requests_per_min;
+      message_if_green(last_delay<=0,"av_get_pf: Delay of ", new_delay, " second(s) started for API pacing.")
+      Sys.sleep(new_delay)
     }
+    the_av$lastdelay <- new_delay
 
     # Alpha Advantage API call
     response <- httr::GET(url, ua)
     content_type <- httr::http_type(response)
 
-    the_av$timelist <- as.numeric(c(calls_in_last_min,Sys.time()))
+    the_av$timelist <- as.list(as.numeric(c(calls_in_last_min,Sys.time())))
     if(verbose) {
         urlset = strsplit(url,"&")[[1]]
         zz=lapply(urlset, \(x) message(sprintf("%-45s",strsplit(x,"=")[[1]])))

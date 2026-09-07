@@ -9,6 +9,7 @@
 ## New Features in Shiny interface
 
 * Request pacing added to options page.
+* [in progress]: Collection of options data and summary of vol surface by date
 
 
 # alphavantagepf 0.9.0

@@ -4,7 +4,7 @@
 \alias{avpf_set_request_pace}
 \title{Set the Alpha Vantage max requests per minute}
 \usage{
-avpf_set_request_pace(max_requests_per_min = 60)
+avpf_set_request_pace(max_requests_per_min)
 }
 \arguments{
 \item{max_requests_per_min}{(default 60) Maximum requests per minute}
