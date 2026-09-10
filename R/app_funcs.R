@@ -141,7 +141,7 @@ av_gearn <- function(todo,rv) {
   calccode <- toupper(substr(todolist[[1]],1,3))
   bigdtstr <- extenddtstr(rv$dtstr_hist,begchg=-365)
   toplot <- data_from_list(eqset,bigdtstr ,"none",bigdtstr ,msg_inputID="istr1")
-  tdtmap <- narrowbydtstr(dtmap[,.(timestamp=DT_ENTRY,isday)],bigdtstr)
+  tdtmap <- narrowbydtstr(dtmap[,.(timestamp=DT_ENTRY,isbday)],bigdtstr)
   earnset <- the_av$earn[data.table(symbol=eqset),on=.(symbol)][,.(symbol,timestamp=reportedDate,reportedEPS,estimatedEPS)]
   # Use next estimate for dates between last estimate and now
   next_earnfwd <- the_av$earnest[data.table(symbol=eqset,horizon="fiscal quarter"),on=.(symbol,horizon)][date>=Sys.Date(),.SD[1],by=.(symbol)]
@@ -238,7 +238,7 @@ av_vol <-function(todo,rv) {
   toplot<-data_from_list(s(rv$assetline),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID="istr1",copytable=FALSE)
   if( nrow(toplot_dt <- toplot[[1]])>0) {
     if(!grepl("AllDaysOnGraph",the_av$logopts)) {
-      toplot_dt <- dtmap[isholiday==FALSE,.(timestamp=DT_ENTRY)][toplot_dt,on=.(timestamp),nomatch=NULL]
+      toplot_dt <- dtmap[isbday==TRUE,.(timestamp=DT_ENTRY)][toplot_dt,on=.(timestamp),nomatch=NULL]
     }
     volp <- s(rv$ts_volparams)
     one_ts_vol <- function(sb) {

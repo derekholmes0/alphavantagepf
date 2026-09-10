@@ -74,6 +74,7 @@ importFrom(purrr,
   map,
   map2
 )
+importFrom(qlcal,getHolidays)
 importFrom(rlang,
   expr,
   sym

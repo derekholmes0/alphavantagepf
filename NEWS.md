@@ -5,6 +5,7 @@
 ## New Features in API interface
 
 * New pacing strategy: Use `[avpf_set_request_pace()]` to set a request pace (e.g. 75 requests/minute) to ensure data is returned as requested.
+* New datemap to identify weekly options vs daily options.
 
 ## New Features in Shiny interface
 

@@ -149,38 +149,49 @@ av_make_funcmap <- function() {
 
 # Make datemap, very helpuful for narrowing dates.
 #
-av_make_dtmap <- function(yrs_ahead=5) {
+#' @importFrom qlcal getHolidays
+av_make_dtmap <- function(yrs_ahead=10,begDate=as.Date("1970-01-01")) {
   # All Dates
-  yrwk=wkcnt=NULL
-  dtmap <- data.table::data.table(DT_ENTRY=seq(from =as.Date("1970-03-20"), to = Sys.Date()+yrs_ahead*365, by = "day")) |> .addseasonaldates()
-  dtmap <- dtmap[,':='(isholiday=!timeDate::isBizday(timeDate::as.timeDate(DT_ENTRY), holidays =  timeDate::holidayNYSE(1970:2060), wday = 1:5))]
-  cdsendpoints <-c(lubridate::ymd('1970-03-20'),lubridate::ymd(paste0(lubridate::year(Sys.Date())+yrs_ahead,'-09-20')))
-  u2dts <-data.table::data.table(DT_ENTRY=seq(cdsendpoints[1],cdsendpoints[2], by = '6 month'))[,':='('rolldt'=DT_ENTRY)]
+  `.`<-DT_ENTRY<-isbday<-rolldt<-yr<-yrmo<-frino<-yrqtr<-optexp<-xoptexp<-isweek<-ismo<-isqtr<-isyr<-yrwk<-NULL
+  ishol_nyse<-ishol_bond<-NULL
+  dtmap <- data.table::data.table(DT_ENTRY=seq(from =begDate, to = Sys.Date()+yrs_ahead*365, by = "day")) |> .addseasonaldates()
+  allhols <- rbindlist(list(
+    data.table(DT_ENTRY=qlcal::getHolidays(begDate, Sys.Date()+yrs_ahead*365,xp=qlcal::getCalendar("UnitedStates/NYSE")),calnm="ishol_nyse",ishol=TRUE),
+    data.table(DT_ENTRY=qlcal::getHolidays(begDate, Sys.Date()+yrs_ahead*365,xp=qlcal::getCalendar("UnitedStates/GovernmentBond")),calnm="ishol_bond",ishol=TRUE),
+    data.table(DT_ENTRY=qlcal::getHolidays(begDate, Sys.Date()+yrs_ahead*365,xp=qlcal::getCalendar( "UnitedKingdom/Exchange")),calnm="ishol_uk",ishol=TRUE)
+  ))
+  allholstr<- dcast(allhols,DT_ENTRY ~ calnm, value.var="ishol",fill=FALSE)
+  dtmap_hol<-allholstr[dtmap,on=.(DT_ENTRY)][,lapply(.SD,\(x) fcoalesce(x, FALSE)), .SDcols=patterns("ishol*")]
+  dtmap<- cbind(dtmap,dtmap_hol)
+  cdsendpoints <-c(base::as.Date("1970-03-20"), base::as.Date(paste0(max(dtmap$yr),"-03-20")))
+  u2dts <- data.table::data.table(DT_ENTRY=seq(cdsendpoints[1],cdsendpoints[2], by = '6 month'))[,':='('rolldt'=DT_ENTRY)]
   dtmap <- u2dts[dtmap,on=.(DT_ENTRY)]
   data.table::setnafill(dtmap,"locf",cols=c('rolldt'))
   data.table::setkeyv(dtmap,c("DT_ENTRY"))
   # Business days and end periods
-  dtmap <- dtmap[,'isday':=data.table::between(lubridate::wday(DT_ENTRY),2,6)]
+  dtmap <- dtmap[,'isbday':=data.table::between(data.table::wday(DT_ENTRY),2,6) & !(ishol_nyse | ishol_bond)] # weekdays
   dtmapc <- data.table::copy(dtmap)
-  dtmapc <- dtmapc[isday==TRUE,]
+  dtmapc <- dtmapc[isbday==TRUE,]
   dtmapc <- dtmapc[,'isweek':=(DT_ENTRY==max(DT_ENTRY)),by="yrwk"]
   dtmapc <- dtmapc[,'ismo':=(DT_ENTRY==max(DT_ENTRY)),by="yrmo"]
   dtmapc <- dtmapc[,'isqtr':=(DT_ENTRY==max(DT_ENTRY)),by="yrqtr"]
   dtmapc <- dtmapc[,'isyr':=(DT_ENTRY==max(DT_ENTRY)),by="yr"]
   dtmapc[,'daysfromroll':=.I-min(.I),by='rolldt'][,'rollpd':=format(rolldt,"%Y%m")]
-  dtmapc <- dtmapc[,':='('bdoy'=cumsum(isholiday==FALSE)), by=.(yr)]
+  dtmapc <- dtmapc[,':='('bdoy'=cumsum(isbday==TRUE)), by=.(yr)]
   # Roll Dates (CDS)
   dtmap <- dtmapc[,c('DT_ENTRY','isweek','ismo','isqtr','isyr','daysfromroll','rollpd','bdoy')][dtmap,on=.(DT_ENTRY)]
   data.table::setnafill(dtmap,"locf",cols=c("daysfromroll"))
   dtmap <- dtmap |> tidyr::fill('rollpd') # tidyr bc of character
   # Option Expirations (Equities)
-  moexp <-  dtmap[!isholiday & isday,.(DT_ENTRY,yrwk,isholiday,isday,wkcnt=yrwk-min(yrwk)),by=.(yrmo)][wkcnt==2,][,.SD[.N],by=.(yrwk)]
-  moexp <- moexp[,.(DT_ENTRY,optexp="mo")]
-  qexp <- dtmap[isholiday==FALSE & isday==TRUE,][,.SD[.N],by=.(yrqtr)][,.(DT_ENTRY,xoptexp="qtr")]
-  dtmap <- moexp[dtmap,on=.(DT_ENTRY)][,':='(optexp=data.table::fcoalesce(optexp,""))]
-  dtmap <- qexp[dtmap,on=.(DT_ENTRY)][,':='(optexp=paste0(optexp,data.table::fcoalesce(xoptexp,"")))][,':='(xoptexp=NULL)]
+  moexp <- dtmap[ishol_nyse==FALSE & isbday==TRUE,][,.SD[.N],by=.(yrwk)]
+  moexp <-  moexp[,':='('frino'=.I-min(.I)),by=.(yrmo)][frino==2,][,.(DT_ENTRY,prio=2,optexp="mo")]
+  qexp <- dtmap[ishol_nyse==FALSE & isbday==TRUE,][,.SD[.N],by=.(yrqtr)][,.(DT_ENTRY,prio=1,optexp="qtr")]
+  wkexp <- dtmap[ishol_nyse==FALSE & isbday==TRUE,][,.SD[.N],by=.(yrwk)][,.(DT_ENTRY,prio=3,optexp="wk")]
+  optexp <-rbindlist(list(wkexp,moexp,qexp))[order(DT_ENTRY,prio)][,.SD[1],by=.(DT_ENTRY)][,prio:=NULL]
+  dtmap <- optexp[dtmap,on=.(DT_ENTRY)][,':='(optexp=data.table::fcoalesce(optexp,fifelse(isbday==TRUE,"dly","")))]
+  # Fill in the rest
   dtmap <- dtmap[,':='('isweek'=data.table::fcoalesce(isweek,FALSE),'ismo'=data.table::fcoalesce(ismo,FALSE),
-                        'isqtr'=data.table::fcoalesce(isqtr,FALSE),'isyr'=data.table::fcoalesce(isyr,FALSE))][]
+                       'isqtr'=data.table::fcoalesce(isqtr,FALSE),'isyr'=data.table::fcoalesce(isyr,FALSE))][]
   return(dtmap)
 }
 

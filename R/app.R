@@ -1,5 +1,5 @@
 #source("./R/utilities.R")
-tver<-"0.9.031"
+tver<-"0.9.032"
 
 
 # todo:
@@ -9,6 +9,7 @@ tver<-"0.9.031"
 # -- Implement
 # ellmer stuff
 
+# 032: New datemap, out to 10 years
 # 02: THrottling with max_requests_per_minute
 # 01: Start after publications
 

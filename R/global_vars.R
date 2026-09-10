@@ -1,4 +1,4 @@
-globalVariables(c('.','value','ltype','variable','av_fn','timestamp','expiration','type','delta','.SD','year','between','wday','isday','.I','rolldt',
+globalVariables(c('.','value','ltype','variable','av_fn','timestamp','expiration','type','delta','.SD','year','between','wday','isbday','.I','rolldt',
                   'isholiday','yr','yrmo','frino','yrqtr','optexp','xoptexp','isweek','ismo','isqtr','coltypes','allna',
                   'isyr','category','paramname','hassymbol','DT_ENTRY','def_value','no','outform',
                   'adjusted_close','anopt1','anopt2','catg','catprio','change_percentage','cummktrtn','cumrtn','dtstr_hist','dtstartfrac','EquityName','ETFName',

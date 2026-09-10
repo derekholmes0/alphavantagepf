@@ -296,7 +296,7 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_wind
   }
   # NarrowtoBUsinessDays
   if(!grepl("AllDaysOnGraph",the_av$logopts)) {
-    fgdt <- dtmap[isholiday==FALSE,.(timestamp=DT_ENTRY)][fgdt,on=.(timestamp),nomatch=NULL]
+    fgdt <- dtmap[isbday==TRUE,.(timestamp=DT_ENTRY)][fgdt,on=.(timestamp),nomatch=NULL]
   }
   # Annotations
   tanno <- fcase(

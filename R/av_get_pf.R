@@ -148,7 +148,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     new_delay <- 0
     if(delay<=0 && length(calls_in_last_min)>=the_av$max_requests_per_min) {
       new_delay <- 60/the_av$max_requests_per_min;
-      message_if_green(last_delay<=0,"av_get_pf: Delay of ", new_delay, " second(s) started for API pacing.")
+      message_if_green(last_delay<=0 & verbose==TRUE,"av_get_pf: Pacing ", round(new_delay,1), " second(s)")
       Sys.sleep(new_delay)
     }
     the_av$lastdelay <- new_delay
