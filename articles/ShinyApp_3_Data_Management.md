@@ -234,6 +234,84 @@ app considerably), so consider also enabling the `CleanOnStart` option.
 The user may want to periodically remove that file, but that would be
 outside the scope of this app.
 
+## Options prices and implied volatilities
+
+Sadly, Alphavantage does not provide any implied volatility time series
+data. They do provide a full snapshot of option implieds for a given
+ticker and a given date. This amounts to a *lot* of data, but once it’s
+downloaded it can be summarized and analyzed at will. Since your ability
+to download that data will depend on your data subscription level,
+collecting this data will take longer than is appropriate for an
+interactive tool. For example, at 75 requests/minute (the starter level
+for paid subscriptions), downloading 10 years of daily options data for
+a single ticker will take 10\*252/75 = 33.6 minutes (and in the case of
+`QQQ`, adds up to 700 MB).
+
+So, downloading and summarizing that data for interactive use must be
+done outside the app. Included in the app is a helper function
+[manage_optdb](https://derekholmes0.github.io/alphavantagepf/articles/)
+to download and manage the data. That much data is a stretch for a
+single `.fst` file, so the app/function stores the data in a **partioned
+parquet** format within a subdirectoy of the main cache directory. The
+function also summarizes the term structure of the data into a separate
+`.fst` file for quick retrieval within app functions.
+
+Options data can be downloaded for an arbitrary list of tickers and a
+given date range, and (unless specified) will only download data it
+doesn’t already have. To save on time and space, weekly or monthly data
+can be downloaded instead of daily. Even so, it will take close to 6
+hours to download 10 year of weekly data for 50 tickers.
+
+If the data and summaries are there, the app will refer to them as
+necessary. If that data hasn’t been downloaded, the app will politely
+decline to work and return a message as such. To reiterate, other than
+the `OS` function, the app **will not download any data live**. If you
+want live data, use the
+[manage_optdb](https://derekholmes0.github.io/alphavantagepf/articles/)
+via external processes.
+
+### Getting started
+
+Assuming the app is up and working with valid API keys, the data can be
+downloaded using, e.g.
+
+\`\`\` blah=sapply(c(“IBIT”,“IBM”,“CSCO”,“ORCL”), (x)
+mange_optdb_arrow(“update”,dtstr=“-10y::”,symbols=x,freq=“w”) ) Option
+data to get:IBIT from 2016-09-09 to 2026-07-31 (476 days) AV Options for
+IBIT \[———-\] 4% \[ 6s\] vs 6.61 mins maxav_get_pf: Pacing 0.83
+second(s). AV Options for IBIT \[———-\] 4% \[ 8s\] vs 6.61 mins
+maxav_get_pf: Pacing 0.83 second(s). … No data for symbol IBIT on date
+2024-11-15. Please specify a valid combination of symbol and trading
+day. AV_optchain( IBIT / 2024-11-15 ) err: No data for symbol IBIT on
+date 2024-11-15. Please specify a valid combination of symbol and
+trading day. AV Options for IBIT \[\>———\] 11% \[35s\] vs 6.61 mins
+maxNo data for symbol IBIT on date 2024-11-08. Please specify a valid
+combination of symbol and trading day. AV_optchain( IBIT / 2024-11-08 )
+err: No data for symbol IBIT on date 2024-11-08. Please specify a valid
+combination of symbol and trading day. No data for symbol IBIT on date
+2024-11-01. Please specify a valid combination of symbol and trading
+day. AV_optchain( IBIT / 2024-11-01 ) err: No data for symbol IBIT on
+date 2024-11-01. Please specify a valid combination of symbol and
+trading day. AV Options for IBIT \[\>———\] 11% \[36s\] vs 6.61 mins
+maxNo data for symbol IBIT on date 2024-10-25. Please specify a valid
+combination of symbol and trading day. AV_optchain( IBIT / 2024-10-25 )
+err: No data for symbol IBIT on date 2024-10-25. Please specify a valid
+combination of symbol and trading day. AV Options for IBIT \[\>———\] 11%
+\[37s\] vs 6.61 mins maxmange_optdb_arrow: IBIT has 4 conseq days with
+no options, skipping the rest Option Symbol: IBIT gathered in :37.87
+Option update: Adding 114396 rows to partitioned parquet set Returned
+114396 new options, refreshing inventory, took :1.17 …
+
+Note that
+
+- The function gives a lot of information about times taken and ETAs. It
+  utilizes progress bars and publishes a message when API pacing starts
+  or is in effect.
+- The function downloads backwards in time, and if more than 4
+  consequtive empty days are detected, it stops downloaded that ticker.
+- The function gives updates on the sizes of data downloaded.
+- The function recalculates term structures at the end.
+
 [^1]: Alphavantage has a small select list of CBOE, VIX and equity
     futures indices available as historical data, listed by running
     `AV.TICKERS`

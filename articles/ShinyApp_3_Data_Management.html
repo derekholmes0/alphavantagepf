@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.031</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.032</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -409,6 +409,80 @@ grow to be quite large</strong> (and hence slow the app considerably),
 so consider also enabling the <code>CleanOnStart</code> option. The user
 may want to periodically remove that file, but that would be outside the
 scope of this app.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="options-prices-and-implied-volatilities">Options prices and implied volatilities<a class="anchor" aria-label="anchor" href="#options-prices-and-implied-volatilities"></a>
+</h2>
+<p>Sadly, Alphavantage does not provide any implied volatility time
+series data. They do provide a full snapshot of option implieds for a
+given ticker and a given date. This amounts to a <em>lot</em> of data,
+but once it’s downloaded it can be summarized and analyzed at will.
+Since your ability to download that data will depend on your data
+subscription level, collecting this data will take longer than is
+appropriate for an interactive tool. For example, at 75 requests/minute
+(the starter level for paid subscriptions), downloading 10 years of
+daily options data for a single ticker will take 10*252/75 = 33.6
+minutes (and in the case of <code>QQQ</code>, adds up to 700 MB).</p>
+<p>So, downloading and summarizing that data for interactive use must be
+done outside the app. Included in the app is a helper function <a href="">manage_optdb</a> to download and manage the data. That much data
+is a stretch for a single <code>.fst</code> file, so the app/function
+stores the data in a <strong>partioned parquet</strong> format within a
+subdirectoy of the main cache directory. The function also summarizes
+the term structure of the data into a separate <code>.fst</code> file
+for quick retrieval within app functions.</p>
+<p>Options data can be downloaded for an arbitrary list of tickers and a
+given date range, and (unless specified) will only download data it
+doesn’t already have. To save on time and space, weekly or monthly data
+can be downloaded instead of daily. Even so, it will take close to 6
+hours to download 10 year of weekly data for 50 tickers.</p>
+<p>If the data and summaries are there, the app will refer to them as
+necessary. If that data hasn’t been downloaded, the app will politely
+decline to work and return a message as such. To reiterate, other than
+the <code>OS</code> function, the app <strong>will not download any data
+live</strong>. If you want live data, use the <a href="">manage_optdb</a> via external processes.</p>
+<div class="section level3">
+<h3 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
+</h3>
+<p>Assuming the app is up and working with valid API keys, the data can
+be downloaded using, e.g.</p>
+<p>``` blah=sapply(c(“IBIT”,“IBM”,“CSCO”,“ORCL”), (x)
+mange_optdb_arrow(“update”,dtstr=“-10y::”,symbols=x,freq=“w”) ) Option
+data to get:IBIT from 2016-09-09 to 2026-07-31 (476 days) AV Options for
+IBIT [———-] 4% [ 6s] vs 6.61 mins maxav_get_pf: Pacing 0.83 second(s).
+AV Options for IBIT [———-] 4% [ 8s] vs 6.61 mins maxav_get_pf: Pacing
+0.83 second(s). … No data for symbol IBIT on date 2024-11-15. Please
+specify a valid combination of symbol and trading day. AV_optchain( IBIT
+/ 2024-11-15 ) err: No data for symbol IBIT on date 2024-11-15. Please
+specify a valid combination of symbol and trading day. AV Options for
+IBIT [&gt;———] 11% [35s] vs 6.61 mins maxNo data for symbol IBIT on date
+2024-11-08. Please specify a valid combination of symbol and trading
+day. AV_optchain( IBIT / 2024-11-08 ) err: No data for symbol IBIT on
+date 2024-11-08. Please specify a valid combination of symbol and
+trading day. No data for symbol IBIT on date 2024-11-01. Please specify
+a valid combination of symbol and trading day. AV_optchain( IBIT /
+2024-11-01 ) err: No data for symbol IBIT on date 2024-11-01. Please
+specify a valid combination of symbol and trading day. AV Options for
+IBIT [&gt;———] 11% [36s] vs 6.61 mins maxNo data for symbol IBIT on date
+2024-10-25. Please specify a valid combination of symbol and trading
+day. AV_optchain( IBIT / 2024-10-25 ) err: No data for symbol IBIT on
+date 2024-10-25. Please specify a valid combination of symbol and
+trading day. AV Options for IBIT [&gt;———] 11% [37s] vs 6.61 mins
+maxmange_optdb_arrow: IBIT has 4 conseq days with no options, skipping
+the rest Option Symbol: IBIT gathered in :37.87 Option update: Adding
+114396 rows to partitioned parquet set Returned 114396 new options,
+refreshing inventory, took :1.17 …</p>
+<p>Note that</p>
+<ul>
+<li>The function gives a lot of information about times taken and ETAs.
+It utilizes progress bars and publishes a message when API pacing starts
+or is in effect.</li>
+<li>The function downloads backwards in time, and if more than 4
+consequtive empty days are detected, it stops downloaded that
+ticker.</li>
+<li>The function gives updates on the sizes of data downloaded.</li>
+<li>The function recalculates term structures at the end.</li>
+</ul>
 </div>
 </div>
 

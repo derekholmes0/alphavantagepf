@@ -7,6 +7,7 @@
 - New pacing strategy: Use `[avpf_set_request_pace()]` to set a request
   pace (e.g. 75 requests/minute) to ensure data is returned as
   requested.
+- New datemap to identify weekly options vs daily options.
 
 ### New Features in Shiny interface
 
@@ -14,6 +15,8 @@
 - 
 
 ## alphavantagepf 0.9.0
+
+CRAN release: 2026-09-02
 
 ### Major Changes
 
