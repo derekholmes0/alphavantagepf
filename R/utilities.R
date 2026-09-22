@@ -97,6 +97,47 @@ coalesce_DT_byentry<-function(DT1,DT2) { # Adds columns as necessary, either row
   return(DT3[])
 }
 
+#' @noRd
+partition_path <- function(base_path, keys) {
+  # keys: named vector, e.g. c(symbol = "AAPL", year = "2024")
+  segments <- paste0(names(keys), "=", keys)
+  do.call(file.path, as.list(c(base_path, segments)))
+}
+
+#' @noRd
+#' @importFrom arrow open_dataset collect write_dataset
+#' @importFrom dyply filter
+#' @importFrom coro collect
+upsert_DT_arrow <- function(new_data, part_path, dst=NULL, partition_keys="symbol", dt_keys = NULL) {
+  imap=NULL
+  # unique combinations of partition key values present in new_data
+  key_combos <- unique(new_data[, .SD, .SDcols=partition_keys])
+  all_keys <- union(partition_keys, dt_keys)
+  for (i in seq_len(nrow(key_combos))) {
+    vals <- as.list(key_combos[i])
+    expanded_part_path <- partition_path(part_path, unlist(vals))
+    # build filter expr for this combo: key1 == val1 & key2 == val2 ... Yeah, I cheated
+    exprs <- imap(vals, ~ expr(.data[[.y]] == !!.x))
+    if (dir.exists(expanded_part_path)) {
+      if(is.null(dst)) { dst <- arrow::open_dataset(part_path,format = "parquet", partitioning=partition_keys) }
+      existing <- dst |> dplyr::filter(!!!exprs) |> coro::collect() |> as.data.table()
+      new_rows <- new_data[key_combos[i], on = partition_keys]
+      merged <- rbindlist(list(existing, new_rows), fill = TRUE)
+      setkeyv(merged, all_keys)  # extend with a row-id/date col if needed for true uniqueness
+      merged <- unique(merged, by = all_keys, fromLast = TRUE) # New
+    } else {
+      merged <- new_data[key_combos[i], on = all_keys]
+    }
+    setorderv(merged, all_keys)
+    arrow::write_dataset(merged, expanded_part_path, format = "parquet", existing_data_behavior = "delete_matching" )
+    #write_parquet(merged, expanded_part_path)
+  }
+  setkeyv(new_data, union(partition_keys, dt_keys))
+  return(new_data)
+  # Must reopen ds to refresh
+}
+
+
 #  CAnt get this oto work from within shiny app
 #' @noRd
 #' @importFrom purrr map2
@@ -109,6 +150,15 @@ lineAssign<-function(xline) {
     aaa1<-lapply(names(xline),\(x) {  assign(x,xline[[x]],envir=sys.frame(1))})
   }
 }
+
+#' @noRd
+print_time <- function(timelist,startnm,endnm,msg="") {
+  if(all(c(startnm,endnm) %in% names(timelist))) {
+    return(paste0(msg, ":",round(difftime(timelist[[endnm]],timelist[[startnm]],units="secs"),2)))
+  }
+}
+
+
 
 sAssign<-function(x,...) { cAssign(x,copytodisk=TRUE,pframe=4,...)}
 #' @noRd

@@ -222,6 +222,222 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
   save_avs_state("all",msg=paste0("Add FUnction ",runcode))
 }
 
+# ==========================================================================================================
+# OPTIONS
+# ==========================================================================================================
+
+
+#' Manages option data
+#'
+#' @title av_add_options
+#' @description Manages option database
+#' @param todo WHat to do
+#' `inventory`: Create/update inventory of options
+#' `iv` : Summarize options into Implied term structures
+#' `update`: Update options
+#' @param dtstr (default `"-1w::"`)  How far back to load options. ONly data needed within timeframe is downloaded, unless `replace_data=TRUE`
+#' @param symbols (default: NULL) List of symbols to download
+#' @param freq (Default `"d"`) Granularity of data downloaded ("d" for daily, "w" for weekly, "m" for monthly)
+#' @param replace_data (Default `FALSE`) Update or replace data
+#' @param baddates_limits (default 3): Consecutive business days of null data beyond which options are assumed not to exist.
+#' @param verbosity (default `"time,basic"`) What to display as data is added.
+#' @returns nothing
+#' @seealso [av_runShiny()]
+#' @details
+#'
+#'
+#' @importFrom progress progress_bar
+#' @importFrom dplyr filter
+#' @export
+av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_data=FALSE, baddates_limits=3, verbosity="time,basic") {
+  moneyn=yrwk=tfreq=ts=expcode=NULL
+
+
+  eo_path <- paste0(the_av$cachedir,"\\eqopt")
+  deltamap <- data.table(dcat=s("(-1,-0.9];(-0.9,-0.75];(-0.75,-0.5];(-0.5,-0.25];(-0.25,-0.1];(-0.1,-0.05];(-0.05,0];(0,0.05];(0.05,0.1];(0.1,0.25];(0.25,0.5];(0.5,0.75];(0.75,0.9];(0.9,1];NA"),
+                         moneyn=s("P_90d;P_75d;P_50d;P_25d;P_10d;P_5d;P_0d;C_0d;C_5d;C_10d;C_25d;C_50d;C_75d;C_90d;NA"),
+                         cutlevel=c(-1,-0.9,-0.75,-0.5,-0.25,-0.1,-0.05,0,0.05,0.1,0.25,0.5,0.75,0.9,1))
+  if(!exists(eo_path)) {
+    stop("Please Create ",eo_path," first.  CRAN would prefer the package does not.")
+  }
+  if(!exists(the_av$eqoptinv)) {
+    tsymbols <- symbols %||% c("SPY")
+    eqoptinv <- list()
+  }
+  else {
+    eqoptinv <- the_av$eqoptinv
+    tsymbols <- symbols %||%  eqoptinv[["inv"]]$symbol
+  }
+  deltaset <- deltamap$cutlevel
+  deltalabels <- deltamap[!(moneyn=="NA"),]$moneyn
+  eqoptdb_keys=s("symbol;expcode;contractid;ts")
+  freqmap <- data.table(tfreq=s("d;w;m"),freqcol=s("DT_ENTRY;yrwk;yrmo"))
+  t_dates <- dtmap[isbday==TRUE & DT_ENTRY<Sys.Date(),.(DT_ENTRY,yrwk,yrmo)] |> narrowbydtstr(dtstr)
+  t_dates<- t_dates[,.SD[.N], by=get(freqmap[tfreq==freq,]$freqcol)][order(-DT_ENTRY)]
+  dt_todo_all <- CJ(symbol=tsymbols,ts=t_dates$DT_ENTRY,sorted=FALSE)
+  dt_todo_raw <- copy(dt_todo_all)
+  if("datelist" %in% names(eqoptinv)) {
+    dt_todo_raw <- eqoptinv[["datelist"]][dt_todo_all,on=.(symbol,ts)][is.na(n) | replace_data==TRUE]
+  }
+  timelist <- list()
+  if(todo=="todo") {
+    return(dt_todo_raw)
+  }
+  timelist[["start"]] <- Sys.time()
+  ds <- arrow::open_dataset(eo_path,partitioning=c("symbol"))
+  if(todo=="inventory") {
+    eqoptinv <- optdb_inventory(ds)
+    the_av$eqoptinv <- copy(eqoptinv)
+  }
+  if(todo=="iv") {
+    eqopt_iv <- the_av$eqopt_iv %||% data.table()
+    one_symbol <- function(thissymbol,dtset) {
+      message_if_green(grepl("all",verbosity),"Implied Vols:",thissymbol," from ",as.Date(min(dtset))," to ",as.Date(max(dtset)), " (",length(dtset)," days)")
+      u1 <- ds |> dplyr::filter(symbol==thissymbol) |>  as.data.table()
+      u1 <- u1[data.table(ts=dtset),on=.(ts),nomatch=NULL]
+      # SLow.. not parallelized
+      # -- thisiv <- u1[,dcat:=cut(100*delta,deltaset)][,.SD[order(delta*(type=="call")-delta*(type=="put"))][.N], by=.(symbol,ts,expcode,type,dcat)][abs(delta)<0.99,]
+      # Use fact that u1 in strike order to advantage
+      u1 <- u1[,moneyn:=cut(delta,deltaset,labels=deltalabels)][!is.na(moneyn)]
+      thisiv_call <- u1[type=="call",][,.SD[.N], by=.(symbol,ts,expcode,type,moneyn)]
+      thisiv_put <- u1[type=="put",][,.SD[1], by=.(symbol,ts,expcode,type,moneyn)]
+      return(rbindlist(list(thisiv_call,thisiv_put)))
+    }
+    todo_iv <- dt_todo_all
+    if(replace_data==FALSE) {
+      todo_iv <- dt_todo_all[!eqopt_iv[,.N,by=.(symbol,ts)], on=.(symbol,ts)]
+    }
+    pb <- progress::progress_bar$new(format = paste0("AV IV  [:bar] :percent [:elapsed]"), total=length(tsymbols), clear = FALSE, width= 60)
+    lastdt_iv <- lapply(tsymbols, \(x) { pb$tick(); one_symbol(x,todo_iv[symbol==x,]$ts) } )
+    eqopt_iv <- DTUpsert(eqopt_iv,rbindlist(lastdt_iv),s("symbol;ts;expcode;moneyn;type"))
+    the_av$eqoptinv <- copy(eqopt_iv)
+    save_avs_state("all",msg="Implied surfaces created")
+  }
+  if(todo=="update") {
+    dtall <- data.table()
+    t_max_requests_per_min<- as.numeric(dump_state()[nm=="max_requests_per_min",]$toget)
+    est_end_time <- Sys.time()+nrow(dt_todo_raw)/t_max_requests_per_min
+    for(s in tsymbols) {
+      timelist[['start_sym']] = Sys.time()
+      indates <- dt_todo_raw[symbol==s,]$ts
+      if(length(indates)>0) {
+        message_if_red(grepl("basic|tim",verbosity),"Option data to get:",s," from ",as.Date(min(indates))," to ",as.Date(max(indates)), " (",length(indates)," days)",
+                       "est end: ",est_end_time," (",round(est_end_time-Sys.time(),0)," mins)")
+        max_time <-  round(length(indates)/t_max_requests_per_min,2)
+        pb <- progress::progress_bar$new(format = paste0("AV Options for ",s," [:bar] :percent [:elapsed] vs ",max_time," mins max"),
+                               total = length(indates), clear = FALSE, width= 60)
+        dtnew <- data.table() #much as I love lapply here, need to cancel early if options didn't trade
+        nconseq_nulls <- 0
+        for(dt in indates) {
+          opt_for_one_date <- getData.optchain_all(s,indate=as.Date(dt),verbose=FALSE)
+          pb$tick()
+          nconseq_nulls <- nconseq_nulls + fifelse(nrow(opt_for_one_date)<=0,1,0)
+          if(nconseq_nulls>baddates_limits) {
+            message_if_red(TRUE,"mange_optdb_arrow: ",s," has ",nconseq_nulls," conseq days with no options, skipping the rest")
+            break
+          }
+          dtnew <- rbindlist(list(dtnew,opt_for_one_date))
+        }
+        dtall <- rbindlist(list(dtall,dtnew),fill=TRUE)
+        timelist[['end_sym']] = Sys.time()
+        message_if(grepl("tim",verbosity),"Option Symbol: ",s," gathered in ",print_time(timelist,"start_sym","end_sym"))
+      }
+    }
+    if(nrow(dtall)<=0) {
+      message_if(TRUE," Symbols ",tsymbols,": NOTHING TO UPDATE .. ")
+      return()
+    }
+    timelist[['start_upsert']] = Sys.time()
+    message_if_red(grepl("basic",verbosity),"Option update: Adding ",nrow(dtall)," rows to partitioned parquet set")
+    addedopts <- upsert_DT_arrow( dtall, eo_path, dst=ds, partition_keys="symbol",dt_keys=c("ts","contractid"))
+    timelist[['end_upsert']] = Sys.time()
+    message_if_green(grepl("tim",verbosity),"Returned ",nrow(addedopts)," new options, refreshing inventory, took ",print_time(timelist,"start_upsert","end_upsert"))
+    ds <- arrow::open_dataset(eo_path,partitioning=c("symbol")) # REopen dataset
+    eqoptinv_toadd <- optdb_inventory(ds, tsymbols)
+    eqoptinv[["datelist"]] <- DTUpsert(eqoptinv[["datelist"]], eqoptinv_toadd[["datelist"]], c("symbol","ts"),fill=TRUE)
+    eqoptinv[["inv"]] <- DTUpsert(eqoptinv[["inv"]], eqoptinv_toadd[["inv"]], c("symbol"),fill=TRUE)
+    eqoptinv[["last"]] <- DTUpsert(eqoptinv[["last"]], eqoptinv_toadd[["last"]], c("symbol"),fill=TRUE)
+    the_av$eqoptinv <- eqoptinv
+    save_avs_state("all",msg="Implied surfaces created")
+    timelist[['end_inventory']] = Sys.time()
+    message_if_green(grepl("tim",verbosity),"Updated option inventory in ",print_time(timelist,"end_upsert","end_inventory"))
+    return()
+  }
+}
+
+#[active][otm|itm][[front][mo|qtr]]
+# optchain = getData.optchain("QQQ",opttypegrep="put",grepstring="activeotmfrontmo",pctlimit=0.25)
+
+#' @noRD
+getData.optchain_all <- function(ticker,spot=NULL,expiration=NULL,rtn="",indate=NULL,verbose=FALSE,delay=0) {
+  iv=ts=strike=mark=NULL
+  timelist = list()
+  chaindt = data.table()
+  chaindt_bad = list()
+  timelist[['optchainstart']] = Sys.time()
+  chaindta = alphavantagepf::av_get_pf(ticker,"HISTORICAL_OPTIONS",date=indate,verbose=FALSE,delay=delay)
+
+  if( message_if(nrow(chaindta)<=0, paste0("AV_optchain(",ticker,"/",indate,") empty return")) ) {
+    cAssign("chaindta",silent=TRUE);  return(data.table()) }
+
+  if( message_if("value_str" %in% colnames(chaindta),
+                 paste("AV_optchain(",ticker,"/",indate,") err:", chaindta[variable %in% c("message","Information"),]$value_str) )) {  return(data.table()) }
+
+  setnames(chaindta,colnames(chaindta),tolower(colnames(chaindta)),skip_absent=TRUE)
+  setnames(chaindta,c("implied_volatility","date"),c("iv","ts"),skip_absent=TRUE)
+  # Now get last date and spot
+  new_indate <- max(chaindta$ts)
+  if(!is.numeric(spot)) {
+    spot <- av_load_shinydata("pxd")[symbol==ticker & timestamp == new_indate,]$close
+  }
+  chaindt = chaindta[,let('iv'=100*as.numeric(iv),'dtoexp'=as.numeric(difftime(expiration,as.Date(ts),units="days"),'spot'=spot))]
+  timelist[['optchainend']] = Sys.time()
+
+  # Add expiration codes
+  expmap <- opt_expmap(indate,alldates=sort(unique(chaindt$expiration)))
+  chaindt <- expmap[chaindt,on=.(expiration)][,let(ITM=fifelse(type=="call",strike>=mark,strike<=mark))]
+
+  timelist[['end']] = Sys.time()
+  message_if(verbose,"optchain(",ticker,"/",new_indate,") returns ",length(unique(chaindt$expiration)), " expirations for ",nrow(chaindt)," options: ",print_time(timelist,"start","end"," total"),
+             print_time(timelist,"optchainstart","optchainend","API"),
+             print_time(timelist,"greeks_start","greeks_end","Greeks"))
+  return(chaindt)
+}
+
+#' @noRD
+opt_expmap <- function(indate,alldates=NULL,maxdate=NULL) {
+  optexpstr=NULL
+  maxdate <- maxdate %||% indate+10*365
+  chaindt0 = dtmap[between(DT_ENTRY,indate,maxdate) & nchar(optexp)>0,.(expiration=DT_ENTRY,optexp)]
+  if(is.data.frame(alldates)) {
+    chaindt0 <- chaindt0[alldates,on=.(expiration)][expiration<=max(alldates$expiration)]
+  }
+  chaindt0 <- chaindt0[order(optexp,expiration)][,.(expiration,optexpstr=paste0(optexp,"_",.I-min(.I)+1)),by=.(optexp)]
+  return(chaindt0[,.(expiration,expcode=optexpstr)])
+}
+
+#' @noRD
+#' @importFrom dplyr group_by inner_join count
+optdb_inventory <- function(ds,symbolset=NULL) {
+  ts=cnt=nYrs=max_DT_ENTRY=NULL
+  if(is.null(symbolset)) {
+    dsa <- ds
+  }
+  else {
+    dsa <-ds |> dplyr::inner_join(data.frame(symbol=symbolset))
+  }
+  eoinv3 <- dsa |> dplyr::group_by(symbol,ts) |> dplyr::count() |> as.data.table()
+  eoinv1 <- eoinv3[,.(min_DT_ENTRY=min(ts),max_DT_ENTRY=max(ts), cnt=.N, nYrs=as.numeric(max(ts)-min(ts))/365), by=.(symbol)]
+  eoinv1 <- eoinv1[,let(nperYr=cnt/nYrs)][]
+  eoinv2 <- ds |> dplyr::inner_join(eoinv1[,.(symbol,ts=max_DT_ENTRY)],.by=c("symbol","ts")) |> as.data.table()
+  return(list("inv" =  eoinv1, "last"=eoinv2, "datelist"=eoinv3))
+}
+
+
+
+# ==========================================================================================================
+# APP functions
+# ==========================================================================================================
 
 #' Display a user message in the av_runShiny app
 #'

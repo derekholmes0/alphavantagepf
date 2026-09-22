@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "alphavantage": {
+      "url": "https://mcp.alphavantage.co/mcp?apikey=MY_API_KEY"
+    }
+    "openecon": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://data.openecon.ai/mcp",
+        "--header",
+        "Authorization: Bearer ${OPENECON_TOKEN}"
+      ],
+      "env": {
+        "OPENECON_TOKEN": "paste-your-jwt-here"
+      }
+    }
+  }
+}
+
+
+> resp <- request("https://data.openecon.ai/api/auth/login") |>
++     req_body_json(list(email = "derek@derekholmes.com", password = "oecai_Farkas_2026")) |>
++     req_perform()
+>
+> token <- resp_body_json(resp)$token
+> token
+[1] "eyJhbGciOiJIUzI1NiIsImtpZCI6Ikt0aHF3d3ViQUhjamVJd1ciLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2t6Z2JjZHN3YnVqemlmZW12ZHJyLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI4NTcwZDIwYS1jNTBlLTQ2NWEtODM5Yy00YTcxMTllNGQ3NTMiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzg5NDg0MzY5LCJpYXQiOjE3ODk0ODA3NjksImVtYWlsIjoiZGVyZWtAZGVyZWtob2xtZXMuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbCI6ImRlcmVrQGRlcmVraG9sbWVzLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiRGVyZWsgSG9sbWVzIiwicGhvbmVfdmVyaWZpZWQiOmZhbHNlLCJzdWIiOiI4NTcwZDIwYS1jNTBlLTQ2NWEtODM5Yy00YTcxMTllNGQ3NTMifSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc4OTQ4MDc2OX1dLCJzZXNzaW9uX2lkIjoiYTViYmZiNmYtYTdmZC00YzRmLWE1YjAtNzJhMTc4YTcwZmRlIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.9z_Dk2aAlm1d4AqmnFhz9FWzpPFQ2a1jLVY1Y5_YGKk"
+>

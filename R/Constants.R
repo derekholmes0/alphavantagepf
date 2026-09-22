@@ -213,7 +213,8 @@ av_shiny_constants <- function() {
     "inputcss_side" = paste(lapply(yellowed_inputs,(\(x) paste(x,tinputformstyle))),collapse=" "),
     #"inputcss_top" =paste(lapply(s("#istr1;#istr2"),\(x) paste(x,tinputformstyle)),collapse=" "),
     #"labelcss" =I("font-size:11pt color:red font-weight:bold"),
-    "othercss2"=I("gropts {font-size:10px; background-color: #ddfcd9}")
+    "othercss2"=I("gropts {font-size:10px; background-color: #ddfcd9}"),
+    "av_mcp_base_json"=readLines("./inst/extdata/mcp_config.json")
   )
   av_funcmap <- av_make_funcmap()
   dtmap  <- av_make_dtmap()

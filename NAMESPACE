@@ -30,12 +30,16 @@ export(gt.basetheme)
 import(FinanceGraphs)
 import(clipr)
 import(data.table)
+import(ellmer)
 import(gt)
 import(gtExtras)
+import(promises)
 import(shiny)
 import(shinyFeedback)
+import(shinychat)
 importFrom(FinanceGraphs,fg_current_theme)
 importFrom(TTR,volatility)
+importFrom(bslib,page_fillable)
 importFrom(data.table,
   ":=",
   .N,
@@ -68,6 +72,7 @@ importFrom(lubridate,
   is.instant,
   with_tz
 )
+importFrom(mcptools,mcp_tools)
 importFrom(patchwork,wrap_plots)
 importFrom(progressr,handlers)
 importFrom(purrr,
@@ -79,6 +84,7 @@ importFrom(rlang,
   expr,
   sym
 )
+importFrom(shinychat,chat_append)
 importFrom(shinyjs,runjs)
 importFrom(splines,bs)
 importFrom(stats,

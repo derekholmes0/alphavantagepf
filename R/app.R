@@ -1,5 +1,5 @@
 #source("./R/utilities.R")
-tver<-"0.9.032"
+tver<-"0.9.04"
 
 
 # todo:
@@ -9,6 +9,7 @@ tver<-"0.9.032"
 # -- Implement
 # ellmer stuff
 
+# 04: Start of ellmer
 # 032: New datemap, out to 10 years
 # 02: THrottling with max_requests_per_minute
 # 01: Start after publications
@@ -20,7 +21,9 @@ tver<-"0.9.032"
 #' @importFrom dygraphs dygraphOutput renderDygraph
 #' @import shiny
 #' @import shinyFeedback
+#' @import shinychat
 #' @import FinanceGraphs
+#' @importFrom bslib page_fillable
 av_make_ui <- function() {
   order1=order2=aesnm=var=NULL
   curr_assetgroups <- sort(unique(the_av$assetgroups$listnm))
@@ -149,10 +152,20 @@ av_make_ui <- function() {
                     textInput(inputId="ts_volparams", label="Histvolparams", value=the_av$ts_volparams),
                     selectInput(inputId="sigpct","Regr Significance", c("0.05","0.025","0.1"),selected=c("0.025"),multiple=FALSE),
                     checkboxGroupInput(inputId="logopts",label="Options",choices=s(avsd$defaults[var=="avsh_logopts",]$value_str),
-                                            selected=s(the_av$logopts))
+                                            selected=s(the_av$logopts)),
+                    selectInput(inputId="llm_model",label="LLM Model", s(avsd$defaults[var=="llm_model_list",]$value_str),
+                                    selected=s(avsd$defaults[var=="llm_model_list",]$value_str)[[1]], multiple=FALSE)
                   ),
-                  column(width=6,gt_output(outputId = "dumpthe"))
+                  column(width=5,gt_output(outputId = "dumpthe"))
+                  ),
+              tabPanel("LLM",value="llm",
+                  fluidRow(
+                    column(width=2, actionButton("ClearLLMHist","Clear Convo",width='50%',class = "btn btn-primary")),
+                    column(width=8, textOutput("llm_tokens")),
+                    #bslib::page_fillable(shinychat::chat_ui(id="chat",greeting="AV LLM Chat ready",placeholder=the_av$last_q, full=TRUE))
+                    shinychat::chat_ui(id="chat",greeting="AV LLM Chat ready",placeholder=the_av$last_q, full=TRUE)
                   )
+             )
             )
           )
       )
@@ -166,6 +179,8 @@ av_make_ui <- function() {
 #' @importFrom splines bs
 #' @importFrom patchwork wrap_plots
 #' @importFrom stats quantile formula
+#' @importFrom shinychat chat_append
+#' @import promises
 
 av_make_server <- function() {
   wh=ts_rebase=ts_events=ts_volparams=imp=x_close=y_close=ui_out=outname=displayed=inclass=displayheight=todoargs=NULL
@@ -176,8 +191,14 @@ av_make_server <- function() {
     # On Startup download current index list if not there
     update_tickerlists( is.null(the_av$tickerlist) || nrow(the_av$tickerlist)<=0 ||
             (max(the_av$tickerlist$list_ts)<=Sys.Date()-4) )
+    # Check in with the API and other packages
     FinanceGraphs::fg_sync_group("avshiny")
     avpf_set_request_pace(the_av$max_requests_per_min)
+    message(" use llm:", "useLLM" %in% s(the_av$logopts))
+    if("useLLM" %in% s(the_av$logopts) & file.exists(paste0(the_av$defaultcachedir,"/config.json")) ) {
+      av_chat <- create_chat_instance()
+    }
+
     if("CleanOnStart" %in% the_av$capture_av_save) {  save_av_data(data.table(),"KILL") }
    # height_from_obs <- reactive({ the_av$out1h })
     need_index_asset <- reactive({
@@ -197,6 +218,11 @@ av_make_server <- function() {
       req(input$ochains)
       quick_message(opt_explation(input$ochains),wh="ochains")
     })
+
+    observeEvent(input$ClearLLMHist, {
+      av_chat$set_turns(list())
+      output$llm_tokens <- renderText( { paste("Cleared Chat History at",Sys.time()) } )
+      })
 
     observeEvent(input$ag_state, {
       req(input$ag_state)
@@ -240,6 +266,9 @@ av_make_server <- function() {
       av_set_defaults("autocopy","data2clipboard" %in% rv$logopts)
       av_set_defaults("max_requests_per_min",rv$requestpace)
 
+      # Set up mcp json file
+      writeLines(gsub("MY_API_KEY",rv$avapikey,avsd$av_mcp_base_json), paste0(the_av$defaultcachedir,"/config.json"))
+
       save_avs_state("all",msg="sEToPTS")
       thnew <- dump_state()
       th1 <- th1[,.(nm,old=toget)][thnew,on=.(nm)][,format:=fifelse(old==toget,"","yellow")][]
@@ -282,7 +311,6 @@ av_make_server <- function() {
         updateSelectInput(session,"capture_av_save",selected=the_av$capture_av_save)
       }
       })
-
 
     observeEvent(input$istr1_enter, {
       rv <- isolate(reactiveValuesToList(input))
@@ -378,6 +406,19 @@ av_make_server <- function() {
       save_avs_state("all",msg="RUNLN")
       updateTextInput("istr1",value="",session=session)
     })
+
+    observeEvent(input$chat_user_input,
+      {
+        rv <- isolate(reactiveValuesToList(input))
+        thisinput <- unlist(rv$chat_user_input)
+        the_av$last_q <- thisinput
+        cAssign("rv;av_chat")
+        output$llm_tokens <-renderText({paste("Est Tokens:", av_chat$token_count(thisinput), "Cost thus far:", av_chat$get_cost()) })
+        stream <- av_chat$stream_async(thisinput,stream = "content", tool_mode="sequential")
+        cAssign("stream")
+        shinychat::chat_append("chat",stream)
+      })
+
   } # Server
   return(av_server)
 }

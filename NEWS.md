@@ -6,6 +6,12 @@
 
 * New pacing strategy: Use `[avpf_set_request_pace()]` to set a request pace (e.g. 75 requests/minute) to ensure data is returned as requested.
 * New datemap to identify weekly options vs daily options.
+* Add API signatures for REALTIME_BULK_BID_ASK_PRICES, REALTIME_OPTIONS_FMV, CONGRESS_TRADES, POLITICIAN_METADATA
+* Placeholders for API function calls COMPANY_OVERVIEW, GOLD_SILVER_SPOT, GOLD_SILVER_HISTORY
+
+TOdo:
+
+* make chat w/ Tools part of API instead of shiny
 
 ## New Features in Shiny interface
 

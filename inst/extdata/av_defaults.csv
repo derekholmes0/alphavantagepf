@@ -36,5 +36,6 @@ autocopy,log,autocopy,,FALSE,
 starttab,str,,avopts,,
 gropts,str,onrun,last,,
 dbglvl ,num,,,,0
-avsh_logopts,str,,useTotRtn;useLivePx;verbose;data2clipboard;persistOutput;showGeneralHelp;showWarnings;useAbbreviations;AllDaysOnGraph,,
+avsh_logopts,str,,useTotRtn;useLivePx;verbose;data2clipboard;persistOutput;showGeneralHelp;showWarnings;useAbbreviations;AllDaysOnGraph;useLLM,,
 logopts,str,setopts,useTotRtn;showGeneralHelp;verbose;useAbbreviations;AllDaysOnGraph,,
+llm_model_list,str,setopts,claude-sonnet-5;claude-haiku-4-5-20251001,,
