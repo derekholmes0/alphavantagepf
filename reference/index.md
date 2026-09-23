@@ -10,6 +10,8 @@
   : Add asset lists
 - [`av_add_earn()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.md)
   : Add or download Earnings Data
+- [`av_add_options()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_options.md)
+  : av_add_options
 - [`av_add_px()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_px.md)
   : Add or download Price or Time Series Data
 - [`av_extract_df()`](https://derekholmes0.github.io/alphavantagepf/reference/av_extract_df.md)

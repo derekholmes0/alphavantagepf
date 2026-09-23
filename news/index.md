@@ -1,8 +1,14 @@
 # Changelog
 
+## alphavantagepf 0.9.2
+
+- Working on LLM support
+
 ## alphavantagepf 0.9.1
 
-### New Features in API interface
+### API interface
+
+#### New features
 
 - New pacing strategy: Use `[avpf_set_request_pace()]` to set a request
   pace (e.g. 75 requests/minute) to ensure data is returned as
@@ -13,14 +19,16 @@
 - Placeholders for API function calls COMPANY_OVERVIEW,
   GOLD_SILVER_SPOT, GOLD_SILVER_HISTORY
 
-TOdo:
+#### Bug Fixes
 
-- make chat w/ Tools part of API instead of shiny
+- Option expiration now correct for 1/19/2029, and all other dates with
+  short first weeks of the year.
 
-### New Features in Shiny interface
+### Shiny interface
 
 - Request pacing added to options page.
-- 
+- Collection of options data and summary of vol surface by date, see
+  vignette
 
 ## alphavantagepf 0.9.0
 
@@ -49,7 +57,7 @@ also add their own analytics and interface with the GUI using several
 - Functions which return multiple types as strings (specifically
   `av_get_pf(.,"OVERVIEW")`) now properly produce type-separated tables.
 
-Bug fixes
+### Bug fixes
 
 - Fixed app crash if no earnings transcript available.
 - Fixed graphing so that stepPlots are chosen appropriately, not always.

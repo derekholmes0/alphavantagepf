@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.04</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -423,37 +423,47 @@ subscription level, collecting this data will take longer than is
 appropriate for an interactive tool. For example, at 75 requests/minute
 (the starter level for paid subscriptions), downloading 10 years of
 daily options data for a single ticker will take 10*252/75 = 33.6
-minutes (and in the case of <code>QQQ</code>, adds up to 700 MB).</p>
-<p>So, downloading and summarizing that data for interactive use must be
-done outside the app. Included in the app is a helper function <a href="">manage_optdb</a> to download and manage the data. That much data
-is a stretch for a single <code>.fst</code> file, so the app/function
-stores the data in a <strong>partioned parquet</strong> format within a
-subdirectoy of the main cache directory. The function also summarizes
-the term structure of the data into a separate <code>.fst</code> file
-for quick retrieval within app functions.</p>
+minutes (and in the case of <code>QQQ</code>, adds up to 700 MB). The
+key implications of this are twofold:</p>
+<ul>
+<li><strong>Downloading and summarizing that data for interactive use
+must be done outside the app.</strong></li>
+<li><strong>Large sets options and derived term structures will add
+greately to the space required and the time to load internal
+data.</strong></li>
+</ul>
+<p>Included in the app is a helper function <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_add_options.html">av_add_options</a>
+to download and manage the data. That much data is a stretch for a
+single <code>.fst</code> file, so the app/function stores the data in a
+<strong>partioned parquet</strong> format within a subdirectoy of the
+main cache directory. The function also summarizes the term structure of
+the data into a separate <code>.fst</code> file for quick retrieval and
+interactive use.</p>
 <p>Options data can be downloaded for an arbitrary list of tickers and a
 given date range, and (unless specified) will only download data it
 doesn’t already have. To save on time and space, weekly or monthly data
 can be downloaded instead of daily. Even so, it will take close to 6
 hours to download 10 year of weekly data for 50 tickers.</p>
-<p>If the data and summaries are there, the app will refer to them as
-necessary. If that data hasn’t been downloaded, the app will politely
-decline to work and return a message as such. To reiterate, other than
-the <code>OS</code> function, the app <strong>will not download any data
-live</strong>. If you want live data, use the <a href="">manage_optdb</a> via external processes.</p>
+<p>If the data and implied vol summaries are there, the app will refer
+to them as necessary. If that data hasn’t been downloaded, the app will
+politely decline to work and return a message as such. To reiterate,
+other than the <code>OS</code> function, the app <strong>will not
+download any data live</strong>. If you want live data, use the <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_add_options.html">av_add_options</a>
+via an external call. Note that this can still be done when the Shiny
+app is still running.</p>
 <div class="section level3">
 <h3 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
 </h3>
 <p>Assuming the app is up and working with valid API keys, the data can
 be downloaded using, e.g.</p>
 <p>``` blah=sapply(c(“IBIT”,“IBM”,“CSCO”,“ORCL”), (x)
-mange_optdb_arrow(“update”,dtstr=“-10y::”,symbols=x,freq=“w”) ) Option
-data to get:IBIT from 2016-09-09 to 2026-07-31 (476 days) AV Options for
-IBIT [———-] 4% [ 6s] vs 6.61 mins maxav_get_pf: Pacing 0.83 second(s).
-AV Options for IBIT [———-] 4% [ 8s] vs 6.61 mins maxav_get_pf: Pacing
-0.83 second(s). … No data for symbol IBIT on date 2024-11-15. Please
-specify a valid combination of symbol and trading day. AV_optchain( IBIT
-/ 2024-11-15 ) err: No data for symbol IBIT on date 2024-11-15. Please
+av_add_options(“update”,dtstr=“-10y::”,symbols=x,freq=“w”) ) Option data
+to get:IBIT from 2016-09-09 to 2026-07-31 (476 days) AV Options for IBIT
+[———-] 4% [ 6s] vs 6.61 mins maxav_get_pf: Pacing 0.83 second(s). AV
+Options for IBIT [———-] 4% [ 8s] vs 6.61 mins maxav_get_pf: Pacing 0.83
+second(s). … No data for symbol IBIT on date 2024-11-15. Please specify
+a valid combination of symbol and trading day. AV_optchain( IBIT /
+2024-11-15 ) err: No data for symbol IBIT on date 2024-11-15. Please
 specify a valid combination of symbol and trading day. AV Options for
 IBIT [&gt;———] 11% [35s] vs 6.61 mins maxNo data for symbol IBIT on date
 2024-11-08. Please specify a valid combination of symbol and trading
@@ -483,6 +493,63 @@ ticker.</li>
 <li>The function gives updates on the sizes of data downloaded.</li>
 <li>The function recalculates term structures at the end.</li>
 </ul>
+</div>
+<div class="section level3">
+<h3 id="data-structures-created">Data structures created<a class="anchor" aria-label="anchor" href="#data-structures-created"></a>
+</h3>
+<p>Within a subdirectory of the cache directory called
+<code>eqopt</code>, a partitioned parquet data structure is kept with
+the results of all option downloads. Each symbol will have its own
+subdirectory, (e.g. <code>symbol=SPY</code>) with a parquet file with
+the following columns</p>
+<table class="table">
+<colgroup>
+<col width="24%">
+<col width="31%">
+<col width="43%">
+</colgroup>
+<thead><tr class="header">
+<th align="center">Column Set</th>
+<th align="center">Description</th>
+<th align="left">Columns</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="center">Keys</td>
+<td align="center"><code>symbol,ts,contractid</code></td>
+<td align="left">Closing option values for option
+<code>contractid</code> on symbol <code>symbol</code> for day
+<code>ts</code>
+</td>
+</tr>
+<tr class="even">
+<td align="center">Contract details</td>
+<td align="center"><code>expiration,type,strike,dtoexp</code></td>
+<td align="left">Each contract valuation details</td>
+</tr>
+<tr class="odd">
+<td align="center">Helpful details</td>
+<td align="center"><code>expcode,spot,ITM</code></td>
+<td align="left">Derived and added valution data. Expcodes are of the
+form (e.g.) <code>mo_2</code> for 2nd monthly contract</td>
+</tr>
+<tr class="even">
+<td align="center">Pricing Data</td>
+<td align="center"><code>last,mark,bid,bid_size,ask,ask_size,volume,open_interest</code></td>
+<td align="left">Market quotes</td>
+</tr>
+<tr class="odd">
+<td align="center">Derived Data</td>
+<td align="center"><code>iv,delta,gamma,vega,theta,rho</code></td>
+<td align="left">Black Scholes derived data</td>
+</tr>
+</tbody>
+</table>
+<p>From that data, another <code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table()</a></code> is created for
+Shiny app use with quotes from above narrowed to a select set of
+strikes. For each symbol an day, the table <code>eqopt_iv</code> will
+have quotes for both calls and puts closest to 5, 10, 25, 50, 77 and 90
+deltas. (Those codes are added as the variable <code>moneyn</code>.)</p>
 </div>
 </div>
 
