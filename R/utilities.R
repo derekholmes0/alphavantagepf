@@ -105,9 +105,9 @@ partition_path <- function(base_path, keys) {
 }
 
 #' @noRd
-#' @importFrom arrow open_dataset collect write_dataset
-#' @importFrom dyply filter
-#' @importFrom coro collect
+#' @importFrom arrow open_dataset write_dataset
+#' @importFrom dplyr filter collect
+#' @importFrom purrr imap
 upsert_DT_arrow <- function(new_data, part_path, dst=NULL, partition_keys="symbol", dt_keys = NULL) {
   imap=NULL
   # unique combinations of partition key values present in new_data
@@ -117,16 +117,16 @@ upsert_DT_arrow <- function(new_data, part_path, dst=NULL, partition_keys="symbo
     vals <- as.list(key_combos[i])
     expanded_part_path <- partition_path(part_path, unlist(vals))
     # build filter expr for this combo: key1 == val1 & key2 == val2 ... Yeah, I cheated
-    exprs <- imap(vals, ~ expr(.data[[.y]] == !!.x))
+    exprs <- purrr::imap(vals, ~ expr(.data[[.y]] == !!.x))
     if (dir.exists(expanded_part_path)) {
       if(is.null(dst)) { dst <- arrow::open_dataset(part_path,format = "parquet", partitioning=partition_keys) }
-      existing <- dst |> dplyr::filter(!!!exprs) |> coro::collect() |> as.data.table()
+      existing <- dst |> dplyr::filter(!!!exprs) |> dplyr::collect() |> as.data.table()
       new_rows <- new_data[key_combos[i], on = partition_keys]
       merged <- rbindlist(list(existing, new_rows), fill = TRUE)
       setkeyv(merged, all_keys)  # extend with a row-id/date col if needed for true uniqueness
       merged <- unique(merged, by = all_keys, fromLast = TRUE) # New
     } else {
-      merged <- new_data[key_combos[i], on = all_keys]
+      merged <- new_data[key_combos[i], on = partition_keys]
     }
     setorderv(merged, all_keys)
     arrow::write_dataset(merged, expanded_part_path, format = "parquet", existing_data_behavior = "delete_matching" )

@@ -438,7 +438,8 @@ save_avs_state <- function(todo="all",msg="", ts_update=TRUE) {
     save(list=unames,envir=the_av,file=the_av$constants_fn)
     shortmsg <- paste(shortmsg,"const")
   }
-  message_if_green(the_av$verbose & the_av$dbglvl>=2,"Save State (",todo,") or (",shortmsg,") from '",msg,"' at ",format(Sys.time(),"%d-%H:%M%:S"))
+  create_msg<- exists("verbose",envir=the_av) && the_av$verbose && the_av$dbglvl>=2
+  message_if_green(create_msg,"Save State (",todo,") or (",shortmsg,") from '",msg,"' at ",format(Sys.time(),"%d-%H:%M%:S"))
 }
 
 

@@ -51,7 +51,6 @@ print(avpf_api_key())
 #> [1] "YOUR_API_KEY" "delayed"
 avpf_set_request_pace(60)
 #> [31mSetting Max requests per minute to 60[0m
-#> Saving to C:/Users/DFH/AppData/Local/R/cache/R/alphavantagepf/avpf_constants.RD
 #> NULL
 ```
 
@@ -287,8 +286,7 @@ and providing command persistence.
   the analyses. Internally, the list is expanded to the full set. If you
   would like to expand the list on the command line, just hit the
   <span style="background-color: #003366; color: #FFFFFF;">expand</span>
-  option in the options box.
-
+  option in the options box.\
 - **Command persistence** is availble using the `AV.HIST` commands and
   `AV.R <n>` commands, which list the last several commands used and
   recalls them by number.
@@ -302,10 +300,13 @@ the relevant
 calls. One of the key contributions of this package is to standardize
 different [Alpha Vantage API](https://www.alphavantage.co/) output forms
 into one common format. That effort requires knowing what asset class
-each ticker belongs to, since there are differnt API calls for each.
+each ticker belongs to, since there are different API calls for each.
 Asset classes are determined by comparing them with pre-downloaded[^3]
 symbol lists, or asssumed to be currencies if they are of the standard
-`[[:alpha:]]*3/[[:alpha:]]*3` format.
+`[[:alpha:]]*3/[[:alpha:]]*3` format. Options data can also be stored,
+but in a more complicated format. See [Data Management
+Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
+for further details.
 
 #### Adding data
 
@@ -318,9 +319,7 @@ function. Historical earnings (kept in `avpf_earn.fst`) or forecasts
 (kept in `avpf_earnest.fst`) are managed separately using
 [av_add_earn()](https://derekholmes0.github.io/alphavantagepf/reference/av_add_earn.html).
 Those functions can be called independently without user data to source
-the data from Alphavantage. See [Data Management
-Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
-for further details.
+the data from Alphavantage.
 
 As an example, suppose we wish to plot two fixed income ETFs against Fed
 Funds. We can use e.g. `quantmod` to download and add the data. All we

@@ -129,7 +129,7 @@ av_make_funcmap <- function() {
 .addseasonaldates<- function(x,dtname="DT_ENTRY",toadd="all",freqvarname="") {
   # Really slow
   toaggdt<-function(x,to="yrwk") {
-    convstr=list('yrwk'="%Y%V","yrweek"="%Y%V","yrmo"="%Y%m","dt"="%Y%m%d","wk"="%V","filedt"="%y%m%d")
+    convstr=list('yrwk'="%Y%U","yrweek"="%Y%U","yrmo"="%Y%m","dt"="%Y%m%d","wk"="%U","filedt"="%y%m%d")
     as.numeric(strftime(x,convstr[[to]])) }
   if(!is.data.frame(x)) {
     if(x=="vars") { return("doy|yr|qtr|doq|yrwk|week") }
@@ -183,10 +183,12 @@ av_make_dtmap <- function(yrs_ahead=10,begDate=as.Date("1970-01-01")) {
   data.table::setnafill(dtmap,"locf",cols=c("daysfromroll"))
   dtmap <- dtmap |> tidyr::fill('rollpd') # tidyr bc of character
   # Option Expirations (Equities)
-  moexp <- dtmap[ishol_nyse==FALSE & isbday==TRUE,][,.SD[.N],by=.(yrwk)]
+
+  moexp <- copy(dtmap)[ishol_nyse==FALSE & isbday==TRUE,][,.SD[.N],by=.(yrwk)]
   moexp <-  moexp[,':='('frino'=.I-min(.I)),by=.(yrmo)][frino==2,][,.(DT_ENTRY,prio=2,optexp="mo")]
-  qexp <- dtmap[ishol_nyse==FALSE & isbday==TRUE,][,.SD[.N],by=.(yrqtr)][,.(DT_ENTRY,prio=1,optexp="qtr")]
-  wkexp <- dtmap[ishol_nyse==FALSE & isbday==TRUE,][,.SD[.N],by=.(yrwk)][,.(DT_ENTRY,prio=3,optexp="wk")]
+  qexp <- copy(dtmap)[ishol_nyse==FALSE & isbday==TRUE,][,.SD[.N],by=.(yrqtr)][,.(DT_ENTRY,prio=1,optexp="qtr")]
+  wkexp <- copy(dtmap)[ishol_nyse==FALSE & isbday==TRUE,][,.SD[.N],by=.(yrwk)][,.(DT_ENTRY,prio=3,optexp="wk")]
+
   optexp <-rbindlist(list(wkexp,moexp,qexp))[order(DT_ENTRY,prio)][,.SD[1],by=.(DT_ENTRY)][,prio:=NULL]
   dtmap <- optexp[dtmap,on=.(DT_ENTRY)][,':='(optexp=data.table::fcoalesce(optexp,fifelse(isbday==TRUE,"dly","")))]
   # Fill in the rest

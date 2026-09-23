@@ -3,6 +3,7 @@
 export(av_add_analytic)
 export(av_add_assetgroups)
 export(av_add_earn)
+export(av_add_options)
 export(av_add_px)
 export(av_extract_analytics)
 export(av_extract_df)
@@ -39,17 +40,29 @@ import(shinyFeedback)
 import(shinychat)
 importFrom(FinanceGraphs,fg_current_theme)
 importFrom(TTR,volatility)
+importFrom(arrow,
+  open_dataset,
+  write_dataset
+)
 importFrom(bslib,page_fillable)
 importFrom(data.table,
   ":=",
   .N,
   let
 )
-importFrom(dplyr,"%>%")
+importFrom(dplyr,
+  "%>%",
+  collect,
+  count,
+  filter,
+  group_by,
+  inner_join
+)
 importFrom(dygraphs,
   dygraphOutput,
   renderDygraph
 )
+importFrom(fs,dir_copy)
 importFrom(fst,
   read_fst,
   write.fst,
@@ -74,8 +87,10 @@ importFrom(lubridate,
 )
 importFrom(mcptools,mcp_tools)
 importFrom(patchwork,wrap_plots)
+importFrom(progress,progress_bar)
 importFrom(progressr,handlers)
 importFrom(purrr,
+  imap,
   map,
   map2
 )
