@@ -195,7 +195,10 @@ av_make_server <- function() {
     FinanceGraphs::fg_sync_group("avshiny")
     avpf_set_request_pace(the_av$max_requests_per_min)
     message(" use llm:", "useLLM" %in% s(the_av$logopts))
-    if("useLLM" %in% s(the_av$logopts) & file.exists(paste0(the_av$defaultcachedir,"/config.json")) ) {
+    if("useLLM" %in% s(the_av$logopts) &&
+       !exists("av_chat") &&
+       file.exists(paste0(the_av$defaultcachedir,"/config.json"))
+       ) {
       av_chat <- create_chat_instance()
     }
 
@@ -267,6 +270,7 @@ av_make_server <- function() {
       av_set_defaults("max_requests_per_min",rv$requestpace)
 
       # Set up mcp json file
+      # Next...
       writeLines(gsub("MY_API_KEY",rv$avapikey,avsd$av_mcp_base_json), paste0(the_av$defaultcachedir,"/config.json"))
 
       save_avs_state("all",msg="sEToPTS")
