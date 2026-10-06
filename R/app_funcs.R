@@ -54,6 +54,7 @@ av_help <- function(todo,rv) {
                   add_colwidths("avh")
       )
   })["elapsed"]
+  message("... av_help tim: ",thistm)
   if(grepl("showGeneralHelp",the_av$logopts)) {
     helptable <- avsd$generalhelp |> gt() |> gt.basetheme(sizepct=90) |> decorate_table() |>
                   tab_style(style=cell_text(font="Courier"),locations=cells_body(columns=c("Example/Choice"))) |>

@@ -17,6 +17,7 @@ earnest_fn,cache,,avpf_earnest.fst,,
 iv_fn,cache,,avpf_iv.fst,,
 iv_nearest_fn,cache,,avpf_iv_nearest.fst,,
 inv_otherdt,str,,assetgroups;avsh_funcs;cmdhist;listings;pxinv;renderset;tickerlist,,
+inv_fstdt,str,,inv;pxd;earn;earnest;iv;iv_nearest,,
 av_dump_dir,str,setopts,,,
 cachedir,str,setopts,,,
 ts_colorset,str,setopts,lines,,
@@ -34,11 +35,9 @@ newssort,str,news,"time,symbol",,
 nArticles,num,news,,,20
 maxage_earn_days,num,,,,3
 maxage_px_hrs,num,,,,0
-verbose,log,,,TRUE,
-autocopy,log,autocopy,,FALSE,
 starttab,str,,avopts,,
 gropts,str,onrun,last,,
 dbglvl ,num,,,,0
 avsh_logopts,str,,useTotRtn;useLivePx;verbose;data2clipboard;persistOutput;showGeneralHelp;showWarnings;useAbbreviations;AllDaysOnGraph;useLLM;debug,,
-logopts,str,setopts,useTotRtn;showGeneralHelp;verbose;useAbbreviations;AllDaysOnGraph,,
+logopts,str,,useTotRtn;showGeneralHelp;verbose;useAbbreviations;AllDaysOnGraph,,
 llm_model_list,str,setopts,claude-sonnet-5;claude-haiku-4-5-20251001,,

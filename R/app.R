@@ -1,5 +1,7 @@
 #source("./R/utilities.R")
-tver<-"0.9.201"
+tver<-"0.9.202"
+
+# 0.9.202:  THink I've finally fixed startup mess
 
 # todo:
 # HIVG
@@ -245,6 +247,7 @@ av_make_server <- function() {
       rv <- isolate(reactiveValuesToList(input))
       th1<- dump_state()
       avpf_api_key(rv$avapikey,rv$avapientitlement)
+      av_set_defaults("logopts",paste0(rv$logopts,collapse=";"))
       av_set_default_set("setopts",rv)
       newcache<-av_validate_directory(rv$cachedir,"cachedir")
       if( nchar(newcache<-av_validate_directory(rv$cachedir,"cachedir"))>0 ) {
@@ -261,8 +264,6 @@ av_make_server <- function() {
           av_set_defaults("av_dump_dir",newcache)
       }
       av_set_defaults("starttab","main")
-      av_set_defaults("logopts",paste0(rv$logopts,collapse=";",sep=";"))
-      av_set_defaults("autocopy","data2clipboard" %in% rv$logopts)
       av_set_defaults("max_requests_per_min",rv$requestpace)
 
       # Set up mcp json file
@@ -352,7 +353,6 @@ av_make_server <- function() {
       av_set_default_set("onrun",rv,save="the")
       rv$istr1 <- assetline
       rv$seriesnm <- av_set_defaults("seriesnm", fifelse(grepl("useTotRtn",the_av$logopts),"adjusted_close","close"))
-      rv$uselive <- av_set_defaults("uselive",grepl("useLivePx",the_av$logopts))
       avsh_set_tabtitle(makefocus=FALSE)
 
       tenv <- thisenv
@@ -382,7 +382,7 @@ av_make_server <- function() {
       quick_message(the_av$user_feedback,eval=nchar(the_av$user_feedback)>0)
 
       # Save outputs ONLY if another graph is being asked for OR persistOut is TRUE
-      outcopy_grepstr <- fcase("persistOutput" %in% the_av$logopts,"*",grepl("^G",todo),"TS", default="NoMatch")
+      outcopy_grepstr <- fcase("persistOutput" %in% s(the_av$logopts),"*",grepl("^G",todo),"TS", default="NoMatch")
       outcopy_names <- setdiff(grepv(outcopy_grepstr, names(outcopy)), names(outres))
       for(nm in outcopy_names) { out[[nm]]<-outcopy[[nm]]  }
       torend <- copy(avsd$avsh_element) # Replaces everything

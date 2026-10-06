@@ -621,7 +621,7 @@ quick_message <- function(this_message="",eval=TRUE,color="#1f78b4",wh="istr1", 
 #' @import clipr
 #' @export
 avsh_clipboard <- function(x,title="") {
-  if(the_av$autocopy) {
+  if(grepl("data2clipboard",the_av$logopts)) {
     write_clip(as.data.frame(x))
     message_if_green(verbosity(),"to Clipboard: ",title," w/ ",nrow(x)," rows")
     quick_message("Data copied to Clipboad")
@@ -654,7 +654,7 @@ avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail",makefocus=TRUE) {
 #' `dump_assetgroups()`
 #' `dump_captured(todo="byfunction")`
 #' `av_shiny_px()`
-#' @param typegrep : Grep string for internal state parameters
+#' @param stategrep : Grep string for internal state parameters, either a class or a name
 #' @param todo : One of c("byfunction","pxhist",any av function name)
 #' @param invgrep : A regular expression string
 #' @param trunc_length : (default: 35)  Maximumlength of character values returned.
@@ -669,13 +669,13 @@ avsh_set_tabtitle <- function(newtext="DETAIL",tabnm="detail",makefocus=TRUE) {
 #' `dump_captured(todo="byfunction")`
 #' }
 #' @export
-dump_state <- function(typegrep="*", trunc_length=35) {
+dump_state <- function(stategrep="*", trunc_length=35) {
   classtype=nm=NULL
   outdump<-data.table()
   for (x in ls(envir=the_av)) {
     toget <- get(x,envir=the_av)
     type <- class(toget)
-    if(any(grepl(typegrep,type))) {
+    if(any(grepl(stategrep,type)) | toupper(stategrep)==toupper(x)) {
       if("data.frame" %in% type) {
         toget<-paste0("<<data.table>> with ",sprintf("%8d",nrow(toget)), " rows")
       }

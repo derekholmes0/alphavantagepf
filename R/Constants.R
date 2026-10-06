@@ -62,9 +62,8 @@ av_set_defaults <- function(optnm=NULL,optval=NULL,savetoconstants=FALSE) {
     assign(optnm,optval,envir=the_av) # For some reason, pasing NA into optval destroys any previous changes to the_av
   }
   if(savetoconstants==TRUE) {
-    unames=ls(envir=the_av)
-    save(list=unames,envir=the_av,file= the_av$constants_fn)
-    message("Saving to ",the_av$constants_fn)
+    save(list=ls(envir=the_av),envir=the_av,file= the_av$constants_fn)
+    message("Saving constants to ",the_av$constants_fn)
   }
   return(optval)
 }
