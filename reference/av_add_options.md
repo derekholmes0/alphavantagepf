@@ -57,7 +57,16 @@ av_add_options(
 
 - verbosity:
 
-  (default `"time,basic"`) What to display as data is added.
+  (default `"basic"`) What to display as data is added. Options may be
+  comma delimited and are
+
+  |  |  |
+  |----|----|
+  | `verbosity` | Description |
+  | `basic` | Most basic information |
+  | `timing` | Timing information |
+  | `iv` | Implied volatility surface calculation progress |
+  | `ivprobs` | Implied volatility surface calculation errors (e.g. not enough data, etc.) |
 
 - external_path:
 

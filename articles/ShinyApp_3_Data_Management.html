@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.201</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -428,14 +428,13 @@ key implications of this are twofold:</p>
 <ul>
 <li><strong>Downloading and summarizing that data for interactive use
 must be done outside the app.</strong></li>
-<li><strong>Large sets options and derived term structures will add
-greately to the space required and the time to load internal
-data.</strong></li>
+<li><strong>Large sets options and derived term structures will add to
+the space required and the time to load internal data.</strong></li>
 </ul>
 <p>Included in the app is a helper function <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_add_options.html">av_add_options</a>
 to download and manage the data. That much data is a stretch for a
 single <code>.fst</code> file, so the app/function stores the data in a
-<strong>partioned parquet</strong> format within a subdirectoy of the
+<strong>partioned parquet</strong> format within a subdirectory of the
 main cache directory. The function also summarizes the term structure of
 the data into a separate <code>.fst</code> file for quick retrieval and
 interactive use.</p>
@@ -456,43 +455,31 @@ app is still running.</p>
 </h3>
 <p>Assuming the app is up and working with valid API keys, the data can
 be downloaded using, e.g.</p>
-<p>``` blah=sapply(c(“IBIT”,“IBM”,“CSCO”,“ORCL”), (x)
-av_add_options(“update”,dtstr=“-10y::”,symbols=x,freq=“w”) ) Option data
-to get:IBIT from 2016-09-09 to 2026-07-31 (476 days) AV Options for IBIT
-[———-] 4% [ 6s] vs 6.61 mins maxav_get_pf: Pacing 0.83 second(s). AV
-Options for IBIT [———-] 4% [ 8s] vs 6.61 mins maxav_get_pf: Pacing 0.83
-second(s). … No data for symbol IBIT on date 2024-11-15. Please specify
-a valid combination of symbol and trading day. AV_optchain( IBIT /
-2024-11-15 ) err: No data for symbol IBIT on date 2024-11-15. Please
-specify a valid combination of symbol and trading day. AV Options for
-IBIT [&gt;———] 11% [35s] vs 6.61 mins maxNo data for symbol IBIT on date
-2024-11-08. Please specify a valid combination of symbol and trading
-day. AV_optchain( IBIT / 2024-11-08 ) err: No data for symbol IBIT on
-date 2024-11-08. Please specify a valid combination of symbol and
-trading day. No data for symbol IBIT on date 2024-11-01. Please specify
-a valid combination of symbol and trading day. AV_optchain( IBIT /
-2024-11-01 ) err: No data for symbol IBIT on date 2024-11-01. Please
-specify a valid combination of symbol and trading day. AV Options for
-IBIT [&gt;———] 11% [36s] vs 6.61 mins maxNo data for symbol IBIT on date
-2024-10-25. Please specify a valid combination of symbol and trading
-day. AV_optchain( IBIT / 2024-10-25 ) err: No data for symbol IBIT on
-date 2024-10-25. Please specify a valid combination of symbol and
-trading day. AV Options for IBIT [&gt;———] 11% [37s] vs 6.61 mins
-maxmange_optdb_arrow: IBIT has 4 conseq days with no options, skipping
-the rest Option Symbol: IBIT gathered in :37.87 Option update: Adding
-114396 rows to partitioned parquet set Returned 114396 new options,
-refreshing inventory, took :1.17 …</p>
+<pre><code>&gt; blah=av_add_options("update",dtstr="-1y::",symbols=c("IBIT","IBM","CSCO","ORCL"),freq="w")
+Option data to get:IBIT from 2026-09-29 to 2026-09-29 (1 days)est end: 06:54 (1 mins)
+Option data to get:IBM from 2026-09-29 to 2026-09-29 (1 days)est end: 06:54 (0 mins)
+Option data to get:CSCO from 2026-09-29 to 2026-09-29 (1 days)est end: 06:54 (0 mins)
+Option data to get:ORCL from 2025-10-03 to 2026-09-29 (54 days)est end: 06:54 (0 mins)
+AV Options for ORCL [===========] 100% [17s] vs 0.9 mins max
+Option update: Adding 133177 rows to partitioned parquet set</code></pre>
 <p>Note that</p>
 <ul>
-<li>The function gives a lot of information about times taken and ETAs.
-It utilizes progress bars and publishes a message when API pacing starts
-or is in effect.</li>
+<li>The function information about times taken and ETAs. It utilizes
+progress bars and publishes a message when API pacing starts or is in
+effect.</li>
 <li>The function downloads backwards in time, and if more than 4
 consequtive empty days are detected, it stops downloaded that
 ticker.</li>
 <li>The function gives updates on the sizes of data downloaded.</li>
-<li>The function recalculates term structures at the end.</li>
+<li>The function <strong>does not</strong> recalculate term structures
+at the end. To do that, run</li>
 </ul>
+<pre><code>av_add_options("iv",dtstr="-1y::",symbols=c("IBIT","IBM","CSCO","ORCL"),freq="w")
+Calculating IMplied Vol surfaces for IBIT
+AV IV  [===================&gt;--------------------]  50% [ 5s]Calculating IMplied Vol surfaces for IBM
+AV IV  [=============================&gt;----------]  75% [10s]Calculating IMplied Vol surfaces for CSCO
+AV IV  [========================================] 100% [15s]
+Calculating IMplied Vol surfaces for ORCLProcessed 1146 groups out of 1146. 100% done. Time elapsed: 3s. ETA: 0s.</code></pre>
 </div>
 <div class="section level3">
 <h3 id="data-structures-created">Data structures created<a class="anchor" aria-label="anchor" href="#data-structures-created"></a>
@@ -545,11 +532,63 @@ form (e.g.) <code>mo_2</code> for 2nd monthly contract</td>
 </tr>
 </tbody>
 </table>
-<p>From that data, another <code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table()</a></code> is created for
+<p>From that data, other <code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table()</a></code>s are created for
 Shiny app use with quotes from above narrowed to a select set of
-strikes. For each symbol an day, the table <code>eqopt_iv</code> will
-have quotes for both calls and puts closest to 5, 10, 25, 50, 77 and 90
-deltas. (Those codes are added as the variable <code>moneyn</code>.)</p>
+strikes. Currently, there are three created:</p>
+<table class="table">
+<thead><tr class="header">
+<th align="center">Name</th>
+<th align="center">Subtable</th>
+<th align="center">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="center"><code>eqoptinv</code></td>
+<td align="center"></td>
+<td align="center">Inventory in three tables</td>
+</tr>
+<tr class="even">
+<td align="center"></td>
+<td align="center"><code>inv</code></td>
+<td align="center">Date ranges and frequencies collected per ticker</td>
+</tr>
+<tr class="odd">
+<td align="center"></td>
+<td align="center"><code>last</code></td>
+<td align="center">Full last option dataset per ticker</td>
+</tr>
+<tr class="even">
+<td align="center"></td>
+<td align="center"><code>datelist</code></td>
+<td align="center">Table with counts by
+<code>c("symbol","ts")</code>
+</td>
+</tr>
+<tr class="odd">
+<td align="center"><code>iv</code></td>
+<td align="center"></td>
+<td align="center">Interpolated implieds by
+<code>c("symbol","ts","moneyn")</code>
+</td>
+</tr>
+<tr class="even">
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">where <code>moneyn</code> in delta terms:
+<code>c("C5","C10","P10"...)</code>
+</td>
+</tr>
+<tr class="odd">
+<td align="center"><code>iv_nearest</code></td>
+<td align="center"></td>
+<td align="center">Full nearest option to <code>moneyn</code>
+category</td>
+</tr>
+</tbody>
+</table>
+<p>Calculating the last two is done using the functions</p>
+<pre><code><span><span class="fu"><a href="../reference/av_add_options.html">av_add_options</a></span><span class="op">(</span><span class="st">"iv"</span>,<span class="va">dtstr</span>,<span class="va">symbols</span>,<span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/av_add_options.html">av_add_options</a></span><span class="op">(</span><span class="st">"iv_nearest"</span>,<span class="va">dtstr</span>,<span class="va">symbols</span>,<span class="va">...</span><span class="op">)</span></span></code></pre>
 </div>
 </div>
 

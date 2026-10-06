@@ -32,8 +32,7 @@ The app is designed to
   [FinanceGraphs](https://derekholmes0.github.io/FinanceGraphs/reference/index.html)
 - Provide a framework for adding user-generated analyses.
 
-A few conventions which are helpful to know before using the app are
-[^1]
+A few conventions which are helpful to know before using the app are[^1]
 
 | Item | Convention | Example |
 |:--:|:---|:---|
@@ -130,8 +129,8 @@ The app responds as follows:
   highlight existence of results in the tab.
 
 - Feedback (i.e.an error message) is placed below the command line, but
-  can appear elsewhere. Progress messages will show in the R Console
-  [^3]
+  can appear elsewhere. Progress messages will show in the R
+  Console[^3].
 
 ### Examples
 

@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.201</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -629,7 +629,14 @@ used, but are likely to be slower.</p></li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="registering-and-running-the-function-">Registering and running the function.<a class="anchor" aria-label="anchor" href="#registering-and-running-the-function-"></a>
+<h3 id="registering-function-">Registering function.<a class="anchor" aria-label="anchor" href="#registering-function-"></a>
+</h3>
+<p>Once functions are written their call signatures need to be added to
+the set of function available on the [av_runShiny()] command line.<br>
+Now we discuss how to do that.</p>
+</div>
+<div class="section level3">
+<h3 id="registering-a-single-function">Registering a single function<a class="anchor" aria-label="anchor" href="#registering-a-single-function"></a>
 </h3>
 <p>We need to define how users will call this function, so a reasonable
 choice is “RCOR”. To add that function to the stable of those available,
@@ -648,6 +655,71 @@ using 2 month rolling correlations, we would type in the command line
 <div class="float">
 <img src="img/rcor_example.jpg" alt="rcor Example"><div class="figcaption">rcor Example</div>
 </div>
+</div>
+<div class="section level3">
+<h3 id="registering-multiple-functions">Registering multiple functions<a class="anchor" aria-label="anchor" href="#registering-multiple-functions"></a>
+</h3>
+<p>To better manage the “ecosystem” outside this package, the function
+<a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_addFunctions.html">av_runShiny_addFunctions</a>
+can be used to add functions straight from R files. THe function just
+requires a directory with one or more R files defining functions with
+the following requirements:</p>
+<ol style="list-style-type: decimal">
+<li>As above, each function must take exactly two arguments called
+<code>todo</code> which contains the comannd and <code>rv</code> which
+is list of the app’s internal parameters.</li>
+<li>Each function must return a <strong>signature</strong> when called
+with <code>todo=="signature"</code>. The signature must be a list of
+three iitems:</li>
+</ol>
+<table class="table">
+<thead><tr class="header">
+<th align="center">Order</th>
+<th align="center">class</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center"><code>character</code></td>
+<td align="left">Shiny command which calls the function</td>
+</tr>
+<tr class="even">
+<td align="center">2</td>
+<td align="center"><code>character</code></td>
+<td align="left">The name of the R function to be called</td>
+</tr>
+<tr class="odd">
+<td align="center">3</td>
+<td align="center"><code>character</code></td>
+<td align="left">A short help string to add to <code>AV.H</code>
+</td>
+</tr>
+</tbody>
+</table>
+<p>As an example, adding the signature to the the correlation function
+<code>RCOR</code> as above can be done with</p>
+<pre><code><span>  <span class="kw">if</span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">is.character</a></span><span class="op">(</span><span class="va">todo</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="va">todo</span><span class="op">==</span><span class="st">"signature"</span> <span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"RCOR"</span>,<span class="st">"av_rolling_correlations"</span>,<span class="st">"Rolling Correlations"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span></code></pre>
+<p>Before running the app (or at any time if you are developing), then
+just run</p>
+<pre><code>&gt; av_runShiny_addFunctions("~/avpfshinyFuncs/R")
+av_runShiny_addFunctions v 0.2 
+av_add_analytic: RCOR already registered, Function code replaced at 05-08:56:S
+av_add_analytic: GPIV already registered, Function code replaced at 05-08:56:S
+av_add_analytic: GPIVS already registered, Function code replaced at 05-08:56:S
+[1] Added  3  functions from c:/avpfshinyFuncs/R"</code></pre>
+</div>
+<div class="section level3">
+<h3 id="examples-of-functions">Examples of functions<a class="anchor" aria-label="anchor" href="#examples-of-functions"></a>
+</h3>
+<p>An different (non-CRAN eligible) repository of functions is
+maintained at <a href="https://github.com/derekholmes0/avpfshinyFuncs" class="external-link">avpfshinyfuncs</a>.
+Some may require the absolute latest version of the app as downloaded
+using <code>pak::pak("derekholmes0/alphavantagepf")</code> and/or new
+data structures (e.g. Implied volatilities) downloaded separately.
+Please reach out to the author with any questions or suggestions.</p>
 </div>
 </div>
 

@@ -249,14 +249,14 @@ a single ticker will take 10\*252/75 = 33.6 minutes (and in the case of
 
 - **Downloading and summarizing that data for interactive use must be
   done outside the app.**
-- **Large sets options and derived term structures will add greately to
-  the space required and the time to load internal data.**
+- **Large sets options and derived term structures will add to the space
+  required and the time to load internal data.**
 
 Included in the app is a helper function
 [av_add_options](https://derekholmes0.github.io/alphavantagepf/reference/av_add_options.html)
 to download and manage the data. That much data is a stretch for a
 single `.fst` file, so the app/function stores the data in a **partioned
-parquet** format within a subdirectoy of the main cache directory. The
+parquet** format within a subdirectory of the main cache directory. The
 function also summarizes the term structure of the data into a separate
 `.fst` file for quick retrieval and interactive use.
 
@@ -280,42 +280,33 @@ app is still running.
 Assuming the app is up and working with valid API keys, the data can be
 downloaded using, e.g.
 
-\`\`\` blah=sapply(c(“IBIT”,“IBM”,“CSCO”,“ORCL”), (x)
-av_add_options(“update”,dtstr=“-10y::”,symbols=x,freq=“w”) ) Option data
-to get:IBIT from 2016-09-09 to 2026-07-31 (476 days) AV Options for IBIT
-\[———-\] 4% \[ 6s\] vs 6.61 mins maxav_get_pf: Pacing 0.83 second(s). AV
-Options for IBIT \[———-\] 4% \[ 8s\] vs 6.61 mins maxav_get_pf: Pacing
-0.83 second(s). … No data for symbol IBIT on date 2024-11-15. Please
-specify a valid combination of symbol and trading day. AV_optchain( IBIT
-/ 2024-11-15 ) err: No data for symbol IBIT on date 2024-11-15. Please
-specify a valid combination of symbol and trading day. AV Options for
-IBIT \[\>———\] 11% \[35s\] vs 6.61 mins maxNo data for symbol IBIT on
-date 2024-11-08. Please specify a valid combination of symbol and
-trading day. AV_optchain( IBIT / 2024-11-08 ) err: No data for symbol
-IBIT on date 2024-11-08. Please specify a valid combination of symbol
-and trading day. No data for symbol IBIT on date 2024-11-01. Please
-specify a valid combination of symbol and trading day. AV_optchain( IBIT
-/ 2024-11-01 ) err: No data for symbol IBIT on date 2024-11-01. Please
-specify a valid combination of symbol and trading day. AV Options for
-IBIT \[\>———\] 11% \[36s\] vs 6.61 mins maxNo data for symbol IBIT on
-date 2024-10-25. Please specify a valid combination of symbol and
-trading day. AV_optchain( IBIT / 2024-10-25 ) err: No data for symbol
-IBIT on date 2024-10-25. Please specify a valid combination of symbol
-and trading day. AV Options for IBIT \[\>———\] 11% \[37s\] vs 6.61 mins
-maxmange_optdb_arrow: IBIT has 4 conseq days with no options, skipping
-the rest Option Symbol: IBIT gathered in :37.87 Option update: Adding
-114396 rows to partitioned parquet set Returned 114396 new options,
-refreshing inventory, took :1.17 …
+    > blah=av_add_options("update",dtstr="-1y::",symbols=c("IBIT","IBM","CSCO","ORCL"),freq="w")
+    Option data to get:IBIT from 2026-09-29 to 2026-09-29 (1 days)est end: 06:54 (1 mins)
+    Option data to get:IBM from 2026-09-29 to 2026-09-29 (1 days)est end: 06:54 (0 mins)
+    Option data to get:CSCO from 2026-09-29 to 2026-09-29 (1 days)est end: 06:54 (0 mins)
+    Option data to get:ORCL from 2025-10-03 to 2026-09-29 (54 days)est end: 06:54 (0 mins)
+    AV Options for ORCL [===========] 100% [17s] vs 0.9 mins max
+    Option update: Adding 133177 rows to partitioned parquet set
 
 Note that
 
-- The function gives a lot of information about times taken and ETAs. It
-  utilizes progress bars and publishes a message when API pacing starts
-  or is in effect.
+- The function information about times taken and ETAs. It utilizes
+  progress bars and publishes a message when API pacing starts or is in
+  effect.
 - The function downloads backwards in time, and if more than 4
   consequtive empty days are detected, it stops downloaded that ticker.
 - The function gives updates on the sizes of data downloaded.
-- The function recalculates term structures at the end.
+- The function **does not** recalculate term structures at the end. To
+  do that, run
+
+&nbsp;
+
+    av_add_options("iv",dtstr="-1y::",symbols=c("IBIT","IBM","CSCO","ORCL"),freq="w")
+    Calculating IMplied Vol surfaces for IBIT
+    AV IV  [===================>--------------------]  50% [ 5s]Calculating IMplied Vol surfaces for IBM
+    AV IV  [=============================>----------]  75% [10s]Calculating IMplied Vol surfaces for CSCO
+    AV IV  [========================================] 100% [15s]
+    Calculating IMplied Vol surfaces for ORCLProcessed 1146 groups out of 1146. 100% done. Time elapsed: 3s. ETA: 0s.
 
 ### Data structures created
 
@@ -332,12 +323,25 @@ option downloads. Each symbol will have its own subdirectory,
 | Pricing Data | `last,mark,bid,bid_size,ask,ask_size,volume,open_interest` | Market quotes |
 | Derived Data | `iv,delta,gamma,vega,theta,rho` | Black Scholes derived data |
 
-From that data, another
-[`data.table()`](https://rdrr.io/pkg/data.table/man/data.table.html) is
-created for Shiny app use with quotes from above narrowed to a select
-set of strikes. For each symbol an day, the table `eqopt_iv` will have
-quotes for both calls and puts closest to 5, 10, 25, 50, 77 and 90
-deltas. (Those codes are added as the variable `moneyn`.)
+From that data, other
+[`data.table()`](https://rdrr.io/pkg/data.table/man/data.table.html)s
+are created for Shiny app use with quotes from above narrowed to a
+select set of strikes. Currently, there are three created:
+
+| Name | Subtable | Description |
+|:--:|:--:|:--:|
+| `eqoptinv` |  | Inventory in three tables |
+|  | `inv` | Date ranges and frequencies collected per ticker |
+|  | `last` | Full last option dataset per ticker |
+|  | `datelist` | Table with counts by `c("symbol","ts")` |
+| `iv` |  | Interpolated implieds by `c("symbol","ts","moneyn")` |
+|  |  | where `moneyn` in delta terms: `c("C5","C10","P10"...)` |
+| `iv_nearest` |  | Full nearest option to `moneyn` category |
+
+Calculating the last two is done using the functions
+
+    av_add_options("iv",dtstr,symbols,...)
+    av_add_options("iv_nearest",dtstr,symbols,...)
 
 [^1]: Alphavantage has a small select list of CBOE, VIX and equity
     futures indices available as historical data, listed by running

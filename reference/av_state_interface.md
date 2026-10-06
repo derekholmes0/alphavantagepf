@@ -8,7 +8,7 @@ retrieves internal data state of
 ## Usage
 
 ``` r
-dump_state(typegrep = "*")
+dump_state(typegrep = "*", trunc_length = 35)
 
 dump_inv(invgrep = "*")
 
@@ -24,6 +24,10 @@ dump_captured(todo = "byfunction")
 - typegrep:
 
   : Grep string for internal state parameters
+
+- trunc_length:
+
+  : (default: 35) Maximumlength of character values returned.
 
 - invgrep:
 

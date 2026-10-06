@@ -5,7 +5,13 @@ Adds a user-defined function to the av Shiny app
 ## Usage
 
 ``` r
-av_add_analytic(runcode, func_name, helpstr = "user function", focus = "MAIN")
+av_add_analytic(
+  runcode,
+  func_name,
+  helpstr = "user function",
+  focus = "MAIN",
+  delay_save_state = FALSE
+)
 ```
 
 ## Arguments
@@ -28,6 +34,11 @@ av_add_analytic(runcode, func_name, helpstr = "user function", focus = "MAIN")
 
   (default: "MAIN") String with tab name to set focus to when command is
   run
+
+- delay_save_state:
+
+  (default: FALSE) Do not save state to cache files. Used for speed
+  optimization
 
 ## Value
 

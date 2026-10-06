@@ -272,7 +272,13 @@ Note a few items about this code:
   but does not need to be. [Tidyverse](https://tidyverse.org/) idioms
   can be used, but are likely to be slower.
 
-### Registering and running the function.
+### Registering function.
+
+Once functions are written their call signatures need to be added to the
+set of function available on the \[av_runShiny()\] command line.  
+Now we discuss how to do that.
+
+### Registering a single function
 
 We need to define how users will call this function, so a reasonable
 choice is “RCOR”. To add that function to the stable of those available,
@@ -301,5 +307,51 @@ would type in the command line
 ![rcor Example](img/rcor_example.jpg)
 
 rcor Example
+
+### Registering multiple functions
+
+To better manage the “ecosystem” outside this package, the function
+[av_runShiny_addFunctions](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_addFunctions.html)
+can be used to add functions straight from R files. THe function just
+requires a directory with one or more R files defining functions with
+the following requirements:
+
+1.  As above, each function must take exactly two arguments called
+    `todo` which contains the comannd and `rv` which is list of the
+    app’s internal parameters.
+2.  Each function must return a **signature** when called with
+    `todo=="signature"`. The signature must be a list of three iitems:
+
+| Order |    class    | Description                             |
+|:-----:|:-----------:|:----------------------------------------|
+|   1   | `character` | Shiny command which calls the function  |
+|   2   | `character` | The name of the R function to be called |
+|   3   | `character` | A short help string to add to `AV.H`    |
+
+As an example, adding the signature to the the correlation function
+`RCOR` as above can be done with
+
+      if( is.character(todo) && todo=="signature" ) {
+        return(list("RCOR","av_rolling_correlations","Rolling Correlations"))
+      }
+
+Before running the app (or at any time if you are developing), then just
+run
+
+    > av_runShiny_addFunctions("~/avpfshinyFuncs/R")
+    av_runShiny_addFunctions v 0.2 
+    av_add_analytic: RCOR already registered, Function code replaced at 05-08:56:S
+    av_add_analytic: GPIV already registered, Function code replaced at 05-08:56:S
+    av_add_analytic: GPIVS already registered, Function code replaced at 05-08:56:S
+    [1] Added  3  functions from c:/avpfshinyFuncs/R"
+
+### Examples of functions
+
+An different (non-CRAN eligible) repository of functions is maintained
+at [avpfshinyfuncs](https://github.com/derekholmes0/avpfshinyFuncs).
+Some may require the absolute latest version of the app as downloaded
+using `pak::pak("derekholmes0/alphavantagepf")` and/or new data
+structures (e.g. Implied volatilities) downloaded separately. Please
+reach out to the author with any questions or suggestions.
 
 [^1]: In homage to Dean Curnutt’s Alpha Exchange podcast.

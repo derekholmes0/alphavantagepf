@@ -35,6 +35,8 @@
   : Extract data from Alpha Vantage retuned data
 - [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
   : RShiny App
+- [`av_runShiny_addFunctions()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_addFunctions.md)
+  : Add experimental functions from a given directory
 - [`dump_state()`](https://derekholmes0.github.io/alphavantagepf/reference/av_state_interface.md)
   [`dump_inv()`](https://derekholmes0.github.io/alphavantagepf/reference/av_state_interface.md)
   [`dump_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_state_interface.md)
