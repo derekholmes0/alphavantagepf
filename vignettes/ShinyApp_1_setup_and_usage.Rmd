@@ -36,7 +36,7 @@ the [dygraphs](https://rstudio.github.io/dygraphs/) package. The latter is used 
 a "sister" package [FinanceGraphs](https://derekholmes0.github.io/FinanceGraphs/reference/index.html)
 * Provide a framework for adding user-generated analyses.
 
-A few conventions which are helpful to know before using the app are [^1]
+A few conventions which are helpful to know before using the app are[^1]
 
 |Item|Convention|Example|
 |:-------:|:-------------------|:-----------|
@@ -104,7 +104,7 @@ on top of each other.  The second graph is typically made by adding a "2" onto t
 * Some commands may produce some auxiliary information in a separate tab. That tab is typically called  <span style="border: 1px solid #000000; padding: 1px 5px;">DETAIL</span> 
 but can change names to highlight existence of results in the tab.
 
-* Feedback (i.e.an error message) is placed below the command line, but can appear elsewhere.  Progress messages will show in the R Console [^3]
+* Feedback (i.e.an error message) is placed below the command line, but can appear elsewhere.  Progress messages will show in the R Console[^3].
 
 ## Examples
 

@@ -5,10 +5,8 @@
 #' @param keep_apikeys (default: FALSE) Keep whatever API keys are stored
 #' @param resetgrep (default "*") Only reset grepped default variables
 #' @returns No return
-#'
 #' @details Resets [av_runShiny()] defaults to original (newly installed) state
 #' @seealso [av_runShiny()]
-#'
 #' @examples
 #' \dontrun{
 #' av_reset_defaults()
@@ -16,7 +14,7 @@
 #'
 #' @export
 av_reset_defaults <- function(fileopts=TRUE,keep_apikeys=FALSE,resetgrep="*") {
-  var=NULL
+  var=vartype=NULL
   defaultdf <-avsd$defaults[grepl(resetgrep,var)]
   if(keep_apikeys) {
     # also keep cachedirs
@@ -41,8 +39,13 @@ av_reset_defaults <- function(fileopts=TRUE,keep_apikeys=FALSE,resetgrep="*") {
   # Tables that will get modified by users
   the_av$assetgroups <- data.table(listnm=c(rep("defaultIdx",3)),ticker=c("SPY","QQQ","DIA"), weight=c(0.34,0.33,0.33))
   the_av$avsh_funcs <- copy(avsd$def_avsh_funcs)
-  # Data to keep track of
-  lapply(s("pxd;pxinv;earn;earnest;tickerlist;cmdhist"), \(x) assign(x, data.table(), envir=the_av))
+  # Cached datasets: Non FST
+  newdt <- lapply( s(avsd$defaults[var=="inv_otherdt",]$value_str), \(x) assign(x,data.table(),envir=the_av))
+
+  # Cached datasets: FST
+  fst_dt <- gsub("_fn","",avsd$defaults[vartype=="cache" & !(var=="inv_fn"),]$var)
+  lapply(fst_dt, \(x) assign(x, data.table(), envir=the_av))
+
   # Move files if you need
   if(fileopts==TRUE) {
     file.remove(the_av$constants_fn)
@@ -55,7 +58,7 @@ av_reset_defaults <- function(fileopts=TRUE,keep_apikeys=FALSE,resetgrep="*") {
 # One time or many
 av_set_defaults <- function(optnm=NULL,optval=NULL,savetoconstants=FALSE) {
   if(!is.null(optnm) & !is.null(optval)) {
-    #message_if(the_av$verbose,"av_set_defaults> ",optnm,"<-",optval) # tooo verbose
+    #message_if(verbosity(),"av_set_defaults> ",optnm,"<-",optval) # tooo verbose
     assign(optnm,optval,envir=the_av) # For some reason, pasing NA into optval destroys any previous changes to the_av
   }
   if(savetoconstants==TRUE) {
@@ -78,6 +81,10 @@ av_set_caching_directories <- function() {
   toset <- avsd$defaults[vartype=="cache",]
   for(i in seq(1,nrow(toset))) {
     assign(toset[i,]$var, paste0(the_av$cachedir,"/", toset[i,get("value_str")]), envir=the_av)
+    dtname <- gsub("_fn","",toset[i,]$var)
+    if(!exists(dtname,envir=the_av)) { # Also hanbdled in reset_defaults
+      message("Creating: ",dtname)
+      assign(dtname,data.table(),envir=the_av)}
   }
 }
 
@@ -169,7 +176,8 @@ av_make_dtmap <- function(yrs_ahead=10,begDate=as.Date("1970-01-01")) {
   data.table::setnafill(dtmap,"locf",cols=c('rolldt'))
   data.table::setkeyv(dtmap,c("DT_ENTRY"))
   # Business days and end periods
-  dtmap <- dtmap[,'isbday':=data.table::between(data.table::wday(DT_ENTRY),2,6) & !(ishol_nyse | ishol_bond)] # weekdays
+  # Just NYSE holidays; not bond holidays
+  dtmap <- dtmap[,'isbday':=data.table::between(data.table::wday(DT_ENTRY),2,6) & !(ishol_nyse)] # weekdays
   dtmapc <- data.table::copy(dtmap)
   dtmapc <- dtmapc[isbday==TRUE,]
   dtmapc <- dtmapc[,'isweek':=(DT_ENTRY==max(DT_ENTRY)),by="yrwk"]

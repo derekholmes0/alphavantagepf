@@ -147,7 +147,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     last_delay <- the_av$lastdelay %||% 0
     new_delay <- 0
     if(delay<=0 && length(calls_in_last_min)>=the_av$max_requests_per_min) {
-      new_delay <- 60/the_av$max_requests_per_min;
+      new_delay <- 60/as.numeric(the_av$max_requests_per_min)
       message_if_green(last_delay<=0 & verbose==TRUE,"av_get_pf: Pacing ", round(new_delay,1), " second(s)")
       Sys.sleep(new_delay)
     }
@@ -183,7 +183,7 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
         # Detect good/bad call
         if (length(content_list)>0) {
           if(content_list[1] |> names() == "meta_data") {  # Good call with Metadata returned
-                message_if_green(the_av$verbose %||% FALSE," av_get_pf: Reurning raw output; send to appropriate helper ---------------------------- ")
+                message_if_green(verbosity %||% FALSE," av_get_pf: Reurning raw output; send to appropriate helper ---------------------------- ")
                 return(content_list)
             }
             else {  # Mixed results, process as best as possible

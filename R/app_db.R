@@ -4,19 +4,24 @@
 #' @noRd
 update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
   from_currency=to_currency=list_ts=Abbrev=NULL
-  if(reallydoingthis==FALSE) { return() }
-  if(reset==TRUE) {
+  if(reallydoingthis==FALSE || the_av$avapikey=="NOT_SET") { return() }
+  if(reset==TRUE || is.null(the_av$tickerlist) ) {
     the_av$tickerlist <- data.table()
-    message_if_red(the_av$verbose,"Resetting ticker lists  at ",format(Sys.time(),"%d-%H:%M%:S"))
+    message_if_red(verbosity(),"Resetting ticker lists  at ",format(Sys.time(),"%d-%H:%M%:S"))
   }
   # Tickers
-  indexlist <- av_get_pf("","INDEX_CATALOG",delay=1)[,type:="Index"][]
+  if(the_av$avapikey=="YOUR_API_KEY") {
+    message_if_red(TRUE,"Need to set API Key: App Will update ticker list on second running of app")
+    return()
+  }
+  indexlist <- av_get_pf("","INDEX_CATALOG")[,type:="Index"][]
   cryptolist <- avsd$crypto_list[,.(symbol=paste0(from_currency,"/",to_currency),type="Crypto")][,name:=symbol]
   indexlist <- rbindlist(list(indexlist,cryptolist),use.names=TRUE,fill=TRUE)[,list_ts:=Sys.Date()][]
   the_av$tickerlist <- DTUpsert(the_av$tickerlist,indexlist,c("symbol"))
 
   # Names
-  listings <- av_get_pf("","LISTING_STATUS")[,list_ts:=Sys.Date()]
+  listings <- av_get_pf("","LISTING_STATUS",delay=1)[,list_ts:=Sys.Date()][]
+
   setkeyv(listings,c("symbol"))
   if(grepl("useAbbreviations",the_av$logopts)) {
     otherabbs <- avsd$abbreviations[Abbrev!="",]
@@ -29,7 +34,7 @@ update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
     listings <- listings[,name:=stringr::str_squish(name)][]
   }
   the_av$listings <- listings
-  message_if_red(the_av$verbose,"Reconstructed index (",nrow(indexlist),"), crypto (",nrow(cryptolist),
+  message_if_red(verbosity(),"Reconstructed index (",nrow(indexlist),"), crypto (",nrow(cryptolist),
             "), and listing status (",nrow(the_av$listings),") lists at ",format(Sys.time(),"%d-%H:%M%:S"))
   save_avs_state("all",msg="updatetickers") # must use all with any inventory data
 }
@@ -97,7 +102,7 @@ manage_epx <- function(inticker, dtstr,
   thisinv <- get_inv(inticker)
   the_av$pxinv <- DTUpsert(the_av$pxinv, thisinv, c("symbol"),fill=TRUE)
   save_avs_state("px")
-  #message_if_green(the_av$verbose,"mange_epx(",inticker,"): px:",rtnpx," earn:",rtnearn)
+  #message_if_green(verbosity(),"mange_epx(",inticker,"): px:",rtnpx," earn:",rtnearn)
 }
 
 # ================================================================================================================
@@ -198,7 +203,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
       earlystarts <- edates[beg_dt>dtstoget[1],]
       if(nrow(earlystarts)>0) {
         force <- TRUE
-        message_if(the_av$verbose,"av_one_px(",paste0(earlystarts$symbol,collapse=" "),"): Start Date requested earlier than series start, redownloading ")
+        message_if(verbosity(),"av_one_px(",paste0(earlystarts$symbol,collapse=" "),"): Start Date requested earlier than series start, redownloading ")
       }
       dtstoget[1] <- min(edates$end_dt)
     }
@@ -236,7 +241,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
     }
     else { # DOwnloadable, but one at a time
       if(nrow(symset)<=0) {
-          message_if_red(the_av$verbose,"av_one_px(",inticker,") Not Found Anywhere")
+          message_if_red(verbosity(),"av_one_px(",inticker,") Not Found Anywhere")
           return("ERROR: cannot find ticker")
       }
       tickertype <- symset[1,]$type
@@ -244,7 +249,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
         src <- "userdata"
         lastinv <- the_av$pxinv[symbol==inticker,]
         daysmissing <- as.numeric(dtstoget[2]-lastinv$end_dt)
-        message_if_red(the_av$verbose,"avs_update(",inticker,") is User data that is  ",daysmissing," days out of date; Update outside of ShinyApp")
+        message_if_red(verbosity(),"avs_update(",inticker,") is User data that is  ",daysmissing," days out of date; Update outside of ShinyApp")
         return(tortn[, ':='(minadddt=lastinv$beg_dt, maxadddt=lastinv$end_dt)][])
       }
       else {
@@ -280,7 +285,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
       the_av$pxinv[dta[,.(symbol,enddt=max(timestamp)),by=.(symbol)],end_dt:=i.enddt,on=.(symbol)]
     } # If not, will get created later
   }
-  message_if(the_av$verbose,"av_one_px(",paste_trunc(tortn$symbol)," @ ",src,") ", outmsg)
+  message_if(verbosity(),"av_one_px(",paste_trunc(tortn$symbol)," @ ",src,") ", outmsg)
   return(tortn)
 }
 
@@ -299,7 +304,7 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
   if(nrow(earntickers)<=0) { return() }
   # Kick out bad tickers
   if( length( badtickers <- setdiff(tickerdt$symbol,earntickers$symbol))>0) {
-    message_if_red(the_av$verbose,"Earnings skipping invalid or non-equity tickers: ",paste_trunc(badtickers))
+    message_if_red(verbosity(),"Earnings skipping invalid or non-equity tickers: ",paste_trunc(badtickers))
     earntickers <- earntickers[!data.table(symbol=badtickers),on=.(symbol)]
   }
   n_beg <- nrow(earntickers)
@@ -308,14 +313,14 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
     alreadyhave_earn <-the_av$earn[earntickers,on=.(symbol),nomatch=NULL][,.(age=as.numeric(Sys.Date()-max(ts,na.rm=T))),by=.(symbol)][,
                                       todo:=fcase(age<=the_av$maxage_earn_days,"skip",default="get")][]
     skipped_tickers <- alreadyhave_earn[todo=="skip",]$symbol
-    message_if(the_av$verbose && length(skipped_tickers)>0,"Earnings Skipping ",length(skipped_tickers), " of ",n_beg," with age<=",the_av$maxage_earn_days)
+    message_if(verbosity() && length(skipped_tickers)>0,"Earnings Skipping ",length(skipped_tickers), " of ",n_beg," with age<=",the_av$maxage_earn_days)
     earntickers <- earntickers[!data.table(symbol=skipped_tickers),on=.(symbol)]
   }
   if(nrow(the_av$earnest)>0 && is.null(substitute_earnest)  & nrow(earntickers)>0) {
     alreadyhave_earnest <-the_av$earnest[earntickers,on=.(symbol),nomatch=NULL][,.(age=as.numeric(Sys.Date()-max(ts,na.rm=T))),by=.(symbol)][,
                                          todo:=fcase(age<=the_av$maxage_earn_days,"skip",default="get")][]
     skipped_tickers <- alreadyhave_earnest[todo=="skip",]$symbol
-    message_if(the_av$verbose && length(skipped_tickers)>0,"Earnings Estimates Skipping ",length(skipped_tickers), " of ",n_beg," with age<=",the_av$maxage_earn_days)
+    message_if(verbosity() && length(skipped_tickers)>0,"Earnings Estimates Skipping ",length(skipped_tickers), " of ",n_beg," with age<=",the_av$maxage_earn_days)
     earntickers <- earntickers[!data.table(symbol=skipped_tickers),on=.(symbol)]
   }
   if( nrow(earntickers)>0) {
@@ -364,7 +369,7 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
       rtniv =  rtninv_fwd[rtninv_past,on=.(symbol)]
       outmsg <- paste0(outmsg, " adds ",nrow(earn_fwd), " fwd earnings")
     }
-    message_if_green(the_av$verbose,"earnings(",paste_trunc(earntickers$symbol),") from ",src, outmsg)
+    message_if_green(verbosity(),"earnings(",paste_trunc(earntickers$symbol),") from ",src, outmsg)
     message_if_red(src=="","manage_earn: No tickers to update.  Have they been priced?")
   }
   return(rtniv)
@@ -379,18 +384,22 @@ redownload_all <- function() {
 
 #' @noRd
 restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
-  pxinv=NULL
+  pxinv=vartype=var=NULL
   if(skip) { return() }
   # Filledin dfaults before
   if(grepl("all|constants",todo) & file.exists(the_av$constants_fn)) {
     load(the_av$constants_fn, envir=the_av)
   }
-  if(grepl("all|inv",todo) & file.exists(the_av$inv_fn)) {
-    load(the_av$inv_fn)
-    lapply(names(pxinv),\(x) assign(x,pxinv[[x]],envir=the_av))
+  if(!("inv_fn" %in% names(the_av))) {
+    message_if_red(TRUE,"NOTE: AVS state appears new and/or reset.  Skipping all other data restore operations, and run av_runShiny to start")
+    return()
+  }
+  if(grepl("all|inv",todo) & file.exists(the_av$inv_fn %||% "returnfalse")) {
+    load(the_av$inv_fn) # loads allnonfst
+    lapply(names(allnonfst),\(x) assign(x,allnonfst[[x]],envir=the_av))
   }
   if(grepl("all|px",todo)) {
-    px_names <- s("pxd;earn;earnest")
+    px_names <- gsub("_fn","",avsd$defaults[vartype=="cache" & !(var=="inv_fn"),]$var)
     rtn <- lapply(px_names, \(x) {
       thisfn = get(paste0(x,"_fn"),envir=the_av)
       assign(x, fst::read_fst(thisfn, as.data.table=TRUE), envir=the_av) # pxd, earn to fst
@@ -399,11 +408,11 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
   if(nchar(the_av$av_dump_dir)>0) {
     avdatafn <- paste0(the_av$av_dump_dir,"/av_download.RD")
     if(grepl("all|capture",todo) & file.exists(avdatafn)) {
-      message_if_green(the_av$verbose,"Loading cumulative capture data from ",avdatafn)
+      message_if_green(verbosity(),"Loading cumulative capture data from ",avdatafn)
       load(avdatafn,envir=the_av)
     }
   }
-  message_if_green(the_av$verbose & the_av$dbglvl>=2,"Restored state (",todo,") from ",the_av$cachedir, " ",msg)
+  message_if_green(verbosity() & the_av$dbglvl>=2,"Restored state (",todo,") from ",the_av$cachedir, " ",msg)
 }
 
 # =========================================================
@@ -414,15 +423,19 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
 # =========================================================
 
 #' @importFrom stats setNames
+#' @importFrom data.table fcoalesce
 save_avs_state <- function(todo="all",msg="", ts_update=TRUE) {
-  classtype=rtn=NULL
+  classtype=rtn=vartype=var=NULL
   shortmsg <- ""
   # Price and earnings in one fst file, everythign else in inventory file
-  px_names <- s("pxd;earn;earnest")
+  px_names <- gsub("_fn","",avsd$defaults[vartype=="cache" & !(var=="inv_fn"),]$var)
   nonpx_names <-  dump_state()[classtype=="data.table" & !(nm %in% px_names),]$nm
+  if(grepl("all|nonpx",todo)) {
+    allnonfst <- setNames(lapply(nonpx_names,\(x) get(x,envir=the_av)), nonpx_names) # So we save a few extra things
+    save(allnonfst,file=the_av$inv_fn)
+    shortmsg <- paste(shortmsg,"nonfst")
+  }
   if(grepl("all|px",todo)) {
-    pxinv <- setNames(lapply(nonpx_names,\(x) get(x,envir=the_av)), nonpx_names) # So we save a few extra things
-    save(pxinv,file=the_av$inv_fn)
     # Skip this if data is coming from OUTSIDE the app.  Login on command run will then reload the data
     if(ts_update) {
       the_av$inv_fn_ts <- as.POSIXct( file.info(the_av$inv_fn)$mtime) # NO need to reload again...
@@ -431,14 +444,14 @@ save_avs_state <- function(todo="all",msg="", ts_update=TRUE) {
       thisfn = get(paste0(x,"_fn"),envir=the_av)
       fst::write_fst(get(x,envir=the_av),thisfn,compress=20) # pxd, earn to fst
     })
-    shortmsg <- paste(shortmsg,"data.tables")
+    shortmsg <- paste(shortmsg," fst ")
   }
   if(grepl("all|the",todo)) {
     unames <- setdiff(names(the_av),union(px_names,nonpx_names))
     save(list=unames,envir=the_av,file=the_av$constants_fn)
     shortmsg <- paste(shortmsg,"const")
   }
-  create_msg<- exists("verbose",envir=the_av) && the_av$verbose && the_av$dbglvl>=2
+  create_msg<- fcoalesce( verbosity() && the_av$dbglvl>=2, TRUE)
   message_if_green(create_msg,"Save State (",todo,") or (",shortmsg,") from '",msg,"' at ",format(Sys.time(),"%d-%H:%M%:S"))
 }
 
@@ -475,7 +488,7 @@ save_av_data <- function(indta, in_av_fun) {
                       default=""
                       )
   if(nchar(skipreason)>0 & !(skipreason=="none")) {
-    # debug>> message_if(the_av$verbose,"save_av_data(",in_av_fun,") : Skipping save data (",skipreason,")")
+    # debug>> message_if(verbosity(),"save_av_data(",in_av_fun,") : Skipping save data (",skipreason,")")
     return(indta)
   }
   # Special events
@@ -487,7 +500,7 @@ save_av_data <- function(indta, in_av_fun) {
   is_price_data <-  grepl("TIME_SERIES|FX_DAILY|DIGITAL_CURRENCY",in_av_fun)
   # No technical analysis
   if(av_funcmap[av_fn==in_av_fun,.SD[1]]$category=="ta") {
-    message_if_red(the_av$verbose,"save_av_data: Technical analysis data",in_av_fun, " not saved")
+    message_if_red(verbosity(),"save_av_data: Technical analysis data",in_av_fun, " not saved")
     return(indta)
   }
   cpy_indta <- copy(indta)[,let(load_ts=Sys.time())]  # Need to copy in case colnames are changed susequent to call
@@ -501,23 +514,23 @@ save_av_data <- function(indta, in_av_fun) {
 
   if(nchar(savingcode)>0 & nrow(cpy_indta)>0) {
     if(!exists("av_download",envir=the_av) & file.exists(avdatafn)) {
-      message_if_green(the_av$verbose,"Loading cumulative capture data from ",avdatafn)
+      message_if_green(verbosity(),"Loading cumulative capture data from ",avdatafn)
       load(avdatafn,envir=the_av)
     }
     the_av$av_download[[in_av_fun]] <- the_av$av_download[[in_av_fun]] %||% data.table()
     if(the_av$capture_av_update=="cum") {
       the_av$av_download[[in_av_fun]] <- rbindlist(list(the_av$av_download[[in_av_fun]], cpy_indta),fill=TRUE)
-      message_if_green(the_av$verbose,"ADD ",nrow(cpy_indta), " ", savingcode, " rows to ",avdatafn)
+      message_if_green(verbosity(),"ADD ",nrow(cpy_indta), " ", savingcode, " rows to ",avdatafn)
     }
     else {  # Update
       the_av$av_download[[in_av_fun]] <- DTUpsert(the_av$av_download[[in_av_fun]], cpy_indta, dtakeys)
-      message_if_green(the_av$verbose,"UPSERT ",nrow(cpy_indta), " rows ", savingcode, " to ",avdatafn)
+      message_if_green(verbosity(),"UPSERT ",nrow(cpy_indta), " rows ", savingcode, " to ",avdatafn)
     }
   }
 
   if ("SaveEveryAVCall" %in% the_av$capture_av_save || "SaveNowOnOptUpdate" %in% the_av$capture_av_save) {
     save(av_download,file=avdatafn,envir=the_av)
-    message_if_green(the_av$verbose,"Saving results of ",in_av_fun," call  to ",avdatafn, " now at ",
+    message_if_green(verbosity(),"Saving results of ",in_av_fun," call  to ",avdatafn, " now at ",
                      file.info(avdatafn)$size/1000, "kB")
     if("SaveNowOnOptUpdate" %in% the_av$capture_av_save) {
       the_av$capture_av_save <- setdiff(the_av$capture_av_save,"SaveNowOnOptUpdate")

@@ -58,7 +58,7 @@ DTUpsert<-function(a,b,keys, fill=FALSE,verbose="",replaceifbempty=NULL) { # DT 
     aandb<- data.table::rbindlist(list(a[!b],b),use.names=TRUE,fill=fill)
     if(nchar(verbose)>1) { message("DTUpsert(",verbose,"): adds ",nrow(b)," rows, now ",nrow(aandb)) }
     if(  any(grepl(".x",colnames(aandb),fixed=TRUE)) ) {
-      stop(" ERORR Mulktiple cols in DTUpsert: ",paste0(colnames(aandb),collapse=","))
+      stop(" ERORR Multiple cols in DTUpsert: ",paste0(colnames(aandb),collapse=","))
     }
   }
   data.table::setkeyv(aandb,keys)

@@ -1,9 +1,7 @@
 #source("./R/utilities.R")
-tver<-"0.9.1"
-
+tver<-"0.9.201"
 
 # todo:
-# -- options db setup
 # HIVG
 # -- Write up functions
 # -- Implement
@@ -189,8 +187,7 @@ av_make_server <- function() {
     inlist=list_ts=vartype=todofunc=todo=assetline=NULL
     curr_assetgroups <- sort(unique(the_av$assetgroups$listnm))
     # On Startup download current index list if not there
-    update_tickerlists( is.null(the_av$tickerlist) || nrow(the_av$tickerlist)<=0 ||
-            (max(the_av$tickerlist$list_ts)<=Sys.Date()-4) )
+    update_tickerlists( is.null(the_av$tickerlist) || nrow(the_av$tickerlist)<=0 || (max(the_av$tickerlist$list_ts)<=Sys.Date()-4) )
     # Check in with the API and other packages
     FinanceGraphs::fg_sync_group("avshiny")
     avpf_set_request_pace(the_av$max_requests_per_min)
@@ -265,7 +262,6 @@ av_make_server <- function() {
       }
       av_set_defaults("starttab","main")
       av_set_defaults("logopts",paste0(rv$logopts,collapse=";",sep=";"))
-      av_set_defaults("verbose", "verbose" %in% rv$logopts)
       av_set_defaults("autocopy","data2clipboard" %in% rv$logopts)
       av_set_defaults("max_requests_per_min",rv$requestpace)
 
@@ -293,7 +289,7 @@ av_make_server <- function() {
         if( exists("do_on_start",envir=the_av) ) {
           rm("do_on_start",envir=the_av) }
         else {
-          message_if_green(the_av$verbose,"Inventory on way to tab")
+          message_if_green(verbosity(2),"Inventory on way to tab")
           updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
         }
       }
@@ -327,7 +323,7 @@ av_make_server <- function() {
           quick_message("Enter a valid command", eval=nchar(rv$istr1)<=0) ) {
         return()
       }
-      message_if(the_av$verbose,"avrs(",tver,") >>>> input(",rv$istr1,") Line2:",rv$istr2, " invts:",newts)
+      message_if(verbosity(2),"avrs(",tver,") >>>> input(",rv$istr1,") Line2:",rv$istr2, " invts:",newts)
       # Clear all but TS graphs
       the_av$user_feedback <- ""
       out <- list()

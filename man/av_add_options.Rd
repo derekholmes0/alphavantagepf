@@ -35,7 +35,13 @@ av_add_options(
 
 \item{baddates_limits}{(default 3): Consecutive business days of null data beyond which options are assumed not to exist.}
 
-\item{verbosity}{(default \code{"time,basic"}) What to display as data is added.}
+\item{verbosity}{(default \code{"basic"}) What to display as data is added. Options may be comma delimited and are\tabular{cl}{
+   \code{verbosity} \tab Description \cr
+   \code{basic} \tab Most basic information \cr
+   \code{timing} \tab Timing information \cr
+   \code{iv} \tab Implied volatility surface calculation progress \cr
+   \code{ivprobs} \tab Implied volatility surface calculation errors (e.g. not enough data, etc.) \cr
+}}
 
 \item{external_path}{(default NULL) Path from which to replace existing data}
 }

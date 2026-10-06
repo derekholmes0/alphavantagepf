@@ -4,7 +4,13 @@
 \alias{av_add_analytic}
 \title{av_add_analytic}
 \usage{
-av_add_analytic(runcode, func_name, helpstr = "user function", focus = "MAIN")
+av_add_analytic(
+  runcode,
+  func_name,
+  helpstr = "user function",
+  focus = "MAIN",
+  delay_save_state = FALSE
+)
 }
 \arguments{
 \item{runcode}{Code string user must run to call the function.}
@@ -14,6 +20,8 @@ av_add_analytic(runcode, func_name, helpstr = "user function", focus = "MAIN")
 \item{helpstr}{(default: "user function"): A string comment to ad to the av.h (help) command}
 
 \item{focus}{(default: "MAIN")  String with tab name to set focus to when command is run}
+
+\item{delay_save_state}{(default: FALSE) Do not save state to cache files.  Used for speed optimization}
 }
 \value{
 String message with success or failure of function addition.

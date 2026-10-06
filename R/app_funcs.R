@@ -116,7 +116,7 @@ av_gp <- function(todo,rv) {
   toplot <- data_from_list(s(rv$assetline),rv$dtstr_hist,rb$rebase,rb$rebase_window,msg_inputID="istr1")
   # Adjust if returns
   if(grepl("LR",todolist[1])) {
-    #message_if_green(the_av$verbose,"PLotting Log Returns")
+    #message_if_green(verbosity(),"PLotting Log Returns")
     tseriesnm <- the_av$seriesnm
     toplot[[1]] <- toplot[[1]][,(tseriesnm):=10000*c(NA_real_,diff(log(get(tseriesnm)),1)), by=.(symbol)]
   }
@@ -496,7 +496,7 @@ av_optsearch <- function(todo,rv) {
   ochains <- find_arg(todo,"f") %||% rv$ochains
   if(!(ochains==rv$ochains)) updateTextInput(session=getDefaultReactiveDomain(),"ochains", value= ochains)
   mindelta <- find_arg(todo,"d",altno=-1) %||% rv$omindelta
-  message_if_red(the_av$verbose," av_optsearch ochains:: ",ochains, " mindelta: ",mindelta)
+  message_if_red(verbosity()," av_optsearch ochains:: ",ochains, " mindelta: ",mindelta)
   for (x in eqlist1) {
     theseopts <- av_get_pf(x,"HISTORICAL_OPTIONS")
     if("variable" %in% names(theseopts)) {
@@ -524,7 +524,7 @@ av_optsearch <- function(todo,rv) {
     filteredopts<- filteredopts[,symbol:=sprintf("%s %3dd %s",symbol,daysExp,type)]
     avsh_clipboard(filteredopts,"opts")
     out[["OPT1GT"]] <- filteredopts |> gt.avtheme(themeset="filteredopts", rv$assetline, rv$otodisplay)
-    message_if_red(the_av$verbose,"Option set comes from HISTORICAL_OPTIONS, not REALTIME")
+    message_if_red(verbosity(),"Option set comes from HISTORICAL_OPTIONS, not REALTIME")
     # SUmmary
     alloi <- indta[,.(n=.N,oi=sum(open_interest)/1000, waK=sum(open_interest*strike)/sum(open_interest)),by=.(symbol,type,expiration)]
     alloi <- inspots[alloi,on=.(symbol)][,':='(waKpct=100*(waK/spot-1))]

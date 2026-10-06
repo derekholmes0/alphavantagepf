@@ -46,7 +46,7 @@ form_symset <- function(tickers, force=FALSE, typegrep="*",delay=0) {
                                                                                                          .(symbol,type=fifelse(assetType=="Stock","Equity",assetType),name,currency="USD",matchScore=1,list_ts)]
   newtickers <-setdiff(newtickers,symnew_eq_inlistings$symbol)
   symnew_eq_nonus <- rbindlist(lapply(grepv("\\.([A-Z]{3})$",newtickers), \(x) {
-    message_if_green(the_av$verbose, "Checking for international equities: trying av('SYMBOL_SEARCH')")
+    message_if_green(verbosity(), "Checking for international equities: trying av('SYMBOL_SEARCH')")
     if(nrow(z1 <- av_get_pf("","SYMBOL_SEARCH",keywords=x,delay=delay))<=0) {
       message_if_red(TRUE,"Alphavantage cannot find  ",x,", so assuming to be a user series.  Please reconsider renaming")
       return(data.table(symbol=x,matchScore=0))
@@ -152,12 +152,12 @@ find_rebasecode <- function(todo,default_window=the_av$dtstr_hist) {
   ts_rebase <- switch(lastchar, "I"="start","D"="focus") %||% "none"
   dtstr_window <- default_window
   if(ts_rebase=="focus") {
-    if(length(todolist)<2) { message_if_red(the_av$verbose,"Rebasing date not specified, dedaulting to start") }
+    if(length(todolist)<2) { message_if_red(verbosity(),"Rebasing date not specified, dedaulting to start") }
     else { dtstr_window<- todolist[[2]]  }
   }
   dtstr_window <- find_arg(todo,"w") %||% dtstr_window
   ts_title <- switch(lastchar, "I"="Index","D"=paste("Index centered at",dtstr_window),"R"="LogReturns (bp)") %||% "Prices"
-  #message_if_green(the_av$verbose,paste("rebase",ts_rebase,"rebase_window",dtstr_window,"func",actual_func))
+  #message_if_green(verbosity(),paste("rebase",ts_rebase,"rebase_window",dtstr_window,"func",actual_func))
   return(list("rebase"=ts_rebase,"rebase_window"=dtstr_window,"func"=actual_func,"grtitle"=ts_title))
 }
 
@@ -195,6 +195,11 @@ set_list <- function(listtodo,tlist,instr,session) {
   return(rtnmsg)
 }
 
+verbosity <- function(level=1) {
+  verbosity_str <- fcase(level>=1,"verbose",level>=2,"debug",default="NotGonnaPrint")
+  return( grepl(verbosity_str,the_av$logopts) )
+}
+
 # =====================-==============================================================================
 # =====================-==============================================================================
 # Specific function helpers
@@ -221,7 +226,7 @@ get_one_ts <- function(assets,rebase,datestring,dtstr_window) {
   rebasedt <- fcase(rebase=="start",paste0(format(toplot[1,]$timestamp,"%Y-%m-%d"),",100"),
                     rebase=="focus",paste0(format(max(toplot[1,]$timestamp,gendtstr(dtstr_window,rtn="first")),"%Y-%m-%d"),",100"),
                     default="")
-  #message_if_green(the_av$verbose,"get_one_ts(",paste0(assets,collapse=" "),") retrieves ",nrow(toplot), " rows up to ",as.Date(max(toplot$timestamp)))
+  #message_if_green(verbosity(),"get_one_ts(",paste0(assets,collapse=" "),") retrieves ",nrow(toplot), " rows up to ",as.Date(max(toplot$timestamp)))
   return(list(toplot,rebasedt))
 }
 
@@ -278,8 +283,8 @@ oneticker_divs <- function(thisticker,datestring) {
   return(divs[])
 }
 
-one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_window=NULL,...) {
-  symbol=low=high=medgap=reportedEPS=surprise=lpx=dividend_amount=surprisePercentage=NULL
+one_px_ts <- function(toplot,rv,title="Prices",mean_gap_implies_step=4,extra_anno="",events="",dt_window="",...) {
+  symbol=low=high=medgap=meangap=reportedEPS=surprise=lpx=dividend_amount=surprisePercentage=NULL
   seriesnm <- the_av$seriesnm
   if(is.data.table(toplot[[1]])) {
     trebase <- toplot[[2]]
@@ -290,6 +295,7 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_wind
                              toplot[[1]][,.(timestamp,variable=paste0(symbol,".hi"),value=get(seriesnm) + (high-close))]
       )) }
   }
+
   else {
     fgdt<-toplot
     trebase<-""
@@ -303,9 +309,11 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_wind
     "lastlabel" %in% rv$gropts, "last,line",
     "last" %in% rv$gropts, "last,linevalue",
     default = "")
-  # What to step
-  xstepcols = the_av$pxinv[data.table(symbol=unique(fgdt$variable)),on=.(symbol)][fcoalesce(as.numeric(medgap),1)>4,]
-  if(nrow(xstepcols)>0) { stepcols=xstepcols$symbol } else { stepcols<- FALSE }
+  # What to step; New
+  meangaps <- fgdt[,.(meangap=mean(as.numeric(diff(timestamp,1)),na.rm=T)), by=.(variable)]
+  xstepcols = meangaps[meangap>mean_gap_implies_step,]$variable
+  xstepcols = ifelse( length(xstepcols)>0, xstepcols, FALSE)
+  if(length(xstepcols)<=0) { xstepcols<- FALSE }
   # Eartnings or dividends
   eventset <- data.table()
   eventlist <- s(tolower(events))
@@ -331,10 +339,11 @@ one_px_ts <- function(toplot,rv,title="Prices",extra_anno="",events=NULL,dt_wind
     }
     eventset <- rbindlist(list(eventset, teventset),fill=TRUE,use.names=TRUE)
   }
+  #cAssign("fgdt;title;events;dt_window;tanno;extra_anno;rv;xstepcols;trebase")
   outdyg <- fgts_dygraph(fgdt,title=title,events=events, dtwindow=dt_window,
                          annotations=paste0(c(tanno,extra_anno),collapse=";"), colorset=the_av$ts_colorset,
                          splitcols=("splitts" %in% rv$gropts),roller=1,
-                         stepcols=stepcols,event_ds=eventset,
+                         stepcols=xstepcols,event_ds=eventset,
                          hilightcols=fifelse("hilightfirst" %in% rv$gropts,fgdt[,.SD[1]]$variable,""),
                          rebase=trebase,...)
   return(outdyg)
@@ -359,12 +368,12 @@ getNews<-function(x,nArticles=50,minabssent=0,newsfilter=list(),newsagrep="",max
   news0 <- av_get_pf(x,"NEWS_SENTIMENT",limit=floor(nArticles)) |>  save_av_data("NEWS_SENTIMENT")
   news1 <- news0 |> av_extract_df("feed",empty_dt_onerror=TRUE)
   if(nrow(news1)<=1) {
-    message_if_red(the_av$verbose,"getNews: No News for ",x)
+    message_if_red(verbosity(),"getNews: No News for ",x)
     return(data.table())
   }
   if(nchar(newsagrep)>0) {
       keepitems <-!grepl(newsagrep,news1$title,ignore.case = TRUE) & !grepl(newsagrep,news1$source,ignore.case = TRUE)
-      message_if_red(the_av$verbose,"News filtered out ",nrow(news1)-sum(keepitems), " Stories")
+      message_if_red(verbosity(),"News filtered out ",nrow(news1)-sum(keepitems), " Stories")
       news1 <- news1[keepitems]
   }
   news1[,age:=difftime(Sys.time(),time_published)]

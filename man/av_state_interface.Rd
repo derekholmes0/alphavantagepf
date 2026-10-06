@@ -9,7 +9,7 @@
 \alias{dump_captured}
 \title{av_state_interface}
 \usage{
-dump_state(typegrep = "*")
+dump_state(typegrep = "*", trunc_length = 35)
 
 dump_inv(invgrep = "*")
 
@@ -21,6 +21,8 @@ dump_captured(todo = "byfunction")
 }
 \arguments{
 \item{typegrep}{: Grep string for internal state parameters}
+
+\item{trunc_length}{: (default: 35)  Maximumlength of character values returned.}
 
 \item{invgrep}{: A regular expression string}
 
