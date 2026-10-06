@@ -52,7 +52,7 @@ avpf_api_key <- function(api_key,entitlement=NULL) {
 #' @export
 avpf_set_request_pace <- function(max_requests_per_min=60) {
   restore_avs_state(msg="set_request_pace")
-  message_if_red(TRUE,"Setting Max requests per minute to ",max_requests_per_min)
+  message_if_red(TRUE,"Setting Max requests per minute to ",max_requests_per_min, " and saving to constants")
   the_av$max_requests_per_min <- max_requests_per_min
   save_avs_state("the",msg="avpf_set_request_pace")
   return()
