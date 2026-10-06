@@ -209,7 +209,7 @@ verbosity <- function(level=1) {
 data_from_list <-function(inlist,datestring,ts_rebase,dtstr_window,msg_inputID="istr1",copytable=TRUE) {
   inlist=unique(inlist)
   # Make sure we have data
-  toplot <- sapply(inlist, \(x) manage_epx(x,datestring,addlive=the_av$uselive))
+  toplot <- sapply(inlist, \(x) manage_epx(x,datestring,addlive=grepl("useLivePx",the_av$logopts)))
   if(length(badtickers <- names(toplot)[grep("ERROR",toplot)])>0) {
       quick_message(paste("Invalid tickers:", paste(badtickers)),wh=msg_inputID)
   }
