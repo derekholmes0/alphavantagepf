@@ -384,7 +384,7 @@ redownload_all <- function() {
 
 #' @noRd
 restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
-  pxinv=vartype=var=NULL
+  pxinv=vartype=var=allnonfst=NULL
   if(skip) { return() }
   # Filledin dfaults before
   if(grepl("all|constants",todo) & file.exists(the_av$constants_fn)) {

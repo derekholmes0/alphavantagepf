@@ -49,6 +49,7 @@ importFrom(bslib,page_fillable)
 importFrom(data.table,
   ":=",
   .N,
+  fcoalesce,
   let
 )
 importFrom(dplyr,

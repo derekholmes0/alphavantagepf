@@ -236,8 +236,11 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
 #' The function signature is a call to the function with a single argument "signature" which returns a list of three items: 1) a short name for the function, 2)
 #' the function name, and 3) a help string for the function.  If those conditions obtain, the function will be added to [av_runShiny()]
 #' @export
-av_runShiny_addFunctions <- function(fun_dir="c:/d/src/R/avpfShinyFuncs/avpfshinyFuncs/R") {
-  message("av_runShiny_addFunctions v 0.2 ")
+av_runShiny_addFunctions <- function(fun_dir=NULL) {
+  if(is.null(fun_dir) || !dir.exists(fun_dir) ) {
+    return("No Additional functions")
+  }
+  message_if_red(TRUE,"av_runShiny_addFunctions gathering functions from", fun_dir)
   allfiles <-list.files(fun_dir,pattern="*\\.r",ignore.case=TRUE,full.names=TRUE)
   is_fn_def_with_params <- function(e, params = c("todo", "rv")) {
     if (!(is.call(e) &&
@@ -675,7 +678,7 @@ dump_state <- function(stategrep="*", trunc_length=35) {
   for (x in ls(envir=the_av)) {
     toget <- get(x,envir=the_av)
     type <- class(toget)
-    if(any(grepl(stategrep,type)) | toupper(stategrep)==toupper(x)) {
+    if(any(grepl(stategrep,type)) | grepl(stategrep,x,ignore.case=TRUE)) {
       if("data.frame" %in% type) {
         toget<-paste0("<<data.table>> with ",sprintf("%8d",nrow(toget)), " rows")
       }

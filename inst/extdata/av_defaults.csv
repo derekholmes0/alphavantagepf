@@ -20,6 +20,7 @@ inv_otherdt,str,,assetgroups;avsh_funcs;cmdhist;listings;pxinv;renderset;tickerl
 inv_fstdt,str,,inv;pxd;earn;earnest;iv;iv_nearest,,
 av_dump_dir,str,setopts,,,
 cachedir,str,setopts,,,
+userfuncdir,str,setopts,,,
 ts_colorset,str,setopts,lines,,
 ts_events,str,onrun,"tp,5",,
 ts_rebase,str,onrun,none,,

@@ -4,7 +4,6 @@
 
 * Working on LLM support
 
-
 # alphavantagepf 0.9.1
 
 ## API interface
@@ -22,8 +21,11 @@
 
 ## Shiny interface
 
-* Request pacing added to options page.
-* Collection of options data and summary of vol surface by date, see vignette
+* Options page (AVOPTS) has new fields:
+  - Request pacing to consistently get data given any API pricing tier
+  - Field for setting a directory with new functions.
+* Collection of options data and summary of vol surface by date, see Data Management vignette
+* New format for writing user options. See New Functionality vignette.
 
 # alphavantagepf 0.9.0
 
@@ -31,8 +33,7 @@
 
 The Shiny interface has been completely redesigned (and recoded) to have an extendable command line interface
 for all analytics.  New functions have been added for adding and managing data outside the app. Users can also add their
-own analytics and interface with the GUI using several "helper" functions.  See vignettes
-for details.
+own analytics and interface with the GUI using several "helper" functions.  See vignettes for details.
 
 ## New Features in API interface
 

@@ -4,9 +4,7 @@
 \alias{av_runShiny_addFunctions}
 \title{Add experimental functions from a given directory}
 \usage{
-av_runShiny_addFunctions(
-  fun_dir = "c:/d/src/R/avpfShinyFuncs/avpfshinyFuncs/R"
-)
+av_runShiny_addFunctions(fun_dir = NULL)
 }
 \arguments{
 \item{fun_dir}{Directory containing functions with input signatures to add}

@@ -1,7 +1,7 @@
 #source("./R/utilities.R")
-tver<-"0.9.202"
+tver<-"0.9.21"
 
-# 0.9.202:  THink I've finally fixed startup mess
+# 0.9.21:  Add user function dir to AVOPTS
 
 # todo:
 # HIVG
@@ -136,6 +136,7 @@ av_make_ui <- function() {
                     span(textInput(inputId="avapientitlement", label="av entitlement", value=the_av$avapientitlement),style=avsd$labelcss),
                     span(textInput(inputId="requestpace", label="Max Request Pace", value=the_av$max_requests_per_min),style=avsd$labelcss),
                     span(textInput(inputId="cachedir", label="Cache Data Directory", value=the_av$cachedir),style=avsd$labelcss),
+                    span(textInput(inputId="userfuncdir", label="User Functions Directory", value=the_av$userfuncdir),style=avsd$labelcss),
                     #span(textInput(inputId="extracalc_file", label="extracalc csv", value=the_av$extracalc_file),style=avsd$labelcss), ## <<--- TODO
                     span(textInput(inputId="ts_colorset", label="fgts colorset", value=the_av$ts_colorset),style=avsd$labelcss),
                     span(textInput(inputId="av_dump_dir", label="AV dump Directory", value=the_av$av_dump_dir),style=avsd$labelcss),
@@ -265,6 +266,9 @@ av_make_server <- function() {
       }
       av_set_defaults("starttab","main")
       av_set_defaults("max_requests_per_min",rv$requestpace)
+      # Add New Functions
+      av_set_defaults("userfuncdir",rv$userfuncdir)
+      av_runShiny_addFunctions(the_av$userfuncdir)
 
       # Set up mcp json file
       # Next...

@@ -84,5 +84,6 @@ av_runShiny <- function() {
   if("inv_fn" %in% names(the_av)) {
     the_av$inv_fn_ts <- fifelse(file.exists(the_av$inv_fn), as.POSIXct( file.info(the_av$inv_fn)$mtime), Sys.time())
   }
+  av_runShiny_addFunctions(the_av$userfuncdir)
   return(startApp(shinyApp(ui=av_make_ui(), server=av_make_server(), options=list(width=1400,height=800,"launch.browser"))))
 }
