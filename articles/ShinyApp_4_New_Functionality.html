@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.202</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.21</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -698,14 +698,17 @@ three iitems:</li>
 </tbody>
 </table>
 <p>As an example, adding the signature to the the correlation function
-<code>RCOR</code> as above can be done with</p>
+<code>RCOR</code> as above can be done by adding the following lines to
+the start of the function.</p>
 <pre><code><span>  <span class="kw">if</span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">is.character</a></span><span class="op">(</span><span class="va">todo</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="va">todo</span><span class="op">==</span><span class="st">"signature"</span> <span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"RCOR"</span>,<span class="st">"av_rolling_correlations"</span>,<span class="st">"Rolling Correlations"</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span></code></pre>
-<p>Before running the app (or at any time if you are developing), then
-just run</p>
+<p>The functionality for the new functions can be added in two ways. The
+easiest is to set the “User Functions Directory” in the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab.
+The app will then scan that directory for new functions on startup or on
+setting the options. Alternatively, before running the app (or at any
+time if you are developing), use the console as in:</p>
 <pre><code>&gt; av_runShiny_addFunctions("~/avpfshinyFuncs/R")
-av_runShiny_addFunctions v 0.2 
 av_add_analytic: RCOR already registered, Function code replaced at 05-08:56:S
 av_add_analytic: GPIV already registered, Function code replaced at 05-08:56:S
 av_add_analytic: GPIVS already registered, Function code replaced at 05-08:56:S
@@ -714,12 +717,13 @@ av_add_analytic: GPIVS already registered, Function code replaced at 05-08:56:S
 <div class="section level3">
 <h3 id="examples-of-functions">Examples of functions<a class="anchor" aria-label="anchor" href="#examples-of-functions"></a>
 </h3>
-<p>An different (non-CRAN eligible) repository of functions is
+<p>A more experimental (non-CRAN eligible) repository of functions is
 maintained at <a href="https://github.com/derekholmes0/avpfshinyFuncs" class="external-link">avpfshinyfuncs</a>.
 Some may require the absolute latest version of the app as downloaded
 using <code>pak::pak("derekholmes0/alphavantagepf")</code> and/or new
 data structures (e.g. Implied volatilities) downloaded separately.
-Please reach out to the author with any questions or suggestions.</p>
+Please reach out to the author with any questions or suggestions. My
+hope is that others will contribute to that repository.</p>
 </div>
 </div>
 

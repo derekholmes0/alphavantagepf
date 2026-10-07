@@ -5,7 +5,7 @@
 ## Usage
 
 ``` r
-avpf_set_request_pace(max_requests_per_min)
+avpf_set_request_pace(max_requests_per_min = 60)
 ```
 
 ## Arguments

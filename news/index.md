@@ -26,9 +26,12 @@
 
 ### Shiny interface
 
-- Request pacing added to options page.
+- Options page (AVOPTS) has new fields:
+  - Request pacing to consistently get data given any API pricing tier
+  - Field for setting a directory with new functions.
 - Collection of options data and summary of vol surface by date, see
-  vignette
+  Data Management vignette
+- New format for writing user options. See New Functionality vignette.
 
 ## alphavantagepf 0.9.0
 

@@ -329,17 +329,20 @@ the following requirements:
 |   3   | `character` | A short help string to add to `AV.H`    |
 
 As an example, adding the signature to the the correlation function
-`RCOR` as above can be done with
+`RCOR` as above can be done by adding the following lines to the start
+of the function.
 
       if( is.character(todo) && todo=="signature" ) {
         return(list("RCOR","av_rolling_correlations","Rolling Correlations"))
       }
 
-Before running the app (or at any time if you are developing), then just
-run
+The functionality for the new functions can be added in two ways. The
+easiest is to set the “User Functions Directory” in the AVOPTS tab. The
+app will then scan that directory for new functions on startup or on
+setting the options. Alternatively, before running the app (or at any
+time if you are developing), use the console as in:
 
     > av_runShiny_addFunctions("~/avpfshinyFuncs/R")
-    av_runShiny_addFunctions v 0.2 
     av_add_analytic: RCOR already registered, Function code replaced at 05-08:56:S
     av_add_analytic: GPIV already registered, Function code replaced at 05-08:56:S
     av_add_analytic: GPIVS already registered, Function code replaced at 05-08:56:S
@@ -347,11 +350,13 @@ run
 
 ### Examples of functions
 
-An different (non-CRAN eligible) repository of functions is maintained
-at [avpfshinyfuncs](https://github.com/derekholmes0/avpfshinyFuncs).
-Some may require the absolute latest version of the app as downloaded
-using `pak::pak("derekholmes0/alphavantagepf")` and/or new data
-structures (e.g. Implied volatilities) downloaded separately. Please
-reach out to the author with any questions or suggestions.
+A more experimental (non-CRAN eligible) repository of functions is
+maintained at
+[avpfshinyfuncs](https://github.com/derekholmes0/avpfshinyFuncs). Some
+may require the absolute latest version of the app as downloaded using
+`pak::pak("derekholmes0/alphavantagepf")` and/or new data structures
+(e.g. Implied volatilities) downloaded separately. Please reach out to
+the author with any questions or suggestions. My hope is that others
+will contribute to that repository.
 
 [^1]: In homage to Dean Curnutt’s Alpha Exchange podcast.

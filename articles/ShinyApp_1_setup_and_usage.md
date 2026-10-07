@@ -32,7 +32,8 @@ The app is designed to
   [FinanceGraphs](https://derekholmes0.github.io/FinanceGraphs/reference/index.html)
 - Provide a framework for adding user-generated analyses.
 
-A few conventions which are helpful to know before using the app are[^1]
+A few conventions which are helpful to know before using the app
+are[^1]:
 
 | Item | Convention | Example |
 |:--:|:---|:---|

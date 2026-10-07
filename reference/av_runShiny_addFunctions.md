@@ -5,9 +5,7 @@ Adds analytics in code taken from single directory.
 ## Usage
 
 ``` r
-av_runShiny_addFunctions(
-  fun_dir = "c:/d/src/R/avpfShinyFuncs/avpfshinyFuncs/R"
-)
+av_runShiny_addFunctions(fun_dir = NULL)
 ```
 
 ## Arguments
