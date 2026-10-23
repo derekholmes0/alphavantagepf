@@ -1,8 +1,21 @@
 # alphavantagepf
 
-# alphavantagepf 0.9.2
+# Planned Features
 
-* Working on LLM support
+* LLM support and MCP integration
+
+# alphavantagepf 0.9.21
+
+## WOrking On
+
+* Implied volatility surfaces
+
+## New Features
+
+* Option database maintenance using Arrow
+* Options page has setting for user functions directory
+  - `av_load_shinydata()` now adds all user functions in a given directory
+  - New Functions added to separate GitHub repository.
 
 # alphavantagepf 0.9.1
 

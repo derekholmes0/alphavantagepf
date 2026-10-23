@@ -4,12 +4,14 @@
 \alias{av_load_shinydata}
 \title{Load av_runShiny() internal data.}
 \usage{
-av_load_shinydata(item = NULL, verbose = TRUE)
+av_load_shinydata(item = NULL, verbose = TRUE, addfuncs = TRUE)
 }
 \arguments{
 \item{item}{Any data name as seen by running \code{\link[=dump_state]{dump_state()}}.  \strong{If blank, loads entire database}}
 
 \item{verbose}{(default TRUE) write a status message to console}
+
+\item{addfuncs}{(default TRUE) Readd and re-source any user defined functions}
 }
 \value{
 Data item specified by \code{item} or a nothing (but a message) if left blank

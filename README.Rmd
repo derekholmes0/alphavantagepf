@@ -259,5 +259,5 @@ See [New Functionality Vignette](https://derekholmes0.github.io/alphavantagepf/a
 [^1]: Note that more explanatory notes are given unless the `showGeneralHelp` option is deselected in the <span style="border: 1px solid #000000; padding: 2px 6px;">AVOPTS</span> tab.
 [^2]: Larger data sets (e.g. price data) is stored in a [fst](https://www.fstpackage.org/) file.  Smaller data is kept in standard `.Rd` files.  A database interface is planned at some point.
 [^3]: Lists of equities, ETFs and available indices (see `av.tickers`) are downloaded each time the `av_runShiny()` is run.  Cryptocurrencies tickers are hard-coded
-into the package. 
+into the package.
 

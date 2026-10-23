@@ -93,6 +93,7 @@ importFrom(progress,progress_bar)
 importFrom(progressr,handlers)
 importFrom(purrr,
   imap,
+  list_flatten,
   map,
   map2
 )

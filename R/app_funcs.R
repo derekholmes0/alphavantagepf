@@ -49,12 +49,12 @@ av_help <- function(todo,rv) {
   # does this take too long?
   thistm <- system.time({
     rtnlist <- list(
-      tortn |> gt(groupname_col="category",row_group_as_column = TRUE) |> gt.basetheme(interactive="filter") |> cols_move_to_start(columns=c(runcode,helpstr)) |>
-                    cols_merge(columns=c(func_reqinput,func_opts), pattern = "{1}, {2}") |> cols_hide(columns=c(runcode2)) |>
-                  add_colwidths("avh")
+#      tortn |> gt(groupname_col="category",row_group_as_column = TRUE) |> gt.basetheme(interactive="filter") |> cols_move_to_start(columns=c(runcode,helpstr)) |>
+#                    cols_merge(columns=c(func_reqinput,func_opts), pattern = "{1}, {2}") |> cols_hide(columns=c(runcode2)) |>
+#                  add_colwidths("avh")
+      tortn |> gt()
       )
   })["elapsed"]
-  message("... av_help tim: ",thistm)
   if(grepl("showGeneralHelp",the_av$logopts)) {
     helptable <- avsd$generalhelp |> gt() |> gt.basetheme(sizepct=90) |> decorate_table() |>
                   tab_style(style=cell_text(font="Courier"),locations=cells_body(columns=c("Example/Choice"))) |>
@@ -79,11 +79,10 @@ av_dumprv <- function(todo,rv) {
 # -----------------------------------------------------------------------
 # FOr the following functions: av.hist
 #
-#' @importFrom utils tail
 av_misc <- function(todo,rv) {
   ts=N=NULL
   todolist <- c(s(toupper(todo),"[ ]+"),"1")
-  cmdhistlist <- tail(the_av$cmdhist,40)[order(-ts)][,let(N=.I)]
+  cmdhistlist <- the_av$cmdhist[order(-ts)][1:pmin(.N,50),][,let(N=.I)]
   setcolorder(cmdhistlist,s("N;cmd;ts"))
   if(grepl("^RM",todo,ignore.case=TRUE)) {
     ts <- lapply(s(rv$assetline), \(x) kill_symbol(x))

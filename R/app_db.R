@@ -238,6 +238,8 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
       }
       symset = symset[data.table(symbol=unique(dta$symbol)), on=.(symbol)] # If subst is a superset
       symset[,let(loadts=Sys.time())]
+      cAssign("symset")
+
     }
     else { # DOwnloadable, but one at a time
       if(nrow(symset)<=0) {
@@ -282,8 +284,9 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
   if(nrow(dta)>0) {
     the_av$pxd <- DTUpsert(the_av$pxd,dta,c("symbol","timestamp"),fill=TRUE)
     if(nrow(the_av$pxinv)>0) {
-      the_av$pxinv[dta[,.(symbol,enddt=max(timestamp)),by=.(symbol)],end_dt:=i.enddt,on=.(symbol)]
+      the_av$pxinv[dta[,.(enddt=max(timestamp)),by=.(symbol)],end_dt:=i.enddt,on=.(symbol)]
     } # If not, will get created later
+    save_avs_state("px,the") # New 10/23
   }
   message_if(verbosity(),"av_one_px(",paste_trunc(tortn$symbol)," @ ",src,") ", outmsg)
   return(tortn)

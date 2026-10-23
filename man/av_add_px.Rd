@@ -4,13 +4,7 @@
 \alias{av_add_px}
 \title{Add or download Price or Time Series Data}
 \usage{
-av_add_px(
-  indta = NULL,
-  assettypes = NULL,
-  equitylist = NULL,
-  dtstr = "-30y::",
-  delay = 0
-)
+av_add_px(indta = NULL, assettypes = NULL, equitylist = NULL, dtstr = "-30y::")
 }
 \arguments{
 \item{indta}{(default: NULL) A data.frame with the following minimal columns: \code{c(symbol,timestamp,close)}.
@@ -26,9 +20,6 @@ calls to \code{\link[=av_get_pf]{av_get_pf()}}}
 null or is otherwise ignored.}
 
 \item{dtstr}{(default \code{"-30y::"}). Date range to download if applicable.}
-
-\item{delay}{(default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
-unused if \code{assettypes} is given.}
 }
 \value{
 Nothing

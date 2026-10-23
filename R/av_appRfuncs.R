@@ -13,8 +13,6 @@
 #' @param equitylist (default NULL) If specified, function will get equity prices from `av_get_pf`.  `indta` can be
 #' null or is otherwise ignored.
 #' @param dtstr (default `"-30y::"`). Date range to download if applicable.
-#' @param delay (default 0) Seconds to delay calls to determine asset type for future AV downloads. This is
-#' unused if `assettypes` is given.
 #' @returns Nothing
 #' @seealso [av_runShiny()]
 #' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp` internally.
@@ -41,8 +39,8 @@
 #' @import data.table
 #' @importFrom stats setNames
 #' @export
-av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",delay=0) {
-  av_load_shinydata(verbose=FALSE)
+av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::") {
+  av_load_shinydata(verbose=FALSE, addfuncs=FALSE)
   if(!is.null(assettypes)) {
     assettypes <- as.data.table(assettypes)[,symbol:=toupper(symbol)] }
   if(!is.null(indta)) {
@@ -59,20 +57,21 @@ av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",
     }
     symbolset <- unique(indta$symbol)
     dtstr <- paste0(min(indta$timestamp),"::")
-    manage_px(symbolset,dtstr,substitute_data=indta,substitute_symset=assettypes,delay=delay)
+    # manage_px now updates inventory and saves
+    manage_px(symbolset,dtstr,substitute_data=indta,substitute_symset=assettypes)
   }
   else if (is.vector(s(equitylist))) {
-    symbolset <- lapply(s(equitylist),\(x) manage_px(x,dtstr,delay=delay))
+    symbolset <- lapply(s(equitylist),\(x) manage_px(x,dtstr))
     symbolset <- s(equitylist)
+    newinv <- get_inv(symbolset,override_symset=assettypes)
+    the_av$pxinv <- DTUpsert(the_av$pxinv, newinv, c("symbol"),fill=TRUE)
+    save_avs_state("px",msg="av_add_px",ts_update=FALSE)
   }
   else {
     message_if_red(TRUE,"av_add_px: without any data or an equitylist, have nothing to do")
     return()
   }
   # need (symbol=TICKER,type="user",currency="USD",name=TICKER)
-  newinv <- get_inv(symbolset,override_symset=assettypes)
-  the_av$pxinv <- DTUpsert(the_av$pxinv, newinv, c("symbol"),fill=TRUE)
-  save_avs_state("px",msg="av_add_px",ts_update=FALSE)
 }
 
 #' Add Earnings Data
@@ -99,7 +98,7 @@ av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::",
 #' @export
 av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=NULL,delay=0) {
   # Age taken care of by manage_earn
-  av_load_shinydata(verbose=FALSE)
+  av_load_shinydata(verbose=FALSE, addfuncs=FALSE)
   symset <- list()
   if(!is.null(substitute_earn) && length(symset)<=0) { symset <- unique(substitute_earn$symbol) }
   if(!is.null(substitute_earnest) && length(symset)<=0) { symset <- unique(substitute_earnest$symbol) }
@@ -122,16 +121,20 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=
 #' @description Loads internal data (prices, earnings, etc.
 #' @param item Any data name as seen by running [dump_state()].  **If blank, loads entire database**
 #' @param verbose (default TRUE) write a status message to console
+#' @param addfuncs (default TRUE) Readd and re-source any user defined functions
 #' @returns Data item specified by `item` or a nothing (but a message) if left blank
 #' @seealso [av_runShiny()]
 #' @export
-av_load_shinydata <- function(item=NULL,verbose=TRUE) {
+av_load_shinydata <- function(item=NULL,verbose=TRUE,addfuncs=TRUE) {
   if(is.null(item)) {
     restore_avs_state("all");
     the_av$outcopy<-list()
     options(av_api_key = the_av$avapikey)
     options(av_api_entitlement = the_av$avapientitlement)
     message_if(verbosity() && verbose,"Loading avShiny Internal data.  Use dump_state() to see what's available")
+    if(addfuncs==TRUE) {
+      oo <- av_runShiny_addFunctions(the_av$userfuncdir)
+    }
   }
   else {
     return(get(item,envir=the_av))
@@ -156,7 +159,7 @@ av_load_shinydata <- function(item=NULL,verbose=TRUE) {
 #' }
 #' @export
 av_add_assetgroups <- function(indta) {
-  av_load_shinydata(verbose=FALSE)
+  av_load_shinydata(verbose=FALSE, addfuncs=FALSE)
   indta <- as.data.table(indta)
   check_min_colset(indta,s("listnm;ticker"))
   if(!("weight" %in% colnames(indta))) { indta[, weight:=1/.N, by=.(listnm)]  }
@@ -175,6 +178,7 @@ av_add_assetgroups <- function(indta) {
 #' @param helpstr (default: "user function"): A string comment to ad to the av.h (help) command
 #' @param focus (default: "MAIN")  String with tab name to set focus to when command is run
 #' @param delay_save_state (default: FALSE) Do not save state to cache files.  Used for speed optimization
+#' @param message_str (default "") Additional string to add to output messages
 #' @returns String message with success or failure of function addition.
 #' @seealso [av_runShiny()]
 #' @details When the [av_runShiny()] app is run, users can call functions to provide analytics based on asset strings in the command line.
@@ -201,9 +205,10 @@ av_add_assetgroups <- function(indta) {
 #' # From the app: run "av.h"
 #' }
 #' @export
-av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAIN",delay_save_state=FALSE) {
+av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAIN",
+                            message_str="", delay_save_state=FALSE) {
   runcode=toupper(runcode)
-  msg <- paste0(" function ",func_name," to Command Line functions as code ",runcode)
+  msg <- paste0(" function ",func_name," to Command Line functions as code ",runcode," ",message_str)
   if(!exists("avsh_funcs",envir=the_av)) {  av_load_shinydata(verbose=FALSE) }
   if( toupper(runcode) %in% the_av$avsh_funcs$runcode) {
     if( nchar(func_name)<=0) {
@@ -212,17 +217,17 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
       save_avs_state("all",msg="Remove function")
     }
     else {
-      msg <- paste0(runcode, " already registered, Function code replaced")
+      msg <- paste0(runcode, " registered: Code replaced ",message_str)
     }
   }
   if( nchar(func_name)<=0) {
-    message_if_red(TRUE,"Invalid function name; skipping operation")
+    message_if_red(TRUE,"Invalid function name: ",func_name," skipping operation")
     return()
   }
   new_analytics <- data.table(category="user",runcode=runcode, func_src="user", func_name=func_name, focus=focus, helpstr=helpstr)
   the_av$avsh_funcs <- DTUpsert(the_av$avsh_funcs,new_analytics,keys=c("runcode"),fill=TRUE)
   if(!delay_save_state) {   save_avs_state("all",msg=paste0("Add FUnction ",runcode)) }
-  return(paste0("av_add_analytic: ",msg," at ",format(Sys.time(),"%d-%H:%M%:S")))
+  return(paste0("av_add_analytic: ",msg," at ",format(Sys.time(),"%d-%H:%M%:%S")))
 }
 
 #' Add a set of analytics from a code direcory
@@ -235,12 +240,13 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
 #' @details  Each file will be read in the specified directory and any function with a valid signature will be added to the list of available functions in the shiny app.
 #' The function signature is a call to the function with a single argument "signature" which returns a list of three items: 1) a short name for the function, 2)
 #' the function name, and 3) a help string for the function.  If those conditions obtain, the function will be added to [av_runShiny()]
+#' @importFrom purrr list_flatten
 #' @export
 av_runShiny_addFunctions <- function(fun_dir=NULL) {
   if(is.null(fun_dir) || !dir.exists(fun_dir) ) {
     return("No Additional functions")
   }
-  message_if_red(TRUE,"av_runShiny_addFunctions gathering functions from", fun_dir)
+  message_if_red(TRUE,"av_runShiny_addFunctions 0.3 gathering functions from", fun_dir)
   allfiles <-list.files(fun_dir,pattern="*\\.r",ignore.case=TRUE,full.names=TRUE)
   is_fn_def_with_params <- function(e, params = c("todo", "rv")) {
     if (!(is.call(e) &&
@@ -258,21 +264,25 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
     matching_exprs <- Filter(is_fn_def_with_params, as.list(exprs))
     fn_res <- invisible(sapply(matching_exprs, eval, envir = environment()))
     fn_names <- sapply(matching_exprs, function(e) as.character(e[[2]]))
-    nadded<- sapply(fn_names, \(nm) {
+    fnadded<- lapply(fn_names, \(nm) {
       toadd <- do.call(nm,list("signature"))
       if( length(toadd) != 3 ) { # Add if signature is returned
         message_if_red(TRUE,paste0("Function ",nm," does not have a valid signature"))
-        return(0)
+        return(NULL)
       } else {
-        message( av_add_analytic(toadd[[1]],toadd[[2]],helpstr=toadd[[3]], delay_save_state=TRUE) )
-        return(1)
+        message( av_add_analytic(toadd[[1]],toadd[[2]],helpstr=toadd[[3]],
+                  delay_save_state=TRUE, message_str=paste(" from:",gsub(the_av$userfuncdir,"~",thisfn))) )
+        return(nm)
       }
     })
-    return(nadded)
+    return(fnadded)
   }
-  noverall <- sapply(allfiles, \(thisfn) check_fn(thisfn))
+  fileset_added <- list()
+  fileset_added[allfiles]  <- sapply(allfiles, \(thisfn) check_fn(thisfn))
   save_avs_state("the",msg="Added FUnction(s) using av_runShiny_addFunctions")
-  return(paste("Added ",sum(unlist(noverall))," functions from",fun_dir))
+  to_source <- names(Filter(\(x) length(x)>0, fileset_added))
+  to_source <- sapply(to_source, \(x) { message_if_red(TRUE,"sourcing: ",x); source(x) })
+  return(paste("Added ",length(purrr::list_flatten(fileset_added))," functions from",fun_dir))
 }
 
 # ==========================================================================================================
@@ -317,7 +327,7 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
 #' @export
 av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_data=FALSE, baddates_limits=3, verbosity="basic",
                            external_path=NULL) {
-  moneyn=yrwk=tfreq=ts=expcode=ov=open_interest=ask=bid=mark=iv=NULL
+  moneyn=yrwk=tfreq=ts=expcode=ov=open_interest=ask=bid=mark=iv=indtcopy=strike=ww=NULL
   eo_path <- paste0(the_av$cachedir,"/eqopt")
   closest_deltamap <- data.table(dcat=s("(-0.9,-0.75];(-0.75,-0.5];(-0.5,-0.25];(-0.25,-0.1];(-0.1,-0.05];(-0.05,0];(0,0.05];(0.05,0.1];(0.1,0.25];(0.25,0.5];(0.5,0.75];(0.75,0.9];NA"),
                          moneyn=s("P75;P50;P25;P10;P5;P0;C0;C5;C10;C25;C50;C75;NA"),
@@ -366,28 +376,40 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     eqopt_iv <- the_av$iv %||% data.table()
     interp_cols <- s("iv;strike;delta;theta")
     note_probs <- grepl("ivprobs",verbosity)
-    # thissymbol="IBM"; dtset <-c(as.Date("2026-09-24"),as.Date("2026-09-22"), as.Date("2026-09-21"))
+    cjset = CJ(dtoexp=dtoexpmap$dtoexp, delta=deltamap$cutlevel)
+
+    # ds <- arrow::open_dataset(paste0(the_av$cachedir,"/eqopt"),partitioning=c("symbol"))
+    # thissymbol="SPY"; dtset <-c(as.Date("2025-09-23")); one_symbol(thissymbol,dtset)
     one_symbol <- function(thissymbol,dtset, minobs=5) {
       dtoexp=iv=ivar=cutlevel=NULL
       message_if_green(grepl("all",verbosity),"Implied Vols:",thissymbol," from ",as.Date(min(dtset))," to ",as.Date(max(dtset)), " (",length(dtset)," days)")
       u1 <- ds |> dplyr::inner_join(data.table(ts=dtset)[,symbol:=thissymbol][], by=c("symbol","ts")) |> dplyr::collect() |> as.data.table()
+      cAssign("u1;thissymbol;dtset;cjset")
       one_iv <- function(indt) {
         # Approach 3: loess
         if( nrow(indt)<=minobs ) {
           message_if_red(note_probs,"iv: Need more than ",minobs, "obs for e.g. ",indt[[1,"contractid"]])
           return(data.table()) }
         oo <- tryCatch( {
-          cjset = CJ(dtoexp=dtoexpmap$dtoexp, delta=deltamap$cutlevel)
           if(max(indt$dtoexp)<=30) { return(data.table()) } # Not enough Expirations
-          iv.lo <- stats::loess(ivar ~ dtoexp + delta, data=indt)
-          k.lo <- stats::loess(strike ~ dtoexp + delta, data=indt)
-          oo <- cbindlist(list(cjset, data.table(ivvar=stats::predict(iv.lo,cjset), strike=stats::predict(k.lo,cjset))))
+
+#          indt_a <- indt[abs(delta)<0.95,.(dtoexp,delta,wv=iv*iv*dtoexp/365)]
+#          indttr <- dcast(indt_a,delta ~ dtoexp,fun.aggregate=\(x) last(c(NA_real_,x),1),value.var="wv")
+#          timeset <- as.numeric(names(indttr[,-1]))
+#          toi <- c(dtoexpmap$dtoexp,seq(91,by=1,length.out=14))
+#          w_interp <- interp2(timeset, indttr$delta, as.matrix(indttr[,-1]), xp=toi, yp=na.omit(deltamap$cutlevel), method="linear")
+          indt <- copy(indtcopy)
+          indt <- indt[abs(delta)<0.95 & dtoexp>0,.(dtoexp,delta,strike,type,wv=log(iv*iv*dtoexp/365))]
+          iv.lo <- stats::lm(wv ~ dtoexp + delta, data=indt[type=="call"])
+          k.lo <- stats::lm(strike ~ dtoexp + delta, data=indt[type=="call",])
+          oo <- cbindlist(list(cjset[delta>0,], data.table(ww=stats::predict(iv.lo,cjset[delta>0,]), strike=stats::predict(k.lo,cjset[delta>0,]))))
+          oo[,iv:=sqrt(exp(ww)*365/dtoexp)]
           oo <- dtoexpmap[oo,on=.(dtoexp)]
           oo <- deltamap[oo, on=.(cutlevel=delta)]
           oo$moneyn=as.factor(oo$moneyn)
-          oo <- oo[,iv:=sqrt(ivar)][,ivar:=NULL]
           oo <- oo[!is.na(iv)][,cutlevel:=NULL][]
-        }, error = function(e) { data.table()}, finally=data.table()
+          cAssign("oo")
+        }, error = function(e) { cAssign("e;cjset;indt"); data.table()}, finally=data.table()
         )
         return(oo)
       }
@@ -398,6 +420,7 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     if(replace_data==FALSE & nrow(eqopt_iv)>0) {
       todo_iv <- dt_todo_all[!eqopt_iv[,.N,by=.(symbol,ts)], on=.(symbol,ts)]
     }
+    cAssign("todo_iv;dt_todo_all;eqopt_iv")
     pb <- progress::progress_bar$new(format = paste0("AV IV  [:bar] :percent [:elapsed]"), total=length(tsymbols), clear = FALSE, width= 60)
     lastdt_iv <- lapply(tsymbols, \(x) {
       pb$tick();
@@ -436,13 +459,13 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     dtall <- data.table()
     t_max_requests_per_min<- as.numeric(the_av$max_requests_per_min)
     est_end_time <- Sys.time()+60*nrow(dt_todo_raw)/t_max_requests_per_min
-    message_if_red(TRUE," Estimated end time data collection from AV: ", format(est_end_time,"%H:%M"))
+    message_if_red(TRUE," Estimated end time data collection from AV: ", format(est_end_time,"%H:%M:%S"))
     for(s in tsymbols) {
       setTimeStamp("start_sym")
       indates <- dt_todo_raw[symbol==s,]$ts
       if(length(indates)>0) {
         message_if_red(grepl("basic|tim",verbosity),"Option data to get:",s," from ",as.Date(min(indates))," to ",as.Date(max(indates)), " (",length(indates)," days)",
-                      " (",round(est_end_time-Sys.time(),0)," mins to go)")
+                      " (",round(est_end_time-Sys.time(),0)," secs to go)")
         max_time <-  round(length(indates)/t_max_requests_per_min,2)
         pb <- progress::progress_bar$new(format = paste0("AV Options for ",s," [:bar] :percent [:elapsed] vs ",max_time," mins max"),
                                total = length(indates), clear = FALSE, width= 60)

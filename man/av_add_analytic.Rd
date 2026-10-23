@@ -9,6 +9,7 @@ av_add_analytic(
   func_name,
   helpstr = "user function",
   focus = "MAIN",
+  message_str = "",
   delay_save_state = FALSE
 )
 }
@@ -20,6 +21,8 @@ av_add_analytic(
 \item{helpstr}{(default: "user function"): A string comment to ad to the av.h (help) command}
 
 \item{focus}{(default: "MAIN")  String with tab name to set focus to when command is run}
+
+\item{message_str}{(default "") Additional string to add to output messages}
 
 \item{delay_save_state}{(default: FALSE) Do not save state to cache files.  Used for speed optimization}
 }
