@@ -10,6 +10,7 @@ av_add_analytic(
   func_name,
   helpstr = "user function",
   focus = "MAIN",
+  message_str = "",
   delay_save_state = FALSE
 )
 ```
@@ -34,6 +35,10 @@ av_add_analytic(
 
   (default: "MAIN") String with tab name to set focus to when command is
   run
+
+- message_str:
+
+  (default "") Additional string to add to output messages
 
 - delay_save_state:
 

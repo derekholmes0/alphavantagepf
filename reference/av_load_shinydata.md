@@ -5,7 +5,7 @@ Loads internal data (prices, earnings, etc.
 ## Usage
 
 ``` r
-av_load_shinydata(item = NULL, verbose = TRUE)
+av_load_shinydata(item = NULL, verbose = TRUE, addfuncs = TRUE)
 ```
 
 ## Arguments
@@ -19,6 +19,10 @@ av_load_shinydata(item = NULL, verbose = TRUE)
 - verbose:
 
   (default TRUE) write a status message to console
+
+- addfuncs:
+
+  (default TRUE) Readd and re-source any user defined functions
 
 ## Value
 

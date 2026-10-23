@@ -47,7 +47,7 @@ avpf_api_key("YOUR_API_KEY","delayed")
 print(avpf_api_key())
 #> [1] "YOUR_API_KEY" "delayed"
 avpf_set_request_pace(60)
-#> Setting Max requests per minute to 60
+#> Setting Max requests per minute to 60 and saving to constants
 #> NULL
 ```
 

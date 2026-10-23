@@ -7,13 +7,7 @@ internal data.
 ## Usage
 
 ``` r
-av_add_px(
-  indta = NULL,
-  assettypes = NULL,
-  equitylist = NULL,
-  dtstr = "-30y::",
-  delay = 0
-)
+av_add_px(indta = NULL, assettypes = NULL, equitylist = NULL, dtstr = "-30y::")
 ```
 
 ## Arguments
@@ -43,11 +37,6 @@ av_add_px(
 - dtstr:
 
   (default `"-30y::"`). Date range to download if applicable.
-
-- delay:
-
-  (default 0) Seconds to delay calls to determine asset type for future
-  AV downloads. This is unused if `assettypes` is given.
 
 ## Value
 
