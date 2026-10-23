@@ -1,6 +1,7 @@
 #source("./R/utilities.R")
-tver<-"0.9.21" # Should match DESCRIPTIONS
+tver<-"0.9.212" # Should match DESCRIPTIONS
 
+# 0.9.212: Fixed add_px problem and refactored file name handling and save/reset state.
 # 0.9.21:  Add user function dir to AVOPTS
 
 # todo:
@@ -319,7 +320,7 @@ av_make_server <- function() {
 
     observeEvent(input$istr1_enter, {
       rv <- isolate(reactiveValuesToList(input))
-      newts <- fifelse(file.exists(the_av$inv_fn), as.POSIXct( file.info(the_av$inv_fn)$mtime), Sys.time())
+      newts <- fifelse(file.exists(the_av$fn_list[["nonfst"]]), as.POSIXct( file.info(the_av$fn_list[["nonfst"]])$mtime), Sys.time())
       rv <- rapply(rv,stringr::str_squish,classes="character",how="replace")
       if(!grepl("^av",rv$istr1,ignore.case=TRUE)) {
         the_av$cmdhist <- rbindlist(list(the_av$cmdhist,data.table(cmd=rv$istr1,ts=Sys.time())), fill=TRUE,use.names=TRUE)

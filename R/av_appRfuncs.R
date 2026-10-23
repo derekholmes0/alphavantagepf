@@ -57,21 +57,21 @@ av_add_px <- function(indta=NULL,assettypes=NULL,equitylist=NULL,dtstr="-30y::")
     }
     symbolset <- unique(indta$symbol)
     dtstr <- paste0(min(indta$timestamp),"::")
-    # manage_px now updates inventory and saves
+    # manage_px now updates inventory and should save... not sure why not
     manage_px(symbolset,dtstr,substitute_data=indta,substitute_symset=assettypes)
   }
   else if (is.vector(s(equitylist))) {
     symbolset <- lapply(s(equitylist),\(x) manage_px(x,dtstr))
     symbolset <- s(equitylist)
-    newinv <- get_inv(symbolset,override_symset=assettypes)
-    the_av$pxinv <- DTUpsert(the_av$pxinv, newinv, c("symbol"),fill=TRUE)
-    save_avs_state("px",msg="av_add_px",ts_update=FALSE)
   }
   else {
     message_if_red(TRUE,"av_add_px: without any data or an equitylist, have nothing to do")
     return()
   }
   # need (symbol=TICKER,type="user",currency="USD",name=TICKER)
+  newinv <- get_inv(symbolset,override_symset=assettypes)[]
+  the_av$pxinv <- DTUpsert(the_av$pxinv, newinv, c("symbol"),fill=TRUE)
+  save_avs_state("the,nonpx",msg="av_add_px",ts_update=FALSE)
 }
 
 #' Add Earnings Data
@@ -384,7 +384,7 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
       dtoexp=iv=ivar=cutlevel=NULL
       message_if_green(grepl("all",verbosity),"Implied Vols:",thissymbol," from ",as.Date(min(dtset))," to ",as.Date(max(dtset)), " (",length(dtset)," days)")
       u1 <- ds |> dplyr::inner_join(data.table(ts=dtset)[,symbol:=thissymbol][], by=c("symbol","ts")) |> dplyr::collect() |> as.data.table()
-      cAssign("u1;thissymbol;dtset;cjset")
+      #cAssign("u1;thissymbol;dtset;cjset")
       one_iv <- function(indt) {
         # Approach 3: loess
         if( nrow(indt)<=minobs ) {

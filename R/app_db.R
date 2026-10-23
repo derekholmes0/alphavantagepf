@@ -389,23 +389,22 @@ redownload_all <- function() {
 restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
   pxinv=vartype=var=allnonfst=NULL
   if(skip) { return() }
-  # Filledin dfaults before
+  # defaults and non-fst datasets
   if(grepl("all|constants",todo) & file.exists(the_av$constants_fn)) {
     load(the_av$constants_fn, envir=the_av)
   }
-  if(!("inv_fn" %in% names(the_av))) {
+  if(!("fn_list" %in% names(the_av))) {
     message_if_red(TRUE,"NOTE: AVS state appears new and/or reset.  Skipping all other data restore operations, and run av_runShiny to start")
     return()
   }
-  if(grepl("all|inv",todo) & file.exists(the_av$inv_fn %||% "returnfalse")) {
-    load(the_av$inv_fn) # loads allnonfst
+  if(grepl("all|inv",todo) & file.exists(the_av$fn_list[["nonfst"]] %||% "returnfalse")) {
+    load(the_av$fn_list[["nonfst"]]) # loads allnonfst
     lapply(names(allnonfst),\(x) assign(x,allnonfst[[x]],envir=the_av))
   }
   if(grepl("all|px",todo)) {
-    px_names <- gsub("_fn","",avsd$defaults[vartype=="cache" & !(var=="inv_fn"),]$var)
-    rtn <- lapply(px_names, \(x) {
-      thisfn = get(paste0(x,"_fn"),envir=the_av)
-      assign(x, fst::read_fst(thisfn, as.data.table=TRUE), envir=the_av) # pxd, earn to fst
+    fst_names <- setdiff( names(the_av$fn_list), "nonfst")
+    rtn <- lapply(fst_names, \(x) {
+      assign(x, fst::read_fst(the_av$fn_list[[x]], as.data.table=TRUE), envir=the_av) # pxd, earn to fst
     })
   }
   if(nchar(the_av$av_dump_dir)>0) {
@@ -416,6 +415,7 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
     }
   }
   message_if_green(verbosity() & the_av$dbglvl>=2,"Restored state (",todo,") from ",the_av$cachedir, " ",msg)
+  return(NULL)
 }
 
 # =========================================================
@@ -431,31 +431,32 @@ save_avs_state <- function(todo="all",msg="", ts_update=TRUE) {
   classtype=rtn=vartype=var=NULL
   shortmsg <- ""
   # Price and earnings in one fst file, everythign else in inventory file
-  px_names <- gsub("_fn","",avsd$defaults[vartype=="cache" & !(var=="inv_fn"),]$var)
-  nonpx_names <-  dump_state()[classtype=="data.table" & !(nm %in% px_names),]$nm
+  fst_names <- setdiff( names(the_av$fn_list), "nonfst")
+  nonfst_names <-  dump_state()[classtype=="data.table" & !(nm %in% fst_names),]$nm
   if(grepl("all|nonpx",todo)) {
-    allnonfst <- setNames(lapply(nonpx_names,\(x) get(x,envir=the_av)), nonpx_names) # So we save a few extra things
-    save(allnonfst,file=the_av$inv_fn)
+    allnonfst <- setNames(lapply(nonfst_names,\(x) get(x,envir=the_av)), nonfst_names) # So we save a few extra things
+    save(allnonfst,file=the_av$fn_list[["nonfst"]])
     shortmsg <- paste(shortmsg,"nonfst")
   }
   if(grepl("all|px",todo)) {
     # Skip this if data is coming from OUTSIDE the app.  Login on command run will then reload the data
     if(ts_update) {
-      the_av$inv_fn_ts <- as.POSIXct( file.info(the_av$inv_fn)$mtime) # NO need to reload again...
+      the_av$inv_fn_ts <- as.POSIXct( file.info(the_av$fn_list[["nonfst"]])$mtime) # NO need to reload again...
     }
-    rtn <- lapply(px_names, \(x) {
-      thisfn = get(paste0(x,"_fn"),envir=the_av)
-      fst::write_fst(get(x,envir=the_av),thisfn,compress=20) # pxd, earn to fst
+    rtn <- lapply(fst_names, \(x) {
+      fst::write_fst(get(x,envir=the_av),the_av$fn_list[[x]],compress=20) # pxd, earn to fst
     })
     shortmsg <- paste(shortmsg," fst ")
   }
   if(grepl("all|the",todo)) {
-    unames <- setdiff(names(the_av),union(px_names,nonpx_names))
+    unames <- setdiff(names(the_av),union(fst_names,nonfst_names))
     save(list=unames,envir=the_av,file=the_av$constants_fn)
     shortmsg <- paste(shortmsg,"const")
   }
   create_msg<- fcoalesce( verbosity() && the_av$dbglvl>=2, TRUE)
-  message_if_green(create_msg,"Save State (",todo,") or (",shortmsg,") from '",msg,"' at ",format(Sys.time(),"%d-%H:%M%:S"))
+  msg_out <- paste0("Save State (",todo,") or (",shortmsg,") from '",msg,"' at ",format(Sys.time(),"%d-%H:%M%:S"))
+  message_if_green(create_msg,msg_out)
+  return(msg_out)
 }
 
 

@@ -19,32 +19,33 @@ av_reset_defaults <- function(fileopts=TRUE,keep_apikeys=FALSE,resetgrep="*") {
   if(keep_apikeys) {
     # also keep cachedirs
     defaultdf <- defaultdf[!data.table(var=s("avapikey;avapientitlement")),on=.(var)]
-  }
-  else {
+  } else {
     the_av$cachedir <- the_av$defaultcachedir
     if(!dir.exists(the_av$defaultcachedir)) {
       newd <- dir.create(the_av$defaultcachedir)
       message("Creating ",the_av$constants_fn)
     }
   }
-  for(i in seq(1,nrow(defaultdf))) {
-    ivartype <- defaultdf[i,]$vartype
-    ivarnm <- defaultdf[i,]$var
-    if(!(ivarnm=="cachedir")) {
-      if( ivartype=="cache" ) { ivarval <- paste0(the_av$cachedir,"/", defaultdf[i,get("value_str")]) }
-      else { ivarval <- defaultdf[i,get(paste0("value_",ivartype))] }
-      assign(ivarnm, ivarval, envir=the_av)
-    }
-  }
+# Made _fn entries
+#  for(i in seq(1,nrow(defaultdf))) {
+#    ivartype <- defaultdf[i,]$vartype
+#    ivarnm <- defaultdf[i,]$var
+#    if(!(ivarnm=="cachedir")) {
+#      if( ivartype=="cache" ) { ivarval <- paste0(the_av$cachedir,"/", defaultdf[i,get("value_str")]) }
+#      else { ivarval <- defaultdf[i,get(paste0("value_",ivartype))] }
+#      assign(ivarnm, ivarval, envir=the_av)
+#    }
+#  }
   # Tables that will get modified by users
   the_av$assetgroups <- data.table(listnm=c(rep("defaultIdx",3)),ticker=c("SPY","QQQ","DIA"), weight=c(0.34,0.33,0.33))
   the_av$avsh_funcs <- copy(avsd$def_avsh_funcs)
-  # Cached datasets: Non FST
+  # Cached datasets: Non FST, need to be initialized
   newdt <- lapply( s(avsd$defaults[var=="inv_otherdt",]$value_str), \(x) assign(x,data.table(),envir=the_av))
 
   # Cached datasets: FST
-  fst_dt <- gsub("_fn","",avsd$defaults[vartype=="cache" & !(var=="inv_fn"),]$var)
-  lapply(fst_dt, \(x) assign(x, data.table(), envir=the_av))
+  #fst_dt <- gsub("_fn","",avsd$defaults[vartype=="cache" & grepl("fst$",value_str),]$var)
+  lapply(s(avsd$defaults[var=="fn_list_fst",]$value_str), \(x) assign(x, data.table(), envir=the_av))
+  av_set_caching_directories()
 
   # Move files if you need
   if(fileopts==TRUE) {
@@ -76,17 +77,13 @@ av_set_default_set <- function(setset,rv,save="all") {
 }
 
 av_set_caching_directories <- function() {
-  vartype=NULL
-  toset <- avsd$defaults[vartype=="cache",]
-  for(i in seq(1,nrow(toset))) {
-    assign(toset[i,]$var, paste0(the_av$cachedir,"/", toset[i,get("value_str")]), envir=the_av)
-    dtname <- gsub("_fn","",toset[i,]$var)
-    if(!exists(dtname,envir=the_av)) { # Also hanbdled in reset_defaults
-      message("Creating: ",dtname)
-      assign(dtname,data.table(),envir=the_av)}
-  }
+  var=NULL
+  t_dir <- the_av$cachedir %||% the_av$defaultcachedir
+  fst_names <- s(avsd$defaults[var=="fn_list_fst",]$value_str)
+  fn_list <- setNames(paste0(t_dir,"/avpf_",fst_names,".fst"),fst_names)
+  fn_list[["nonfst"]] <- paste0(t_dir,"/avpf_nonfst.RD")
+  assign("fn_list",as.list(fn_list),envir=the_av)
 }
-
 
 #' Extract data from Alpha Vantage retuned data
 #'
