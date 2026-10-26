@@ -1,5 +1,5 @@
 # Minimal data needed to get Started
-if(!exists("the_av")) { the_av <- new.env(parent = emptyenv()) }
+if(!exists("the_av")) {  the_av <- new.env(parent = emptyenv()) }
 .onLoad <- function(libname, pkgname) {
   if(!exists("inv_fn_ts", envir=the_av)) {
     the_av$defaultcachedir <- gsub("\\","/",tools::R_user_dir("alphavantagepf", which = "cache"),fixed=TRUE)

@@ -49,16 +49,16 @@ av_help <- function(todo,rv) {
   # does this take too long?
   thistm <- system.time({
     rtnlist <- list(
-#      tortn |> gt(groupname_col="category",row_group_as_column = TRUE) |> gt.basetheme(interactive="filter") |> cols_move_to_start(columns=c(runcode,helpstr)) |>
-#                    cols_merge(columns=c(func_reqinput,func_opts), pattern = "{1}, {2}") |> cols_hide(columns=c(runcode2)) |>
-#                  add_colwidths("avh")
-      tortn |> gt()
+      tortn |> gt(groupname_col="category",row_group_as_column = TRUE) |> gt.basetheme(interactive="filter") |> cols_move_to_start(columns=c(runcode,helpstr)) |>
+                    cols_merge(columns=c(func_reqinput,func_opts), pattern = "{1}, {2}") |> cols_hide(columns=c(runcode2)) |>
+                  add_colwidths("avh")
       )
   })["elapsed"]
   if(grepl("showGeneralHelp",the_av$logopts)) {
     helptable <- avsd$generalhelp |> gt() |> gt.basetheme(sizepct=90) |> decorate_table() |>
                   tab_style(style=cell_text(font="Courier"),locations=cells_body(columns=c("Example/Choice"))) |>
                   fmt_url(columns=HelpComment,rows=grepl("http",HelpComment),label="FinanceGraphs Parameters and Events",color="blue")
+
     rtnlist=c(list(helptable),rtnlist)
   }
   return(rtnlist)

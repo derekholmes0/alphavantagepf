@@ -386,7 +386,7 @@ redownload_all <- function() {
 
 
 #' @noRd
-restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
+restore_avs_state <- function(todo="all",skip=FALSE,msg="",lazyloadnames="") {
   pxinv=vartype=var=allnonfst=NULL
   if(skip) { return() }
   # defaults and non-fst datasets
@@ -403,7 +403,15 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
   }
   if(grepl("all|px",todo)) {
     fst_names <- setdiff( names(the_av$fn_list), "nonfst")
+    fst_names <- setdiff(fst_names,s(avsd$defaults[var=="fn_list_lazy",]$value_str))
     rtn <- lapply(fst_names, \(x) {
+      assign(x, fst::read_fst(the_av$fn_list[[x]], as.data.table=TRUE), envir=the_av) # pxd, earn to fst
+    })
+  }
+  if(grepl("lazy",todo)) {
+    if(lazyloadnames=="") { lazyloadnames <- s(avsd$defaults[var=="fn_list_lazy",]$value_str) }
+    message_if_red(TRUE,"restore_avs_state restoring lazy loaded datasets ",s(lazyloadnames))
+    rtn <- lapply(s(lazyloadnames), \(x) {
       assign(x, fst::read_fst(the_av$fn_list[[x]], as.data.table=TRUE), envir=the_av) # pxd, earn to fst
     })
   }
@@ -420,30 +428,32 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="") {
 
 # =========================================================
 # save_avs_state:
-# in separate fst: price, eanings, earnings fcst
-# in inv.Rd : All other data.tables.  Some along for the ride
+# in separate fst: eleemts in fn_list
+# in nonfst.Rd : All other data.tables.  Some along for the ride
 # in constants: All non-data.tables in the_av
 # =========================================================
 
 #' @importFrom stats setNames
 #' @importFrom data.table fcoalesce
-save_avs_state <- function(todo="all",msg="", ts_update=TRUE) {
+save_avs_state <- function(todo="all",msg="", alt_fst_set=NULL, ts_update=TRUE) {
   classtype=rtn=vartype=var=NULL
   shortmsg <- ""
   # Price and earnings in one fst file, everythign else in inventory file
-  fst_names <- setdiff( names(the_av$fn_list), "nonfst")
+  fst_names <- alt_fst_set %||% setdiff( names(the_av$fn_list), "nonfst")
   nonfst_names <-  dump_state()[classtype=="data.table" & !(nm %in% fst_names),]$nm
   if(grepl("all|nonpx",todo)) {
     allnonfst <- setNames(lapply(nonfst_names,\(x) get(x,envir=the_av)), nonfst_names) # So we save a few extra things
     save(allnonfst,file=the_av$fn_list[["nonfst"]])
     shortmsg <- paste(shortmsg,"nonfst")
   }
-  if(grepl("all|px",todo)) {
+  if(grepl("all|px|fst",todo)) {
     # Skip this if data is coming from OUTSIDE the app.  Login on command run will then reload the data
     if(ts_update) {
       the_av$inv_fn_ts <- as.POSIXct( file.info(the_av$fn_list[["nonfst"]])$mtime) # NO need to reload again...
     }
+    fst_names <- intersect(fst_names,dump_state()[classtype=="data.table",]$nm) # Skip lazy loads if not there
     rtn <- lapply(fst_names, \(x) {
+      message("fst writing ",x);
       fst::write_fst(get(x,envir=the_av),the_av$fn_list[[x]],compress=20) # pxd, earn to fst
     })
     shortmsg <- paste(shortmsg," fst ")

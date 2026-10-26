@@ -13,9 +13,11 @@
 ## New Features
 
 * Option database maintenance using Arrow
+  - Lazy loading of implied volatility data
+  
 * Options page has setting for user functions directory
   - `av_load_shinydata()` now adds all user functions in a given directory
-  - New Functions added to separate GitHub repository.
+  - New Functions added to separate [GitHub repository](https://github.com/derekholmes0/avpfshinyFuncs)
 
 # alphavantagepf 0.9.1
 

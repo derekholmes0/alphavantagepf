@@ -10,6 +10,7 @@ ochains,str,optsearch,"F,M,C,otm",,
 otodisplay,str,optsearch,reduced,,
 oscaling,str,optsearch,None,,
 omindelta,num,optsearch,,,5
+fn_list_lazy,,,iv;iv_nearest,,
 fn_list_fst,str,,pxd;earn;earnest;iv;iv_nearest,,
 inv_otherdt,str,,assetgroups;avsh_funcs;cmdhist;listings;pxinv;renderset;tickerlist,,
 av_dump_dir,str,setopts,,,

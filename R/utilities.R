@@ -108,11 +108,13 @@ partition_path <- function(base_path, keys) {
 #' @importFrom arrow open_dataset write_dataset
 #' @importFrom dplyr filter collect
 #' @importFrom purrr imap
-upsert_DT_arrow <- function(new_data, part_path, dst=NULL, partition_keys="symbol", dt_keys = NULL) {
+upsert_DT_arrow <- function(new_data, part_path, dst=NULL, partition_keys="symbol", dt_keys = NULL, use_progress_bar=TRUE) {
   imap=NULL
-  # unique combinations of partition key values present in new_data
-  key_combos <- unique(new_data[, .SD, .SDcols=partition_keys])
+  key_combos <- unique(new_data[, .SD, .SDcols=partition_keys]) # unique combinations of partition key values present in new_data
   all_keys <- union(partition_keys, dt_keys)
+  if(use_progress_bar) {
+    pb <- progress::progress_bar$new(format = "arrow upsert:  [:bar] :percent [:elapsed]", total = nrow(key_combos), clear = FALSE, width= 60)
+  }
   for (i in seq_len(nrow(key_combos))) {
     vals <- as.list(key_combos[i])
     expanded_part_path <- partition_path(part_path, unlist(vals))
@@ -120,6 +122,7 @@ upsert_DT_arrow <- function(new_data, part_path, dst=NULL, partition_keys="symbo
     exprs <- purrr::imap(vals, ~ expr(.data[[.y]] == !!.x))
     if (dir.exists(expanded_part_path)) {
       if(is.null(dst)) { dst <- arrow::open_dataset(part_path,format = "parquet", partitioning=partition_keys) }
+      message(" > udta: ",exprs)
       existing <- dst |> dplyr::filter(!!!exprs) |> dplyr::collect() |> as.data.table()
       new_rows <- new_data[key_combos[i], on = partition_keys]
       merged <- rbindlist(list(existing, new_rows), fill = TRUE)
@@ -129,10 +132,11 @@ upsert_DT_arrow <- function(new_data, part_path, dst=NULL, partition_keys="symbo
       merged <- new_data[key_combos[i], on = partition_keys]
     }
     setorderv(merged, all_keys)
-    arrow::write_dataset(merged, expanded_part_path, format = "parquet", existing_data_behavior = "delete_matching" )
-    #write_parquet(merged, expanded_part_path)
+    arrow::write_dataset(merged, expanded_part_path, partition=partition_keys, format = "parquet", existing_data_behavior = "delete_matching" )
+    if(use_progress_bar) { pb$tick() }
   }
   setkeyv(new_data, union(partition_keys, dt_keys))
+  if(use_progress_bar) { pb$terminate() }
   return(new_data)
   # Must reopen ds to refresh
 }
@@ -153,8 +157,9 @@ lineAssign<-function(xline) {
 
 #' @noRd
 print_time <- function(timelist,startnm,endnm,msg="") {
+  timediff <- round(difftime(timelist[[endnm]],timelist[[startnm]],units="secs"),2)
   if(all(c(startnm,endnm) %in% names(timelist))) {
-    return(paste0(msg, ":",round(difftime(timelist[[endnm]],timelist[[startnm]],units="secs"),2)))
+    return(ifelse(nchar(msg)>1,paste0(msg, ":",timediff),timediff))
   }
 }
 

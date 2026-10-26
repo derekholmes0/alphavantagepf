@@ -122,6 +122,7 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=
 #' @param item Any data name as seen by running [dump_state()].  **If blank, loads entire database**
 #' @param verbose (default TRUE) write a status message to console
 #' @param addfuncs (default TRUE) Readd and re-source any user defined functions
+#' @param restore_lazy (default FALSE) Also restore all lazy data
 #' @returns Data item specified by `item` or a nothing (but a message) if left blank
 #' @seealso [av_runShiny()]
 #' @export
@@ -177,6 +178,7 @@ av_add_assetgroups <- function(indta) {
 #' @param func_name Name of function run when analytic is called.  **If an empty string is supplied, the runcode will be de-registered.**
 #' @param helpstr (default: "user function"): A string comment to ad to the av.h (help) command
 #' @param focus (default: "MAIN")  String with tab name to set focus to when command is run
+#' @param data_req (default: "pxd;earn;earnest")  A semicolon list of required data tables.  Used for Lazy data loading.
 #' @param delay_save_state (default: FALSE) Do not save state to cache files.  Used for speed optimization
 #' @param message_str (default "") Additional string to add to output messages
 #' @returns String message with success or failure of function addition.
@@ -205,7 +207,7 @@ av_add_assetgroups <- function(indta) {
 #' # From the app: run "av.h"
 #' }
 #' @export
-av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAIN",
+av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAIN",data_req="pxd;earn;earnest",
                             message_str="", delay_save_state=FALSE) {
   runcode=toupper(runcode)
   msg <- paste0(" function ",func_name," to Command Line functions as code ",runcode," ",message_str)
@@ -224,7 +226,7 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
     message_if_red(TRUE,"Invalid function name: ",func_name," skipping operation")
     return()
   }
-  new_analytics <- data.table(category="user",runcode=runcode, func_src="user", func_name=func_name, focus=focus, helpstr=helpstr)
+  new_analytics <- data.table(category="user",runcode=runcode, func_src="user", func_name=func_name, focus=focus, data_req=data_req, helpstr=helpstr)
   the_av$avsh_funcs <- DTUpsert(the_av$avsh_funcs,new_analytics,keys=c("runcode"),fill=TRUE)
   if(!delay_save_state) {   save_avs_state("all",msg=paste0("Add FUnction ",runcode)) }
   return(paste0("av_add_analytic: ",msg," at ",format(Sys.time(),"%d-%H:%M%:%S")))
@@ -238,15 +240,19 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
 #' @param fun_dir Directory containing functions with input signatures to add
 #' @returns Nothing
 #' @details  Each file will be read in the specified directory and any function with a valid signature will be added to the list of available functions in the shiny app.
-#' The function signature is a call to the function with a single argument "signature" which returns a list of three items: 1) a short name for the function, 2)
-#' the function name, and 3) a help string for the function.  If those conditions obtain, the function will be added to [av_runShiny()]
+#' The function signature is a call to the function with a single argument "signature" which returns a list of four items:
+#' 1) a short name for the function,
+#' 2) the function name,
+#' 3) a help string for the function.
+#' 4) A semicolon delimited list of data tables necessary to run the function.  Used for Lazy Loading
+#' If those conditions obtain, the function will be added to [av_runShiny()]
 #' @importFrom purrr list_flatten
 #' @export
 av_runShiny_addFunctions <- function(fun_dir=NULL) {
   if(is.null(fun_dir) || !dir.exists(fun_dir) ) {
     return("No Additional functions")
   }
-  message_if_red(TRUE,"av_runShiny_addFunctions 0.3 gathering functions from", fun_dir)
+  message_if_red(TRUE,"av_runShiny_addFunctions 0.4 gathering functions from", fun_dir)
   allfiles <-list.files(fun_dir,pattern="*\\.r",ignore.case=TRUE,full.names=TRUE)
   is_fn_def_with_params <- function(e, params = c("todo", "rv")) {
     if (!(is.call(e) &&
@@ -266,11 +272,11 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
     fn_names <- sapply(matching_exprs, function(e) as.character(e[[2]]))
     fnadded<- lapply(fn_names, \(nm) {
       toadd <- do.call(nm,list("signature"))
-      if( length(toadd) != 3 ) { # Add if signature is returned
+      if( length(toadd) != 4 ) { # Add if signature is returned
         message_if_red(TRUE,paste0("Function ",nm," does not have a valid signature"))
         return(NULL)
       } else {
-        message( av_add_analytic(toadd[[1]],toadd[[2]],helpstr=toadd[[3]],
+        message( av_add_analytic(toadd[[1]],toadd[[2]],helpstr=toadd[[3]],data_req=toadd[[4]],
                   delay_save_state=TRUE, message_str=paste(" from:",gsub(the_av$userfuncdir,"~",thisfn))) )
         return(nm)
       }
@@ -328,6 +334,7 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
 av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_data=FALSE, baddates_limits=3, verbosity="basic",
                            external_path=NULL) {
   moneyn=yrwk=tfreq=ts=expcode=ov=open_interest=ask=bid=mark=iv=indtcopy=strike=ww=NULL
+  restore_avs_state("lazy",lazyloadnames="iv;iv_nearest")
   eo_path <- paste0(the_av$cachedir,"/eqopt")
   closest_deltamap <- data.table(dcat=s("(-0.9,-0.75];(-0.75,-0.5];(-0.5,-0.25];(-0.25,-0.1];(-0.1,-0.05];(-0.05,0];(0,0.05];(0.05,0.1];(0.1,0.25];(0.25,0.5];(0.5,0.75];(0.75,0.9];NA"),
                          moneyn=s("P75;P50;P25;P10;P5;P0;C0;C5;C10;C25;C50;C75;NA"),
@@ -356,13 +363,16 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
   freqmap <- data.table(tfreq=s("d;w;m"),freqcol=s("DT_ENTRY;yrwk;yrmo"))
   t_dates <- dtmap[isbday==TRUE & DT_ENTRY<Sys.Date(),.(DT_ENTRY,yrwk,yrmo)] |> narrowbydtstr(dtstr)
   t_dates<- t_dates[,.SD[.N], by=get(freqmap[tfreq==freq,]$freqcol)][order(-DT_ENTRY)]
+  # all: CJ of what could be done, raw: What needs to be done that isnt in datelist, loaded, what is in datelist
   dt_todo_all <- CJ(symbol=tsymbols,ts=t_dates$DT_ENTRY,sorted=FALSE)
   dt_todo_raw <- copy(dt_todo_all)
   if(nrow(eqoptinv[["datelist"]])>0) {
     dt_todo_raw <- eqoptinv[["datelist"]][dt_todo_all,on=.(symbol,ts)][is.na(n) | replace_data==TRUE]
-  }
+    dt_todo_loaded <- eqoptinv[["datelist"]][dt_todo_all,on=.(symbol,ts)][!is.na(n)]
+    }
   timelist <- list()
-  setTimeStamp <- function(x) {  timelist[[x]] = Sys.time()}
+  setTimeStamp <- function(x) {  timelist[[x]] <<- Sys.time(); }
+
   if(todo=="todo") {
     return(dt_todo_raw)
   }
@@ -377,7 +387,6 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     interp_cols <- s("iv;strike;delta;theta")
     note_probs <- grepl("ivprobs",verbosity)
     cjset = CJ(dtoexp=dtoexpmap$dtoexp, delta=deltamap$cutlevel)
-
     # ds <- arrow::open_dataset(paste0(the_av$cachedir,"/eqopt"),partitioning=c("symbol"))
     # thissymbol="SPY"; dtset <-c(as.Date("2025-09-23")); one_symbol(thissymbol,dtset)
     one_symbol <- function(thissymbol,dtset, minobs=5) {
@@ -420,7 +429,7 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     if(replace_data==FALSE & nrow(eqopt_iv)>0) {
       todo_iv <- dt_todo_all[!eqopt_iv[,.N,by=.(symbol,ts)], on=.(symbol,ts)]
     }
-    cAssign("todo_iv;dt_todo_all;eqopt_iv")
+    #cAssign("todo_iv;dt_todo_all;eqopt_iv")
     pb <- progress::progress_bar$new(format = paste0("AV IV  [:bar] :percent [:elapsed]"), total=length(tsymbols), clear = FALSE, width= 60)
     lastdt_iv <- lapply(tsymbols, \(x) {
       pb$tick();
@@ -428,44 +437,44 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
       one_symbol(x,todo_iv[symbol==x,]$ts)
       })
     the_av$iv <-DTUpsert(eqopt_iv,rbindlist(lastdt_iv,fill=TRUE),s("symbol;ts;expcode;moneyn"),fill=TRUE)
-    save_avs_state("px",msg="Implied surfaces created")
+    save_avs_state("the,fst",alt_fst_set="iv",msg="Implied surfaces created")
   }
   if(todo=="iv_nearest") {
     eqopt_ivn <- the_av$iv_nearest %||% data.table()
     deltaset <- closest_deltamap$cutlevel
     deltalabels <- closest_deltamap[!(moneyn=="NA"),]$moneyn
 
-    # thissymbol="IBM"; dtset <-c(as.Date("2026-09-24"),as.Date("2026-09-22"), as.Date("2026-09-21"))
+    # Original approach: Just find option that is closest to the delta
     one_symbol_n <- function(thissymbol,dtset) {
       message_if_green(grepl("all",verbosity),"Implied Vols:",thissymbol," from ",as.Date(min(dtset))," to ",as.Date(max(dtset)), " (",length(dtset)," days)")
-      u1 <- ds |> dplyr::inner_join(data.table(ts=dtset)[,symbol:=thissymbol][], by=c("symbol","ts")) |> dplyr::collect() |> as.data.table()
-      # Original approach: Just find option that is closest to the delta
+      # FOllowing paradigm is fastest, by far
+      u1 <- ds |> filter(symbol==thissymbol) |> dplyr::inner_join(data.frame(ts=dtset), by="ts") |>  dplyr::collect() |> as.data.table()
       u1 <- u1[,moneyn:=cut(delta,deltaset,labels=deltalabels)][!is.na(moneyn)]
       thisiv_call <- u1[type=="call",][,.SD[.N], by=.(symbol,ts,expcode,type,moneyn)]
       thisiv_put <- u1[type=="put",][,.SD[1], by=.(symbol,ts,expcode,type,moneyn)]
       return(rbindlist(list(thisiv_call,thisiv_put)))
       }
-    todo_iv <- dt_todo_all
+    todo_iv <- dt_todo_loaded
     if(replace_data==FALSE & nrow(eqopt_ivn)>0) {
-      todo_iv <- dt_todo_all[!eqopt_ivn[,.N,by=.(symbol,ts)], on=.(symbol,ts)]
+      todo_iv <- todo_iv[!eqopt_ivn[,.N,by=.(symbol,ts)], on=.(symbol,ts)]
     }
     pb <- progress::progress_bar$new(format = paste0("AV IV NEAR  [:bar] :percent [:elapsed]"), total=length(tsymbols), clear = FALSE, width= 60)
-    lastdt_iv <- lapply(tsymbols, \(x) { pb$tick(); one_symbol_n(x,todo_iv[symbol==x,]$ts) } )
+    symbols_todo <- unique(todo_iv$symbol)
+    lastdt_iv <- lapply(symbols_todo, \(x) { pb$tick(); one_symbol_n(x,todo_iv[symbol==x,]$ts) } )
     eqopt_ivn <- DTUpsert(eqopt_ivn,rbindlist(lastdt_iv),s("symbol;ts;expcode;moneyn;type"),fill=TRUE)
     the_av$iv_nearest <- eqopt_ivn
-    save_avs_state("px",msg="Implied nearest options created")
+    save_avs_state("fst",alt_fst_set="iv_nearest",msg="Implied nearest options created")
   }
   if(todo=="update") {
     dtall <- data.table()
     t_max_requests_per_min<- as.numeric(the_av$max_requests_per_min)
-    est_end_time <- Sys.time()+60*nrow(dt_todo_raw)/t_max_requests_per_min
-    message_if_red(TRUE," Estimated end time data collection from AV: ", format(est_end_time,"%H:%M:%S"))
+    timelist[["est_end_time"]] <- NULL
     for(s in tsymbols) {
       setTimeStamp("start_sym")
       indates <- dt_todo_raw[symbol==s,]$ts
       if(length(indates)>0) {
         message_if_red(grepl("basic|tim",verbosity),"Option data to get:",s," from ",as.Date(min(indates))," to ",as.Date(max(indates)), " (",length(indates)," days)",
-                      " (",round(est_end_time-Sys.time(),0)," secs to go)")
+                       print_time(timelist,"start_sym","est_end_time",msg=", Secs Left") )
         max_time <-  round(length(indates)/t_max_requests_per_min,2)
         pb <- progress::progress_bar$new(format = paste0("AV Options for ",s," [:bar] :percent [:elapsed] vs ",max_time," mins max"),
                                total = length(indates), clear = FALSE, width= 60)
@@ -483,18 +492,20 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
         }
         dtall <- rbindlist(list(dtall,dtnew),fill=TRUE)
         setTimeStamp("end_sym")
+        if ( is.null(timelist[["est_end_time"]])) {
+          timelist[["est_end_time"]] <- Sys.time()+length(tsymbols)*print_time(timelist,"start_sym","end_sym")
+          message_if_red(TRUE," Estimated end time data collection from AV: ", format(timelist[["est_end_time"]],"%H:%M:%S"))
+        }
         message_if(grepl("tim",verbosity),"Option Symbol: ",s," gathered in ",print_time(timelist,"start_sym","end_sym"))
       }
     }
-    if(nrow(dtall)<=0) {
-      message_if_red(TRUE," Symbols ",paste(tsymbols,collapse=","),": NOTHING TO UPDATE .. ")
-      return()
-    }
+    message_if_red(nrow(dtall)<=0," Symbols ",paste(tsymbols,collapse=","),": NOTHING TO UPDATE .. ") && return();
     setTimeStamp("start_upsert")
     message_if_red(grepl("basic",verbosity),"Option update: Adding ",nrow(dtall)," rows to partitioned parquet set")
     addedopts <- upsert_DT_arrow( dtall, eo_path, dst=ds, partition_keys="symbol",dt_keys=c("ts","contractid"))
     setTimeStamp("end_upsert")
-    message_if_green(grepl("tim",verbosity),"Returned ",nrow(addedopts)," new options, refreshing inventory, took ",print_time(timelist,"start_upsert","end_upsert"))
+    pb$terminate()
+    message_if_green(grepl("tim|basic",verbosity),"Returned ",nrow(addedopts)," new options, refreshing inventory, took ",print_time(timelist,"start_upsert","end_upsert")," secs")
   }
   # Create invntory structures
   if(todo=="update" | todo=="inventory" | todo=="reconstruct_inventory") {
@@ -503,16 +514,24 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     if(todo=="reconstruct_inventory") {
       eqoptinv <- optdb_inventory(ds)
     }
-    else {
+    else if (todo=="update") {  # ALready have new data in dtall, 1 sec vs 60 secs
+      lastdates <- dtall[,.(new_max_DT_ENTRY=as.Date(max(ts))),by=.(symbol)]
+      eqoptinv[["datelist"]] <- DTUpsert(eqoptinv[["datelist"]],  dtall[,.(n=.N),by=.(symbol,ts)], c("symbol","ts"),fill=TRUE)
+      eqoptinv[["inv"]] <- lastdates[ eqoptinv[["inv"]], on=.(symbol)][,
+                          let(max_DT_ENTRY=fifelse(is.null(new_max_DT_ENTRY),max_DT_ENTRY,new_max_DT_ENTRY)), by=.I][,
+                          new_max_DT_ENTRY:=NULL][]
+      eqoptinv[["last"]] <- dtall[lastdates,on=c("symbol",c("ts"="new_max_DT_ENTRY"))]
+    }
+    else { # Create from scratch
       eqoptinv_toadd <- optdb_inventory(ds, tsymbols)
       eqoptinv[["datelist"]] <- DTUpsert(eqoptinv[["datelist"]], eqoptinv_toadd[["datelist"]], c("symbol","ts"),fill=TRUE)
       eqoptinv[["inv"]] <- DTUpsert(eqoptinv[["inv"]], eqoptinv_toadd[["inv"]], c("symbol"),fill=TRUE)
-      eqoptinv[["last"]] <- DTUpsert(eqoptinv[["last"]], eqoptinv_toadd[["last"]], c("symbol"),fill=TRUE)
+      eqoptinv[["last"]] <- DTUpsert(eqoptinv[["last"]], eqoptinv_toadd[["last"]], c("symbol","contractid"),fill=TRUE)
     }
     the_av$eqoptinv <- copy(eqoptinv)
-    save_avs_state("all",msg="Implied surfaces created")
+    save_avs_state("the",msg="Update Options")
     setTimeStamp("end_inventory")
-    message_if_green(grepl("tim",verbosity),"Updated option inventory in ",print_time(timelist,"end_upsert","end_inventory"))
+    message_if_green(grepl("tim|basic",verbosity),"Updated option inventory in ",print_time(timelist,"end_upsert","end_inventory"))
   }
   # Get a summarized data.table of inventory
   if(todo=="getinv") {
@@ -536,14 +555,14 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
 # optchain = getData.optchain("QQQ",opttypegrep="put",grepstring="activeotmfrontmo",pctlimit=0.25)
 
 #' @noRd
-getData.optchain_all <- function(ticker,spot=NULL,expiration=NULL,rtn="",indate=NULL,verbose=FALSE,delay=0) {
+getData.optchain_all <- function(ticker,spot=NULL,expiration=NULL,rtn="",indate=NULL,verbose=FALSE) {
   iv=ts=strike=mark=NULL
   timelist = list()
   setTimeStamp <- function(x) {  timelist[[x]] = Sys.time()}
   chaindt = data.table()
   chaindt_bad = list()
   setTimeStamp("optchainstart")
-  chaindta = alphavantagepf::av_get_pf(ticker,"HISTORICAL_OPTIONS",date=indate,verbose=FALSE,delay=delay)
+  chaindta = alphavantagepf::av_get_pf(ticker,"HISTORICAL_OPTIONS",date=indate,verbose=FALSE)
   if( message_if(nrow(chaindta)<=0, paste0("AV_optchain(",ticker,"/",indate,") empty return")) ) {  return(data.table()) }
   if( message_if("value_str" %in% colnames(chaindta),
                  paste("AV_optchain(",ticker,"/",indate,") err:", chaindta[variable %in% c("message","Information"),]$value_str) )) {  return(data.table()) }

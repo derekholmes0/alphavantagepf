@@ -1,6 +1,8 @@
 #source("./R/utilities.R")
-tver<-"0.9.212" # Should match DESCRIPTIONS
+tver<-"0.9.213" # Should match DESCRIPTIONS
 
+
+# 0.9.213: Lazy Loading
 # 0.9.212: Fixed add_px problem and refactored file name handling and save/reset state.
 # 0.9.21:  Add user function dir to AVOPTS
 
@@ -266,7 +268,7 @@ av_make_server <- function() {
           av_set_defaults("av_dump_dir",newcache)
       }
       av_set_defaults("starttab","main")
-      av_set_defaults("max_requests_per_min",rv$requestpace)
+      av_set_defaults("max_requests_per_min",as.numeric(rv$requestpace))
       # Add New Functions
       av_set_defaults("userfuncdir",rv$userfuncdir)
       av_runShiny_addFunctions(the_av$userfuncdir)
@@ -366,6 +368,10 @@ av_make_server <- function() {
       if( !exists(runfunc_set$func_name,envir=tenv)) {
         quick_message(paste0("Function Code not found for ",runfunc_set$func_name),color="red")
         return()
+      }
+      # Load lazy data needed, new 261023
+      if( length(lazy_load <- intersect(s(runfunc_set$data_req), s(avsd$defaults[var=="fn_list_lazy",]$value_str)) )>0) {
+        restore_avs_state("lazy",lazyloadnames=lazy_load)
       }
       # ---- General Magick here:
       outres <- do.call(runfunc_set$func_name, list(todo,rv), envir=tenv)

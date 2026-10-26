@@ -80,6 +80,7 @@ av_runShiny <- function() {
     the_av$avsh_funcs <- copy(avsd$def_avsh_funcs)
     save_avs_state("all",msg="I N I T")
   }
+  invisible(as_raw_html(gt(data.frame(x = 1)), inline_css = FALSE))
   the_av$do_on_start <- TRUE
   the_av$inv_fn_ts <- fifelse(file.exists(the_av$fn_list[["nonfst"]]), as.POSIXct( file.info(the_av$fn_list[["nonfst"]])$mtime), Sys.time())
   av_runShiny_addFunctions(the_av$userfuncdir)
