@@ -122,7 +122,6 @@ upsert_DT_arrow <- function(new_data, part_path, dst=NULL, partition_keys="symbo
     exprs <- purrr::imap(vals, ~ expr(.data[[.y]] == !!.x))
     if (dir.exists(expanded_part_path)) {
       if(is.null(dst)) { dst <- arrow::open_dataset(part_path,format = "parquet", partitioning=partition_keys) }
-      message(" > udta: ",exprs)
       existing <- dst |> dplyr::filter(!!!exprs) |> dplyr::collect() |> as.data.table()
       new_rows <- new_data[key_combos[i], on = partition_keys]
       merged <- rbindlist(list(existing, new_rows), fill = TRUE)
@@ -132,7 +131,8 @@ upsert_DT_arrow <- function(new_data, part_path, dst=NULL, partition_keys="symbo
       merged <- new_data[key_combos[i], on = partition_keys]
     }
     setorderv(merged, all_keys)
-    arrow::write_dataset(merged, expanded_part_path, partition=partition_keys, format = "parquet", existing_data_behavior = "delete_matching" )
+    #arrow::write_dataset(merged, expanded_part_path, partition=partition_keys, format = "parquet", existing_data_behavior = "delete_matching" )
+    arrow::write_dataset(merged, expanded_part_path, format = "parquet", existing_data_behavior = "delete_matching" )
     if(use_progress_bar) { pb$tick() }
   }
   setkeyv(new_data, union(partition_keys, dt_keys))
@@ -162,7 +162,6 @@ print_time <- function(timelist,startnm,endnm,msg="") {
     return(ifelse(nchar(msg)>1,paste0(msg, ":",timediff),timediff))
   }
 }
-
 
 
 sAssign<-function(x,...) { cAssign(x,copytodisk=TRUE,pframe=4,...)}

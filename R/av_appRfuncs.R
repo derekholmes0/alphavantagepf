@@ -1,4 +1,3 @@
-#' Add Price or Time Series Data
 #'
 #' @name av_add_px
 #' @title Add or download Price or Time Series Data
@@ -167,7 +166,7 @@ av_add_assetgroups <- function(indta) {
   restore_avs_state("constants")
   the_av$assetgroups <- DTUpsert(the_av$assetgroups,indta,c("listnm"))
   the_av$assetgroups <- the_av$assetgroups[nchar(ticker)>0,]
-  save_avs_state("all",msg="add_assetgroups")
+  save_avs_state("the,nonpx",msg="add_assetgroups")
 }
 
 #' Adds or removes a new command to the av_runShiny app
@@ -216,7 +215,7 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
     if( nchar(func_name)<=0) {
       msg <- paste0(runcode, " removed from function list")
       the_av$avsh_funcs <- the_av$avsh_funcs[!runcode==runcode,]
-      save_avs_state("all",msg="Remove function")
+      save_avs_state("the,nonpx",msg="Remove function")
     }
     else {
       msg <- paste0(runcode, " registered: Code replaced ",message_str)
@@ -334,7 +333,6 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
 av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_data=FALSE, baddates_limits=3, verbosity="basic",
                            external_path=NULL) {
   moneyn=yrwk=tfreq=ts=expcode=ov=open_interest=ask=bid=mark=iv=indtcopy=strike=ww=NULL
-  restore_avs_state("lazy",lazyloadnames="iv;iv_nearest")
   eo_path <- paste0(the_av$cachedir,"/eqopt")
   closest_deltamap <- data.table(dcat=s("(-0.9,-0.75];(-0.75,-0.5];(-0.5,-0.25];(-0.25,-0.1];(-0.1,-0.05];(-0.05,0];(0,0.05];(0.05,0.1];(0.1,0.25];(0.25,0.5];(0.5,0.75];(0.75,0.9];NA"),
                          moneyn=s("P75;P50;P25;P10;P5;P0;C0;C5;C10;C25;C50;C75;NA"),
@@ -377,12 +375,8 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     return(dt_todo_raw)
   }
   setTimeStamp("start")
-  if(todo=="inventory") {
-    eqoptinv <- optdb_inventory(ds)
-    the_av$eqoptinv <- copy(eqoptinv)
-    return("Inventory created")
-  }
   if(todo=="iv") { # Takes over an hour for small set
+    restore_avs_state("lazy",lazyloadnames="iv")
     eqopt_iv <- the_av$iv %||% data.table()
     interp_cols <- s("iv;strike;delta;theta")
     note_probs <- grepl("ivprobs",verbosity)
@@ -429,7 +423,6 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     if(replace_data==FALSE & nrow(eqopt_iv)>0) {
       todo_iv <- dt_todo_all[!eqopt_iv[,.N,by=.(symbol,ts)], on=.(symbol,ts)]
     }
-    #cAssign("todo_iv;dt_todo_all;eqopt_iv")
     pb <- progress::progress_bar$new(format = paste0("AV IV  [:bar] :percent [:elapsed]"), total=length(tsymbols), clear = FALSE, width= 60)
     lastdt_iv <- lapply(tsymbols, \(x) {
       pb$tick();
@@ -440,6 +433,7 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     save_avs_state("the,fst",alt_fst_set="iv",msg="Implied surfaces created")
   }
   if(todo=="iv_nearest") {
+    restore_avs_state("lazy",lazyloadnames="iv_nearest")
     eqopt_ivn <- the_av$iv_nearest %||% data.table()
     deltaset <- closest_deltamap$cutlevel
     deltalabels <- closest_deltamap[!(moneyn=="NA"),]$moneyn
@@ -467,7 +461,6 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
   }
   if(todo=="update") {
     dtall <- data.table()
-    t_max_requests_per_min<- as.numeric(the_av$max_requests_per_min)
     timelist[["est_end_time"]] <- NULL
     for(s in tsymbols) {
       setTimeStamp("start_sym")
@@ -475,8 +468,7 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
       if(length(indates)>0) {
         message_if_red(grepl("basic|tim",verbosity),"Option data to get:",s," from ",as.Date(min(indates))," to ",as.Date(max(indates)), " (",length(indates)," days)",
                        print_time(timelist,"start_sym","est_end_time",msg=", Secs Left") )
-        max_time <-  round(length(indates)/t_max_requests_per_min,2)
-        pb <- progress::progress_bar$new(format = paste0("AV Options for ",s," [:bar] :percent [:elapsed] vs ",max_time," mins max"),
+        pb <- progress::progress_bar$new(format = paste0("AVOpt:",s," (",min(indates),"::",max(indates),")"," [:bar] :percent [:elapsed]"),
                                total = length(indates), clear = FALSE, width= 60)
         dtnew <- data.table() #much as I love lapply here, need to cancel early if options didn't trade
         nconseq_nulls <- 0
@@ -485,7 +477,7 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
           pb$tick()
           nconseq_nulls <- nconseq_nulls + fifelse(nrow(opt_for_one_date)<=0,1,0)
           if(nconseq_nulls>baddates_limits) {
-            message_if_red(TRUE,"mange_optdb_arrow: ",s," has ",nconseq_nulls," conseq days with no options, skipping the rest")
+            message_if_red(TRUE,"mange_optdb_arrow: ",s," has ",nconseq_nulls," conseq requests with no options, skipping the rest")
             break
           }
           dtnew <- rbindlist(list(dtnew,opt_for_one_date))
@@ -494,15 +486,17 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
         setTimeStamp("end_sym")
         if ( is.null(timelist[["est_end_time"]])) {
           timelist[["est_end_time"]] <- Sys.time()+length(tsymbols)*print_time(timelist,"start_sym","end_sym")
-          message_if_red(TRUE," Estimated end time data collection from AV: ", format(timelist[["est_end_time"]],"%H:%M:%S"))
+          message_if_red(TRUE," Now: ",format(Sys.time(),"%H:%M:%S")," Estimated end time data collection from AV: ", format(timelist[["est_end_time"]],"%H:%M:%S"))
         }
         message_if(grepl("tim",verbosity),"Option Symbol: ",s," gathered in ",print_time(timelist,"start_sym","end_sym"))
       }
+      sAssign("dtall",suffix="a",title=paste0("After : ",s))
     }
     message_if_red(nrow(dtall)<=0," Symbols ",paste(tsymbols,collapse=","),": NOTHING TO UPDATE .. ") && return();
     setTimeStamp("start_upsert")
     message_if_red(grepl("basic",verbosity),"Option update: Adding ",nrow(dtall)," rows to partitioned parquet set")
-    addedopts <- upsert_DT_arrow( dtall, eo_path, dst=ds, partition_keys="symbol",dt_keys=c("ts","contractid"))
+    addedopts <- upsert_DT_arrow( dtall, eo_path, dst=ds, partition_keys="symbol",dt_keys=c("ts","contractid")) # weird, now fast
+    #addedopts <-  upsert_DT_arrow_par(dtall,eo_path,partition_keys="symbol",dt_keys=c("ts","contractid"))
     setTimeStamp("end_upsert")
     pb$terminate()
     message_if_green(grepl("tim|basic",verbosity),"Returned ",nrow(addedopts)," new options, refreshing inventory, took ",print_time(timelist,"start_upsert","end_upsert")," secs")
@@ -531,7 +525,7 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     the_av$eqoptinv <- copy(eqoptinv)
     save_avs_state("the",msg="Update Options")
     setTimeStamp("end_inventory")
-    message_if_green(grepl("tim|basic",verbosity),"Updated option inventory in ",print_time(timelist,"end_upsert","end_inventory"))
+    message_if_green(grepl("tim|basic",verbosity),"Updated option inventory in ",print_time(timelist,"end_upsert","end_inventory"), "sec")
   }
   # Get a summarized data.table of inventory
   if(todo=="getinv") {
@@ -550,6 +544,11 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
   }
   return()
 }
+
+# daily_set <- s("BND;DIA;EEM;EMB;EMXC;EWC;EWW;EWY;EWZ;HYG;KBE;MAGS;MCHI;QQQ;QQQE;SPY;RSP;SOXX;TLT;VO")
+# weekly_set <- setdiff(dump_inv("opt")$symbol, daily_set)
+# av_add_options("update",dtstr="-4d::",symbols=daily_set)
+# av_add_options("update",dtstr="-2w::",symbols=weekly_set, freq="w")
 
 #[active][otm|itm][[front][mo|qtr]]
 # optchain = getData.optchain("QQQ",opttypegrep="put",grepstring="activeotmfrontmo",pctlimit=0.25)
@@ -746,6 +745,9 @@ dump_state <- function(stategrep="*", trunc_length=35) {
 #' @rdname av_state_interface
 #' @export
 dump_inv <- function(invgrep="*") {
+  if(invgrep=="opt") {
+    return(the_av$eqoptinv$inv)
+  }
   return(the_av$pxinv[grepl(invgrep,symbol,ignore.case=TRUE),])
 }
 

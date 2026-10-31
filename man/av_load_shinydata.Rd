@@ -12,6 +12,8 @@ av_load_shinydata(item = NULL, verbose = TRUE, addfuncs = TRUE)
 \item{verbose}{(default TRUE) write a status message to console}
 
 \item{addfuncs}{(default TRUE) Readd and re-source any user defined functions}
+
+\item{restore_lazy}{(default FALSE) Also restore all lazy data}
 }
 \value{
 Data item specified by \code{item} or a nothing (but a message) if left blank

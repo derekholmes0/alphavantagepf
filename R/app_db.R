@@ -20,7 +20,7 @@ update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
   the_av$tickerlist <- DTUpsert(the_av$tickerlist,indexlist,c("symbol"))
 
   # Names
-  listings <- av_get_pf("","LISTING_STATUS",delay=1)[,list_ts:=Sys.Date()][]
+  listings <- av_get_pf("","LISTING_STATUS")[,list_ts:=Sys.Date()][]
 
   setkeyv(listings,c("symbol"))
   if(grepl("useAbbreviations",the_av$logopts)) {
@@ -36,7 +36,7 @@ update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
   the_av$listings <- listings
   message_if_red(verbosity(),"Reconstructed index (",nrow(indexlist),"), crypto (",nrow(cryptolist),
             "), and listing status (",nrow(the_av$listings),") lists at ",format(Sys.time(),"%d-%H:%M%:S"))
-  save_avs_state("all",msg="updatetickers") # must use all with any inventory data
+  save_avs_state("the",msg="updatetickers") # must use all with any inventory data
 }
 
 # epx_get_avfn : Which function to call given type
@@ -286,7 +286,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
     if(nrow(the_av$pxinv)>0) {
       the_av$pxinv[dta[,.(enddt=max(timestamp)),by=.(symbol)],end_dt:=i.enddt,on=.(symbol)]
     } # If not, will get created later
-    save_avs_state("px,the") # New 10/23
+    save_avs_state("fst,the",alt_fst_set="pxd") # New 10/23
   }
   message_if(verbosity(),"av_one_px(",paste_trunc(tortn$symbol)," @ ",src,") ", outmsg)
   return(tortn)

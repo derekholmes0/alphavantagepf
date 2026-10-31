@@ -189,7 +189,7 @@ set_list <- function(listtodo,tlist,instr,session) {
     updateSelectizeInput(session,"assetgp_list", choices=sort(unique(the_av$assetgroups$listnm)))
     rtnmsg <-paste0("Deleted Asset List: ",tlist)
   }
-  save_avs_state("all",msg=paste0("set_list:",listtodo))
+  save_avs_state("the,nonpx",msg=paste0("set_list:",listtodo))
   Sys.sleep(0.2)
   updateSelectInput(session,"ag_state",selected="--")
   return(rtnmsg)

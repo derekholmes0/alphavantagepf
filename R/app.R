@@ -415,7 +415,7 @@ av_make_server <- function() {
       output$dy1_container <- renderUI({ dygraphOutput("dy1", height= torend[ui_out=="dy1",]$displayheight) })
       output$dy2_container <- renderUI({ dygraphOutput("dy2", height= torend[ui_out=="dy2",]$displayheight) })
       updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
-      save_avs_state("all",msg="RUNLN")
+      save_avs_state("the",msg="RUNLN")
       updateTextInput("istr1",value="",session=session)
     })
 
