@@ -25,8 +25,15 @@ Add a set of analytics from a code direcory
 Each file will be read in the specified directory and any function with
 a valid signature will be added to the list of available functions in
 the shiny app. The function signature is a call to the function with a
-single argument "signature" which returns a list of three items: 1) a
-short name for the function, 2) the function name, and 3) a help string
-for the function. If those conditions obtain, the function will be added
-to
-[`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
+single argument "signature" which returns a list of four items:
+
+1.  a short name for the function,
+
+2.  the function name,
+
+3.  a help string for the function.
+
+4.  A semicolon delimited list of data tables necessary to run the
+    function. Used for Lazy Loading If those conditions obtain, the
+    function will be added to
+    [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)

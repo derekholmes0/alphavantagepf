@@ -24,6 +24,10 @@ av_load_shinydata(item = NULL, verbose = TRUE, addfuncs = TRUE)
 
   (default TRUE) Readd and re-source any user defined functions
 
+- restore_lazy:
+
+  (default FALSE) Also restore all lazy data
+
 ## Value
 
 Data item specified by `item` or a nothing (but a message) if left blank

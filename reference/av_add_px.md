@@ -44,8 +44,6 @@ Nothing
 
 ## Details
 
-Add Price or Time Series Data
-
 Entire set of columns from
 [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
 can be added. First date column renamed to `timestamp` internally.

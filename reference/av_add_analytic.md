@@ -10,6 +10,7 @@ av_add_analytic(
   func_name,
   helpstr = "user function",
   focus = "MAIN",
+  data_req = "pxd;earn;earnest",
   message_str = "",
   delay_save_state = FALSE
 )
@@ -35,6 +36,11 @@ av_add_analytic(
 
   (default: "MAIN") String with tab name to set focus to when command is
   run
+
+- data_req:
+
+  (default: "pxd;earn;earnest") A semicolon list of required data
+  tables. Used for Lazy data loading.
 
 - message_str:
 

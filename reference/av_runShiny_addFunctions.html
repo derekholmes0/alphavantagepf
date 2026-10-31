@@ -67,9 +67,12 @@
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Add a set of analytics from a code direcory</p>
 <p>Each file will be read in the specified directory and any function with a valid signature will be added to the list of available functions in the shiny app.
-The function signature is a call to the function with a single argument "signature" which returns a list of three items: 1) a short name for the function, 2)
-the function name, and 3) a help string for the function.  If those conditions obtain, the function will be added to <code><a href="av_runShiny.html">av_runShiny()</a></code></p>
-    </div>
+The function signature is a call to the function with a single argument "signature" which returns a list of four items:</p><ol><li><p>a short name for the function,</p></li>
+<li><p>the function name,</p></li>
+<li><p>a help string for the function.</p></li>
+<li><p>A semicolon delimited list of data tables necessary to run the function.  Used for Lazy Loading
+If those conditions obtain, the function will be added to <code><a href="av_runShiny.html">av_runShiny()</a></code></p></li>
+</ol></div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
