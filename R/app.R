@@ -1,7 +1,8 @@
 #source("./R/utilities.R")
-tver<-"0.9.214" # Should match DESCRIPTIONS
+tver<-"0.9.22" # Should match DESCRIPTIONS
 
 
+# 0.9.22: OPtimaal Reguimes
 # 0.9.213: Lazy Loading
 # 0.9.212: Fixed add_px problem and refactored file name handling and save/reset state.
 # 0.9.21:  Add user function dir to AVOPTS
@@ -350,9 +351,9 @@ av_make_server <- function() {
       rv <- c(rv,setNames(list(todo,todofunc,todoargs,assetline), s("todo;todofunc;todoargs;assetline"))) # Augment rv
       # out for Production, IN for testing
       out[["MSG"]]<- rv$istr1_enter
-      #cAssign("todo;todofunc;rv;todoargs;assetline",silent=TRUE)
       runfunc_set <-  the_av$avsh_funcs[runcode==todofunc,]
-      quick_message(fifelse(nrow(runfunc_set)<=0,paste(todo,":Invalid function"),""))
+      cAssign("todo;todofunc;rv;todoargs;assetline;runfunc_set",silent=FALSE)
+      quick_message(fifelse(nrow(runfunc_set)<=0,paste(">",todo,"<:Invalid function"),""))
       if(nrow(runfunc_set)<=0) { return() }
       # Set defaults
       av_set_defaults("starttab",tolower(runfunc_set[[1,"focus"]]))

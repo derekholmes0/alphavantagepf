@@ -286,6 +286,7 @@ oneticker_divs <- function(thisticker,datestring) {
 one_px_ts <- function(toplot,rv,title="Prices",mean_gap_implies_step=4,extra_anno="",events="",dt_window="",...) {
   symbol=low=high=medgap=meangap=reportedEPS=surprise=lpx=dividend_amount=surprisePercentage=NULL
   seriesnm <- the_av$seriesnm
+  ldots = list(...)
   if(is.data.table(toplot[[1]])) {
     trebase <- toplot[[2]]
     fgdt <- toplot[[1]][,.(timestamp,variable=symbol,value=get(seriesnm))]
@@ -310,7 +311,7 @@ one_px_ts <- function(toplot,rv,title="Prices",mean_gap_implies_step=4,extra_ann
     "last" %in% rv$gropts, "last,linevalue",
     default = "")
   # What to step; New
-  meangaps <- fgdt[,.(meangap=mean(as.numeric(diff(timestamp,1)),na.rm=T)), by=.(variable)]
+  meangaps <- fgdt[,.(meangap=mean(as.numeric(timestamp-shift(timestamp,1)),na.rm=T)), by=.(variable)]
   xstepcols = meangaps[meangap>mean_gap_implies_step,]$variable
   xstepcols = ifelse( length(xstepcols)>0, xstepcols, FALSE)
   if(length(xstepcols)<=0) { xstepcols<- FALSE }
@@ -340,12 +341,16 @@ one_px_ts <- function(toplot,rv,title="Prices",mean_gap_implies_step=4,extra_ann
     eventset <- rbindlist(list(eventset, teventset),fill=TRUE,use.names=TRUE)
   }
   #cAssign("fgdt;title;events;dt_window;tanno;extra_anno;rv;xstepcols;trebase")
+  #extraargs = ldots[setdiff(names(ldots), c("splitcols","stepcols","event_ds","hilightcols"))]
+  # do.call(g, c(list(x), ldots))
   outdyg <- fgts_dygraph(fgdt,title=title,events=events, dtwindow=dt_window,
-                         annotations=paste0(c(tanno,extra_anno),collapse=";"), colorset=the_av$ts_colorset,
-                         splitcols=("splitts" %in% rv$gropts),roller=1,
-                         stepcols=xstepcols,event_ds=eventset,
-                         hilightcols=fifelse("hilightfirst" %in% rv$gropts,fgdt[,.SD[1]]$variable,""),
-                         rebase=trebase,...)
+                         annotations=paste0(c(tanno,extra_anno),collapse=";"), roller=1,
+                         splitcols=ldots$splitcols %||% ("splitts" %in% rv$gropts) %||% FALSE,
+                         stepcols=ldots$stepcols %||% xstepcols %||% FALSE,
+                         event_ds=ldots$eventset %||% eventset %||% FALSE,
+                         hilightcols=ldots$hilightcols %||% fifelse("hilightfirst" %in% rv$gropts,fgdt[,.SD[1]]$variable,"") %||% FALSE,
+                         colorset= ldots$colorset %||% the_av$ts_colorset,
+                         rebase=trebase,hilightstyle="dashed")
   return(outdyg)
 }
 

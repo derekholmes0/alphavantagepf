@@ -238,8 +238,6 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
       }
       symset = symset[data.table(symbol=unique(dta$symbol)), on=.(symbol)] # If subst is a superset
       symset[,let(loadts=Sys.time())]
-      cAssign("symset")
-
     }
     else { # DOwnloadable, but one at a time
       if(nrow(symset)<=0) {
@@ -409,7 +407,7 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="",lazyloadnames="") {
     })
   }
   if(grepl("lazy",todo)) {
-    if(lazyloadnames=="") { lazyloadnames <- s(avsd$defaults[var=="fn_list_lazy",]$value_str) }
+    if(length(s(lazyloadnames))<=0) { lazyloadnames <- s(avsd$defaults[var=="fn_list_lazy",]$value_str) }
     message_if_red(TRUE,"restore_avs_state restoring lazy loaded datasets ",s(lazyloadnames))
     rtn <- lapply(s(lazyloadnames), \(x) {
       assign(x, fst::read_fst(the_av$fn_list[[x]], as.data.table=TRUE), envir=the_av) # pxd, earn to fst
@@ -444,6 +442,7 @@ save_avs_state <- function(todo="all",msg="", alt_fst_set=NULL, ts_update=TRUE) 
   if(grepl("all|nonpx",todo)) {
     allnonfst <- setNames(lapply(nonfst_names,\(x) get(x,envir=the_av)), nonfst_names) # So we save a few extra things
     save(allnonfst,file=the_av$fn_list[["nonfst"]])
+    message(" save_avs_state(all|nonpx) writing ",nonfst_names)
     shortmsg <- paste(shortmsg,"nonfst")
   }
   if(grepl("all|px|fst",todo)) {
@@ -453,13 +452,14 @@ save_avs_state <- function(todo="all",msg="", alt_fst_set=NULL, ts_update=TRUE) 
     }
     fst_names <- intersect(fst_names,dump_state()[classtype=="data.table",]$nm) # Skip lazy loads if not there
     rtn <- lapply(fst_names, \(x) {
-      message("fst writing ",x);
       fst::write_fst(get(x,envir=the_av),the_av$fn_list[[x]],compress=20) # pxd, earn to fst
     })
+    message(" save_avs_state(all|px|fst) writing ",fst_names)
     shortmsg <- paste(shortmsg," fst ")
   }
   if(grepl("all|the",todo)) {
     unames <- setdiff(names(the_av),union(fst_names,nonfst_names))
+    tfile = the_av$constants_fn
     save(list=unames,envir=the_av,file=the_av$constants_fn)
     shortmsg <- paste(shortmsg,"const")
   }

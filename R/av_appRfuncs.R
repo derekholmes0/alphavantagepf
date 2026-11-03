@@ -209,7 +209,7 @@ av_add_assetgroups <- function(indta) {
 av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAIN",data_req="pxd;earn;earnest",
                             message_str="", delay_save_state=FALSE) {
   runcode=toupper(runcode)
-  msg <- paste0(" function ",func_name," to Command Line functions as code ",runcode," ",message_str)
+  msg <- paste0("code ",runcode," new function ",func_name," to Command Line",message_str)
   if(!exists("avsh_funcs",envir=the_av)) {  av_load_shinydata(verbose=FALSE) }
   if( toupper(runcode) %in% the_av$avsh_funcs$runcode) {
     if( nchar(func_name)<=0) {
@@ -227,7 +227,7 @@ av_add_analytic <- function(runcode,func_name,helpstr="user function",focus="MAI
   }
   new_analytics <- data.table(category="user",runcode=runcode, func_src="user", func_name=func_name, focus=focus, data_req=data_req, helpstr=helpstr)
   the_av$avsh_funcs <- DTUpsert(the_av$avsh_funcs,new_analytics,keys=c("runcode"),fill=TRUE)
-  if(!delay_save_state) {   save_avs_state("all",msg=paste0("Add FUnction ",runcode)) }
+  if(!delay_save_state) {   save_avs_state("nonpx",msg=paste0("Add FUnction ",runcode)) }
   return(paste0("av_add_analytic: ",msg," at ",format(Sys.time(),"%d-%H:%M%:%S")))
 }
 
@@ -251,7 +251,7 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
   if(is.null(fun_dir) || !dir.exists(fun_dir) ) {
     return("No Additional functions")
   }
-  message_if_red(TRUE,"av_runShiny_addFunctions 0.4 gathering functions from", fun_dir)
+  #message_if_red(TRUE,"av_runShiny_addFunctions 0.5 gathering functions from", fun_dir)
   allfiles <-list.files(fun_dir,pattern="*\\.r",ignore.case=TRUE,full.names=TRUE)
   is_fn_def_with_params <- function(e, params = c("todo", "rv")) {
     if (!(is.call(e) &&
@@ -267,27 +267,31 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
   check_fn <- function(thisfn) {
     exprs <- parse(thisfn)
     matching_exprs <- Filter(is_fn_def_with_params, as.list(exprs))
+    if(length(matching_exprs)>0) {
+      message_if_red(TRUE,"sourcing: ",thisfn); source(thisfn)
+    }
     fn_res <- invisible(sapply(matching_exprs, eval, envir = environment()))
     fn_names <- sapply(matching_exprs, function(e) as.character(e[[2]]))
     fnadded<- lapply(fn_names, \(nm) {
       toadd <- do.call(nm,list("signature"))
-      if( length(toadd) != 4 ) { # Add if signature is returned
-        message_if_red(TRUE,paste0("Function ",nm," does not have a valid signature"))
-        return(NULL)
-      } else {
-        message( av_add_analytic(toadd[[1]],toadd[[2]],helpstr=toadd[[3]],data_req=toadd[[4]],
-                  delay_save_state=TRUE, message_str=paste(" from:",gsub(the_av$userfuncdir,"~",thisfn))) )
-        return(nm)
-      }
+      if( length(toadd) == 4 ) { toadd=list(toadd)}
+      sapply(toadd, \(onefunc) {
+        if( length(onefunc) != 4 ) { # Add if signature is returned
+          message_if_red(TRUE,paste0("Function ",onefunc," does not have a valid signature"))
+          return(NULL)
+        } else {
+          message( av_add_analytic(onefunc[[1]],onefunc[[2]],helpstr=onefunc[[3]],data_req=onefunc[[4]],
+                    delay_save_state=TRUE, message_str=paste(" from:",gsub(the_av$userfuncdir,"~",thisfn))) )
+          return(nm)
+        }
+      } # sapply
+      )
     })
     return(fnadded)
   }
   fileset_added <- list()
   fileset_added[allfiles]  <- sapply(allfiles, \(thisfn) check_fn(thisfn))
-  save_avs_state("the",msg="Added FUnction(s) using av_runShiny_addFunctions")
-  to_source <- names(Filter(\(x) length(x)>0, fileset_added))
-  to_source <- sapply(to_source, \(x) { message_if_red(TRUE,"sourcing: ",x); source(x) })
-  return(paste("Added ",length(purrr::list_flatten(fileset_added))," functions from",fun_dir))
+  save_avs_state("nonpx",msg="Added FUnction(s) using av_runShiny_addFunctions")
 }
 
 # ==========================================================================================================
@@ -326,6 +330,12 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
 #' day, and contract.
 #' * Unless `replace_data==TRUE`, only dates and symbols that need to be downloaded will.
 #' * Except the `OS S` function, all analytics run in the app require options data to be downloaded using this function.
+#' @examples
+#' \dontrun{
+#' av_add_options("update",dtstr="-1y::",symbols=c("SPY","QQQ"))
+#' av_add_options("inventory")
+#' av_add_options("iv_nearest",dtstr="-2w::")
+#' }
 #' @importFrom progress progress_bar
 #' @importFrom dplyr filter
 #' @importFrom fs dir_copy
@@ -490,7 +500,7 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
         }
         message_if(grepl("tim",verbosity),"Option Symbol: ",s," gathered in ",print_time(timelist,"start_sym","end_sym"))
       }
-      sAssign("dtall",suffix="a",title=paste0("After : ",s))
+      #sAssign("dtall",suffix="a",title=paste0("After : ",s))
     }
     message_if_red(nrow(dtall)<=0," Symbols ",paste(tsymbols,collapse=","),": NOTHING TO UPDATE .. ") && return();
     setTimeStamp("start_upsert")
@@ -572,7 +582,10 @@ getData.optchain_all <- function(ticker,spot=NULL,expiration=NULL,rtn="",indate=
   if(!is.numeric(spot)) {
     spot <- av_load_shinydata("pxd")[symbol==ticker & timestamp == new_indate,]$close
   }
-  chaindt = chaindta[,let('iv'=100*as.numeric(iv),'dtoexp'=as.numeric(difftime(expiration,as.Date(ts),units="days"),'spot'=spot))]
+  numcols <- intersect(colnames(chaindt),s("delta;gamma;vega;theta;rho;iv"))
+  chaindt[,(numcols):=lapply(.SD, as.numeric),.SDcols=numcols]
+  chaindt <- chaindta[,let('iv'=100*iv,'dtoexp'=as.numeric(difftime(expiration,as.Date(ts),units="days"),'spot'=spot))]
+
   setTimeStamp("optchainend")
 
   # Add expiration codes
@@ -618,15 +631,17 @@ optdb_inventory <- function(ds,symbolset=NULL) {
 fix_optchains<- function() {
   eo_path <- paste0(the_av$cachedir,"/eqopt")
   ds <- arrow::open_dataset(eo_path,partitioning=c("symbol"))
-  tsymbols <- the_av$eqoptinv[["inv"]]$symbol
+  tsymbols <- the_av$eqoptinv[["inv"]]$symbol[]
+  numcols=s("delta;gamma;vega;theta;rho")
   for(tsym in tsymbols) {
     message("... sym :",tsym, "start")
     optset <- ds |> filter(symbol==tsym) |> dplyr::collect() |> as.data.table()
-    optset$expcode <- toupper(optset$expcode)
-    addedopts <- upsert_DT_arrow( optset, eo_path, dst=ds, partition_keys="symbol",dt_keys=c("ts","contractid"))
+    optset[,(numcols):=lapply(.SD, as.numeric),.SDcols=numcols]
+    arrow::write_dataset(optset, eo_path, partition=c("symbol"), format = "parquet", existing_data_behavior = "delete_matching" )
     message("... sym :",tsym, "end")
   }
 }
+# files=c("C:/t/avsh/eqopt/symbol=MSFT/part-0.parquet", "C:/t/avsh/eqopt/symbol=PG/part-0.parquet")
 
 
 # ==========================================================================================================
