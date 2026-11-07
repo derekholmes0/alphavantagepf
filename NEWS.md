@@ -4,20 +4,21 @@
 
 * LLM support and MCP integration
 
-# alphavantagepf 0.9.21
-
-## WOrking On
-
-* Implied volatility surfaces
+# alphavantagepf 0.9.23
 
 ## New Features
 
+* User defined functions can return a list of signatures, so one function can provide multiple commands.
+* New functions: RCOR, GOTP, GOTI
 * Option database maintenance using Arrow
   - Lazy loading of implied volatility data
   
 * Options page has setting for user functions directory
   - `av_load_shinydata()` now adds all user functions in a given directory
   - New Functions added to separate [GitHub repository](https://github.com/derekholmes0/avpfshinyFuncs)
+
+* SSVI Implied volatility surface calculations.  See vignette.
+
 
 # alphavantagepf 0.9.1
 

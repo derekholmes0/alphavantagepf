@@ -1,7 +1,8 @@
 #source("./R/utilities.R")
-tver<-"0.9.22" # Should match DESCRIPTIONS
+tver<-"0.9.23" # Should match DESCRIPTIONS
 
 
+# 0.9.23: SSVI surface
 # 0.9.22: OPtimaal Reguimes
 # 0.9.213: Lazy Loading
 # 0.9.212: Fixed add_px problem and refactored file name handling and save/reset state.
@@ -188,7 +189,7 @@ av_make_ui <- function() {
 #' @import promises
 
 av_make_server <- function() {
-  wh=ts_rebase=ts_events=ts_volparams=imp=x_close=y_close=ui_out=outname=displayed=inclass=displayheight=todoargs=NULL
+  wh=ts_rebase=ts_events=ts_volparams=imp=x_close=y_close=ui_out=outname=displayed=inclass=displayheight=todoargs=var=NULL
   out <- list()
   av_server<-function(input, output,session) {
     inlist=list_ts=vartype=todofunc=todo=assetline=NULL

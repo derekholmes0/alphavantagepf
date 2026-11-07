@@ -121,7 +121,6 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=
 #' @param item Any data name as seen by running [dump_state()].  **If blank, loads entire database**
 #' @param verbose (default TRUE) write a status message to console
 #' @param addfuncs (default TRUE) Readd and re-source any user defined functions
-#' @param restore_lazy (default FALSE) Also restore all lazy data
 #' @returns Data item specified by `item` or a nothing (but a message) if left blank
 #' @seealso [av_runShiny()]
 #' @export
@@ -330,26 +329,30 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
 #' day, and contract.
 #' * Unless `replace_data==TRUE`, only dates and symbols that need to be downloaded will.
 #' * Except the `OS S` function, all analytics run in the app require options data to be downloaded using this function.
+#' * SOFR rates are downloaded using quantmod to FRED for risk free rates.
 #' @examples
 #' \dontrun{
 #' av_add_options("update",dtstr="-1y::",symbols=c("SPY","QQQ"))
 #' av_add_options("inventory")
+#' av_add_options("iv",dtstr="-1w::",symbols=c("SPY"))
 #' av_add_options("iv_nearest",dtstr="-2w::")
 #' }
 #' @importFrom progress progress_bar
 #' @importFrom dplyr filter
 #' @importFrom fs dir_copy
+#' @importFrom quantmod getSymbols
 #' @export
 av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_data=FALSE, baddates_limits=3, verbosity="basic",
                            external_path=NULL) {
-  moneyn=yrwk=tfreq=ts=expcode=ov=open_interest=ask=bid=mark=iv=indtcopy=strike=ww=NULL
+  moneyn=yrwk=tfreq=ts=expcode=ov=open_interest=ask=bid=mark=iv=indtcopy=strike=ww=index=SOFR=new_max_DT_ENTRY=max_DT_ENTRY=NULL
   eo_path <- paste0(the_av$cachedir,"/eqopt")
-  closest_deltamap <- data.table(dcat=s("(-0.9,-0.75];(-0.75,-0.5];(-0.5,-0.25];(-0.25,-0.1];(-0.1,-0.05];(-0.05,0];(0,0.05];(0.05,0.1];(0.1,0.25];(0.25,0.5];(0.5,0.75];(0.75,0.9];NA"),
+  the_av$closest_deltamap <- data.table(dcat=s("(-0.9,-0.75];(-0.75,-0.5];(-0.5,-0.25];(-0.25,-0.1];(-0.1,-0.05];(-0.05,0];(0,0.05];(0.05,0.1];(0.1,0.25];(0.25,0.5];(0.5,0.75];(0.75,0.9];NA"),
                          moneyn=s("P75;P50;P25;P10;P5;P0;C0;C5;C10;C25;C50;C75;NA"),
                          cutlevel=c(-0.9,-0.75,-0.5,-0.25,-0.1,-0.05,0,0.05,0.1,0.25,0.5,0.75,0.9))
-  deltamap <- data.table(moneyn=s("P90;P75;P50;P45;P40;P35;P25;P15;P10;P5;C5;C10;C15;C25;C35;C45;C50;C75;C90;NA"),
+  the_av$deltamap <- data.table(moneyn=s("P90;P75;P50;P45;P40;P35;P25;P15;P10;P5;C5;C10;C15;C25;C35;C45;C50;C75;C90;NA"),
                          cutlevel=c(-0.9,-0.75,-0.5,-0.45,-0.4,-0.35,-0.25,-0.15,-0.1,-0.05,0.05,0.1,0.15,0.25,0.35,0.45,0.5,0.75,0.9,NA))
-  dtoexpmap <- data.table(dtoexp=c(7, 14, 30,60,90), expcode=s("CWK_1;CWK_2;CMO_1;CMO_2;CMO_3"))
+  the_av$dtoexpmap <- data.table(dtoexp=c(7, 14, 21, 30,60,90), cexpcode=s("CWK_1;CWK_2;CWK_3;CMO_1;CMO_2;CMO_3"))
+
   if(!dir.exists(eo_path)) {
     stop("Please Create ",eo_path," first.  CRAN would prefer the package does not.")
   }
@@ -367,6 +370,7 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     tsymbols <- symbols %||%  eqoptinv[["inv"]]$symbol
     ds <- arrow::open_dataset(eo_path,partitioning=c("symbol"))
   }
+
   eqoptdb_keys=s("symbol;expcode;contractid;ts")
   freqmap <- data.table(tfreq=s("d;w;m"),freqcol=s("DT_ENTRY;yrwk;yrmo"))
   t_dates <- dtmap[isbday==TRUE & DT_ENTRY<Sys.Date(),.(DT_ENTRY,yrwk,yrmo)] |> narrowbydtstr(dtstr)
@@ -380,73 +384,44 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     }
   timelist <- list()
   setTimeStamp <- function(x) {  timelist[[x]] <<- Sys.time(); }
-
   if(todo=="todo") {
     return(dt_todo_raw)
   }
   setTimeStamp("start")
-  if(todo=="iv") { # Takes over an hour for small set
+  # SSVI IMplied surfaces -----------------
+  if(todo=="iv") {
     restore_avs_state("lazy",lazyloadnames="iv")
     eqopt_iv <- the_av$iv %||% data.table()
-    interp_cols <- s("iv;strike;delta;theta")
-    note_probs <- grepl("ivprobs",verbosity)
-    cjset = CJ(dtoexp=dtoexpmap$dtoexp, delta=deltamap$cutlevel)
-    # ds <- arrow::open_dataset(paste0(the_av$cachedir,"/eqopt"),partitioning=c("symbol"))
-    # thissymbol="SPY"; dtset <-c(as.Date("2025-09-23")); one_symbol(thissymbol,dtset)
-    one_symbol <- function(thissymbol,dtset, minobs=5) {
-      dtoexp=iv=ivar=cutlevel=NULL
-      message_if_green(grepl("all",verbosity),"Implied Vols:",thissymbol," from ",as.Date(min(dtset))," to ",as.Date(max(dtset)), " (",length(dtset)," days)")
-      u1 <- ds |> dplyr::inner_join(data.table(ts=dtset)[,symbol:=thissymbol][], by=c("symbol","ts")) |> dplyr::collect() |> as.data.table()
-      #cAssign("u1;thissymbol;dtset;cjset")
-      one_iv <- function(indt) {
-        # Approach 3: loess
-        if( nrow(indt)<=minobs ) {
-          message_if_red(note_probs,"iv: Need more than ",minobs, "obs for e.g. ",indt[[1,"contractid"]])
-          return(data.table()) }
-        oo <- tryCatch( {
-          if(max(indt$dtoexp)<=30) { return(data.table()) } # Not enough Expirations
-
-#          indt_a <- indt[abs(delta)<0.95,.(dtoexp,delta,wv=iv*iv*dtoexp/365)]
-#          indttr <- dcast(indt_a,delta ~ dtoexp,fun.aggregate=\(x) last(c(NA_real_,x),1),value.var="wv")
-#          timeset <- as.numeric(names(indttr[,-1]))
-#          toi <- c(dtoexpmap$dtoexp,seq(91,by=1,length.out=14))
-#          w_interp <- interp2(timeset, indttr$delta, as.matrix(indttr[,-1]), xp=toi, yp=na.omit(deltamap$cutlevel), method="linear")
-          indt <- copy(indtcopy)
-          indt <- indt[abs(delta)<0.95 & dtoexp>0,.(dtoexp,delta,strike,type,wv=log(iv*iv*dtoexp/365))]
-          iv.lo <- stats::lm(wv ~ dtoexp + delta, data=indt[type=="call"])
-          k.lo <- stats::lm(strike ~ dtoexp + delta, data=indt[type=="call",])
-          oo <- cbindlist(list(cjset[delta>0,], data.table(ww=stats::predict(iv.lo,cjset[delta>0,]), strike=stats::predict(k.lo,cjset[delta>0,]))))
-          oo[,iv:=sqrt(exp(ww)*365/dtoexp)]
-          oo <- dtoexpmap[oo,on=.(dtoexp)]
-          oo <- deltamap[oo, on=.(cutlevel=delta)]
-          oo$moneyn=as.factor(oo$moneyn)
-          oo <- oo[!is.na(iv)][,cutlevel:=NULL][]
-          cAssign("oo")
-        }, error = function(e) { cAssign("e;cjset;indt"); data.table()}, finally=data.table()
-        )
-        return(oo)
-      }
-      #return(u1[,one_iv(.SD), by=.(symbol,ts,expcode,dtoexp,expiration)])
-      return(u1[,one_iv(.SD), by=.(symbol,ts)])
+    if(fcoalesce(max(the_av$pxd[symbol=="SOFR",]$timestamp), as.IDate("1970-01-01"))<Sys.Date()-1) {
+      message_if_red(TRUE,"Updating SOFR levels from FRED via quantmod")
+      sofr <- as.data.table(quantmod::getSymbols("SOFR",src="FRED",auto.assign=FALSE))[,.(DT_ENTRY=index,close=SOFR,symbol="SOFR")]
+      av_add_px(sofr)
     }
-    todo_iv <- dt_todo_all
+
+    todo_iv <- dt_todo_loaded
     if(replace_data==FALSE & nrow(eqopt_iv)>0) {
-      todo_iv <- dt_todo_all[!eqopt_iv[,.N,by=.(symbol,ts)], on=.(symbol,ts)]
+      todo_iv <- todo_iv[!eqopt_iv[,.N,by=.(symbol,ts)], on=.(symbol,ts)]
     }
     pb <- progress::progress_bar$new(format = paste0("AV IV  [:bar] :percent [:elapsed]"), total=length(tsymbols), clear = FALSE, width= 60)
-    lastdt_iv <- lapply(tsymbols, \(x) {
-      pb$tick();
-      message_if_green("basic" %in% verbosity, "Calculating IMplied Vol surfaces for ",x);
-      one_symbol(x,todo_iv[symbol==x,]$ts)
-      })
-    the_av$iv <-DTUpsert(eqopt_iv,rbindlist(lastdt_iv,fill=TRUE),s("symbol;ts;expcode;moneyn"),fill=TRUE)
+    cAssign("todo_iv")
+    for(x in unique(todo_iv$symbol)) {
+      #message_if_green("basic" %in% verbosity, "Calculating IMplied Vol surfaces for ",x,"-----")
+      dtstodo <- todo_iv[symbol==x,]$ts
+      thisiv <- iv_one_symbol(x,dtstodo,ds=ds)
+      the_av$iv <-DTUpsert(the_av$iv,thisiv,s("symbol;ts;expcode;moneyn"),fill=TRUE)
+      if(length(dtstodo)>300) { save_avs_state("the,fst",alt_fst_set="iv",msg="Implied surfaces saved partially")  }  # Save if a long job.
+      pb$tick()
+    }
+    # Update Inventory
+    iv_inv <- the_av$iv[,.(min_iv_dt=min(ts), max_iv_dt=max(ts)), by=.(symbol)]
+    the_av$eqoptinv$inv <- coalesce_DT_byentry(the_av$eqoptinv$inv,iv_inv)
     save_avs_state("the,fst",alt_fst_set="iv",msg="Implied surfaces created")
   }
   if(todo=="iv_nearest") {
     restore_avs_state("lazy",lazyloadnames="iv_nearest")
     eqopt_ivn <- the_av$iv_nearest %||% data.table()
-    deltaset <- closest_deltamap$cutlevel
-    deltalabels <- closest_deltamap[!(moneyn=="NA"),]$moneyn
+    deltaset <- the_av$closest_deltamap$cutlevel
+    deltalabels <-  the_av$closest_deltamap[!(moneyn=="NA"),]$moneyn
 
     # Original approach: Just find option that is closest to the delta
     one_symbol_n <- function(thissymbol,dtset) {
@@ -467,7 +442,11 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     lastdt_iv <- lapply(symbols_todo, \(x) { pb$tick(); one_symbol_n(x,todo_iv[symbol==x,]$ts) } )
     eqopt_ivn <- DTUpsert(eqopt_ivn,rbindlist(lastdt_iv),s("symbol;ts;expcode;moneyn;type"),fill=TRUE)
     the_av$iv_nearest <- eqopt_ivn
-    save_avs_state("fst",alt_fst_set="iv_nearest",msg="Implied nearest options created")
+
+    # Update Inventory
+    iv_inv <- eqopt_ivn[,.(min_ivn_dt=min(ts), max_ivn_dt=max(ts)), by=.(symbol)]
+    the_av$eqoptinv$inv <- coalesce_DT_byentry(the_av$eqoptinv$inv,iv_inv)
+    save_avs_state("the,fst",alt_fst_set="iv_nearest",msg="Implied nearest options created")
   }
   if(todo=="update") {
     dtall <- data.table()
@@ -552,6 +531,7 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     av_add_options("inventory",dtstr=dtstr)
     av_add_options("iv",dtstr=dtstr)
   }
+  rm(list=s("closest_deltamap;deltamap;dtoexpmap"),envir=the_av)
   return()
 }
 

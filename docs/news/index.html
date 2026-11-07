@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,6 +22,7 @@
     <li><a class="dropdown-item" href="../articles/ShinyApp_1_setup_and_usage.html">ShinyApp setup and usage</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp Graphs and Options</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_3_Data_Management.html">ShinyApp Data Management</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_3A_Options_Data.html">ShinyApp Options Data Management</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_4_New_Functionality.html">ShinyApp New Functionality</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_5_Function_Reference.html">ShinyApp Function Reference</a></li>
   </ul></li>
@@ -42,9 +43,23 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.9.2" id="alphavantagepf-092">alphavantagepf 0.9.2<a class="anchor" aria-label="anchor" href="#alphavantagepf-092"></a></h2>
-<ul><li>Working on LLM support</li>
+<h2 class="pkg-version" data-toc-text="0.9.23" id="alphavantagepf-0923">alphavantagepf 0.9.23<a class="anchor" aria-label="anchor" href="#alphavantagepf-0923"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-9-23">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-9-23"></a></h3>
+<ul><li>User defined functions can return a list of signatures, so one function can provide multiple commands.</li>
+<li>New functions: RCOR, GOTP, GOTI</li>
+<li>Option database maintenance using Arrow
+<ul><li>Lazy loading of implied volatility data</li>
+</ul></li>
+<li>Options page has setting for user functions directory
+<ul><li>
+<code><a href="../reference/av_load_shinydata.html">av_load_shinydata()</a></code> now adds all user functions in a given directory</li>
+<li>New Functions added to separate <a href="https://github.com/derekholmes0/avpfshinyFuncs" class="external-link">GitHub repository</a>
+</li>
+</ul></li>
+<li>SSVI Implied volatility surface calculations. See vignette.</li>
 </ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.1" id="alphavantagepf-091">alphavantagepf 0.9.1<a class="anchor" aria-label="anchor" href="#alphavantagepf-091"></a></h2>
 <div class="section level3">

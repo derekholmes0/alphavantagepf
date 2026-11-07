@@ -442,7 +442,7 @@ save_avs_state <- function(todo="all",msg="", alt_fst_set=NULL, ts_update=TRUE) 
   if(grepl("all|nonpx",todo)) {
     allnonfst <- setNames(lapply(nonfst_names,\(x) get(x,envir=the_av)), nonfst_names) # So we save a few extra things
     save(allnonfst,file=the_av$fn_list[["nonfst"]])
-    message(" save_avs_state(all|nonpx) writing ",nonfst_names)
+    message(" save_avs_state(all|nonpx) writing ",paste0(nonfst_names,sep=","))
     shortmsg <- paste(shortmsg,"nonfst")
   }
   if(grepl("all|px|fst",todo)) {
@@ -454,7 +454,7 @@ save_avs_state <- function(todo="all",msg="", alt_fst_set=NULL, ts_update=TRUE) 
     rtn <- lapply(fst_names, \(x) {
       fst::write_fst(get(x,envir=the_av),the_av$fn_list[[x]],compress=20) # pxd, earn to fst
     })
-    message(" save_avs_state(all|px|fst) writing ",fst_names)
+    message(" save_avs_state(all|px|fst) writing ",paste0(fst_names,sep=","))
     shortmsg <- paste(shortmsg," fst ")
   }
   if(grepl("all|the",todo)) {

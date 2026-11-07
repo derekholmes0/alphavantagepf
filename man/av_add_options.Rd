@@ -59,6 +59,15 @@ day, and contract.
 \itemize{
 \item Unless \code{replace_data==TRUE}, only dates and symbols that need to be downloaded will.
 \item Except the \verb{OS S} function, all analytics run in the app require options data to be downloaded using this function.
+\item SOFR rates are downloaded using quantmod to FRED for risk free rates.
+}
+}
+\examples{
+\dontrun{
+av_add_options("update",dtstr="-1y::",symbols=c("SPY","QQQ"))
+av_add_options("inventory")
+av_add_options("iv",dtstr="-1w::",symbols=c("SPY"))
+av_add_options("iv_nearest",dtstr="-2w::")
 }
 }
 \seealso{

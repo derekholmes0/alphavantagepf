@@ -98,6 +98,7 @@ importFrom(purrr,
   map2
 )
 importFrom(qlcal,getHolidays)
+importFrom(quantmod,getSymbols)
 importFrom(rlang,
   expr,
   sym
@@ -106,11 +107,16 @@ importFrom(shinychat,chat_append)
 importFrom(shinyjs,runjs)
 importFrom(splines,bs)
 importFrom(stats,
+  approx,
   cor,
+  dnorm,
   formula,
   median,
+  optim,
+  plogis,
   quantile,
-  setNames
+  setNames,
+  spline
 )
 importFrom(stringr,
   str_detect,

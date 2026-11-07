@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,7 @@
     <li><a class="dropdown-item" href="articles/ShinyApp_1_setup_and_usage.html">ShinyApp setup and usage</a></li>
     <li><a class="dropdown-item" href="articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp Graphs and Options</a></li>
     <li><a class="dropdown-item" href="articles/ShinyApp_3_Data_Management.html">ShinyApp Data Management</a></li>
+    <li><a class="dropdown-item" href="articles/ShinyApp_3A_Options_Data.html">ShinyApp Options Data Management</a></li>
     <li><a class="dropdown-item" href="articles/ShinyApp_4_New_Functionality.html">ShinyApp New Functionality</a></li>
     <li><a class="dropdown-item" href="articles/ShinyApp_5_Function_Reference.html">ShinyApp Function Reference</a></li>
   </ul>
@@ -82,7 +83,7 @@ Those calls are integrated into a Shiny (and functional) interface which seamles
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="reference/avpf_api_key.html">avpf_api_key</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "YOUR_API_KEY" "delayed"</span></span>
 <span><span class="fu"><a href="reference/avpf_set_request_pace.html">avpf_set_request_pace</a></span><span class="op">(</span><span class="fl">60</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BB0000;">Setting Max requests per minute to 60</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BB0000;">Setting Max requests per minute to 60 and saving to constants</span></span></span>
 <span><span class="co">#&gt; NULL</span></span></code></pre></div>
 <p>If you want to use the Shiny interface, you can launch it using the command <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.html">av_runShiny()</a>, which will fill in the API keys if they have been set, or direct you to set them if not.</p>
 </div>
