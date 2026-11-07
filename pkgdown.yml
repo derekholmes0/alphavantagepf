@@ -6,9 +6,10 @@ articles:
   ShinyApp_1_setup_and_usage: ShinyApp_1_setup_and_usage.html
   ShinyApp_2_Graphs_and_Options: ShinyApp_2_Graphs_and_Options.html
   ShinyApp_3_Data_Management: ShinyApp_3_Data_Management.html
+  ShinyApp_3A_Options_Data: ShinyApp_3A_Options_Data.html
   ShinyApp_4_New_Functionality: ShinyApp_4_New_Functionality.html
   ShinyApp_5_Function_Reference: ShinyApp_5_Function_Reference.html
-last_built: 2026-11-03T21:23Z
+last_built: 2026-11-07T20:29Z
 urls:
   reference: https://derekholmes0.github.io/alphavantagepf/reference
   article: https://derekholmes0.github.io/alphavantagepf/articles

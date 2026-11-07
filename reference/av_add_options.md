@@ -89,6 +89,19 @@ stored by symbol in arrow/parquet format by symbol day, and contract.
 - Except the `OS S` function, all analytics run in the app require
   options data to be downloaded using this function.
 
+- SOFR rates are downloaded using quantmod to FRED for risk free rates.
+
 ## See also
 
 [`av_runShiny()`](https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny.md)
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+av_add_options("update",dtstr="-1y::",symbols=c("SPY","QQQ"))
+av_add_options("inventory")
+av_add_options("iv",dtstr="-1w::",symbols=c("SPY"))
+av_add_options("iv_nearest",dtstr="-2w::")
+} # }
+```

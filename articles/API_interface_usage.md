@@ -11,6 +11,9 @@ providing a user key:
 
 require(alphavantagepf)
 #> Loading required package: alphavantagepf
+#> Registered S3 method overwritten by 'quantmod':
+#>   method            from
+#>   as.zoo.data.frame zoo
 avpf_api_key("YOUR_API_KEY","delayed")
 print(avpf_api_key())
 #> [1] "YOUR_API_KEY" "delayed"

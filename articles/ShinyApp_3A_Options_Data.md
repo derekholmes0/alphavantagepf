@@ -1,0 +1,13 @@
+# ShinyApp Options Data Management
+
+## Options Data Issues and Overview
+
+Unlike simple time series data, options data requires knowing three more
+dimensions per point in time, per ticker. Specifically, a complete set
+of options requires a schema with 5 keys: Symbol, timestamp, expiration,
+strike, and put vs call. Needless to say, that’s more data than could
+ever be retrieved in real time. It’s also more data than comfortably
+fits inside any one given data.table. The only option then is to
+download (and process) the data outside of the Shiny app.
+
+This vignette describes the function used to do this.

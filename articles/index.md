@@ -9,6 +9,8 @@
   Options](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_2_Graphs_and_Options.md):
 - [ShinyApp Data
   Management](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.md):
+- [ShinyApp Options Data
+  Management](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3A_Options_Data.md):
 - [ShinyApp New
   Functionality](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_Functionality.md):
 - [ShinyApp Function

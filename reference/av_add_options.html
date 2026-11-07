@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.22</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,6 +22,7 @@
     <li><a class="dropdown-item" href="../articles/ShinyApp_1_setup_and_usage.html">ShinyApp setup and usage</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_2_Graphs_and_Options.html">ShinyApp Graphs and Options</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_3_Data_Management.html">ShinyApp Data Management</a></li>
+    <li><a class="dropdown-item" href="../articles/ShinyApp_3A_Options_Data.html">ShinyApp Options Data Management</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_4_New_Functionality.html">ShinyApp New Functionality</a></li>
     <li><a class="dropdown-item" href="../articles/ShinyApp_5_Function_Reference.html">ShinyApp Function Reference</a></li>
   </ul></li>
@@ -106,12 +107,23 @@
 <p><strong>This function can take a long time to run</strong>.  Full option quotes are stored by symbol in arrow/parquet format by symbol
 day, and contract.</p><ul><li><p>Unless <code>replace_data==TRUE</code>, only dates and symbols that need to be downloaded will.</p></li>
 <li><p>Except the <code>OS S</code> function, all analytics run in the app require options data to be downloaded using this function.</p></li>
+<li><p>SOFR rates are downloaded using quantmod to FRED for risk free rates.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="av_runShiny.html">av_runShiny()</a></code></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="fu">av_add_options</span><span class="op">(</span><span class="st">"update"</span>,dtstr<span class="op">=</span><span class="st">"-1y::"</span>,symbols<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SPY"</span>,<span class="st">"QQQ"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">av_add_options</span><span class="op">(</span><span class="st">"inventory"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">av_add_options</span><span class="op">(</span><span class="st">"iv"</span>,dtstr<span class="op">=</span><span class="st">"-1w::"</span>,symbols<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SPY"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">av_add_options</span><span class="op">(</span><span class="st">"iv_nearest"</span>,dtstr<span class="op">=</span><span class="st">"-2w::"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
