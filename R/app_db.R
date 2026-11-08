@@ -576,8 +576,4 @@ kill_userdata <-function() {
 }
 
 
-av_dbgmode <- function() {
-  source("c:\\d\\src\\R\\ut_package.R");
-  av_set_defaults("dbglvl",5)
-}
 

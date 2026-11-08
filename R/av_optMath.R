@@ -101,6 +101,7 @@ iv_one_symbol <- function(thissymbol,dtset, minobs=12, winsorlevel=0.05,ds=NULL)
   message_if_green(TRUE,"Implied Vols:",thissymbol," from ",as.Date(min(dtset))," to ",as.Date(max(dtset)), " (",length(dtset)," days)")
   deltaset <- the_av$closest_deltamap$cutlevel
   deltalabels <- the_av$closest_deltamap[!(moneyn=="NA"),]$moneyn
+  ds <- ds %||% arrow::open_dataset(paste0(the_av$cachedir,"/eqopt"),partitioning=c("symbol"))
   u1 <- ds |> filter(symbol==thissymbol) |> dplyr::collect() |> as.data.table()
 
   one_iv <- function(dt) {

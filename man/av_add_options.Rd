@@ -21,7 +21,8 @@ av_add_options(
    \code{update} \tab Download and add or update full option runs by symbol over periods in \code{dtstr} \cr
    \code{inventory} \tab Create/update inventory of options that have been downloaded \cr
    \code{reconstruct_inventory} \tab Reconstruct inventory of all options that have been downloaded \cr
-   \code{iv} \tab Updates internal data.table (\code{eqopt_iv} of Implied term structures by symbol and date \cr
+   \code{iv_nearest} \tab Updates internal data.table (\code{iv_nearest}) of options nearest to defined deltas for a given symbol, tenor and date. \cr
+   \code{iv_fv} \tab Updates internal data.table (\code{iv}) of fair vlaue volatilities for defined deltas for a given symbol and date. \cr
    \code{copy_external} \tab Copies identical directory structures from \code{external_path} to siny app internal data \cr
 }}
 

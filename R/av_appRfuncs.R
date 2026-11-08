@@ -136,9 +136,63 @@ av_load_shinydata <- function(item=NULL,verbose=TRUE,addfuncs=TRUE) {
     }
   }
   else {
+    if(!(item %in% names(the_av))) {
+      if ( item %in% s(avsd$defaults[var=="fn_list_lazy",]$value_str) ) {
+        restore_avs_state("lazy",lazyloadnames=item)
+      }
+      else {
+        message("av_load_shinydata: ",item," not in memory")
+        return()
+      }
+    }
     return(get(item,envir=the_av))
   }
 }
+
+#' Load Options data from parquet files
+#'
+#' @name av_load_cached_opts
+#' @title Load cached options data previously downloaded using av_add_options()
+#' @description Returns a data.table of options data given a data.table of keys desired or a set of parameters.
+#' @param optsDT (default: NULL) A data.frame of symbols and optional keys (ts, expiration, expcode, type) to join with data.
+#' @param symbols (default: NULL) Ticker or list of tickers for which option data is returned.
+#' @param dtstr (default: "") Dates for which to return options.  Works with both optsDT and symbols specfication.
+#' @returns data.table with full option data.
+#' @seealso [av_runShiny()]
+#' @examples
+#' \dontrun{
+#' opttest1=av_load_cached_opts(symbols="JPM;GS",dtstr="-2m::")
+#' opttest2=av_load_cached_opts(optsDT=CJ(symbol=c("JPM","GS"), expcode=c("MO_1","MO_2"), type=c("call")), dtstr="-1y::")
+#' opttest2[,.(min(ts),max(ts)), by=.(expcode,symbol,type)]
+#' }
+#' @export
+av_load_cached_opts <- function(optsDT=NULL,symbols=NULL,dtstr="") {
+  tsymbols<-NULL
+  if (is.data.frame(optsDT)) {
+    if( !("symbol" %in% names(optsDT))) {
+      message_if_red(TRUE,"Input data.frame must contain symbol.")
+      return(NULL)
+    }
+    tsymbols <- unique(optsDT$symbol)
+    optsDT <- as.data.table(optsDT)
+    setkeyv(optsDT,names(optsDT))
+  }
+  else if (is.vector(s(symbols))) {
+    tsymbols <- unique(s(symbols))
+  }
+  if( is.null(tsymbols)) { message_if_red(TRUE,"Must narrow data request somehow."); return(NULL) }
+  ds <- arrow::open_dataset(paste0(the_av$cachedir,"/eqopt"),partitioning=c("symbol"))
+  outp <- lapply(tsymbols, \(sym) {
+    oo <- ds |> filter(symbol==sym) |>  dplyr::collect() |> as.data.table()
+    if( is.data.frame(optsDT) ) {    oo <- oo[optsDT, on=.NATURAL, nomatch=NULL] }
+    if( nchar(dtstr)>1 ) { oo <- narrowbydtstr(oo,dtstr) }
+    return(oo)
+    }
+  )
+  ds<-NULL
+  return(rbindlist(outp))
+}
+
 
 #' Add Asset Groups
 #'
@@ -308,7 +362,8 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
 #' |`update`|Download and add or update full option runs by symbol over periods in `dtstr`|
 #' |`inventory`|Create/update inventory of options that have been downloaded|
 #' |`reconstruct_inventory`|Reconstruct inventory of all options that have been downloaded|
-#' |`iv`|Updates internal data.table (`eqopt_iv` of Implied term structures by symbol and date|
+#' |`iv_nearest`|Updates internal data.table (`iv_nearest`) of options nearest to defined deltas for a given symbol, tenor and date.|
+#' |`iv_fv`|Updates internal data.table (`iv`) of fair vlaue volatilities for defined deltas for a given symbol and date.|
 #' |`copy_external`|Copies identical directory structures from `external_path` to siny app internal data|
 #' @param dtstr (default `"-1w::"`)  How far back to load options. ONly data needed within timeframe is downloaded, unless `replace_data=TRUE`
 #' @param symbols (default: NULL) List of symbols to download
@@ -389,7 +444,7 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
   }
   setTimeStamp("start")
   # SSVI IMplied surfaces -----------------
-  if(todo=="iv") {
+  if(todo=="iv_fv") {
     restore_avs_state("lazy",lazyloadnames="iv")
     eqopt_iv <- the_av$iv %||% data.table()
     if(fcoalesce(max(the_av$pxd[symbol=="SOFR",]$timestamp), as.IDate("1970-01-01"))<Sys.Date()-1) {
@@ -403,7 +458,6 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
       todo_iv <- todo_iv[!eqopt_iv[,.N,by=.(symbol,ts)], on=.(symbol,ts)]
     }
     pb <- progress::progress_bar$new(format = paste0("AV IV  [:bar] :percent [:elapsed]"), total=length(tsymbols), clear = FALSE, width= 60)
-    cAssign("todo_iv")
     for(x in unique(todo_iv$symbol)) {
       #message_if_green("basic" %in% verbosity, "Calculating IMplied Vol surfaces for ",x,"-----")
       dtstodo <- todo_iv[symbol==x,]$ts
@@ -413,6 +467,7 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
       pb$tick()
     }
     # Update Inventory
+    the_av$iv <- the_av$iv[!is.na(ts)]
     iv_inv <- the_av$iv[,.(min_iv_dt=min(ts), max_iv_dt=max(ts)), by=.(symbol)]
     the_av$eqoptinv$inv <- coalesce_DT_byentry(the_av$eqoptinv$inv,iv_inv)
     save_avs_state("the,fst",alt_fst_set="iv",msg="Implied surfaces created")
