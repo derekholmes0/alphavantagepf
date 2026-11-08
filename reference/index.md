@@ -25,6 +25,9 @@
   : Get financial data from the Alpha Vantage API
 - [`av_grep_opts()`](https://derekholmes0.github.io/alphavantagepf/reference/av_grep_opts.md)
   : Filter options from returned AV data
+- [`av_load_cached_opts()`](https://derekholmes0.github.io/alphavantagepf/reference/av_load_cached_opts.md)
+  : Load cached options data previously downloaded using
+  av_add_options()
 - [`av_load_shinydata()`](https://derekholmes0.github.io/alphavantagepf/reference/av_load_shinydata.md)
   : Load av_runShiny() internal data.
 - [`av_make_funcmap()`](https://derekholmes0.github.io/alphavantagepf/reference/av_make_funcmap.md)

@@ -29,7 +29,8 @@ av_add_options(
   | `update` | Download and add or update full option runs by symbol over periods in `dtstr` |
   | `inventory` | Create/update inventory of options that have been downloaded |
   | `reconstruct_inventory` | Reconstruct inventory of all options that have been downloaded |
-  | `iv` | Updates internal data.table (`eqopt_iv` of Implied term structures by symbol and date |
+  | `iv_nearest` | Updates internal data.table (`iv_nearest`) of options nearest to defined deltas for a given symbol, tenor and date. |
+  | `iv_fv` | Updates internal data.table (`iv`) of fair vlaue volatilities for defined deltas for a given symbol and date. |
   | `copy_external` | Copies identical directory structures from `external_path` to siny app internal data |
 
 - dtstr:

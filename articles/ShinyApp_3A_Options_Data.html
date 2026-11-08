@@ -74,6 +74,10 @@
 <div class="section level2">
 <h2 id="options-data-issues-and-overview">Options Data Issues and Overview<a class="anchor" aria-label="anchor" href="#options-data-issues-and-overview"></a>
 </h2>
+<p>As of 2026, Alphavantage has some pre-canned option metrics, but none
+that are relevant to valuation. They do, however, have full histories of
+option-level data which (once downloaded) can be used for almost any
+analysis desired.</p>
 <p>Unlike simple time series data, options data requires knowing three
 more dimensions per point in time, per ticker. Specifically, a complete
 set of options requires a schema with 5 keys: Symbol, timestamp,
@@ -81,9 +85,167 @@ expiration, strike, and put vs call. Needless to say, that’s more data
 than could ever be retrieved in real time. It’s also more data than
 comfortably fits inside any one given data.table. The only option then
 is to download (and process) the data outside of the Shiny app.</p>
-<p>This vignette describes the function used to do this.</p>
+<p>This vignette describes the procedure for downloading options data
+and how it is summarized for external use. In particular, the underlying
+data can be used to construct</p>
+<ul>
+<li>Constant maturity implied volatilities at a number of deltas using
+the SSVI volatility surface interpolation method <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2033323" class="external-link">Gatheral
+and Jacquier</a> for a given symbol and date.</li>
+<li>Closest option to a given delta moneyness (e.g. 25 delta call or -25
+delta put) for a given symbol and date.</li>
+</ul>
+<p>The data from these efforts can be used externally using <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_runShiny_userdata.html">av_load_shinydata()</a>
+or via user-developed functions as could be added using <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_add_analytic.html">av_add_analytic()</a></p>
+<div class="section level3">
+<h3 id="adding-full-option-sets">Adding Full Option sets<a class="anchor" aria-label="anchor" href="#adding-full-option-sets"></a>
+</h3>
+<p>The function <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_add_options.html">av_add_options()</a>
+handles all options downloads. Given a set of tickers and a date range
+(specified in the usual way, e.g. <code>"-1y::"</code>), it will use the
+<code>HISTORICAL_OPTIONS</code> API call to get a full set of options
+per symbol and date. If no symbols are specified, it will either start
+the database out with <code>SPY</code> or download all tickers that have
+previously been requested.</p>
+<p>For example, to download all data for the (currently hot) ticker
+<code>MU</code> for the past year, just run:</p>
+<pre><code>&gt; av_add_options("update",dtstr="-1y::",symbols=c("MU"))
+Option data to get:MU from 2025-11-06 to 2026-11-06 (252 days)
+AVOpt:MU (2025-11-06::2026-11-06) [=============] 100% [ 4m]
+ Now: 16:34:16 Estimated end time data collection from AV: 16:38:13
+Option update: Adding 1937969 rows to partitioned parquet set
+
+Returned 1937969 new options, refreshing inventory, took 2.97 secs
+Updated option inventory in 0.36sec
+NULL
+&gt; </code></pre>
+<p><strong>Note that downloading options data can take a considerable
+amount of time</strong> depending on what level of service you are
+paying for and the speed of your underlying infrastructure. With a
+simple limit of 70 requests per minute, the above operation took about 4
+minutes. Collecting data for index ETFs in particular takes longer
+simply due to the volume of data requested. Initial data population may
+take several hours if not days.</p>
+<div class="section level4">
+<h4 id="a-note-on-storage">A note on storage<a class="anchor" aria-label="anchor" href="#a-note-on-storage"></a>
+</h4>
+<p>The <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_add_options.html">av_add_options()</a>
+call downloads <em>all</em> data, which can be substantial given the
+number of independent dimensions as outlined above. Alphavantage
+provides full greeks as well as last trades, marks, bid/offers and
+market sizes and volumes per contract id (i.e. per option with given
+expiration and strike for a given symbol).</p>
+<p>This data is certainly too large to keep in one file (or
+<code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame()</a></code>), so this package instead stores the data as a
+<em>partitioned parquet directory</em> below the user specified cache
+directory. For example, the data downloaded above was stored underneath
+my cache directory <code>c:\t\avsh</code> as</p>
+<pre><code>Directory of C:\t\avsh\eqopt\symbol=MU
+
+11/07/2026  16:34    &lt;DIR&gt;          .
+11/07/2026  16:34    &lt;DIR&gt;          ..
+11/07/2026  16:34       104,243,776 part-0.parquet</code></pre>
+<p>As this data is stored in a different format, it requires the
+function <a href="https://derekholmes0.github.io/alphavantagepf/reference/av_load_cached_opts.html">av_load_cached_opts()</a>
+to retrieve individual records. For example, to retrieve first and
+second month calls for the tickers <code>JPM</code> and <code>GS</code>
+over the past year, just run (for example)</p>
+<pre><code>&gt; opttest2=av_load_cached_opts(optsDT=CJ(symbol=c("JPM","GS"), expcode=c("MO_1","MO_2"), type=c("call")), dtstr="-1y::")
+&gt; opttest2
+         ts expcode expiration   type strike         contractid   last open_interest    iv  spot dtoexp   mark   delta   gamma    vega   bid bid_size    ask ask_size volume    theta
+     &lt;Date&gt;  &lt;char&gt;     &lt;Date&gt; &lt;char&gt;  &lt;num&gt;             &lt;char&gt;  &lt;num&gt;         &lt;int&gt; &lt;num&gt; &lt;num&gt;  &lt;num&gt;  &lt;num&gt;   &lt;num&gt;   &lt;num&gt;   &lt;num&gt; &lt;num&gt;    &lt;num&gt;  &lt;num&gt;    &lt;num&gt;  &lt;num&gt;    &lt;num&gt;
+ 2025-11-07    MO_1 2025-11-21   call    230  GS251121C00230000 487.83             0  1.49    NA     14 556.20 1.00000 0.00000 0.00000   552       20 560.40        5      0 -0.02435
+ 2025-11-07    MO_1 2025-11-21   call    240  GS251121C00240000   0.00             0  1.49    NA     14 546.40 1.00000 0.00000 0.00000   542       20 550.40        5      0 -0.02541
+ 2025-11-07    MO_1 2025-11-21   call    250  GS251121C00250000   0.00             0  1.49    NA     14 536.23 1.00000 0.00000 0.00000   532       21 540.45       21      0 -0.02647
+...</code></pre>
 </div>
-  </main>
+</div>
+</div>
+<div class="section level2">
+<h2 id="summarizing-the-data-">Summarizing the data.<a class="anchor" aria-label="anchor" href="#summarizing-the-data-"></a>
+</h2>
+<p>The raw options data needs to be aggregated in some way to be truly
+useful. There are two different techniques coded into this package. Each
+tries to find an option or option volatility that are closest to a given
+delta category for a given expiration, date, and symbol. There are three
+methods of aggregation available:</p>
+<div class="section level3">
+<h3 id="simple-inventory-of-data-available-">Simple inventory of data available.<a class="anchor" aria-label="anchor" href="#simple-inventory-of-data-available-"></a>
+</h3>
+<p>The <code>inventory</code> option creates an internal list of three
+data.tables: An inventory summary, a table of symbols and dates for
+which options have been downloaded, and the last dates’ data for each
+ticker. Note that this process can a minute or two.</p>
+<pre><code>&gt; av_add_options("inventory",dtstr="-1m::")
+Updated option inventory in 26.72sec
+NULL</code></pre>
+<p>Using the data is as simple as the following:</p>
+<pre><code>&gt; head(av_load_shinydata("eqoptinv")$inv)
+ symbol min_DT_ENTRY max_DT_ENTRY   cnt  nYrs nperYr min_ivn_dt max_ivn_dt min_iv_dt max_iv_dt
+ &lt;char&gt;       &lt;Date&gt;       &lt;Date&gt; &lt;int&gt; &lt;num&gt;  &lt;num&gt;     &lt;Date&gt;     &lt;Date&gt;    &lt;Date&gt;    &lt;Date&gt;
+    ALL   2018-11-02   2026-11-06   444  8.02   55.4       &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+    AMD   2018-11-02   2026-11-06   444  8.02   55.4       &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+   ARGT   2021-04-09   2026-11-06   312  5.58   55.9       &lt;NA&gt;       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;</code></pre>
+</div>
+<div class="section level3">
+<h3 id="closest-option">Closest Option:<a class="anchor" aria-label="anchor" href="#closest-option"></a>
+</h3>
+<p>Find the option for a given expiration tenor which is closest (e.g.)
+to a 25 delta call, by date and symbol. Culling them from the database
+is accomplished with the <code>"iv_nearest"</code> option</p>
+<pre><code>&gt; av_add_options("iv_nearest",dtstr="-2w::")
+restore_avs_state restoring lazy loaded datasets iv_nearest
+AV IV NEAR  [=================================&gt;-]  98% [14s] save_avs_state(all|px|fst) writing iv_nearest,
+NULL
+&gt; </code></pre>
+<p>To retrieve this data, use</p>
+<pre><code>&gt; av_load_shinydata("iv_nearest")[symbol=="QQQ" &amp; expcode=="MO_1",]
+ symbol         ts expcode   type moneyn expiration strike         contractid  last open_interest    iv  spot dtoexp  mark   delta   gamma   vega   bid bid_size   ask ask_size volume
+ &lt;char&gt;     &lt;Date&gt;  &lt;char&gt; &lt;char&gt; &lt;fctr&gt;     &lt;Date&gt;  &lt;num&gt;             &lt;char&gt; &lt;num&gt;         &lt;int&gt; &lt;num&gt; &lt;num&gt;  &lt;num&gt; &lt;num&gt;   &lt;num&gt;   &lt;num&gt;  &lt;num&gt; &lt;num&gt;    &lt;num&gt; &lt;num&gt;    &lt;num&gt;  &lt;num&gt;
+    QQQ 2016-10-11    MO_1    put    P75 2016-10-21    119 QQQ161021P00119000  1.91         11798  10.3    NA     10  1.75 -0.7646 0.15399 0.0598  1.74       50  1.77       89   4312
+    QQQ 2016-10-11    MO_1    put    P50 2016-10-21    118 QQQ161021P00118000  1.20         37076  12.2    NA     10  1.19 -0.5737 0.16497 0.0763  1.18       50  1.21      118   6898
+    QQQ 2016-10-11    MO_1    put    P25 2016-10-21    116 QQQ161021P00116000  0.54         14735  14.2    NA     10  0.52 -0.2838 0.12292 0.0659  0.51       50  0.53      109   2839
+    QQQ 2016-10-11    MO_1    put    P10 2016-10-21    114 QQQ161021P00113500  0.21          3210  17.1    NA     10  0.17 -0.1060 0.05506 0.0356  0.17      253  0.18      143    168</code></pre>
+</div>
+<div class="section level3">
+<h3 id="constant-maturity-fair-value-vols">Constant maturity Fair Value vols<a class="anchor" aria-label="anchor" href="#constant-maturity-fair-value-vols"></a>
+</h3>
+<p>This calculates fair value (arbitrage free) implied volatilities for
+a given delta moneyness and fixed tenor, using the SSVI approach of <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2033323" class="external-link">Gatheral
+and Jacquier</a> The fair value fits are created using the
+<code>"iv_fv"</code> function, which will create/update a internal table
+<code>iv</code> with</p>
+<ul>
+<li>Fair value volatilities for each fixed maturity expiration, e.g. for
+next monthly expiration 25 delta calls on SPY for a given date.</li>
+<li>Fair value volatilities for a constant maturity date (defined as
+<code>CWK_1</code> or <code>CMO_1</code> for 1 week and 1 month out
+(e.g.) resepctively. There are three tenors for each, so the full set of
+expiration codes calcualted are in
+<code>(CWK_1,CWK_2,CWK_3,CMO_1,CMO_2,CMO_3)</code>.</li>
+</ul>
+<pre><code>&gt; av_add_options("iv_fv",dtstr="-2w::")
+restore_avs_state restoring lazy loaded datasets iv
+Updating SOFR levels from FRED via quantmod
+ save_avs_state(all|px|fst) writing pxd,
+av_one_px(SOFR  @ userdata) userdata
+...
+ save_avs_state(all|px|fst) writing iv,
+NULL
+&gt; </code></pre>
+<p>Note that SOFR rates are used as risk free rates for purposes of
+calculating forwards prices. The data calcualted can be retrieved
+using:</p>
+<pre><code>&gt; av_load_shinydata("iv")[symbol=="QQQ" &amp; ts==max(ts),]
+         ts expcode moneyn strike    iv symbol
+     &lt;Date&gt;  &lt;char&gt; &lt;fctr&gt;  &lt;num&gt; &lt;num&gt; &lt;char&gt;
+ 2026-11-06   CMO_1    P75    693 0.331    QQQ
+ 2026-11-06   CMO_1    P50    665 0.297    QQQ
+ 2026-11-06   CMO_1    P25    660 0.293    QQQ</code></pre>
+</div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
