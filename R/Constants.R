@@ -214,6 +214,7 @@ av_shiny_constants <- function() {
     "avsh_elements"= data.table::fread("./inst/extdata/avsh_elements.csv"), # Functions and options
     "overviewlist"=data.table::fread("./inst/extdata/overview_map.csv"),  # Formatting of description tables
     "abbreviations"=data.table::fread("./inst/extdata/name_abbreviations.csv"),  # Abbreviations
+    "deltamaps"=data.table::fread("./inst/extdata/deltamaps.csv",na.strings=""),  # Delta maps
     "edit_tableoptions"=list('editable1'='row','editable2'='row','pagelen1'=80,'pagelen2'=80,'digits'=3),
     "selectizeoptions" =I("selectize-input: 12px; background-color:red"),
     "inputcss_side" = paste(lapply(yellowed_inputs,(\(x) paste(x,tinputformstyle))),collapse=" "),

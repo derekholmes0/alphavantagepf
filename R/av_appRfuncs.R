@@ -125,6 +125,7 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=
 #' @seealso [av_runShiny()]
 #' @export
 av_load_shinydata <- function(item=NULL,verbose=TRUE,addfuncs=TRUE) {
+  var=NULL
   if(is.null(item)) {
     restore_avs_state("all");
     the_av$outcopy<-list()
@@ -162,12 +163,14 @@ av_load_shinydata <- function(item=NULL,verbose=TRUE,addfuncs=TRUE) {
 #' @examples
 #' \dontrun{
 #' opttest1=av_load_cached_opts(symbols="JPM;GS",dtstr="-2m::")
-#' opttest2=av_load_cached_opts(optsDT=CJ(symbol=c("JPM","GS"), expcode=c("MO_1","MO_2"), type=c("call")), dtstr="-1y::")
+#' loadcj = CJ(symbol=c("JPM","GS"), expcode=c("MO_1","MO_2"), type=c("call"))
+#' opttest2=av_load_cached_opts(optsDT=loadcj, dtstr="-1y::")
 #' opttest2[,.(min(ts),max(ts)), by=.(expcode,symbol,type)]
 #' }
+#' @import data.table
 #' @export
 av_load_cached_opts <- function(optsDT=NULL,symbols=NULL,dtstr="") {
-  tsymbols<-NULL
+  tsymbols=NULL
   if (is.data.frame(optsDT)) {
     if( !("symbol" %in% names(optsDT))) {
       message_if_red(TRUE,"Input data.frame must contain symbol.")
@@ -350,8 +353,6 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
 # ==========================================================================================================
 # OPTIONS
 # ==========================================================================================================
-
-
 #' Manage option data
 #'
 #' @title av_add_options
@@ -399,15 +400,10 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
 #' @export
 av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_data=FALSE, baddates_limits=3, verbosity="basic",
                            external_path=NULL) {
-  moneyn=yrwk=tfreq=ts=expcode=ov=open_interest=ask=bid=mark=iv=indtcopy=strike=ww=index=SOFR=new_max_DT_ENTRY=max_DT_ENTRY=NULL
+  moneyn=yrwk=tfreq=ts=expcode=ov=open_interest=ask=bid=mark=iv=indtcopy=strike=ww=index=SOFR=NULL
+  dcat=cutlevel=new_max_DT_ENTRY=max_DT_ENTRY=NULL
   eo_path <- paste0(the_av$cachedir,"/eqopt")
-  the_av$closest_deltamap <- data.table(dcat=s("(-0.9,-0.75];(-0.75,-0.5];(-0.5,-0.25];(-0.25,-0.1];(-0.1,-0.05];(-0.05,0];(0,0.05];(0.05,0.1];(0.1,0.25];(0.25,0.5];(0.5,0.75];(0.75,0.9];NA"),
-                         moneyn=s("P75;P50;P25;P10;P5;P0;C0;C5;C10;C25;C50;C75;NA"),
-                         cutlevel=c(-0.9,-0.75,-0.5,-0.25,-0.1,-0.05,0,0.05,0.1,0.25,0.5,0.75,0.9))
-  the_av$deltamap <- data.table(moneyn=s("P90;P75;P50;P45;P40;P35;P25;P15;P10;P5;C5;C10;C15;C25;C35;C45;C50;C75;C90;NA"),
-                         cutlevel=c(-0.9,-0.75,-0.5,-0.45,-0.4,-0.35,-0.25,-0.15,-0.1,-0.05,0.05,0.1,0.15,0.25,0.35,0.45,0.5,0.75,0.9,NA))
-  the_av$dtoexpmap <- data.table(dtoexp=c(7, 14, 21, 30,60,90), cexpcode=s("CWK_1;CWK_2;CWK_3;CMO_1;CMO_2;CMO_3"))
-
+  closest_deltamap <- avsd$deltamap[listnm=="closest",][,.(dcat,moneyn,cutlevel)]
   if(!dir.exists(eo_path)) {
     stop("Please Create ",eo_path," first.  CRAN would prefer the package does not.")
   }
@@ -452,7 +448,6 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
       sofr <- as.data.table(quantmod::getSymbols("SOFR",src="FRED",auto.assign=FALSE))[,.(DT_ENTRY=index,close=SOFR,symbol="SOFR")]
       av_add_px(sofr)
     }
-
     todo_iv <- dt_todo_loaded
     if(replace_data==FALSE & nrow(eqopt_iv)>0) {
       todo_iv <- todo_iv[!eqopt_iv[,.N,by=.(symbol,ts)], on=.(symbol,ts)]
@@ -475,8 +470,8 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
   if(todo=="iv_nearest") {
     restore_avs_state("lazy",lazyloadnames="iv_nearest")
     eqopt_ivn <- the_av$iv_nearest %||% data.table()
-    deltaset <- the_av$closest_deltamap$cutlevel
-    deltalabels <-  the_av$closest_deltamap[!(moneyn=="NA"),]$moneyn
+    deltaset <- closest_deltamap$cutlevel
+    deltalabels <-  closest_deltamap[!(moneyn=="NA"),]$moneyn
 
     # Original approach: Just find option that is closest to the delta
     one_symbol_n <- function(thissymbol,dtset) {
@@ -586,7 +581,6 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
     av_add_options("inventory",dtstr=dtstr)
     av_add_options("iv",dtstr=dtstr)
   }
-  rm(list=s("closest_deltamap;deltamap;dtoexpmap"),envir=the_av)
   return()
 }
 

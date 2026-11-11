@@ -95,12 +95,13 @@ df_from_two_dates <- function(dt1,dt2) {
   return(1/(1+rt*as.numeric(dt2-dt1)/360))
 }
 
-
 iv_one_symbol <- function(thissymbol,dtset, minobs=12, winsorlevel=0.05,ds=NULL) {  # Set in calling function
   moneyn=ts=df=mark_call=mark_put=strike=expcode=iv_call=iv_put=delta_call=delta_put=iv=good=k=dtoexp=cexpcode=NULL
+  dcat=cutlevel=usegood=bad=NULL
   message_if_green(TRUE,"Implied Vols:",thissymbol," from ",as.Date(min(dtset))," to ",as.Date(max(dtset)), " (",length(dtset)," days)")
-  deltaset <- the_av$closest_deltamap$cutlevel
-  deltalabels <- the_av$closest_deltamap[!(moneyn=="NA"),]$moneyn
+  closest_deltamap <- avsd$deltamap[listnm=="closest",][,.(dcat,moneyn,cutlevel)]
+  deltaset <- closest_deltamap$cutlevel
+  deltalabels <- closest_deltamap[!(moneyn=="NA"),]$moneyn
   ds <- ds %||% arrow::open_dataset(paste0(the_av$cachedir,"/eqopt"),partitioning=c("symbol"))
   u1 <- ds |> filter(symbol==thissymbol) |> dplyr::collect() |> as.data.table()
 
@@ -109,32 +110,38 @@ iv_one_symbol <- function(thissymbol,dtset, minobs=12, winsorlevel=0.05,ds=NULL)
     u3 <- dcast(u2,ts+expcode+expiration+strike ~ type, value.var=c("iv","delta","mark"))
     urf = u3[,.N,by=.(ts,expiration)][, df:=df_from_two_dates(ts,expiration), by=.I]
     ufwd = urf[u3,on=.(ts,expiration)][,F:=(mark_call-mark_put)/df+strike]
-    dfinp = ufwd[,.(ts,expiration,strike,F)][u3,on=.(ts,expiration,strike)][
-      ,.(ts,expcode,strike,F,k=log(strike/F),T=as.numeric(expiration-ts)/365,iv=fifelse(F>strike,iv_call,iv_put)/100,
-         delta=fifelse(F>strike,delta_call,delta_put))]
 
-    dfinp = dfinp[!is.na(iv) & iv>0.0001,]
-    dfinp = dfinp[,good:=between(iv,quantile(iv,winsorlevel,na.rm=TRUE),quantile(iv,1-winsorlevel,na.rm=TRUE))]
-    if(nbad <- nrow(dfinp[good==TRUE,])<=minobs) {
+    # Here, taking half the options
+    dfinpall = ufwd[,.(ts,expiration,strike,F)][u2,on=.(ts,expiration,strike)][
+      ,.(ts,expcode,strike,type,delta,F,k=log(strike/F),iv=iv/100,T=as.numeric(expiration-ts)/365)]
+    dfinpall = dfinpall[,let(use=(F<strike & type=="call") | (F>=strike & type=="put"),bad=(is.na(iv) | iv<=0.02))]
+    dfinpall = dfinpall[,usegood:=(use & !bad)]
+
+    if( (nbad<-nrow(dfinpall[usegood==TRUE,]))<=minobs) {
       message_if_red(TRUE,"one_iv(",thissymbol,",",dt,") not enough data (",nbad," obs) to calcluate a surface.  Skipping.")
       return(data.table())
     }
-    #message("one_iv(",thissymbol,",",dt,") using ",nrow(dfinp[good==TRUE,]), " data points of ",nrow(dfinp)," original")
-    fit <- fit_ssvi(dfinp[good==TRUE,],weighting="vega")
+    #message("one_iv(",thissymbol,",",dt,") using ",nrow(dfinpall[usegood==TRUE,]), " data points of ",nrow(dfinpall)," original")
+    if(nrow ( dfinpall[usegood==TRUE,] )<=4) { cAssign("thissymbol;dt;dfinpall")}
+    fit <- fit_ssvi(dfinpall[usegood==TRUE,],weighting="vega")
+    if( length(fit$mats)<=0 ) {
+      message_if_red(TRUE,"one_iv(",thissymbol,",",dt,") Got a fit, but not enough mats to cover space")
+      return(data.table())
+    }
 
     # Predict by actual maturity
-    grida <- dfinp[,moneyn:=cut(delta,deltaset,labels=deltalabels)][!is.na(moneyn)][,.(ts,expcode,strike,T,k,moneyn)]
-    grid <- rbindlist(list(grida[F>strike,][,.SD[.N], by=.(ts,expcode,moneyn)],
-                           grida[F<=strike,][,.SD[1], by=.(ts,expcode,moneyn)]
+    grida <- dfinpall[,moneyn:=cut(delta,deltaset,labels=deltalabels)][!is.na(moneyn)][,.(ts,expcode,type,strike,T,k,delta, moneyn)]
+    grid <- rbindlist(list(grida[type=="call",][,.SD[.N], by=.(ts,expcode,moneyn)],
+                           grida[type=="put",][,.SD[1], by=.(ts,expcode,moneyn)]
     ))
     grid$iv <-  predict_iv(fit, grid$k, grid$T)
 
     # Predict by Constant Maturity
     cmo_mats = grid[,.(dtoexp=365*max(T)), by=.(expcode)][order(dtoexp)]
-    ktoget = cmo_mats[the_av$dtoexpmap,on=.(dtoexp), roll=T]
+    ktoget = cmo_mats[ avsd$deltamap[listnm=="cm",.(dtoexp,cexpcode)], on=.(dtoexp), roll=T]
     grid_cmo = grid[ktoget,on=.(expcode),allow.cartesian=TRUE][,T:=dtoexp/365]
     grid_cmo$iv = predict_iv(fit, grid_cmo$k, grid_cmo$T)
-    tortn = rbindlist(list(grid[,.(ts,expcode,moneyn,strike,iv)],grid_cmo[,.(ts,expcode=cexpcode,moneyn,strike,iv)]))
+    tortn = rbindlist(list(grid[,.(ts,expcode,moneyn,strike,k,iv)],grid_cmo[,.(ts,expcode=cexpcode,moneyn,strike,k,iv)]))
     tortn = tortn[is.finite(iv)] # Sometimes not enough tenors are liquid
     return(tortn)
   }

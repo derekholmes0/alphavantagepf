@@ -1,9 +1,9 @@
 #source("./R/utilities.R")
-tver<-"0.9.23" # Should match DESCRIPTIONS
+tver<-"0.9.24" # Should match DESCRIPTIONS
 
-
+# 0.9.24: Implied vol functions
 # 0.9.23: SSVI surface
-# 0.9.22: OPtimaal Reguimes
+# 0.9.22: OPtimaal Regimes
 # 0.9.213: Lazy Loading
 # 0.9.212: Fixed add_px problem and refactored file name handling and save/reset state.
 # 0.9.21:  Add user function dir to AVOPTS
@@ -353,7 +353,7 @@ av_make_server <- function() {
       # out for Production, IN for testing
       out[["MSG"]]<- rv$istr1_enter
       runfunc_set <-  the_av$avsh_funcs[runcode==todofunc,]
-      cAssign("todo;todofunc;rv;todoargs;assetline;runfunc_set",silent=FALSE)
+      #cAssign("todo;todofunc;rv;todoargs;assetline;runfunc_set",silent=FALSE)
       quick_message(fifelse(nrow(runfunc_set)<=0,paste(">",todo,"<:Invalid function"),""))
       if(nrow(runfunc_set)<=0) { return() }
       # Set defaults

@@ -406,11 +406,17 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="",lazyloadnames="") {
       assign(x, fst::read_fst(the_av$fn_list[[x]], as.data.table=TRUE), envir=the_av) # pxd, earn to fst
     })
   }
-  if(grepl("lazy",todo)) {
-    if(length(s(lazyloadnames))<=0) { lazyloadnames <- s(avsd$defaults[var=="fn_list_lazy",]$value_str) }
-    message_if_red(TRUE,"restore_avs_state restoring lazy loaded datasets ",s(lazyloadnames))
-    rtn <- lapply(s(lazyloadnames), \(x) {
-      assign(x, fst::read_fst(the_av$fn_list[[x]], as.data.table=TRUE), envir=the_av) # pxd, earn to fst
+  if(grepl("lazy",todo)) { # If not valid name, just ignore
+    valid_lazy_names <- s(avsd$defaults[var=="fn_list_lazy",]$value_str)
+    if(length(s(lazyloadnames))<=0) { lazyloadnames <- valid_lazy_names }
+    message_if_green(the_av$dbglvl>1,"restore_avs_state restoring lazy loaded datasets ",s(lazyloadnames))
+    rtn <- lapply(intersect(s(lazyloadnames),valid_lazy_names),  \(x) {
+      if(file.exists(the_av$fn_list[[x]])) {
+        assign(x, fst::read_fst(the_av$fn_list[[x]], as.data.table=TRUE), envir=the_av) # pxd, earn to fst
+      }
+      else {
+        message_if_red(TRUE,"restore_avs_state Trying to restore nonexistent file: ",x,".  Make sure to run data collection.")
+      }
     })
   }
   if(nchar(the_av$av_dump_dir)>0) {
