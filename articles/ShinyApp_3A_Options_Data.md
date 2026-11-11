@@ -62,7 +62,7 @@ speed of your underlying infrastructure. With a simple limit of 70
 requests per minute, the above operation took about 4 minutes.
 Collecting data for index ETFs in particular takes longer simply due to
 the volume of data requested. Initial data population may take several
-hours if not days.
+hours if not days, but once done, updates are fairly fast.
 
 #### A note on storage
 
@@ -165,7 +165,7 @@ create/update a internal table `iv` with
 - Fair value volatilities for a constant maturity date (defined as
   `CWK_1` or `CMO_1` for 1 week and 1 month out (e.g.) resepctively.
   There are three tenors for each, so the full set of expiration codes
-  calcualted are in `(CWK_1,CWK_2,CWK_3,CMO_1,CMO_2,CMO_3)`.
+  calculated are in `(CWK_1,CWK_2,CWK_3,CMO_1,CMO_2,CMO_3)`.
 
 &nbsp;
 
@@ -180,7 +180,8 @@ create/update a internal table `iv` with
     > 
 
 Note that SOFR rates are used as risk free rates for purposes of
-calculating forwards prices. The data calcualted can be retrieved using:
+calculating forwards prices. The data calculated can be retrieved using
+(e.g.):
 
     > av_load_shinydata("iv")[symbol=="QQQ" & ts==max(ts),]
              ts expcode moneyn strike    iv symbol
@@ -188,3 +189,5 @@ calculating forwards prices. The data calcualted can be retrieved using:
      2026-11-06   CMO_1    P75    693 0.331    QQQ
      2026-11-06   CMO_1    P50    665 0.297    QQQ
      2026-11-06   CMO_1    P25    660 0.293    QQQ
+
+### Analytics available

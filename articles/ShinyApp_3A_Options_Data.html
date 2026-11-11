@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">alphavantagepf</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.24</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -125,7 +125,8 @@ paying for and the speed of your underlying infrastructure. With a
 simple limit of 70 requests per minute, the above operation took about 4
 minutes. Collecting data for index ETFs in particular takes longer
 simply due to the volume of data requested. Initial data population may
-take several hours if not days.</p>
+take several hours if not days, but once done, updates are fairly
+fast.</p>
 <div class="section level4">
 <h4 id="a-note-on-storage">A note on storage<a class="anchor" aria-label="anchor" href="#a-note-on-storage"></a>
 </h4>
@@ -221,7 +222,7 @@ next monthly expiration 25 delta calls on SPY for a given date.</li>
 <li>Fair value volatilities for a constant maturity date (defined as
 <code>CWK_1</code> or <code>CMO_1</code> for 1 week and 1 month out
 (e.g.) resepctively. There are three tenors for each, so the full set of
-expiration codes calcualted are in
+expiration codes calculated are in
 <code>(CWK_1,CWK_2,CWK_3,CMO_1,CMO_2,CMO_3)</code>.</li>
 </ul>
 <pre><code>&gt; av_add_options("iv_fv",dtstr="-2w::")
@@ -234,14 +235,18 @@ av_one_px(SOFR  @ userdata) userdata
 NULL
 &gt; </code></pre>
 <p>Note that SOFR rates are used as risk free rates for purposes of
-calculating forwards prices. The data calcualted can be retrieved
-using:</p>
+calculating forwards prices. The data calculated can be retrieved using
+(e.g.):</p>
 <pre><code>&gt; av_load_shinydata("iv")[symbol=="QQQ" &amp; ts==max(ts),]
          ts expcode moneyn strike    iv symbol
      &lt;Date&gt;  &lt;char&gt; &lt;fctr&gt;  &lt;num&gt; &lt;num&gt; &lt;char&gt;
  2026-11-06   CMO_1    P75    693 0.331    QQQ
  2026-11-06   CMO_1    P50    665 0.297    QQQ
  2026-11-06   CMO_1    P25    660 0.293    QQQ</code></pre>
+</div>
+<div class="section level3">
+<h3 id="analytics-available">Analytics available<a class="anchor" aria-label="anchor" href="#analytics-available"></a>
+</h3>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
