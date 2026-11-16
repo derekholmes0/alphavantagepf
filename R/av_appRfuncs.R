@@ -168,6 +168,7 @@ av_load_shinydata <- function(item=NULL,verbose=TRUE,addfuncs=TRUE) {
 #' opttest2[,.(min(ts),max(ts)), by=.(expcode,symbol,type)]
 #' }
 #' @import data.table
+#' @importFrom data.table .NATURAL
 #' @export
 av_load_cached_opts <- function(optsDT=NULL,symbols=NULL,dtstr="") {
   tsymbols=NULL

@@ -28,7 +28,7 @@ EQ,DES,avsh,av_des,,,main,,ETF,pxd,Equity/ETF description,
 EQ,CN,avsh,av_news,,,news,,,pxd,Equity/ETF NEWS,
 EQ,DIV,avsh,av_divs,,,main,,,pxd,Equity/ETF dividends,
 EQ,EA,avsh,av_earn,,,main,,,pxd,Equity/ETF earnings,
-EQ,OS,avsh,av_optsearch,,"[f=F,M,C,otm][d=5]",options,,,pxd,Search for Options with mindelta d,"OS A,M,A,otm"
+OPT,OS,avsh,av_optsearch,,"[f=F,M,C,otm][d=5]",options,,,pxd,Search for Options with mindelta d,"OS A,M,A,otm"
 PX,GPE,avsh,av_gearn,,,main,,,pxd;earn;earnest,Graph P/E,
 PX,GPE2,avsh,av_gearn,,,main,,,pxd;earn;earnest,Graph (on 2) P/E,
 PX,GEP,avsh,av_gearn,,,main,,,pxd;earn;earnest,Graph E/P,

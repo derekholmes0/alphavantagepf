@@ -146,8 +146,9 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
     calls_in_last_min <- timelist[which(as.numeric(timelist)>=as.numeric(Sys.time()-60))]
     last_delay <- the_av$lastdelay %||% 0
     new_delay <- 0
-    if(delay<=0 && length(calls_in_last_min)>=the_av$max_requests_per_min) {
-      new_delay <- 60/as.numeric(the_av$max_requests_per_min)
+    rpm <- the_av$max_requests_per_min %||% 20
+    if(delay<=0 && length(calls_in_last_min)>=rpm) {
+      new_delay <- 60/as.numeric(rpm)
       message_if_green(last_delay<=0 & verbose==TRUE,"av_get_pf: Pacing ", round(new_delay,1), " second(s)")
       Sys.sleep(new_delay)
     }

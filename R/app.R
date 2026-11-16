@@ -1,5 +1,5 @@
 #source("./R/utilities.R")
-tver<-"0.9.24" # Should match DESCRIPTIONS
+tver<-"0.9.241" # Should match DESCRIPTIONS
 
 # 0.9.24: Implied vol functions
 # 0.9.23: SSVI surface
@@ -200,10 +200,7 @@ av_make_server <- function() {
     FinanceGraphs::fg_sync_group("avshiny")
     avpf_set_request_pace(the_av$max_requests_per_min)
     message(" use llm:", "useLLM" %in% s(the_av$logopts))
-    if("useLLM" %in% s(the_av$logopts) &&
-       !exists("av_chat") &&
-       file.exists(paste0(the_av$defaultcachedir,"/config.json"))
-       ) {
+    if("useLLM" %in% s(the_av$logopts) && !exists("av_chat") && file.exists(paste0(the_av$defaultcachedir,"/config.json")) ) {
       av_chat <- create_chat_instance()
     }
 

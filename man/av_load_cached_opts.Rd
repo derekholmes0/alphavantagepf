@@ -25,7 +25,8 @@ Load Options data from parquet files
 \examples{
 \dontrun{
 opttest1=av_load_cached_opts(symbols="JPM;GS",dtstr="-2m::")
-opttest2=av_load_cached_opts(optsDT=CJ(symbol=c("JPM","GS"), expcode=c("MO_1","MO_2"), type=c("call")), dtstr="-1y::")
+loadcj = CJ(symbol=c("JPM","GS"), expcode=c("MO_1","MO_2"), type=c("call"))
+opttest2=av_load_cached_opts(optsDT=loadcj, dtstr="-1y::")
 opttest2[,.(min(ts),max(ts)), by=.(expcode,symbol,type)]
 }
 }

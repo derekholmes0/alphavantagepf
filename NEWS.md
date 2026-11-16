@@ -4,7 +4,7 @@
 
 * LLM support and MCP integration
 
-# alphavantagepf 0.9.24
+# alphavantagepf 0.9.241
 
 ## New Features
 
@@ -19,6 +19,10 @@
   - New functions GPIV
 
 * SSVI Implied volatility surface calculations.  See [vignette](file:///C:/Users/DFH/alphavantagepf/docs/articles/ShinyApp_3A_Options_Data.html)
+
+### Bug Fixes
+
+* `av_get_pf()` now works when constants not initially set up.
 
 
 # alphavantagepf 0.9.1
