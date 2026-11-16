@@ -4,6 +4,16 @@
 
 - [`alphavantagepf`](https://derekholmes0.github.io/alphavantagepf/reference/alphavantagepf.md)
   : alphavantagepf: A lightweight R interface to the Alpha Vantage API
+- [`av_GPIV()`](https://derekholmes0.github.io/alphavantagepf/reference/av_GPIV.md)
+  : Graph Implied Volatilites
+- [`av_GPIVS()`](https://derekholmes0.github.io/alphavantagepf/reference/av_GPIVS.md)
+  : Graph Implied Volatilite Spreads
+- [`av_IVTS()`](https://derekholmes0.github.io/alphavantagepf/reference/av_IVTS.md)
+  : Graph Implied Volatilites Term Structures
+- [`av_OINV()`](https://derekholmes0.github.io/alphavantagepf/reference/av_OINV.md)
+  : Invnetory of Options Data
+- [`av_OLAST()`](https://derekholmes0.github.io/alphavantagepf/reference/av_OLAST.md)
+  : Summary of most recent term structure
 - [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_analytic.md)
   : av_add_analytic
 - [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.md)

@@ -1,6 +1,6 @@
 # Changelog
 
-## alphavantagepf 0.9.24
+## alphavantagepf 0.9.241
 
 ### New Features
 
@@ -18,6 +18,11 @@
   - New functions GPIV
 - SSVI Implied volatility surface calculations. See
   [vignette](file:///C:/Users/DFH/alphavantagepf/docs/articles/ShinyApp_3A_Options_Data.md)
+
+#### Bug Fixes
+
+- [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
+  now works when constants not initially set up.
 
 ## alphavantagepf 0.9.1
 

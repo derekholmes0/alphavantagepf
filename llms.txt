@@ -31,6 +31,9 @@ Load the package.
 ``` r
 
 library(alphavantagepf)
+#> Registered S3 method overwritten by 'quantmod':
+#>   method            from
+#>   as.zoo.data.frame zoo
 ```
 
 Set your API key obtained from [Alpha
@@ -295,10 +298,9 @@ into one common format. That effort requires knowing what asset class
 each ticker belongs to, since there are different API calls for each.
 Asset classes are determined by comparing them with pre-downloaded[^3]
 symbol lists, or asssumed to be currencies if they are of the standard
-`[[:alpha:]]*3/[[:alpha:]]*3` format. Options data can also be stored,
-but in a more complicated format. See [Data Management
-Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
-for further details.
+`[[:alpha:]]*3/[[:alpha:]]*3` format. [Options
+data](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3A_Options_Data.html)
+can also be stored and summarized into fair value implied volatilities.
 
 #### Adding data
 
@@ -384,6 +386,16 @@ Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_4_New_
 
 - [`alphavantagepf`](https://derekholmes0.github.io/alphavantagepf/reference/alphavantagepf.md)
   : alphavantagepf: A lightweight R interface to the Alpha Vantage API
+- [`av_GPIV()`](https://derekholmes0.github.io/alphavantagepf/reference/av_GPIV.md)
+  : Graph Implied Volatilites
+- [`av_GPIVS()`](https://derekholmes0.github.io/alphavantagepf/reference/av_GPIVS.md)
+  : Graph Implied Volatilite Spreads
+- [`av_IVTS()`](https://derekholmes0.github.io/alphavantagepf/reference/av_IVTS.md)
+  : Graph Implied Volatilites Term Structures
+- [`av_OINV()`](https://derekholmes0.github.io/alphavantagepf/reference/av_OINV.md)
+  : Invnetory of Options Data
+- [`av_OLAST()`](https://derekholmes0.github.io/alphavantagepf/reference/av_OLAST.md)
+  : Summary of most recent term structure
 - [`av_add_analytic()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_analytic.md)
   : av_add_analytic
 - [`av_add_assetgroups()`](https://derekholmes0.github.io/alphavantagepf/reference/av_add_assetgroups.md)

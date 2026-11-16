@@ -31,6 +31,9 @@ Load the package.
 ``` r
 
 library(alphavantagepf)
+#> Registered S3 method overwritten by 'quantmod':
+#>   method            from
+#>   as.zoo.data.frame zoo
 ```
 
 Set your API key obtained from [Alpha
@@ -295,10 +298,9 @@ into one common format. That effort requires knowing what asset class
 each ticker belongs to, since there are different API calls for each.
 Asset classes are determined by comparing them with pre-downloaded[^3]
 symbol lists, or asssumed to be currencies if they are of the standard
-`[[:alpha:]]*3/[[:alpha:]]*3` format. Options data can also be stored,
-but in a more complicated format. See [Data Management
-Vignette](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3_Data_Management.html)
-for further details.
+`[[:alpha:]]*3/[[:alpha:]]*3` format. [Options
+data](https://derekholmes0.github.io/alphavantagepf/articles/ShinyApp_3A_Options_Data.html)
+can also be stored and summarized into fair value implied volatilities.
 
 #### Adding data
 
