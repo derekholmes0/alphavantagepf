@@ -39,6 +39,8 @@ Outputs in the main page are shown in the following order:
 | MAIN | TS2 | 7 | dygraphs | [dygraphs](https://rstudio.github.io/dygraphs/) |
 | MAIN | SCAT1 | 8 | ggplot2::ggplot | [ggplots](https://ggplot2.tidyverse.org/reference/index.html) |
 | MAIN | SCAT2 | 9 | ggplot2::ggplot | [ggplots](https://ggplot2.tidyverse.org/reference/index.html) |
+| MAIN | GT4 | 10 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
+| MAIN | GT5 | 11 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
 | DETAILS | DGT1 | 1 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
 | DETAILS | DGT2 | 2 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
 | DETAILS | DSCAT1 | 3 | ggplot2::ggplot | [ggplots](https://ggplot2.tidyverse.org/reference/index.html) |
