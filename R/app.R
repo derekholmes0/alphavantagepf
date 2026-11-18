@@ -1,5 +1,5 @@
 #source("./R/utilities.R")
-tver<-"0.9.241" # Should match DESCRIPTIONS
+tver<-"0.9.242" # Should match DESCRIPTIONS
 
 # 0.9.24: Implied vol functions
 # 0.9.23: SSVI surface
@@ -84,7 +84,9 @@ av_make_ui <- function() {
                     uiOutput("dy2_container"),
                     plotOutput(outputId="plot1"),
                     plotOutput(outputId="plot2"),
-                  )
+                    gt_output(outputId = "t4gt"),
+                    gt_output(outputId = "t5gt")
+                    )
                   ),
               # Generic tab 2: Detail: DETGT1 | DETGT2 | plot1 | plot2
               tabPanel("DETAIL", value="detail",
@@ -160,7 +162,8 @@ av_make_ui <- function() {
                     checkboxGroupInput(inputId="logopts",label="Options",choices=s(avsd$defaults[var=="avsh_logopts",]$value_str),
                                             selected=s(the_av$logopts)),
                     selectInput(inputId="llm_model",label="LLM Model", s(avsd$defaults[var=="llm_model_list",]$value_str),
-                                    selected=s(avsd$defaults[var=="llm_model_list",]$value_str)[[1]], multiple=FALSE)
+                                    selected=s(avsd$defaults[var=="llm_model_list",]$value_str)[[1]], multiple=FALSE),
+                    textInput(inputId="llm_mcp_config", label="MCP COnfig file", value=the_av$llm_mcp_config)
                   ),
                   column(width=5,gt_output(outputId = "dumpthe"))
                   ),
@@ -273,7 +276,6 @@ av_make_server <- function() {
       av_runShiny_addFunctions(the_av$userfuncdir)
 
       # Set up mcp json file
-      # Next...
       writeLines(gsub("MY_API_KEY",rv$avapikey,avsd$av_mcp_base_json), paste0(the_av$defaultcachedir,"/config.json"))
 
       save_avs_state("all",msg="sEToPTS")

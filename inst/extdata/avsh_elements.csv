@@ -3,6 +3,8 @@ MAIN,t1gt,gt_tbl,GT1,FALSE,,,GT1,,gt_tbl,[gt](https://gt.rstudio.com/reference/i
 MAIN,t2gt,gt_tbl,GT2,FALSE,,,GT2,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html
 MAIN,t3lgt,gt_tbl,GT3L,FALSE,,,GT3L,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html
 MAIN,t3rgt,gt_tbl,GT3R,FALSE,,,GT3R,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html
+MAIN,t4gt,gt_tbl,GT4,FALSE,,,GT4,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html
+MAIN,t5gt,gt_tbl,GT5,FALSE,,,GT5,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html
 MAIN,dy1,dygraphs,TS1,FALSE,,,TS1,,dygraphs,[dygraphs](https://rstudio.github.io/dygraphs/)
 MAIN,dy2,dygraphs,TS2,FALSE,,,TS2,,dygraphs,[dygraphs](https://rstudio.github.io/dygraphs/)
 MAIN,plot1,ggplot2::ggplot,SCAT1,FALSE,,,SCAT1,,ggplot2::ggplot,[ggplots](https://ggplot2.tidyverse.org/reference/index.html)

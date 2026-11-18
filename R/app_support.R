@@ -95,8 +95,6 @@ parse_inpline <- function(istr1,envir=parent.frame()) {
   else{   return(outlist)  }
 }
 
-
-
 #' @noRd
 av_validate_directory <- function(newdir,src_inputID) {
   outdir<-""

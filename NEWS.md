@@ -4,7 +4,7 @@
 
 * LLM support and MCP integration
 
-# alphavantagepf 0.9.241
+# alphavantagepf 0.9.242
 
 ## New Features
 
@@ -19,6 +19,7 @@
   - New functions GPIV
 
 * SSVI Implied volatility surface calculations.  See [vignette](file:///C:/Users/DFH/alphavantagepf/docs/articles/ShinyApp_3A_Options_Data.html)
+* Space for two `gt()` tables after dygraphs and plots added to main page.
 
 ### Bug Fixes
 
