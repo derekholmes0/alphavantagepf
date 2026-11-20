@@ -127,10 +127,11 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=
 av_load_shinydata <- function(item=NULL,verbose=TRUE,addfuncs=TRUE) {
   var=NULL
   if(is.null(item)) {
-    restore_avs_state("all");
+    restore_avs_state("all")
     the_av$outcopy<-list()
     options(av_api_key = the_av$avapikey)
     options(av_api_entitlement = the_av$avapientitlement)
+    update_tickerlists( is.null(the_av$tickerlist) || nrow(the_av$tickerlist)<=0 || (max(the_av$tickerlist$list_ts)<=Sys.Date()-4) )
     message_if(verbosity() && verbose,"Loading avShiny Internal data.  Use dump_state() to see what's available")
     if(addfuncs==TRUE) {
       oo <- av_runShiny_addFunctions(the_av$userfuncdir)
@@ -348,6 +349,7 @@ av_runShiny_addFunctions <- function(fun_dir=NULL) {
   }
   fileset_added <- list()
   fileset_added[allfiles]  <- sapply(allfiles, \(thisfn) check_fn(thisfn))
+  write_help_file <- av_help("",NULL)
   save_avs_state("nonpx",msg="Added FUnction(s) using av_runShiny_addFunctions")
 }
 

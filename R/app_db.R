@@ -4,7 +4,7 @@
 #' @noRd
 update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
   from_currency=to_currency=list_ts=Abbrev=NULL
-  if(reallydoingthis==FALSE || the_av$avapikey=="NOT_SET") { return() }
+  if(reallydoingthis==FALSE || (the_av$avapikey %||% "NOT_SET") =="NOT_SET") { return() }
   if(reset==TRUE || is.null(the_av$tickerlist) ) {
     the_av$tickerlist <- data.table()
     message_if_red(verbosity(),"Resetting ticker lists  at ",format(Sys.time(),"%d-%H:%M%:S"))
@@ -21,7 +21,6 @@ update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
 
   # Names
   listings <- av_get_pf("","LISTING_STATUS")[,list_ts:=Sys.Date()][]
-
   setkeyv(listings,c("symbol"))
   if(grepl("useAbbreviations",the_av$logopts)) {
     otherabbs <- avsd$abbreviations[Abbrev!="",]
@@ -36,7 +35,7 @@ update_tickerlists <- function(reallydoingthis=TRUE,reset=FALSE) {
   the_av$listings <- listings
   message_if_red(verbosity(),"Reconstructed index (",nrow(indexlist),"), crypto (",nrow(cryptolist),
             "), and listing status (",nrow(the_av$listings),") lists at ",format(Sys.time(),"%d-%H:%M%:S"))
-  save_avs_state("the",msg="updatetickers") # must use all with any inventory data
+  save_avs_state("the,nonpx",msg="updatetickers") # must use all with any inventory data
 }
 
 # epx_get_avfn : Which function to call given type
@@ -91,18 +90,13 @@ manage_epx <- function(inticker, dtstr,
                        addlive=FALSE, force=FALSE, delay=0.1) {
   if(nrow(the_av$tickerlist)<=0) { update_tickerlists() }
   # Get data
-  # rtnpx returns list (messge,dta_downloaded)
-  # rtnpx <- manage_px(inticker,dtstr); rtn_earn<-manage_earn(rtnpx)
+  # rtnpx returns list (messge,dta_downloaded).  manage_px also saves to disk if needed
   rtnpx   <- manage_px(inticker,dtstr,substitute_data=substitute_data,substitute_symset=substitute_symset,addlive=addlive,force=force,delay=delay)
   if(is.character(rtnpx) | is.null(rtnpx)) {
     quick_message("Cannot find Data for ",inticker)
     return()
   }
   rtnearn <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
-  thisinv <- get_inv(inticker)
-  the_av$pxinv <- DTUpsert(the_av$pxinv, thisinv, c("symbol"),fill=TRUE)
-  save_avs_state("px")
-  #message_if_green(verbosity(),"mange_epx(",inticker,"): px:",rtnpx," earn:",rtnearn)
 }
 
 # ================================================================================================================
@@ -280,6 +274,7 @@ manage_px <- function(inticker, dtstr, substitute_data=NULL, substitute_symset=N
     dta <- DTUpsert(dta,livedta,c("symbol","timestamp"),fill=TRUE)
   }
   if(nrow(dta)>0) {
+    #message_if_green(TRUE," >> av_one_px(",inticker," @ ",Sys.time(),"): Last:",paste(dta[timestamp==max(timestamp),][,.(close,volume)],collapse=","))
     the_av$pxd <- DTUpsert(the_av$pxd,dta,c("symbol","timestamp"),fill=TRUE)
     if(nrow(the_av$pxinv)>0) {
       the_av$pxinv[dta[,.(enddt=max(timestamp)),by=.(symbol)],end_dt:=i.enddt,on=.(symbol)]
@@ -336,7 +331,6 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
     }
     if(src=="") {
       src <- "Downloaded"
-# 260805: Cant get progress to work smoothly both from within shiny app and outside it, and CRAN doesn't want me to switch handlers. FIx later
       if(called_from_console=="av_add_earn") {
         show_progress <- !shiny::isRunning()
         message_if_red(TRUE,"manage_earn: Progress bars are turned ",fifelse(show_progress,"on","off")," when shiny app is runnning")
@@ -370,6 +364,7 @@ manage_earn <- function(tickerdt, substitute_earn=NULL, substitute_earnest=NULL,
       rtniv =  rtninv_fwd[rtninv_past,on=.(symbol)]
       outmsg <- paste0(outmsg, " adds ",nrow(earn_fwd), " fwd earnings")
     }
+    if( grepl("adds",outmsg) ) save_avs_state("the")
     message_if_green(verbosity(),"earnings(",paste_trunc(earntickers$symbol),") from ",src, outmsg)
     message_if_red(src=="","manage_earn: No tickers to update.  Have they been priced?")
   }
@@ -419,7 +414,7 @@ restore_avs_state <- function(todo="all",skip=FALSE,msg="",lazyloadnames="") {
       }
     })
   }
-  if(nchar(the_av$av_dump_dir)>0) {
+  if(nchar(the_av$av_dump_dir %||% "")>0) {
     avdatafn <- paste0(the_av$av_dump_dir,"/av_download.RD")
     if(grepl("all|capture",todo) & file.exists(avdatafn)) {
       message_if_green(verbosity(),"Loading cumulative capture data from ",avdatafn)
@@ -448,7 +443,6 @@ save_avs_state <- function(todo="all",msg="", alt_fst_set=NULL, ts_update=TRUE) 
   if(grepl("all|nonpx",todo)) {
     allnonfst <- setNames(lapply(nonfst_names,\(x) get(x,envir=the_av)), nonfst_names) # So we save a few extra things
     save(allnonfst,file=the_av$fn_list[["nonfst"]])
-    message(" save_avs_state(all|nonpx) writing ",paste0(nonfst_names,sep=","))
     shortmsg <- paste(shortmsg,"nonfst")
   }
   if(grepl("all|px|fst",todo)) {
@@ -460,7 +454,6 @@ save_avs_state <- function(todo="all",msg="", alt_fst_set=NULL, ts_update=TRUE) 
     rtn <- lapply(fst_names, \(x) {
       fst::write_fst(get(x,envir=the_av),the_av$fn_list[[x]],compress=20) # pxd, earn to fst
     })
-    message(" save_avs_state(all|px|fst) writing ",paste0(fst_names,sep=","))
     shortmsg <- paste(shortmsg," fst ")
   }
   if(grepl("all|the",todo)) {

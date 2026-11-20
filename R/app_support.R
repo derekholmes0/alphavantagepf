@@ -342,7 +342,6 @@ one_px_ts <- function(toplot,rv,title="Prices",mean_gap_implies_step=4,extra_ann
   #extraargs = ldots[setdiff(names(ldots), c("splitcols","stepcols","event_ds","hilightcols"))]
   # do.call(g, c(list(x), ldots))
   allannos <- ldots$annotations %||% paste0(c(tanno,extra_anno),collapse=";")
-  cAssign("fgdt;events;ldots;events;dt_window;trebase;eventset;xstepcols;allannos")
   outdyg <- fgts_dygraph(fgdt,title=title,events=events, dtwindow=dt_window,
                          annotations=allannos, roller=1,
                          splitcols=ldots$splitcols %||% ("splitts" %in% rv$gropts) %||% FALSE,

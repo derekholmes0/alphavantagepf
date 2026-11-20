@@ -33,7 +33,7 @@ maxage_earn_days,num,,,,3
 maxage_px_hrs,num,,,,0
 starttab,str,,avopts,,
 gropts,str,onrun,last,,
-dbglvl ,num,,,,0
-avsh_logopts,str,,useTotRtn;useLivePx;verbose;data2clipboard;persistOutput;showGeneralHelp;showWarnings;useAbbreviations;AllDaysOnGraph;useLLM;debug,,
-logopts,str,,useTotRtn;showGeneralHelp;verbose;useAbbreviations;AllDaysOnGraph,,
+dbglvl ,num,,,,5
+avsh_logopts,str,,useTotRtn;useLivePx;verbose;data2clipboard;persistOutput;showWarnings;useAbbreviations;AllDaysOnGraph;useLLM;debug,,
+logopts,str,,useTotRtn;verbose;useAbbreviations;AllDaysOnGraph,,
 llm_model_list,str,setopts,claude-sonnet-5;claude-haiku-4-5-20251001,,

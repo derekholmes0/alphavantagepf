@@ -38,29 +38,31 @@ av_inventory <- function(todo,rv) {
 # -----------------------------------------------------------------------
 # FOr the following functions: AV.H
 #
-av_help <- function(todo,rv) {
+av_help <- function(todo="",rv) {
   func_reqinput=func_opts=helpstr=helpexample=func_src=HelpComment=runcode2=NULL
   grepstr <-  s(c(todo,"*"),"[ ]+",rtn=2)
+  help_fn <- paste0(the_av$cachedir,"/av_help.html")
+  if(grepstr=="*" && file.exists(help_fn)) {
+    return(list("HTML1"=paste(readLines(paste0(the_av$cachedir,"/av_help_fn.html"), warn = FALSE, encoding = "UTF-8"), collapse = "\n"),
+                "HTML2"=paste(readLines(paste0(the_av$cachedir,"/av_help_gen.html"), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+                ))
+  }
   tortn <- the_av$avsh_funcs[,.(category,runcode,func_reqinput,func_opts,helpstr,helpexample,func_src)][order(category,runcode)][!grepl("tblhelp",category)]
   tortn <- tortn[grepl(grepstr,category,ignore.case=TRUE) | grepl(grepstr,runcode,ignore.case=TRUE)]
   tortn <- tortn[!grepl("tblhlp",category)]
   avail_on_2 <- tortn[grepl("2$",runcode ),.(runcode2=paste0(" (",runcode,")") ,runcode =gsub("2$","",runcode))]
   tortn <- avail_on_2[tortn,on=.(runcode)][!grepl("2$",runcode)][, runcode:=paste0(runcode,fcoalesce(runcode2,"")), by=.I]
-  # does this take too long?
-  thistm <- system.time({
-    rtnlist <- list(
-      tortn |> gt(groupname_col="category",row_group_as_column = TRUE) |> gt.basetheme(interactive="filter") |> cols_move_to_start(columns=c(runcode,helpstr)) |>
-                    cols_merge(columns=c(func_reqinput,func_opts), pattern = "{1}, {2}") |> cols_hide(columns=c(runcode2)) |>
-                  add_colwidths("avh")
-      )
-  })["elapsed"]
-  if(grepl("showGeneralHelp",the_av$logopts)) {
-    helptable <- avsd$generalhelp |> gt() |> gt.basetheme(sizepct=90) |> decorate_table() |>
+  fn_help_gt <- tortn |> gt(groupname_col="category",row_group_as_column = TRUE) |> gt.basetheme(sizepct=80) |> cols_move_to_start(columns=c(runcode,helpstr)) |>
+                  cols_merge(columns=c(func_reqinput,func_opts), pattern = "{1}, {2}") |> cols_hide(columns=c(runcode2)) |>
+                add_colwidths("avh")
+  fn_help_gen_gt <- avsd$generalhelp |> gt() |> gt.basetheme(sizepct=90) |> decorate_table() |>
                   tab_style(style=cell_text(font="Courier"),locations=cells_body(columns=c("Example/Choice"))) |>
                   fmt_url(columns=HelpComment,rows=grepl("http",HelpComment),label="FinanceGraphs Parameters and Events",color="blue")
-
-    rtnlist=c(list(helptable),rtnlist)
+  if(todo=="") {
+    writeLines(as_raw_html(fn_help_gt, inline_css=FALSE), paste0(the_av$cachedir,"/av_help_fn.html"))
+    writeLines(as_raw_html(fn_help_gen_gt, inline_css=FALSE), paste0(the_av$cachedir,"/av_help_gen.html"))
   }
+  rtnlist=list("GT1"=fn_help_gt, "DGT1"=fn_help_gen_gt)
   return(rtnlist)
 }
 
@@ -302,6 +304,8 @@ av_des <- function(todo,rv) {
     eqdt <- eqdt |> save_av_data("ETF_PROFILE")
     olist <- avsd$overviewlist[,variable:=ETFName][]
     eqdta <- olist[eqdt,on=.(variable)][source=="av",]
+    eqdta <- rbindlist(list(data.table(this_symset[type=="ETF",][,.(symbol,catprio=0,prio=0,format="bold",category="etf",variable="name",value_str=name)]),
+                            eqdta), use.names=TRUE,fill=TRUE)
     toplot <- dcast(eqdta[order(catprio,prio)], catprio+prio+category + variable+format ~ symbol, value.var="value_str")
     sectorset <- eqdt |> av_extract_df("sectors")
     if("weight" %in% colnames(sectorset)) {

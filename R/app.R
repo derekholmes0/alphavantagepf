@@ -1,5 +1,5 @@
 #source("./R/utilities.R")
-tver<-"0.9.242" # Should match DESCRIPTIONS
+tver<-"0.9.2421" # Should match DESCRIPTIONS
 
 # 0.9.24: Implied vol functions
 # 0.9.23: SSVI surface
@@ -82,15 +82,16 @@ av_make_ui <- function() {
                         div(class = "table-pane", style="flex: 1", gt_output("t3rgt")) ),
                     uiOutput("dy1_container"),
                     uiOutput("dy2_container"),
-                    plotOutput(outputId="plot1"),
-                    plotOutput(outputId="plot2"),
                     gt_output(outputId = "t4gt"),
-                    gt_output(outputId = "t5gt")
+                    gt_output(outputId = "t5gt"),
+                    plotOutput(outputId="plot1"),
+                    plotOutput(outputId="plot2")
                     )
                   ),
               # Generic tab 2: Detail: DETGT1 | DETGT2 | plot1 | plot2
               tabPanel("DETAIL", value="detail",
                   fluidRow(
+                    htmlOutput("htm2"),
                     gt_output(outputId="d_t1gt"),
                     gt_output(outputId="d_t2gt"),
                     plotOutput(outputId="d_plot1"),
@@ -333,7 +334,7 @@ av_make_server <- function() {
           quick_message("Enter a valid command", eval=nchar(rv$istr1)<=0) ) {
         return()
       }
-      message_if(verbosity(2),"avrs(",tver,") >>>> input(",rv$istr1,") Line2:",rv$istr2, " invts:",newts)
+      #message_if(verbosity(2),"avrs(",tver,") >>>> input(",rv$istr1,") Line2:",rv$istr2, " invts:",newts)
       # Clear all but TS graphs
       the_av$user_feedback <- ""
       out <- list()
@@ -408,6 +409,7 @@ av_make_server <- function() {
                                   gt_tbl = render_gt(out[[innm]]),
                                   dygraphs = renderDygraph(out[[innm]]),
                                   ggplot2ggplot = renderPlot({ suppressWarnings(out[[innm]]) },execOnResize=TRUE),
+                                  HTML = renderUI( HTML( out[[innm]] )),
                                   text = renderText( out[[innm]] ))
         })},
         torend$ui_out, torend$outname, torend$inclass   )
@@ -416,7 +418,7 @@ av_make_server <- function() {
       output$dy1_container <- renderUI({ dygraphOutput("dy1", height= torend[ui_out=="dy1",]$displayheight) })
       output$dy2_container <- renderUI({ dygraphOutput("dy2", height= torend[ui_out=="dy2",]$displayheight) })
       updateTabsetPanel(session,"inTabset",selected=the_av$starttab)
-      save_avs_state("the",msg="RUNLN")
+      save_avs_state("the,nonpx",msg="RUNLN") # Fixes cmlist not getting saved
       updateTextInput("istr1",value="",session=session)
     })
 

@@ -85,7 +85,6 @@ Non analytic features are set as check boxes in  <span style="color:red">options
 |verbose|Display (or not) informative messages in the console.|
 |data2clipboard|Copy select data from each analysis to the clipboard for pasting into other applications.<br>This is useful for other ad-hoc analysis without going through download boxes or extra buttons|
 |persistOuput|Keep analyses output (graphs, tables, etc) until replaced by new ones|
-|showGeneralHelp|Show (or not) a general help screen when `AV.H` is run.|
 |showWarnings|Suppress warnings from other packages (e.g. ggplot2)|
 |useAbbreviations|Abbreviate Ticker Names, dropping superfluous words in title|
 |allDaysOnGraph|Show non-equity business days if relevant[^2] on dygraphs|

@@ -35,20 +35,22 @@ Outputs in the main page are shown in the following order:
 | TAB | Name | Order Shown | Class | Type |
 |:---:|:---:|:---:|:----------:|:-------:|
 | MAIN | MSG | 1 | character | text |
-| MAIN | GT1 | 2 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
-| MAIN | GT2 | 3 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
-| MAIN | GT3L | 4 (L) | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
-| MAIN | GT3R | 5 (R) | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
-| MAIN | TS1 | 6 | dygraphs | [dygraphs](https://rstudio.github.io/dygraphs/) |
-| MAIN | TS2 | 7 | dygraphs | [dygraphs](https://rstudio.github.io/dygraphs/) |
-| MAIN | SCAT1 | 8 | ggplot2::ggplot | [ggplots](https://ggplot2.tidyverse.org/reference/index.html) |
-| MAIN | SCAT2 | 9 | ggplot2::ggplot | [ggplots](https://ggplot2.tidyverse.org/reference/index.html) |
-| MAIN | GT4 | 10 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
-| MAIN | GT5 | 11 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
-| DETAILS | DGT1 | 1 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
-| DETAILS | DGT2 | 2 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
-| DETAILS | DSCAT1 | 3 | ggplot2::ggplot | [ggplots](https://ggplot2.tidyverse.org/reference/index.html) |
-| DETAILS | DSCAT2 | 4 | ggplot2::ggplot | [ggplots](https://ggplot2.tidyverse.org/reference/index.html) |
+| MAIN | HTML1 | 2 | character | HTML |
+| MAIN | GT1 | 3 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
+| MAIN | GT2 | 4 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
+| MAIN | GT3L | 5 (L) | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
+| MAIN | GT3R | 6 (R) | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
+| MAIN | TS1 | 7 | dygraphs | [dygraphs](https://rstudio.github.io/dygraphs/) |
+| MAIN | TS2 | 8 | dygraphs | [dygraphs](https://rstudio.github.io/dygraphs/) |
+| MAIN | SCAT1 | 9 | ggplot2::ggplot | [ggplots](https://ggplot2.tidyverse.org/reference/index.html) |
+| MAIN | SCAT2 | 10 | ggplot2::ggplot | [ggplots](https://ggplot2.tidyverse.org/reference/index.html) |
+| MAIN | GT4 | 11 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
+| MAIN | GT5 | 12 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
+| DETAILS | HTML2 | 1 | character | HTML |
+| DETAILS | DGT1 | 2 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
+| DETAILS | DGT2 | 3 | gt_tbl | [gt](https://gt.rstudio.com/reference/index.html) |
+| DETAILS | DSCAT1 | 4 | ggplot2::ggplot | [ggplots](https://ggplot2.tidyverse.org/reference/index.html) |
+| DETAILS | DSCAT2 | 5 | ggplot2::ggplot | [ggplots](https://ggplot2.tidyverse.org/reference/index.html) |
 
 So for example, a named list of the form 
 

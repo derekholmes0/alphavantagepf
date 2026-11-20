@@ -27,15 +27,13 @@ av_reset_defaults <- function(fileopts=TRUE,keep_apikeys=FALSE,resetgrep="*") {
     }
   }
 # Made _fn entries
-#  for(i in seq(1,nrow(defaultdf))) {
-#    ivartype <- defaultdf[i,]$vartype
-#    ivarnm <- defaultdf[i,]$var
-#    if(!(ivarnm=="cachedir")) {
-#      if( ivartype=="cache" ) { ivarval <- paste0(the_av$cachedir,"/", defaultdf[i,get("value_str")]) }
-#      else { ivarval <- defaultdf[i,get(paste0("value_",ivartype))] }
-#      assign(ivarnm, ivarval, envir=the_av)
-#    }
-#  }
+  for(i in seq(1,nrow(defaultdf))) {
+    ivartype <- defaultdf[i,]$vartype
+    ivarnm <- defaultdf[i,]$var
+    if(!(ivarnm=="cachedir") && ivartype %in% s("str;log;num")) {
+      assign(ivarnm, defaultdf[i,get(paste0("value_",ivartype))], envir=the_av)
+    }
+  }
   # Tables that will get modified by users
   the_av$assetgroups <- data.table(listnm=c(rep("defaultIdx",3)),ticker=c("SPY","QQQ","DIA"), weight=c(0.34,0.33,0.33))
   the_av$avsh_funcs <- copy(avsd$def_avsh_funcs)

@@ -23,7 +23,6 @@
 #' @import data.table
 #' @importFrom FinanceGraphs fgts_dygraph
 #' @importFrom stats cor quantile
-#' @export
 av_GPIV <- function(todo,rv) {
   expcode=moneyn=ts=iv=NULL
   if( is.character(todo) && todo=="signature" ) {
@@ -68,7 +67,6 @@ av_GPIV <- function(todo,rv) {
 #' @import data.table
 #' @importFrom FinanceGraphs fgts_dygraph
 #' @importFrom stats cor quantile
-#' @export
 av_GPIVS <- function(todo,rv) {
   expcode=moneyn=ts=iv=toplot_s=long=varlong=varshort=short=NULL
   if( is.character(todo) && todo=="signature" ) {
@@ -112,7 +110,6 @@ av_GPIVS <- function(todo,rv) {
 #' @import alphavantagepf
 #' @import data.table
 #' @importFrom FinanceGraphs fgts_dygraph
-#' @export
 av_IVTS <- function(todo,rv) {
   expcode=moneyn=ts=cutlevel=strike=NULL
   if( is.character(todo) && todo=="signature" ) {
@@ -147,7 +144,6 @@ av_IVTS <- function(todo,rv) {
 #' @import alphavantagepf
 #' @import data.table
 #' @importFrom stats cor quantile
-#' @export
 av_OLAST <- function(todo,rv) {
   dtoexp=expcode=ts=moneyn=ask=bid=volume=open_interest=iv=strike=contractid=spot=vega=theta=rho=ITM=ask_size=bid_size=NULL
   if( is.character(todo) && todo=="signature" ) {
@@ -206,7 +202,6 @@ av_OLAST <- function(todo,rv) {
 #' AV.OINV
 #' }
 #' @importFrom stats sd
-#' @export
 av_OINV <- function(todo,rv) {
   expcode=strike=iv=mark=dtoexp=nYrs=cnt=nperYr=max_DT_ENTRY=max_iv_dt=max_ivn_dt=min_DT_ENTRY=MO_1_iv=vol_1mo=NULL
   if(!exists("eqoptinv", envir=the_av)) {

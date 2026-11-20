@@ -24,7 +24,7 @@
 ### Bug Fixes
 
 * `av_get_pf()` now works when constants not initially set up.
-
+* Reduced save state calls on data download
 
 # alphavantagepf 0.9.1
 

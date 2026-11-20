@@ -1,4 +1,5 @@
 Location, ui_out,inclass,outname,displayed,,,Name,Order Shown,Class,Type
+MAIN,htm1,HTML,HTML1,FALSE,,,HTML1,,HTML,
 MAIN,t1gt,gt_tbl,GT1,FALSE,,,GT1,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html
 MAIN,t2gt,gt_tbl,GT2,FALSE,,,GT2,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html
 MAIN,t3lgt,gt_tbl,GT3L,FALSE,,,GT3L,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html
@@ -9,6 +10,7 @@ MAIN,dy1,dygraphs,TS1,FALSE,,,TS1,,dygraphs,[dygraphs](https://rstudio.github.io
 MAIN,dy2,dygraphs,TS2,FALSE,,,TS2,,dygraphs,[dygraphs](https://rstudio.github.io/dygraphs/)
 MAIN,plot1,ggplot2::ggplot,SCAT1,FALSE,,,SCAT1,,ggplot2::ggplot,[ggplots](https://ggplot2.tidyverse.org/reference/index.html)
 MAIN,plot2,ggplot2::ggplot,SCAT2,FALSE,,,SCAT2,,ggplot2::ggplot,[ggplots](https://ggplot2.tidyverse.org/reference/index.html)
+DET,htm2,HTML,HTML2,FALSE,,,HTML2,,HTML,
 DET,d_t1gt,gt_tbl,DGT1,FALSE,,,DGT1,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html)
 DET,d_t2gt,gt_tbl,DGT2,FALSE,,,DGT2,,gt_tbl,[gt](https://gt.rstudio.com/reference/index.html)
 DET,d_plot1,ggplot2::ggplot,DSCAT1,FALSE,,,DSCAT1,,ggplot2::ggplot,[ggplots](https://ggplot2.tidyverse.org/reference/index.html)
