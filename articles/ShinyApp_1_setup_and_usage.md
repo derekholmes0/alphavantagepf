@@ -259,8 +259,8 @@ would have been returned.
 
 Options Search
 
-[^1]: A “cheatsheet” with these conventions is displayed when `AV.H` is
-    run, unless the `showGeneralHelp` option is deselected.
+[^1]: A “cheatsheet” with these conventions is displayed in the DETAIL
+    when `AV.H` is run.
 
 [^2]: See `AV.TICKERS` for a list of cryptocurrencies available. Not all
     are available as symmetric pairs, so please use only those on the

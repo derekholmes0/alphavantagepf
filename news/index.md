@@ -25,6 +25,7 @@
 
 - [`av_get_pf()`](https://derekholmes0.github.io/alphavantagepf/reference/av_get_pf.md)
   now works when constants not initially set up.
+- Reduced save state calls on data download
 
 ## alphavantagepf 0.9.1
 
