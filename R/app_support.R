@@ -212,10 +212,10 @@ data_from_list <-function(inlist,datestring,ts_rebase,dtstr_window,msg_inputID="
       quick_message(paste("Invalid tickers:", paste(badtickers)),wh=msg_inputID)
   }
   inlist <- inlist[!grepl("ERROR",toplot)]
-  # Now retreive it
-  toplot <- get_one_ts(inlist,ts_rebase,datestring,dtstr_window) # REturns list(data.table,"") if nothing valid
+  # Now retreive it, remember rebasing is done in fgts_dygraph.  Need to move it out.
+  hist_dt <- get_one_ts(inlist,ts_rebase,datestring,dtstr_window) # REturns list(data.table,"") if nothing valid
   if(copytable) { avsh_clipboard(toplot[[1]],"px") }
-  return(toplot)
+  return(hist_dt)
 }
 
 get_one_ts <- function(assets,rebase,datestring,dtstr_window) {

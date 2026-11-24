@@ -1,6 +1,7 @@
 #source("./R/utilities.R")
-tver<-"0.9.2421" # Should match DESCRIPTIONS
+tver<-"0.9.2422" # Should match DESCRIPTIONS
 
+# 0.9.2422: Trying to figure out timestamp as double, add decscription download
 # 0.9.24: Implied vol functions
 # 0.9.23: SSVI surface
 # 0.9.22: OPtimaal Regimes

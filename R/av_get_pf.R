@@ -222,6 +222,9 @@ av_get_pf <- function(symbol, av_fun, symbolvarnm="symbol",dfonerror=TRUE,melted
       content <- gsub("%", "",contx) |> data.table::fread(na.strings=c(".","NA","None"), tz="UTC")
       datatypes<-data.table(colnm=names(content),allna = lapply(content,\(x) all(is.na(x))),
                         coltypes=lapply(content,typeof), colclass=lapply(content,\(x) class(x)[[1]]))
+      if( nrow( tscol <- datatypes[colnm=="timestamp",] )>0 ) {
+        message(" @@@ timestamp (",av_fun,") type:  ",tscol[1,]$coltypes, " class: ",tscol[1,]$colclass )
+      }
       # COnvert all nas to doubles
       toconvert<-datatypes[coltypes=="logical" & allna==TRUE,]$colnm
       content[,(toconvert):=lapply(.SD,as.numeric),.SDcols=toconvert]

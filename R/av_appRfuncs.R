@@ -113,6 +113,46 @@ av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=
   return(rtniv)
 }
 
+#' Add Descriptive Data
+#'
+#' @name av_add_des
+#' @title Add or download Descriptive Data
+#' @description Adds descriptive data to [av_runShiny()] internal data by download
+#' @param equitylist (default NULL)  A list with tickers for which to retrieve earnings (from AlphaVantage)
+#' If NULL, downloads data for all tickers in Price history
+#' If "all_in_
+#' @param delay (default 0)  A numeric value specifying delay between Alphavantage calls (in seconds)
+#' @returns Data.table with summary of downloaded or added earnings
+#' @seealso [av_runShiny()]
+#' @details Entire set of columns from [av_get_pf()] can be added. First date column renamed to `timestamp`.
+#' If just assetypes is given, the function downloads earnings as needed (respecting maximum age parameters defined
+#' in the app's `AVOPTS` tab.)
+#' **Note that price data must always be added first**
+#' @examples
+#' \dontrun{
+#' # To add earnings for a set of tickers
+#' av_load_shinydata()  # Make sure most recent data is loaded
+#' av_add_earn(equitylist=data.table(symbol=c("IBM","GS")))
+#' }
+#' @export
+av_add_earn <- function(substitute_earn=NULL,substitute_earnest=NULL,equitylist=NULL,delay=0) {
+  # Age taken care of by manage_earn
+  av_load_shinydata(verbose=FALSE, addfuncs=FALSE)
+  symset <- list()
+  if(!is.null(substitute_earn) && length(symset)<=0) { symset <- unique(substitute_earn$symbol) }
+  if(!is.null(substitute_earnest) && length(symset)<=0) { symset <- unique(substitute_earnest$symbol) }
+  if(!is.null(equitylist) && length(symset)<=0) { symset <- unique(s(equitylist)) }
+  if(length(symset)<=0) {
+    message_if_red(TRUE,"av_add_earn cannot find any symbols")
+    return(NULL)()
+  }
+  rtnpx <- the_av$pxinv[data.table(symbol=symset),on=.(symbol)][,.(symbol,type)][type=="Equity",]
+  rtniv <- manage_earn(rtnpx,substitute_earn=substitute_earn,substitute_earnest=substitute_earnest,delay=delay)
+  the_av$pxinv <- DTUpsert(the_av$pxinv, get_inv(symset), c("symbol"),fill=TRUE)
+  save_avs_state("px",msg="av_add_earn",ts_update=FALSE)
+  return(rtniv)
+}
+
 #' Load ShinyApp data from Cache
 #'
 #' @name av_load_shinydata
@@ -446,7 +486,8 @@ av_add_options <- function(todo, dtstr="-1w::", symbols=NULL, freq="d", replace_
   if(todo=="iv_fv") {
     restore_avs_state("lazy",lazyloadnames="iv")
     eqopt_iv <- the_av$iv %||% data.table()
-    if(fcoalesce(max(the_av$pxd[symbol=="SOFR",]$timestamp), as.IDate("1970-01-01"))<Sys.Date()-1) {
+    sofrdata <- the_av$pxd[symbol=="SOFR",]
+    if(nrow(sofrdata)<=0 || fcoalesce(max(sofrdata$timestamp), as.Date("1970-01-01"))<Sys.Date()-1) {
       message_if_red(TRUE,"Updating SOFR levels from FRED via quantmod")
       sofr <- as.data.table(quantmod::getSymbols("SOFR",src="FRED",auto.assign=FALSE))[,.(DT_ENTRY=index,close=SOFR,symbol="SOFR")]
       av_add_px(sofr)
